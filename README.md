@@ -1,1 +1,2 @@
-# SmartContracts
+# Thetta smart contracts
+
