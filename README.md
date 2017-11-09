@@ -1,5 +1,7 @@
 # Thetta smart contracts
 
+![CodeShip Build Status](https://codeship.com/projects/9cd363b0-a6d4-0135-e5e6-52d04353ae62/status?branch=master)
+
 ## Running
 truffle test
 
