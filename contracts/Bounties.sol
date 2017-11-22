@@ -1,10 +1,7 @@
 pragma solidity ^0.4.15;
 
-// other methods are missing (we don't need that)
-contract StdToken {
-     function balanceOf(address _owner) public constant returns (uint256);
-     function transfer(address _to, uint256 _value) public returns(bool);
-}
+import "zeppelin-solidity/contracts/token/ERC20.sol";
+
 
 /**
  * @title BountyItem 
@@ -60,7 +57,7 @@ contract BountyItem {
           uint tokenBalance = 0;
 
           if(erc20tokenContract!=0){
-               StdToken erc20 = StdToken(erc20tokenContract);
+               ERC20 erc20 = ERC20(erc20tokenContract);
                tokenBalance = erc20.balanceOf(this);
           }
           return (ethBalance,tokenBalance);
@@ -133,7 +130,7 @@ contract BountyItem {
           // otherwise just get a balance of this contract
           require(isTypeEth()!=true); 
 
-          StdToken erc20 = StdToken(erc20tokenContract);
+          ERC20 erc20 = ERC20(erc20tokenContract);
           // bounty tokens should be sent to this contract
           return erc20.balanceOf(this);
      }
@@ -239,7 +236,7 @@ contract BountyItem {
                _to.transfer(this.balance);
           }else{
                // send tokens
-               StdToken erc20 = StdToken(erc20tokenContract);
+               ERC20 erc20 = ERC20(erc20tokenContract);
                uint balance = erc20.balanceOf(this);
                erc20.transfer(_to,balance);
           }
