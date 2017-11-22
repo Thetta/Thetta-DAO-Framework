@@ -3,9 +3,13 @@ pragma solidity ^0.4.15;
 // other methods are missing (we don't need that)
 contract StdToken {
      function balanceOf(address _owner) public constant returns (uint256);
-     function transfer(address _to, uint256 _value) returns(bool);
+     function transfer(address _to, uint256 _value) public returns(bool);
 }
 
+/**
+ * @title BountyItem 
+ * @dev This is a single bounty item record
+ */
 contract BountyItem {
 // Fields:
      address public admin = 0x0;        // who does all dispute resolution
@@ -146,7 +150,7 @@ contract BountyItem {
           require(_index<totalClaims);
           return claims[_index];
      }
-     function getClaimName(uint _index) public returns(string){
+     function getClaimName(uint _index) public constant returns(string){
           require(_index<totalClaims);
           return claimsName[_index];
      }
@@ -251,7 +255,10 @@ contract BountyItem {
      }
 }
 
-
+/**
+ * @title Bounties 
+ * @dev This is a bounty registry
+ */
 contract Bounties {
 // Fields:
      uint public totalBounties = 0;
