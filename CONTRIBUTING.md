@@ -32,7 +32,7 @@ Here are some important resources:
   * [Our roadmap (TODO)](https://github.com/Thetta/SmartContracts/wiki/Roadmap) is the 10k foot view of where we're going, and
   * [Tracker](https://github.com/Thetta/SmartContracts/projects) is our day-to-day project management space.
   * Bugs? [Open new Issue](https://github.com/Thetta/SmartContracts/issues)
-  * Slack: [channel is here](irc://chat.freenode.net/opengovernment)
+  * [Slack channel is here](https://chaincloud-slack.herokuapp.com/)
 
 ## Testing
 
