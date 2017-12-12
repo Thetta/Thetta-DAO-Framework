@@ -1,5 +1,7 @@
 # Thetta smart contracts
 
+Please [submit issues here](https://github.com/Thetta/SmartContracts/projects/1?).
+
 [ ![Codeship Status for Thetta/SmartContracts](https://app.codeship.com/projects/f1b38150-b26e-0135-0584-462fcae7d1c8/status?branch=master)](https://app.codeship.com/projects/258076)
 
 ## Running
