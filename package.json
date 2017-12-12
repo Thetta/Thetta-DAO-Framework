@@ -1,0 +1,27 @@
+{
+  "name": "thetta-smart-contracts",
+  "version": "1.0.0",
+  "description": "![CodeShip Build Status](https://codeship.com/projects/9cd363b0-a6d4-0135-e5e6-52d04353ae62/status?branch=master)",
+  "main": "truffle.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Thetta/SmartContracts.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Thetta/SmartContracts/issues"
+  },
+  "homepage": "https://github.com/Thetta/SmartContracts#readme",
+  "dependencies": {
+    "ethereumjs-testrpc": "^6.0.3",
+    "solidity-coverage": "^0.4.2",
+    "zeppelin-solidity": "^1.3.0"
+  }
+}
