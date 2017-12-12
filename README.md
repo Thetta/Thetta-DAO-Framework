@@ -1,6 +1,8 @@
 # Thetta smart contracts
 
-![CodeShip Build Status](https://codeship.com/projects/9cd363b0-a6d4-0135-e5e6-52d04353ae62/status?branch=master)
+Please [submit issues here](https://github.com/Thetta/SmartContracts/projects/1?).
+
+[ ![Codeship Status for Thetta/SmartContracts](https://app.codeship.com/projects/f1b38150-b26e-0135-0584-462fcae7d1c8/status?branch=master)](https://app.codeship.com/projects/258076)
 
 ## Running
 truffle test
@@ -14,6 +16,7 @@ npm install -g ethereumjs-testrpc
 npm install -g truffle@v4.0.0-beta.2
 
 # test
+npm install
 nohup bash -c "testrpc --port 8989 --gasLimit 10000000 2>&1 &"
 truffle test
 ```
