@@ -13,7 +13,11 @@ truffle test
 npm install -g npm@3.10.10
 nvm install 6.10.3
 npm install -g ethereumjs-testrpc
-npm install -g truffle@v4.0.0-beta.2
+
+# was last tested with truffle@4.1.7
+# solc is 0.4.21
+# zeppelin-solidity is 1.9.0
+npm install -g truffle
 
 # test
 npm install
