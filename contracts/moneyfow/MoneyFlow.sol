@@ -2,7 +2,7 @@ pragma solidity ^0.4.15;
 
 import "./IWeiReceiver.sol";
 import "./IWeiSplitter.sol";
-import "./IPullModel.sol";
+import "./IWeiDestination.sol";
 
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -114,7 +114,7 @@ contract WeiSplitter is IWeiSplitter, IWeiReceiver, Ownable {
 //////////////////////////////////////////////////////
 // This is a terminal item, that has no children
 // This is one-time receive only
-contract WeiAbsoluteTask is IWeiReceiver, IPullModel, Ownable {
+contract WeiAbsoluteTask is IWeiReceiver, IWeiDestination, Ownable {
 	bool public isMoneyReceived = false;
 	uint public neededWei = 0;
 
@@ -122,6 +122,7 @@ contract WeiAbsoluteTask is IWeiReceiver, IPullModel, Ownable {
 		neededWei = _neededWei;	
 	}
 
+// IWeiDestination:
 	// pull model
 	function flush()public onlyOwner{
 		msg.sender.transfer(msg.value);
@@ -158,25 +159,67 @@ contract WeiAbsoluteTask is IWeiReceiver, IPullModel, Ownable {
 	}
 }
 
+contract WeiRelativeTask is IWeiReceiver, IWeiDestination, Ownable {
+	bool public isMoneyReceived = false;
+	uint public percentsDiv100Needed = 0;
+
+	function WeiRelativeTask(uint _percentsDiv100Needed)public {
+		percentsDiv100Needed = _percentsDiv100Needed;
+	}
+
+// IWeiDestination:
+	// pull model
+	function flush()public onlyOwner{
+		msg.sender.transfer(msg.value);
+	}
+
+// IWeiReceiver:
+	function getMinWeiNeeded()constant public returns(uint){
+		return 0;
+	}
+
+	function getTotalWeiNeeded(uint _inputWei)constant public returns(uint){
+		// calculate percents
+		if(!isNeedsMoney()){
+			return 0;
+		}
+
+		// TODO: calculate percents of _inputWei
+		return 0; 
+	}
+
+	function getTotalPercentsDiv100Needed()constant public returns(uint){
+		return percentsDiv100Needed;
+	}
+
+	function isNeedsMoney()constant public returns(bool){
+		return !isMoneyReceived;
+	}
+
+	// receive money one time only
+	function()public payable{
+		require(!isNeedsMoney());
+		// DO NOT SEND LESS!
+		// DO NOT SEND MORE!
+		require(msg.value==getMinWeiNeeded());
+		isMoneyReceived = true;
+	}
+}
+
 // TODO: 
-contract WeiRelativeTask {
+contract WeiAbsoluteTaskWithPeriod {
 
 }
 
 // TODO: 
-contract WeiAbsoluteTaskWithInterval {
-
-}
-
-// TODO: 
-contract WeiRelativeTaskWithInterval {
+contract WeiRelativeTaskWithPeriod {
 
 }
 
 //////////////////////////////////////////////////////
 // WeiFund can store funds until 'flush' is called (pull model)
 // This is a terminal item, that has no children
-contract WeiFund is IWeiReceiver, IPullModel, Ownable {
+contract WeiFund is IWeiReceiver, IWeiDestination, Ownable {
 	address public output;
 
 	// Process funds, send it to the Output
