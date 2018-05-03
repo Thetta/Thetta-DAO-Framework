@@ -23,7 +23,10 @@ contract IWeiReceiver {
 	// If this output does not need more funds -> will return false 
 	function isNeedsMoney()constant public returns(bool);
 
+	// non payable!
+	function()public;
+
 	// WeiReceiver should process all Wei here (hold it or send it somewhere else)
-	function()public payable;
+	function processFunds(uint _currentFlow) public payable;
 }
 
