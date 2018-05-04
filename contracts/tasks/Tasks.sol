@@ -18,7 +18,7 @@ import '../moneyflow/WeiExpense.sol';
 //		has 'processFunds(uint _currentFlow)' payable function 
 //		has 'setNeededWei(uint _neededWei)' 
 // 
-contract WeiTask is WeiAbsoluteExpense {
+contract GenericTask is WeiAbsoluteExpense {
 	address employee = 0x0;		// who should complete this task and report on completion
 										// this will be set later
 	address output = 0x0;		// where to send money (can be split later)
@@ -57,7 +57,7 @@ contract WeiTask is WeiAbsoluteExpense {
 	}
 
 	// if _neededWei==0 -> this is an 'Unknown cost' situation. use 'setNeededWei' method of WeiAbsoluteExpense
-	function WeiTask(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
+	function GenericTask(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
 		WeiAbsoluteExpense(_neededWei) 
 	{
 		caption = _caption;
@@ -103,19 +103,6 @@ contract WeiTask is WeiAbsoluteExpense {
 			moneySource.transfer(this.balance);
 		}
 		state = State.Cancelled;
-	}
-
-	// TODO: make it callable by any Employee of the current Microcompany
-	function startTask(address _employee) public onlyOwner {
-		require(getCurrentState()==State.Init || getCurrentState()==State.PrePaid);
-
-		if(getCurrentState()==State.Init){
-			// can start only if postpaid task 
-			require(isPostpaid);
-		}
-
-		employee = _employee;	
-		state = State.InProgress;
 	}
 
 	function notifyOnCompletion() public onlyEmployeeOrOwner {
@@ -170,5 +157,41 @@ contract WeiTask is WeiAbsoluteExpense {
 
 	// non-payable
 	function()public{
+	}
+}
+
+contract WeiTask is GenericTask {
+	function WeiTask(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
+		GenericTask(_caption, _desc, _isPostpaid, _isDonation, _neededWei) 
+	{
+	}
+
+	// TODO: make it callable by any Employee of the current Microcompany
+	function startTask(address _employee) public onlyOwner {
+		require(getCurrentState()==State.Init || getCurrentState()==State.PrePaid);
+
+		if(getCurrentState()==State.Init){
+			// can start only if postpaid task 
+			require(isPostpaid);
+		}
+
+		employee = _employee;	
+		state = State.InProgress;
+	}
+}
+
+// Bounty is always prepaid 
+contract WeiBounty is GenericTask {
+	function WeiBounty(string _caption, string _desc, uint _neededWei) public 
+		GenericTask(_caption, _desc, false, false, _neededWei) 
+	{
+	}
+
+	// callable by anyone
+	function startTask() public {
+		require(getCurrentState()==State.PrePaid);
+
+		employee = msg.sender;	
+		state = State.InProgress;
 	}
 }
