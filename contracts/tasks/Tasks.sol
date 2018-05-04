@@ -27,7 +27,6 @@ contract WeiTask is WeiAbsoluteExpense {
 	string public desc = "";
 	bool isPostpaid = false;		// prepaid/postpaid switch
 
-	// TODO: use it
 	bool isDonation = false;		// if true -> any price
 	// TODO: use it
 	uint64 public timeToCancel = 0;
@@ -155,6 +154,18 @@ contract WeiTask is WeiAbsoluteExpense {
 
 		output.transfer(this.balance);
 		state = State.Finished;
+	}
+
+	function processFunds(uint _currentFlow) public payable{
+		if(isPostpaid && (0==neededWei) && (State.Complete==state)){
+			// this is a donation
+			// client can send any sum!
+			neededWei = msg.value;		
+		}
+
+		// TODO: this doesn't compile. is it ok?
+		//super.processFunds.value(msg.value)(_currentFlow);
+		super.processFunds(_currentFlow);
 	}
 
 	// non-payable
