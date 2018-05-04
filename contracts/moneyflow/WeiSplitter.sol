@@ -18,6 +18,12 @@ contract WeiSplitterBase is IWeiSplitter, Ownable {
 	mapping (uint=>address) children;
 	uint childrenCount = 0;
 
+	string public name = "";
+
+	function WeiSplitterBase(string _name) public {
+		name = _name;
+	}
+
 // IWeiSplitter:
 	function getChildrenCount() public constant returns(uint){
 		return childrenCount;
@@ -32,6 +38,9 @@ contract WeiSplitterBase is IWeiSplitter, Ownable {
 }
 
 contract WeiTopDownSplitter is WeiSplitterBase, IWeiReceiver {
+	function WeiTopDownSplitter(string _name) WeiSplitterBase(_name) public {
+	}
+
 // IWeiReceiver:
 	// calculate only absolute outputs, but do not take into account the Percents
 	function getMinWeiNeeded()constant public returns(uint){
@@ -125,6 +134,9 @@ contract WeiTopDownSplitter is WeiSplitterBase, IWeiReceiver {
 
 // 
 contract WeiUnsortedSplitter is WeiSplitterBase, IWeiReceiver {
+	function WeiUnsortedSplitter(string _name) WeiSplitterBase(_name) public {
+	}
+
 // IWeiReceiver:
 	// calculate only absolute outputs, but do not take into account the Percents
 	function getMinWeiNeeded()constant public returns(uint){

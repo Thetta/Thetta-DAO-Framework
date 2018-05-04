@@ -5,7 +5,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 /**
  * @title Manageable
  * @dev Contract that allows to grant permissions to any address
- * @dev In real life we are no able to perform all actions with just one Ethereum address
+ * @dev In real life we are not able to perform all actions with just one Ethereum address
  * @dev because risks are too high.
  * @dev Instead owner delegates rights to manage an contract to the different addresses and
  * @dev stay able to revoke permissions at any time.
