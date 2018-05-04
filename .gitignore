@@ -1,0 +1,13 @@
+# JetBrains PyCharm
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Truffle build
+build/*
+
+# nodejs modules
+node_modules/*
+
+.jsapi.json
