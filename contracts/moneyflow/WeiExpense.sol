@@ -11,17 +11,28 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 // This is a terminal item, that has no children
 // This is one-time receive only
 contract WeiAbsoluteExpense is IWeiReceiver, IWeiDestination, Ownable {
+	address public moneySource = 0x0;
 	bool public isMoneyReceived = false;
 	uint public neededWei = 0;
 
-	function WeiAbsoluteExpense(uint _neededWei)public {
+	modifier onlyByMoneySource() { 
+		require(msg.sender==moneySource); 
+		_; 
+	}
+
+	// _neededWei can be 0
+	function WeiAbsoluteExpense(uint _neededWei) public {
 		neededWei = _neededWei;	
+	}
+
+	function setNeededWei(uint _neededWei) public onlyOwner {
+		neededWei = _neededWei;
 	}
 
 // IWeiDestination:
 	// pull model
-	function flush()public onlyOwner{
-		msg.sender.transfer(msg.value);
+	function flush()public onlyOwner {
+		msg.sender.transfer(this.balance);
 	}
 
 // IWeiReceiver:
@@ -48,16 +59,21 @@ contract WeiAbsoluteExpense is IWeiReceiver, IWeiDestination, Ownable {
 	// receive money one time only
 	function processFunds(uint _currentFlow) public payable{
 		require(!isNeedsMoney());
+		require(neededWei!=0);		// should be set
+
 		// DO NOT SEND LESS!
 		// DO NOT SEND MORE!
 		require(msg.value==getMinWeiNeeded());
 		isMoneyReceived = true;
+		moneySource = msg.sender;
 	}
 
 	function()public{
 	}
 }
 
+// TODO 
+/*
 contract WeiRelativeExpense is IWeiReceiver, IWeiDestination, Ownable {
 	bool public isMoneyReceived = false;
 	uint public percentsDiv100Needed = 0;
@@ -69,7 +85,7 @@ contract WeiRelativeExpense is IWeiReceiver, IWeiDestination, Ownable {
 // IWeiDestination:
 	// pull model
 	function flush()public onlyOwner{
-		msg.sender.transfer(msg.value);
+		msg.sender.transfer(this.balance);
 	}
 
 // IWeiReceiver:
@@ -117,4 +133,5 @@ contract WeiAbsoluteExpenseWithPeriod {
 contract WeiRelativeExpenseWithPeriod {
 
 }
+*/
 

@@ -30,3 +30,18 @@ contract IWeiReceiver {
 	function processFunds(uint _currentFlow) public payable;
 }
 
+// fallback -> processFunds
+contract FallbackToWeiReceiver {
+	address output = 0x0;
+
+	// _output should be IWeiReceiver
+	function FallbackToWeiReceiver(address _output) public {
+		output = _output;
+	}
+
+	function()public payable{
+		IWeiReceiver iwr = IWeiReceiver(output);
+		iwr.processFunds.value(msg.value)(msg.value);		
+	}
+}
+
