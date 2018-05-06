@@ -58,9 +58,17 @@ contract GenericTask is WeiAbsoluteExpense {
 		_; 
 	}
 
+	/*
 	modifier onlyAnyEmployeeOrOwner() { 
 		IMicrocompany tmp = IMicrocompany(mc);
 		require(tmp.isEmployee(msg.sender) || msg.sender==owner); 
+		_; 
+	}
+   */
+
+   modifier isCanDo(string _what){
+		IMicrocompany tmp = IMicrocompany(mc);
+		require(tmp.isCanDo(msg.sender,_what)); 
 		_; 
 	}
 
@@ -176,7 +184,7 @@ contract WeiTask is GenericTask {
 	}
 
 	// callable by any Employee of the current Microcompany or Owner
-	function startTask(address _employee) public onlyAnyEmployeeOrOwner {
+	function startTask(address _employee) public isCanDo("startTask") {
 		require(getCurrentState()==State.Init || getCurrentState()==State.PrePaid);
 
 		if(getCurrentState()==State.Init){
@@ -197,7 +205,7 @@ contract WeiBounty is GenericTask {
 	}
 
 	// callable by anyone
-	function startTask() public {
+	function startTask() public isCanDo("startBounty") {
 		require(getCurrentState()==State.PrePaid);
 
 		employee = msg.sender;	
