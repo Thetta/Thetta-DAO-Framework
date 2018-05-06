@@ -3,6 +3,7 @@ pragma solidity ^0.4.15;
 import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 import '../moneyflow/WeiExpense.sol';
+import '../IMicrocompany.sol';
 
 // 4 types of tasks:
 // PrePaid 
@@ -19,6 +20,7 @@ import '../moneyflow/WeiExpense.sol';
 //		has 'setNeededWei(uint _neededWei)' 
 // 
 contract GenericTask is WeiAbsoluteExpense {
+	address mc = 0x0;
 	address employee = 0x0;		// who should complete this task and report on completion
 										// this will be set later
 	address output = 0x0;		// where to send money (can be split later)
@@ -56,10 +58,17 @@ contract GenericTask is WeiAbsoluteExpense {
 		_; 
 	}
 
+	modifier onlyAnyEmployeeOrOwner() { 
+		IMicrocompany tmp = IMicrocompany(mc);
+		require(tmp.isEmployee(msg.sender) || msg.sender==owner); 
+		_; 
+	}
+
 	// if _neededWei==0 -> this is an 'Unknown cost' situation. use 'setNeededWei' method of WeiAbsoluteExpense
-	function GenericTask(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
+	function GenericTask(address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
 		WeiAbsoluteExpense(_neededWei) 
 	{
+		mc = _mc;
 		caption = _caption;
 		desc = _desc;
 		isPostpaid = _isPostpaid;
@@ -161,13 +170,13 @@ contract GenericTask is WeiAbsoluteExpense {
 }
 
 contract WeiTask is GenericTask {
-	function WeiTask(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
-		GenericTask(_caption, _desc, _isPostpaid, _isDonation, _neededWei) 
+	function WeiTask(address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
+		GenericTask(_mc, _caption, _desc, _isPostpaid, _isDonation, _neededWei) 
 	{
 	}
 
-	// TODO: make it callable by any Employee of the current Microcompany
-	function startTask(address _employee) public onlyOwner {
+	// callable by any Employee of the current Microcompany or Owner
+	function startTask(address _employee) public onlyAnyEmployeeOrOwner {
 		require(getCurrentState()==State.Init || getCurrentState()==State.PrePaid);
 
 		if(getCurrentState()==State.Init){
@@ -182,8 +191,8 @@ contract WeiTask is GenericTask {
 
 // Bounty is always prepaid 
 contract WeiBounty is GenericTask {
-	function WeiBounty(string _caption, string _desc, uint _neededWei) public 
-		GenericTask(_caption, _desc, false, false, _neededWei) 
+	function WeiBounty(address _mc, string _caption, string _desc, uint _neededWei) public 
+		GenericTask(_mc, _caption, _desc, false, false, _neededWei) 
 	{
 	}
 
