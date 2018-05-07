@@ -1,10 +1,12 @@
 pragma solidity ^0.4.15;
 
 import "./IMicrocompany.sol";
+
 import "./tasks/Tasks.sol";
 import "./governance/Votes.sol";
+import "./token/MicrocompanyTokens.sol";
 
-contract Permissions {
+contract PermissionManager {
 	mapping (uint=>string) byEmployee;
 	uint actionsByEmployeeCount = 0;
 
@@ -40,6 +42,10 @@ contract Permissions {
 	}
 }
 
+contract TokenManager {
+	
+}
+
 // Different types of Members:
 // 1) Gov.token holder
 // 2) Employee 
@@ -58,7 +64,9 @@ contract Permissions {
 //		
 //		start task -> any employee 
 //		
-contract Microcompany is IMicrocompany, Permissions {
+contract Microcompany is IMicrocompany, PermissionManager {
+	address stdToken;
+
 	mapping (uint=>address) tasks;
 	uint tasksCount = 0;
 
@@ -69,7 +77,10 @@ contract Microcompany is IMicrocompany, Permissions {
 	uint employeesCount = 0;
 
 	// Constructor
-	function Microcompany() public {
+	function Microcompany(address _stdTokenAddress) public {
+		//stdToken = StdMicrocompanyToken(_stdTokenAddress);
+		stdToken = _stdTokenAddress;
+
 		// this is a list of action that any employee can do without voting
 		addActionByEmployeesOnly("addNewVote");
 		addActionByEmployeesOnly("startTask");
@@ -79,6 +90,9 @@ contract Microcompany is IMicrocompany, Permissions {
 		addActionByVoting("addNewEmployee");
 		addActionByVoting("addNewTask");
 		addActionByVoting("issueTokens");
+
+		// issue all 100% tokens to the creator
+		//issueTokensInternal(msg.sender,1000);
 	}
 
    modifier isCanDo(string _what){
@@ -90,6 +104,16 @@ contract Microcompany is IMicrocompany, Permissions {
 	// TODO: get (enumerator) for tasks 
 
 // IMicrocompany:
+	function issueTokens(address _to, uint amount){
+		// TODO
+	}
+
+	// TODO:
+	function issueTokensInternal(address _to, uint _amount) internal {
+		StdMicrocompanyToken(stdToken.mint(_to, _amount);
+	}
+
+	//
 	function addNewVote(address _vote) public isCanDo("addNewVote"){
 		votes[votesCount] = _vote;
 		votesCount++;
@@ -173,11 +197,12 @@ contract Microcompany is IMicrocompany, Permissions {
 	}
 
 	// only token holders with > 51% of gov.tokens can add new task immediately 
-	function isInMajority(address _a) internal constant returns(bool){
+	function isInMajority(address _a) public constant returns(bool){
 		// TODO:
 		// if we have many tokens -> we should scan all and check if have more than 51% of governance type 
 
 		// TODO:
+		//return(stdToken.balanceOf(_a)>=stdToken.totalSupply()/2);
 		return false;
 	}
 }
