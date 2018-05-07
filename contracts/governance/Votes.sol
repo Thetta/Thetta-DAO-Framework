@@ -72,6 +72,9 @@ contract Vote is IVote {
 	}
 
 	function isYes()public constant returns(bool){
+		// WARNING: this line is commented, so will not check if voting is finished!
+		//if(!isFinished(){return false;}
+
 		var(yesResults, noResults, totalResults) = getFinalResults();
 
 		// TODO: calculate results
@@ -145,11 +148,16 @@ contract AddNewTaskVote is Vote {
 		// voting should be finished
 		require(isFinished());
 
-		if(isYes()){
+		// this is not needed, because Microcompany.isCanDoAction() will check how THIS vote is 
+
+		//if(isYes()){
 			// cool! voting is over and the majority said YES -> so let's go!
 			IMicrocompany tmp = IMicrocompany(mc);
 			WeiTask wt = new WeiTask(mc,caption,desc,isPostpaid,isDonation,neededWei);
+
+			// as long as we call this method from WITHIN the vote contract 
+			// isCanDoAction() should return yes if voting finished with Yes result
 			tmp.addNewWeiTask(wt);
-		}
+		//}
 	}
 }

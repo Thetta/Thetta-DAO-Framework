@@ -21,7 +21,7 @@ contract Permissions {
 		++actionsByVotingCount;
 	}
 
-	function isCanDoByEmployee(address _a, string _permissionName) internal constant returns(bool){
+	function isCanDoByEmployee(string _permissionName) internal constant returns(bool){
 		for(uint i=0; i<actionsByEmployeeCount; ++i){
 			if(keccak256(_permissionName)==keccak256(byEmployee[i])){
 				return true;
@@ -30,7 +30,7 @@ contract Permissions {
 		return false;
 	}
 
-	function isCanDoByVoting(address _a, string _permissionName) internal constant returns(bool){
+	function isCanDoByVoting(string _permissionName) internal constant returns(bool){
 		for(uint i=0; i<actionsByVotingCount; ++i){
 			if(keccak256(_permissionName)==keccak256(byVoting[i])){
 				return true;
@@ -38,31 +38,17 @@ contract Permissions {
 		}
 		return false;
 	}
-
 }
 
-contract Employees {
-	// TODO: add, remove employees
-	mapping (uint=>address) employees;
-	uint employeesCount = 0;
-}
-
-/*
-// Add new task
-shouldBeEmployee("")										// can be any employee
-shouldBeEmployee("addNewTask")						// should be an employee with addNewTask permission 
-shouldHaveTokensOfType("Gov",51%)					// should have at least 51% gov tokens
-shouldHaveTokensOfName("DividendsToken",51%)		// should have at least 51% of 
-
-shouldBeVoted()
-*/
-
+// Different types of Members:
 // 1) Gov.token holder
 // 2) Employee 
+// 3) Any address
 
-// 1) Any
+// Conditions
 // 1) With a specific role -> permission (“addNewBounty”) 
 // 2) With reputation
+// 3) 
 
 // Examples:
 //		add new task -> voting
@@ -72,25 +58,25 @@ shouldBeVoted()
 //		
 //		start task -> any employee 
 //		
-contract Microcompany is IMicrocompany, Permissions, Employees {
+contract Microcompany is IMicrocompany, Permissions {
 	mapping (uint=>address) tasks;
 	uint tasksCount = 0;
 
 	mapping (uint=>address) votes;
 	uint votesCount = 0;
 
-	function addNewVote(address _vote) public {
-		votes[votesCount] = _vote;
-		votesCount++;
-	}
+	mapping (uint=>address) employees;
+	uint employeesCount = 0;
 
 	// Constructor
 	function Microcompany() public {
 		// this is a list of action that any employee can do without voting
+		addActionByEmployeesOnly("addNewVote");
 		addActionByEmployeesOnly("startTask");
 		addActionByEmployeesOnly("startBounty");
 
 		// this is a list of actions that require voting
+		addActionByVoting("addNewEmployee");
 		addActionByVoting("addNewTask");
 		addActionByVoting("issueTokens");
 	}
@@ -100,7 +86,15 @@ contract Microcompany is IMicrocompany, Permissions, Employees {
 		_; 
 	}
 
+	// TODO: get (enumerator) for votes
+	// TODO: get (enumerator) for tasks 
+
 // IMicrocompany:
+	function addNewVote(address _vote) public isCanDo("addNewVote"){
+		votes[votesCount] = _vote;
+		votesCount++;
+	}
+
 	// this should be called either directly or from the Vote...
 	function addNewWeiTask(address _task) public isCanDo("addNewTask"){
 		tasks[tasksCount] = _task;
@@ -122,6 +116,12 @@ contract Microcompany is IMicrocompany, Permissions, Employees {
 		}
 	}
 
+	// TODO: caller must make sure that he is not adding same employee twice
+	function addEmployee(address _newEmployee) public isCanDo("addNewEmployee") {
+		employees[employeesCount] = _newEmployee;
+		employeesCount++;
+	}
+
 	function isEmployee(address _a)public constant returns(bool){
 		for(uint i=0; i<employeesCount; ++i){
 			if(employees[i]==_a){
@@ -133,24 +133,24 @@ contract Microcompany is IMicrocompany, Permissions, Employees {
 
 	function isCanDoAction(address _a, string _permissionName) public constant returns(bool){
 		// 1 - check if employees can do that without voting?
-		if(isCanDoByEmployee(_a,_permissionName)){
-			return isEmployee(_a);
+		if(isCanDoByEmployee(_permissionName) && isEmployee(_a)){
+			return true;
 		}
 
 		// 2 - can do action only by starting new vote first?
-		if(isCanDoByVoting(_a,_permissionName)){
-			// only token holders with > 51% of gov.tokens can add new task immediately 
-			// otherwise -> start voting
-			if(isInMajority(_a)){
-				return true;
-			}
-
+		if(isCanDoByVoting(_permissionName)){
 			var (isVotingFound, votingResult) = getVotingResults(msg.sender);
 			if(isVotingFound){
 				return votingResult;
 			}
 			
-			// 3 - please start new voting first
+			// 3 - only token holders with > 51% of gov.tokens can add new task immediately 
+			// otherwise -> start voting
+			if(isInMajority(_a)){
+				return true;
+			}
+
+			// 4 - please start new voting first
 			return false;
 		}
 
@@ -160,8 +160,15 @@ contract Microcompany is IMicrocompany, Permissions, Employees {
 	}
 
 // Internal:
-	function getVotingResults(address _caller) internal constant returns (bool isVotingFound, bool votingResult){
-		// TODO:
+	function getVotingResults(address _vote) internal constant returns (bool isVotingFound, bool votingResult){
+		// scan all votings and search for the one that is finished 
+		for(uint i=0; i<votesCount; ++i){
+			if(votes[i]==_vote){
+				IVote vote = IVote(votes[i]);
+				return (true, 	vote.isFinished() && vote.isYes());
+			}
+		}
+
 		return (false,false);
 	}
 
