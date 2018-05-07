@@ -39,7 +39,6 @@ contract('BountyItem with ETH', function(accounts) {
                })
                */
                .then((res) => {
-                    //assert.equal(s,0);
                     assert.equal(res,true);
                     return bounty.project();
                })

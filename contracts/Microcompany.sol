@@ -21,7 +21,7 @@ contract Permissions {
 		++actionsByVotingCount;
 	}
 
-	function isCanDoByEmployee(string _permissionName) internal constant returns(bool){
+	function isCanDoByEmployee(string _permissionName) public constant returns(bool){
 		for(uint i=0; i<actionsByEmployeeCount; ++i){
 			if(keccak256(_permissionName)==keccak256(byEmployee[i])){
 				return true;
@@ -30,7 +30,7 @@ contract Permissions {
 		return false;
 	}
 
-	function isCanDoByVoting(string _permissionName) internal constant returns(bool){
+	function isCanDoByVoting(string _permissionName) public constant returns(bool){
 		for(uint i=0; i<actionsByVotingCount; ++i){
 			if(keccak256(_permissionName)==keccak256(byVoting[i])){
 				return true;
@@ -116,8 +116,8 @@ contract Microcompany is IMicrocompany, Permissions {
 		}
 	}
 
-	// TODO: caller must make sure that he is not adding same employee twice
-	function addEmployee(address _newEmployee) public isCanDo("addNewEmployee") {
+	// caller should make sure that he is not adding same employee twice
+	function addNewEmployee(address _newEmployee) public isCanDo("addNewEmployee") {
 		employees[employeesCount] = _newEmployee;
 		employeesCount++;
 	}
