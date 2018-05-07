@@ -1,6 +1,8 @@
 pragma solidity ^0.4.15;
 
 import "./IMicrocompany.sol";
+import "./tasks/Tasks.sol";
+import "./governance/Votes.sol";
 
 contract Permissions {
 	mapping (uint=>string) byEmployee;
@@ -18,6 +20,25 @@ contract Permissions {
 		byVoting[actionsByVotingCount] = _what;
 		++actionsByVotingCount;
 	}
+
+	function isCanDoByEmployee(address _a, string _permissionName) internal constant returns(bool){
+		for(uint i=0; i<actionsByEmployeeCount; ++i){
+			if(keccak256(_permissionName)==keccak256(byEmployee[i])){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	function isCanDoByVoting(address _a, string _permissionName) internal constant returns(bool){
+		for(uint i=0; i<actionsByVotingCount; ++i){
+			if(keccak256(_permissionName)==keccak256(byVoting[i])){
+				return true;
+			}
+		}
+		return false;
+	}
+
 }
 
 contract Employees {
@@ -52,6 +73,18 @@ shouldBeVoted()
 //		start task -> any employee 
 //		
 contract Microcompany is IMicrocompany, Permissions, Employees {
+	mapping (uint=>address) tasks;
+	uint tasksCount = 0;
+
+	mapping (uint=>address) votes;
+	uint votesCount = 0;
+
+	function addNewVote(address _vote) public {
+		votes[votesCount] = _vote;
+		votesCount++;
+	}
+
+	// Constructor
 	function Microcompany() public {
 		// this is a list of action that any employee can do without voting
 		addActionByEmployeesOnly("startTask");
@@ -62,22 +95,34 @@ contract Microcompany is IMicrocompany, Permissions, Employees {
 		addActionByVoting("issueTokens");
 	}
 
-// IMicrocompany:
-	function addNewWeiTask(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public {
-		/*
-		if(isCanDo(msg.sender, "addNewTask")){
-			// 1 - create new task 
-			WeiTask wt = new WeiTask(address(this), _caption, _desc, _isPostpaid, _isDonation, _neededWei);
-			tasks.addNewTask(wt);
-		}else{
-			// 2 - create new vote?
-			WeiTaskDecision wtd = new WeiTaskDecision(address(this), _caption, _desc, _isPostpaid, _isDonation, _neededWei);
-			decisions.addNewDecision(wtd);
-		}
-		*/
+   modifier isCanDo(string _what){
+		require(isCanDoAction(msg.sender,_what)); 
+		_; 
 	}
 
-	function isEmployee(address _a)public returns(bool){
+// IMicrocompany:
+	// this should be called either directly or from the Vote...
+	function addNewWeiTask(address _task) public isCanDo("addNewTask"){
+		tasks[tasksCount] = _task;
+		tasksCount++;
+	}
+
+	// experimental...
+	function addNewWeiTask2(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public {
+		if(isCanDoAction(msg.sender, "addNewTask")){
+			// 1 - create new task immediately
+			WeiTask wt = new WeiTask(address(this), _caption, _desc, _isPostpaid, _isDonation, _neededWei);
+			tasks[tasksCount] = wt;
+			tasksCount++;
+		}else{
+			// 2 - create new vote instead
+			AddNewTaskVote antv = new AddNewTaskVote(address(this), _caption, _desc, _isPostpaid, _isDonation, _neededWei);
+			votes[votesCount] = antv;
+			votesCount++;
+		}
+	}
+
+	function isEmployee(address _a)public constant returns(bool){
 		for(uint i=0; i<employeesCount; ++i){
 			if(employees[i]==_a){
 				return true;
@@ -86,10 +131,10 @@ contract Microcompany is IMicrocompany, Permissions, Employees {
 		return false;
 	}
 
-	function isCanDo(address _a, string _permissionName)public returns(bool){
+	function isCanDoAction(address _a, string _permissionName) public constant returns(bool){
 		// 1 - check if employees can do that without voting?
 		if(isCanDoByEmployee(_a,_permissionName)){
-			return true;
+			return isEmployee(_a);
 		}
 
 		// 2 - can do action only by starting new vote first?
@@ -115,31 +160,13 @@ contract Microcompany is IMicrocompany, Permissions, Employees {
 	}
 
 // Internal:
-	function isCanDoByEmployee(address _a, string _permissionName) internal returns(bool){
-		for(uint i=0; i<actionsByEmployeeCount; ++i){
-			if(keccak256(_permissionName)==keccak256(byEmployee[i])){
-				return isEmployee(_a);
-			}
-		}
-		return false;
-	}
-
-	function isCanDoByVoting(address _a, string _permissionName) internal returns(bool){
-		for(uint i=0; i<actionsByVotingCount; ++i){
-			if(keccak256(_permissionName)==keccak256(byVoting[i])){
-				return true;
-			}
-		}
-		return false;
-	}
-
-	function getVotingResults(address _caller) internal returns (bool isVotingFound, bool votingResult){
+	function getVotingResults(address _caller) internal constant returns (bool isVotingFound, bool votingResult){
 		// TODO:
 		return (false,false);
 	}
 
 	// only token holders with > 51% of gov.tokens can add new task immediately 
-	function isInMajority(address _a) internal returns(bool){
+	function isInMajority(address _a) internal constant returns(bool){
 		// TODO:
 		return false;
 	}

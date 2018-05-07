@@ -68,7 +68,7 @@ contract GenericTask is WeiAbsoluteExpense {
 
    modifier isCanDo(string _what){
 		IMicrocompany tmp = IMicrocompany(mc);
-		require(tmp.isCanDo(msg.sender,_what)); 
+		require(tmp.isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
 
