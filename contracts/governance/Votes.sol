@@ -3,8 +3,26 @@ pragma solidity ^0.4.15;
 import '../IMicrocompany.sol';
 import '../tasks/Tasks.sol';
 
-contract Vote {
+contract IVote {
+	function vote(bool _yes) public;
+
+	// This is for statistics
+	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults);
+	// Is voting finished?
+	function isFinished()public constant returns(bool);
+	// The result of voting
+	function isYes()public constant returns(bool);
+
+	//
+	// PLEASE override in your contract
+	function action()public;
+}
+
+contract Vote is IVote {
 	enum VoteType {
+		// 1 employee = 1 vote
+		EmployeesVote,
+
 		// 1 token = 1 vote
 		SimpleTokenVote,
 
@@ -18,6 +36,11 @@ contract Vote {
 	address public tokenAddress;
 
 ////////
+	mapping (uint=>address) employeesVoted;
+	uint employeesVotedCount = 0;
+	mapping (address=>bool) votes;
+
+////////
 	function Vote(address _mc, VoteType _voteType, uint _minutesToVote, address _tokenAddress){
 		mc = _mc;
 		voteType = _voteType;	
@@ -25,17 +48,21 @@ contract Vote {
 		tokenAddress = _tokenAddress;
 	}
 
+	// TODO: count
 	function vote(bool _yes) public{
-		// TODO: count
+		if(voteType==VoteType.EmployeesVote){
+			employee_vote(_yes);
+		}
 	}
 
 	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults){
-		// TODO:
-
+		if(voteType==VoteType.EmployeesVote){
+			return employee_getFinalResults();
+		}
 		return (0,0,0);
 	}
 
-	function isFinished()public returns(bool){
+	function isFinished()public constant returns(bool){
 		// TODO:
 		// 1 - if minutes elapsed
 
@@ -43,43 +70,56 @@ contract Vote {
 
 		return false;
 	}
-}
 
-contract EmployeesVote{
-	address mc;
-	uint public minutesToVote;
+	function isYes()public constant returns(bool){
+		var(yesResults, noResults, totalResults) = getFinalResults();
 
-////////
-	function EmployeesVote(address _mc, uint _minutesToVote){
-		mc = _mc;
-		minutesToVote = _minutesToVote;
+		// TODO: calculate results
+
+		return false;
 	}
 
-	function vote(bool _yes) public{
-		// TODO: remember who voted yes or no
+////// EMPLOYEE type:
+	// remember who voted yes or no
+	function employee_vote(bool _yes) internal {
+		IMicrocompany tmp = IMicrocompany(mc);
+		require(tmp.isEmployee(msg.sender));
+
+		// voter can vote again and change the vote!
+		votes[msg.sender] = _yes;
+
+		employeesVoted[employeesVotedCount] = msg.sender;
+		employeesVotedCount++;
 	}
 
-	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults){
-		// TODO: count 
+	function employee_getFinalResults() internal constant returns(uint yesResults, uint noResults, uint totalResults){
+		IMicrocompany tmp = IMicrocompany(mc);
+		yesResults = 0;
+		noResults = 0;
+		totalResults = 0;
+
 		// employees could be fired or added IN THE MIDDLE of the voting 
 		//
 		// so here we should iterate again over all microcompany employees and check if they voted yes or no 
-		// each employee has 1 voice
-
-		return (0,0,0);
-	}
-
-	function isFinished()public returns(bool){
-		// TODO:
-		// 1 - if minutes elapsed
-
-		// 2 - if voted enough participants
-
-		return false;
+		// each employee has 1 vote 
+		for(uint i=0; i<employeesVotedCount; ++i){
+			address e = employeesVoted[i];
+			if(tmp.isEmployee(e)){
+				// count this vote
+				if(votes[e]){
+					yesResults++;
+				}else{
+					noResults++;
+				}
+				totalResults++;
+			}
+		}
 	}
 }
 
-contract AddNewTaskVote is EmployeesVote {
+////////////////////// 
+//////////////////////
+contract AddNewTaskVote is Vote {
 	address mc;
   	string caption;
 	string desc;
@@ -89,8 +129,8 @@ contract AddNewTaskVote is EmployeesVote {
 
 	function AddNewTaskVote(address _mc,
 									string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) 
-		// each employee has 1 voice
-		EmployeesVote(_mc, 24 *60)
+		// each employee has 1 vote 
+		Vote(_mc, VoteType.EmployeesVote, 24 *60, 0x0)
 		public 
 	{
 		mc = _mc;
@@ -101,9 +141,12 @@ contract AddNewTaskVote is EmployeesVote {
 		neededWei = _neededWei;
 	}
 
-	function action(bool _results) internal {
-		if(_results){
-			// please add me to the list!
+	function action() public {
+		// voting should be finished
+		require(isFinished());
+
+		if(isYes()){
+			// cool! voting is over and the majority said YES -> so let's go!
 			IMicrocompany tmp = IMicrocompany(mc);
 			WeiTask wt = new WeiTask(mc,caption,desc,isPostpaid,isDonation,neededWei);
 			tmp.addNewWeiTask(wt);

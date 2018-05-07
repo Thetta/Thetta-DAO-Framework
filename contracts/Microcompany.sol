@@ -168,6 +168,9 @@ contract Microcompany is IMicrocompany, Permissions, Employees {
 	// only token holders with > 51% of gov.tokens can add new task immediately 
 	function isInMajority(address _a) internal constant returns(bool){
 		// TODO:
+		// if we have many tokens -> we should scan all and check if have more than 51% of governance type 
+
+		// TODO:
 		return false;
 	}
 }
