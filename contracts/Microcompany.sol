@@ -197,8 +197,6 @@ contract Microcompany is IMicrocompany {
 			return false;
 		}
 
-		// in case _permissionName is not handled...
-		revert();
 		return false;
 	}
 

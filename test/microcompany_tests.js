@@ -21,6 +21,7 @@ global.contract('Microcompany', (accounts) => {
 
 	const creator = accounts[0];
 	const employee1 = accounts[1];
+	const outsider = accounts[2];
 
 	global.beforeEach(async() => {
 		mcStorage = await MicrocompanyStorage.new({gas: 10000000, from: creator});
@@ -29,7 +30,7 @@ global.contract('Microcompany', (accounts) => {
 		mcInstance = await Microcompany.new(mcStorageAddress,{gas: 10000000, from: creator});
 	});
 
-	global.it('should return correct permissions',async() => {
+	global.it('should set everything correctly',async() => {
 		const isCan = await mcStorage.isCanDoByEmployee("addNewVote");
 		global.assert.strictEqual(isCan,true,'Permission should be set correctly');
 
@@ -41,6 +42,38 @@ global.contract('Microcompany', (accounts) => {
 
 		const isEmployeeByDefault = await mcInstance.isEmployee(creator);
 		global.assert.strictEqual(isEmployeeByDefault,true,'Creator should be a first employee');
+	});
+
+	global.it('should return correct permissions for an outsider',async() => {
+		const isCanDo1 = await mcInstance.isCanDoAction(outsider,"addNewVote");
+		const isCanDo2 = await mcInstance.isCanDoAction(outsider,"startTask");
+		const isCanDo3 = await mcInstance.isCanDoAction(outsider,"startBounty");
+		global.assert.strictEqual(isCanDo1,false,'Outsider should not be able to do that ');
+		global.assert.strictEqual(isCanDo2,false,'Outsider should not be able to do that ');
+		global.assert.strictEqual(isCanDo3,false,'Outsider should not be able to do that ');
+
+		const isCanDo4 = await mcInstance.isCanDoAction(outsider,"addNewEmployee");
+		const isCanDo5 = await mcInstance.isCanDoAction(outsider,"addNewTask");
+		const isCanDo6 = await mcInstance.isCanDoAction(outsider,"issueTokens");
+		global.assert.strictEqual(isCanDo4,false,'Outsider should not be able to do that because he is in majority');
+		global.assert.strictEqual(isCanDo5,false,'Outsider should not be able to do that because he is in majority');
+		global.assert.strictEqual(isCanDo6,false,'Outsider should not be able to do that because he is in majority');
+	});
+
+	global.it('should return correct permissions for creator',async() => {
+		const isCanDo1 = await mcInstance.isCanDoAction(creator,"addNewVote");
+		const isCanDo2 = await mcInstance.isCanDoAction(creator,"startTask");
+		const isCanDo3 = await mcInstance.isCanDoAction(creator,"startBounty");
+		global.assert.strictEqual(isCanDo1,true,'Creator should be able to do that ');
+		global.assert.strictEqual(isCanDo2,true,'Creator should be able to do that ');
+		global.assert.strictEqual(isCanDo3,true,'Creator should be able to do that ');
+
+		const isCanDo4 = await mcInstance.isCanDoAction(creator,"addNewEmployee");
+		const isCanDo5 = await mcInstance.isCanDoAction(creator,"addNewTask");
+		const isCanDo6 = await mcInstance.isCanDoAction(creator,"issueTokens");
+		global.assert.strictEqual(isCanDo4,true,'Creator should be able to do that because he is in majority');
+		global.assert.strictEqual(isCanDo5,true,'Creator should be able to do that because he is in majority');
+		global.assert.strictEqual(isCanDo6,true,'Creator should be able to do that because he is in majority');
 	});
 
 	global.it('should not add new vote if not employee',async() => {
