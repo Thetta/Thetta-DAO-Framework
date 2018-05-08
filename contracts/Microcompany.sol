@@ -61,18 +61,33 @@ contract MicrocompanyStorage {
 		return byVoting[_permissionName];
 	}
 
+// Tasks:
 	// TODO: public
 	function addNewWeiTask(address _task) public {
 		tasks[tasksCount] = _task;
 		tasksCount++;
 	}
 
+// Vote:
 	// TODO: public
 	function addNewVote(address _vote) public {
 		votes[votesCount] = _vote;
 		votesCount++;
 	}
 
+	function getVotingResults(address _vote) public constant returns (bool isVotingFound, bool votingResult){
+		// scan all votings and search for the one that is finished 
+		for(uint i=0; i<votesCount; ++i){
+			if(votes[i]==_vote){
+				IVote vote = IVote(votes[i]);
+				return (true, 	vote.isFinished() && vote.isYes());
+			}
+		}
+
+		return (false,false);
+	}
+
+// Employees:
 	// TODO: public
 	function addNewEmployee(address _newEmployee) public {
 		employees[employeesCount] = _newEmployee;
@@ -88,40 +103,33 @@ contract MicrocompanyStorage {
 		return false;
 	}
 
-	function getVotingResults(address _vote) public constant returns (bool isVotingFound, bool votingResult){
-		// scan all votings and search for the one that is finished 
-		for(uint i=0; i<votesCount; ++i){
-			if(votes[i]==_vote){
-				IVote vote = IVote(votes[i]);
-				return (true, 	vote.isFinished() && vote.isYes());
-			}
-		}
-
-		return (false,false);
-	}
+	// TODO: get (enumerator) for votes
+	// TODO: get (enumerator) for tasks 
 }
 
 contract Microcompany is IMicrocompany {
 	MicrocompanyStorage store;
-	StdMicrocompanyToken stdToken = new StdMicrocompanyToken();
+	StdMicrocompanyToken stdToken;
 
 	// Constructor
 	function Microcompany(MicrocompanyStorage _store) public {
+		// TODO: symbol, name, etc...
+		stdToken = new StdMicrocompanyToken("StdToken","STDT",18);
 		store = _store;
 
+		// 2 - set permissions
 		// this is a list of action that any employee can do without voting
 		store.addActionByEmployeesOnly("addNewVote");
-
 		store.addActionByEmployeesOnly("startTask");
 		store.addActionByEmployeesOnly("startBounty");
-
 		// this is a list of actions that require voting
 		store.addActionByVoting("addNewEmployee");
 		store.addActionByVoting("addNewTask");
 		store.addActionByVoting("issueTokens");
 
-		// issue all 100% tokens to the creator
-		issueTokensInternal(msg.sender,1000);
+		// 3 - do other preparations
+		issueTokensInternal(msg.sender,1000);		// issue all 100% tokens to the creator
+		store.addNewEmployee(msg.sender);			// add creator as first employee	
 	}
 
    modifier isCanDo(string _what){
@@ -129,17 +137,9 @@ contract Microcompany is IMicrocompany {
 		_; 
 	}
 
-	// TODO: get (enumerator) for votes
-	// TODO: get (enumerator) for tasks 
-
 // IMicrocompany:
-	function issueTokens(address _to, uint amount){
+	function issueTokens(address _to, uint amount)public isCanDo("issueTokens"){
 		// TODO
-	}
-
-	// TODO:
-	function issueTokensInternal(address _to, uint _amount) internal {
-		//stdToken.mint(_to, _amount);
 	}
 
 	//
@@ -202,14 +202,17 @@ contract Microcompany is IMicrocompany {
 		return false;
 	}
 
-// Internal:
+// Public (for tests)
 	// only token holders with > 51% of gov.tokens can add new task immediately 
 	function isInMajority(address _a) public constant returns(bool){
 		// TODO:
 		// if we have many tokens -> we should scan all and check if have more than 51% of governance type 
 
-		// TODO:
-		//return(stdToken.balanceOf(_a)>=stdToken.totalSupply()/2);
-		return false;
+		return(stdToken.balanceOf(_a)>=stdToken.totalSupply()/2);
+	}
+
+// Internal:
+	function issueTokensInternal(address _to, uint _amount) internal {
+		stdToken.mint(_to, _amount);
 	}
 }
