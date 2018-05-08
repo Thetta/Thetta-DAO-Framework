@@ -11,11 +11,13 @@ contract FakeAccount {
 }
 
 contract TestMicrocompany {
-	function testPermissions() public {
-		StdMicrocompanyToken stdToken = new StdMicrocompanyToken();
 
-		Microcompany mc = new Microcompany(0);
-		Assert.isTrue(mc.isCanDoByEmployee("addNewVote"),"addNewTask should be added");
+	function testPermissions() public {
+		MicrocompanyStorage store = new MicrocompanyStorage();
+		Microcompany mc = new Microcompany(store);
+
+		Assert.isTrue(store.isCanDoByEmployee("addNewVote"),"addNewTask should be added");
+
 		// TODO: add more test
 	}
 
