@@ -5,7 +5,7 @@ import "./IMicrocompany.sol";
 import "./tasks/Tasks.sol";
 import "./governance/Votes.sol";
 
-//import "./token/MicrocompanyTokens.sol";
+import "./token/MicrocompanyTokens.sol";
 
 // Different types of Members:
 // 1) Gov.token holder
@@ -35,29 +35,29 @@ contract MicrocompanyStorage {
 	mapping (uint=>address) employees;
 	uint employeesCount = 0;
 
-	mapping (bytes32=>bool) byEmployee;
-	mapping (bytes32=>bool) byVoting;
+	mapping (string=>bool) byEmployee;
+	mapping (string=>bool) byVoting;
 
 	function MicrocompanyStorage() public {
-		//stdToken = _stdToken;
+
 	}
 
 // Permissions:
 	// TODO: public
-	function addActionByEmployeesOnly(bytes32 _what) public {
+	function addActionByEmployeesOnly(string _what) public {
 		byEmployee[_what] = true;
 	}
 
 	// TODO: public
-	function addActionByVoting(bytes32 _what) public {
+	function addActionByVoting(string _what) public {
 		byVoting[_what] = true;
 	}
 
-	function isCanDoByEmployee(bytes32 _permissionName) public constant returns(bool){
+	function isCanDoByEmployee(string _permissionName) public constant returns(bool){
 		return byEmployee[_permissionName];
 	}
 
-	function isCanDoByVoting(bytes32 _permissionName) public constant returns(bool){
+	function isCanDoByVoting(string _permissionName) public constant returns(bool){
 		return byVoting[_permissionName];
 	}
 
@@ -103,23 +103,25 @@ contract MicrocompanyStorage {
 
 contract Microcompany is IMicrocompany {
 	MicrocompanyStorage store;
+	StdMicrocompanyToken stdToken = new StdMicrocompanyToken();
 
 	// Constructor
 	function Microcompany(MicrocompanyStorage _store) public {
 		store = _store;
 
 		// this is a list of action that any employee can do without voting
-		store.addActionByEmployeesOnly(keccak256("addNewVote"));
-		store.addActionByEmployeesOnly(keccak256("startTask"));
-		store.addActionByEmployeesOnly(keccak256("startBounty"));
+		store.addActionByEmployeesOnly("addNewVote");
+
+		store.addActionByEmployeesOnly("startTask");
+		store.addActionByEmployeesOnly("startBounty");
 
 		// this is a list of actions that require voting
-		//store.addActionByVoting(keccak256("addNewEmployee"));
-		//store.addActionByVoting(keccak256("addNewTask"));
-		//store.addActionByVoting(keccak256("issueTokens"));
+		store.addActionByVoting("addNewEmployee");
+		store.addActionByVoting("addNewTask");
+		store.addActionByVoting("issueTokens");
 
 		// issue all 100% tokens to the creator
-		//issueTokensInternal(msg.sender,1000);
+		issueTokensInternal(msg.sender,1000);
 	}
 
    modifier isCanDo(string _what){
@@ -137,7 +139,7 @@ contract Microcompany is IMicrocompany {
 
 	// TODO:
 	function issueTokensInternal(address _to, uint _amount) internal {
-		//StdMicrocompanyToken(stdToken).mint(_to, _amount);
+		//stdToken.mint(_to, _amount);
 	}
 
 	//
@@ -174,12 +176,12 @@ contract Microcompany is IMicrocompany {
 
 	function isCanDoAction(address _a, string _permissionName) public constant returns(bool){
 		// 1 - check if employees can do that without voting?
-		if(store.isCanDoByEmployee(keccak256(_permissionName)) && isEmployee(_a)){
+		if(store.isCanDoByEmployee(_permissionName) && isEmployee(_a)){
 			return true;
 		}
 
 		// 2 - can do action only by starting new vote first?
-		if(store.isCanDoByVoting(keccak256(_permissionName))){
+		if(store.isCanDoByVoting(_permissionName)){
 			var (isVotingFound, votingResult) = store.getVotingResults(msg.sender);
 			if(isVotingFound){
 				return votingResult;
