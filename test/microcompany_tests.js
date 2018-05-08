@@ -1,19 +1,9 @@
 var Microcompany = artifacts.require("./Microcompany");
 var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
-var AddNewTaskVote = artifacts.require("./AddNewTaskVote");
+var VoteAddNewTask = artifacts.require("./VoteAddNewTask");
+var AutoActionCaller = artifacts.require("./AutoActionCaller");
 
 var CheckExceptions = require('./utils/checkexceptions');
-
-// 2 - Functions
-deployMc = () => {
-     var mc;
-
-     return Microcompany.new(0x0,{gas: 10000000}).then((out) => {
-          mc = out;
-     }).then(() => {
-          return Promise.resolve(mc);
-     });
-}
 
 global.contract('Microcompany', (accounts) => {
 	let mcStorage;
@@ -85,10 +75,20 @@ global.contract('Microcompany', (accounts) => {
 	});
 
 	global.it('should add new vote by creator',async() => {
-		let vote1 = await AddNewTaskVote.new(mcInstance.address,"SampleTaskCaption","SomeTaskDescription",false,false,100,
-			{gas: 10000000, from: creator}
+		let vote1 = await VoteAddNewTask.new(mcInstance.address,"SampleTaskCaption","SomeTaskDescription",false,false,100,
+			{from: creator}
 		);
 		await mcInstance.addNewVote(vote1.address);
+	});
+
+	global.it('should require voting to add new employee by creator',async() => {
+		// TODO:
+	});
+
+	global.it('should require voting to issue more tokens',async() => {
+		// TODO:
+		let aac = await AutoActionCaller.new(mcInstance.address, {from: creator});
+		await aac.issueTokensAuto(employee1,1000,{from: creator});
 	});
 
 });

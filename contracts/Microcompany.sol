@@ -132,41 +132,33 @@ contract Microcompany is IMicrocompany {
 		store.addNewEmployee(msg.sender);			// add creator as first employee	
 	}
 
+	// just an informative modifier
+   modifier byVotingOnly(){
+		_; 
+	}
+
    modifier isCanDo(string _what){
 		require(isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
 
 // IMicrocompany:
-	function issueTokens(address _to, uint amount)public isCanDo("issueTokens"){
-		// TODO
-	}
-
 	//
 	function addNewVote(address _vote) public isCanDo("addNewVote"){
 		store.addNewVote(_vote);
 	}
 
 	// this should be called either directly or from the Vote...
-	function addNewWeiTask(address _task) public isCanDo("addNewTask"){
+	function addNewWeiTask(address _task) public isCanDo("addNewTask") byVotingOnly {
 		store.addNewWeiTask(_task);
 	}
 
-	// experimental...
-	function addNewWeiTask2(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public {
-		if(isCanDoAction(msg.sender, "addNewTask")){
-			// 1 - create new task immediately
-			WeiTask wt = new WeiTask(address(this), _caption, _desc, _isPostpaid, _isDonation, _neededWei);
-			store.addNewWeiTask(wt);
-		}else{
-			// 2 - create new vote instead
-			AddNewTaskVote antv = new AddNewTaskVote(address(this), _caption, _desc, _isPostpaid, _isDonation, _neededWei);
-			store.addNewVote(antv);
-		}
+	function issueTokens(address _to, uint amount)public isCanDo("issueTokens") byVotingOnly {
+		// TODO
 	}
 
 	// caller should make sure that he is not adding same employee twice
-	function addNewEmployee(address _newEmployee) public isCanDo("addNewEmployee") {
+	function addNewEmployee(address _newEmployee) public isCanDo("addNewEmployee") byVotingOnly {
 		store.addNewEmployee(_newEmployee);
 	}
 
@@ -193,7 +185,6 @@ contract Microcompany is IMicrocompany {
 				return true;
 			}
 
-			// 4 - please start new voting first
 			return false;
 		}
 
@@ -212,5 +203,38 @@ contract Microcompany is IMicrocompany {
 // Internal:
 	function issueTokensInternal(address _to, uint _amount) internal {
 		stdToken.mint(_to, _amount);
+	}
+}
+
+// TODO:
+contract AutoActionCaller {
+	Microcompany mc;
+
+	function AutoActionCaller(Microcompany _mc)public{
+		mc = _mc;
+	}
+
+	// experimental...
+	function addNewWeiTaskAuto(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public {
+		if(mc.isCanDoAction(msg.sender, "addNewTask")){
+			// 1 - create new task immediately
+			WeiTask wt = new WeiTask(mc, _caption, _desc, _isPostpaid, _isDonation, _neededWei);
+			mc.addNewWeiTask(wt);
+		}else{
+			// 2 - create new vote instead
+			VoteAddNewTask vant = new VoteAddNewTask(mc, _caption, _desc, _isPostpaid, _isDonation, _neededWei);
+			mc.addNewVote(vant);
+		}
+	}
+
+	function issueTokensAuto(address _to, uint _amount) public {
+		//if(mc.isCanDoAction(msg.sender, "issueTokens")){
+			// 1 - create new task immediately
+		//	mc.issueTokens(_to, _amount);
+		//}else{
+			// 2 - create new vote instead
+			VoteIssueTokens vit = new VoteIssueTokens(mc, _to, _amount);
+			mc.addNewVote(vit);
+		//}
 	}
 }

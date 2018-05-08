@@ -122,7 +122,7 @@ contract Vote is IVote {
 
 ////////////////////// 
 //////////////////////
-contract AddNewTaskVote is Vote {
+contract VoteAddNewTask is Vote {
 	address mc;
   	string caption;
 	string desc;
@@ -130,8 +130,9 @@ contract AddNewTaskVote is Vote {
   	bool isDonation; 
 	uint neededWei;
 
-	function AddNewTaskVote(address _mc,
+	function VoteAddNewTask(address _mc,
 									string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) 
+		// TODO: remove default parameters, let Vote to read data in its constructor
 		// each employee has 1 vote 
 		Vote(_mc, VoteType.EmployeesVote, 24 *60, 0x0)
 		public 
@@ -159,5 +160,32 @@ contract AddNewTaskVote is Vote {
 			// isCanDoAction() should return yes if voting finished with Yes result
 			tmp.addNewWeiTask(wt);
 		//}
+	}
+}
+
+contract VoteIssueTokens is Vote {
+	address mc;
+	address to;
+	uint amount;
+
+	function VoteIssueTokens(address _mc, address _to, uint _amount)
+		// TODO: remove default parameters, let Vote to read data in its constructor
+		// each employee has 1 vote 
+		Vote(_mc, VoteType.EmployeesVote, 24 *60, 0x0)
+		public 
+	{
+		mc = _mc;
+		to = _to; 
+		amount = _amount;
+	}
+
+	function action() public {
+		// voting should be finished
+		require(isFinished());
+
+		// as long as we call this method from WITHIN the vote contract 
+		// isCanDoAction() should return yes if voting finished with Yes result
+		IMicrocompany tmp = IMicrocompany(mc);
+		tmp.issueTokens(to, amount);
 	}
 }
