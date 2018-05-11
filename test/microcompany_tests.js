@@ -2,6 +2,8 @@ var Microcompany = artifacts.require("./Microcompany");
 var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
 var VoteAddNewTask = artifacts.require("./VoteAddNewTask");
 var AutoActionCaller = artifacts.require("./AutoActionCaller");
+var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
+var Vote = artifacts.require("./Vote");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
@@ -12,13 +14,12 @@ global.contract('Microcompany', (accounts) => {
 
 	const creator = accounts[0];
 	const employee1 = accounts[1];
-	const outsider = accounts[2];
+	const employee2 = accounts[2];
+	const outsider = accounts[3];
 
 	global.beforeEach(async() => {
 		mcStorage = await MicrocompanyStorage.new({gas: 10000000, from: creator});
-		const mcStorageAddress = mcStorage.address;
-
-		mcInstance = await Microcompany.new(mcStorageAddress,{gas: 10000000, from: creator});
+		mcInstance = await Microcompany.new(mcStorage.address,{gas: 10000000, from: creator});
 		aacInstance = await AutoActionCaller.new(mcInstance.address, {from: creator});
 		mcInstance.setAutoActionCallerAddress(aacInstance.address);
 	});
@@ -79,12 +80,39 @@ global.contract('Microcompany', (accounts) => {
 	});
 
 	global.it('should add new vote by creator',async() => {
-		let vote1 = await VoteAddNewTask.new(mcInstance.address,"SampleTaskCaption","SomeTaskDescription",false,false,100,
+		let vote1 = await VoteAddNewTask.new(mcInstance.address,creator,"SampleTaskCaption","SomeTaskDescription",false,false,100,
 			{from: creator}
 		);
 		await mcInstance.addNewVote(vote1.address);
 		const votesCount1 = await mcStorage.votesCount();
 		global.assert.equal(votesCount1,1,'Vote should be added');
+	});
+
+	global.it('should issue tokens to employee1 and employee2',async() => {
+		await mcInstance.issueTokens(employee1,1000,{from: creator});
+		await mcInstance.issueTokens(employee2,1000,{from: creator});
+
+		const isMajority1 = await mcInstance.isInMajority(creator);
+		global.assert.strictEqual(isMajority1,false,'Creator should NOT be in majority now');
+
+		const isMajority2 = await mcInstance.isInMajority(employee1);
+		global.assert.strictEqual(isMajority2,false,'employee1 is now in majority');
+
+		const isMajority3 = await mcInstance.isInMajority(employee2);
+		global.assert.strictEqual(isMajority3,false,'employee1 is now in majority');
+
+		// CHECK this .at syntax!!!
+		var ta = await mcInstance.stdToken();
+		const smt = await StdMicrocompanyToken.at(ta);
+
+		const balance1 = await smt.balanceOf(creator);
+		global.assert.equal(balance1,1000,'initial balance');
+
+		const balance2 = await smt.balanceOf(employee1);
+		global.assert.equal(balance2,1000,'employee1 balance');
+		
+		const balance3 = await smt.balanceOf(employee2);
+		global.assert.equal(balance3,1000,'employee2 balance');
 	});
 
 	global.it('should require voting to issue more tokens',async() => {
@@ -102,23 +130,30 @@ global.contract('Microcompany', (accounts) => {
 		const isCanDo2 = await mcInstance.isCanDoAction(employee1,"addNewVote");
 		global.assert.strictEqual(isCanDo2,true,'employee1 can add new vote');
 
-		await aacInstance.issueTokensAuto(employee1,1000,{from: employee1});
-
 		// new vote should be added 
+		await aacInstance.issueTokensAuto(employee1,1000,{from: employee1});
 		const votesCount2 = await mcStorage.votesCount();
 		global.assert.equal(votesCount2,1,'New vote should be added'); 
-	});
 
-	global.it('should issue tokens to employee1',async() => {
-		await mcInstance.issueTokens(employee1,2000,{from: creator});
+		// check the voting data
+		const voteAddress = await mcStorage.getVoteAtIndex(0);
+		const vote = await Vote.at(voteAddress);
+		const d = await vote.getData();
+		global.assert.equal(d[0],'IssueTokens','vote data should be correct'); 
+		//console.log('D:');
+		//console.log(d);
+		global.assert.strictEqual(await vote.isFinished(),false,'Voting is still not finished');
+		global.assert.strictEqual(await vote.isYes(),false,'Voting is still not finished');
 
-		const isMajority1 = await mcInstance.isInMajority(creator);
-		global.assert.strictEqual(isMajority1,false,'Creator should NOT be in majority now');
+		// should not call action if not finished
+		await CheckExceptions.checkContractThrows(vote.action.sendTransaction,
+			[{ from: creator}],
+			'Should not allow to call action');
 
-		const isMajority2 = await mcInstance.isInMajority(employee1);
-		global.assert.strictEqual(isMajority2,true,'employee1 is now in majority');
-
-		// TODO:
+		const r = await vote.getFinalResults();
+		global.assert.equal(r[0],1,'yes');
+		global.assert.equal(r[1],0,'no');
+		global.assert.equal(r[2],1,'total');
 	});
 
 });

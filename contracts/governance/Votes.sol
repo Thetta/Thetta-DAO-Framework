@@ -6,6 +6,7 @@ import '../tasks/Tasks.sol';
 contract IVote {
 	function vote(bool _yes) public;
 
+// These should be implemented in the less abstract contracts like Vote, etc:
 	// This is for statistics
 	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults);
 	// Is voting finished?
@@ -13,8 +14,8 @@ contract IVote {
 	// The result of voting
 	function isYes()public constant returns(bool);
 
-	//
-	// PLEASE override in your contract
+// PLEASE implement these in your contract:
+	function getData()constant public returns(string outType, string desc, string comment);
 	function action()public;
 }
 
@@ -41,17 +42,28 @@ contract Vote is IVote {
 	mapping (address=>bool) votes;
 
 ////////
-	function Vote(address _mc, VoteType _voteType, uint _minutesToVote, address _tokenAddress){
+	function Vote(address _mc, address _origin, VoteType _voteType, uint _minutesToVote, address _tokenAddress){
 		mc = _mc;
 		voteType = _voteType;	
 		minutesToVote = _minutesToVote;
 		tokenAddress = _tokenAddress;
+
+		if(voteType==VoteType.EmployeesVote){
+			// first vote 
+			IMicrocompany tmp = IMicrocompany(mc);
+			require(tmp.isEmployee(_origin));
+			internalEmployeeVote(_origin, true);
+		}else{
+			// TODO: initial vote for other types...
+		}
 	}
 
 	// TODO: count
 	function vote(bool _yes) public{
 		if(voteType==VoteType.EmployeesVote){
-			employee_vote(_yes);
+			IMicrocompany tmp = IMicrocompany(mc);
+			require(tmp.isEmployee(msg.sender));
+			internalEmployeeVote(msg.sender, _yes);
 		}
 	}
 
@@ -84,14 +96,11 @@ contract Vote is IVote {
 
 ////// EMPLOYEE type:
 	// remember who voted yes or no
-	function employee_vote(bool _yes) internal {
-		IMicrocompany tmp = IMicrocompany(mc);
-		require(tmp.isEmployee(msg.sender));
-
+	function internalEmployeeVote(address _who, bool _yes) internal {
 		// voter can vote again and change the vote!
-		votes[msg.sender] = _yes;
+		votes[_who] = _yes;
 
-		employeesVoted[employeesVotedCount] = msg.sender;
+		employeesVoted[employeesVotedCount] = _who;
 		employeesVotedCount++;
 	}
 
@@ -130,11 +139,11 @@ contract VoteAddNewTask is Vote {
   	bool isDonation; 
 	uint neededWei;
 
-	function VoteAddNewTask(address _mc,
+	function VoteAddNewTask(address _mc, address _origin,
 									string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) 
 		// TODO: remove default parameters, let Vote to read data in its constructor
 		// each employee has 1 vote 
-		Vote(_mc, VoteType.EmployeesVote, 24 *60, 0x0)
+		Vote(_mc, _origin, VoteType.EmployeesVote, 24 *60, 0x0)
 		public 
 	{
 		mc = _mc;
@@ -143,6 +152,11 @@ contract VoteAddNewTask is Vote {
 		isPostpaid = _isPostpaid;
 		isDonation = _isDonation;
 		neededWei = _neededWei;
+	}
+
+// IVote implementation
+	function getData()constant public returns(string outType, string desc, string comment){
+		return ("AddNewTask","TODO","");
 	}
 
 	function action() public {
@@ -168,15 +182,22 @@ contract VoteIssueTokens is Vote {
 	address to;
 	uint amount;
 
-	function VoteIssueTokens(address _mc, address _to, uint _amount)
+	function VoteIssueTokens(address _mc, address _origin,
+									 address _to, uint _amount)
 		// TODO: remove default parameters, let Vote to read data in its constructor
 		// each employee has 1 vote 
-		Vote(_mc, VoteType.EmployeesVote, 24 *60, 0x0)
+		Vote(_mc, _origin, VoteType.EmployeesVote, 24 *60, 0x0)
 		public 
 	{
 		mc = _mc;
 		to = _to; 
 		amount = _amount;
+	}
+
+// IVote implementation
+	function getData()constant public returns(string outType, string desc, string comment){
+		// TODO:
+		return ("IssueTokens","Issue XXX tokens to YYY address","");
 	}
 
 	function action() public {

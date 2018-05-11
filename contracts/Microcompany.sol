@@ -76,7 +76,7 @@ contract MicrocompanyStorage {
 		votesCount++;
 	}
 
-	function getVoteAtIndex(uint _i)public returns(address){
+	function getVoteAtIndex(uint _i)public constant returns(address){
 		require(_i<votesCount);
 		return votes[_i];
 	}
@@ -114,8 +114,8 @@ contract MicrocompanyStorage {
 }
 
 contract Microcompany is IMicrocompany, Ownable {
+	StdMicrocompanyToken public stdToken;
 	MicrocompanyStorage store;
-	StdMicrocompanyToken stdToken;
 	address autoActionCallerAddress = 0x0;
 
 	// Constructor
@@ -229,26 +229,30 @@ contract AutoActionCaller {
 	}
 
 	// experimental...
-	function addNewWeiTaskAuto(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public {
+	function addNewWeiTaskAuto(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public returns(address voteOut){
 		if(mc.isCanDoAction(msg.sender, "addNewTask")){
 			// 1 - create new task immediately
 			WeiTask wt = new WeiTask(mc, _caption, _desc, _isPostpaid, _isDonation, _neededWei);
 			mc.addNewWeiTask(wt);
+			return 0x0;
 		}else{
 			// 2 - create new vote instead
-			VoteAddNewTask vant = new VoteAddNewTask(mc, _caption, _desc, _isPostpaid, _isDonation, _neededWei);
+			VoteAddNewTask vant = new VoteAddNewTask(mc, msg.sender, _caption, _desc, _isPostpaid, _isDonation, _neededWei);
 			mc.addNewVote(vant);
+			return vant;
 		}
 	}
 
-	function issueTokensAuto(address _to, uint _amount) public {
+	function issueTokensAuto(address _to, uint _amount) public returns(address voteOut){
 		if(mc.isCanDoAction(msg.sender, "issueTokens")){
 			// 1 - create new task immediately
 			mc.issueTokens(_to, _amount);
+			return 0x0;
 		}else{
 			// 2 - create new vote instead
-			VoteIssueTokens vit = new VoteIssueTokens(mc, _to, _amount);
+			VoteIssueTokens vit = new VoteIssueTokens(mc, msg.sender, _to, _amount);
 			mc.addNewVote(vit);		// msg.sender will be AutoActionCaller that has no rights to add votes
+			return vit;
 		}
 	}
 }
