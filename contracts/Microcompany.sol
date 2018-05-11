@@ -237,6 +237,7 @@ contract AutoActionCaller {
 			return 0x0;
 		}else{
 			// 2 - create new vote instead
+			// we pass msg.sender (just like tx.origin) 
 			VoteAddNewTask vant = new VoteAddNewTask(mc, msg.sender, _caption, _desc, _isPostpaid, _isDonation, _neededWei);
 			mc.addNewVote(vant);
 			return vant;
@@ -250,8 +251,9 @@ contract AutoActionCaller {
 			return 0x0;
 		}else{
 			// 2 - create new vote instead
+			// we pass msg.sender (just like tx.origin) 
 			VoteIssueTokens vit = new VoteIssueTokens(mc, msg.sender, _to, _amount);
-			mc.addNewVote(vit);		// msg.sender will be AutoActionCaller that has no rights to add votes
+			mc.addNewVote(vit);		
 			return vit;
 		}
 	}

@@ -42,7 +42,9 @@ contract Vote is IVote {
 	mapping (address=>bool) votes;
 
 ////////
-	function Vote(address _mc, address _origin, VoteType _voteType, uint _minutesToVote, address _tokenAddress){
+	// we can use _origin instead of tx.origin
+	function Vote(address _mc, address _origin, 
+					  VoteType _voteType, uint _minutesToVote, address _tokenAddress){
 		mc = _mc;
 		voteType = _voteType;	
 		minutesToVote = _minutesToVote;

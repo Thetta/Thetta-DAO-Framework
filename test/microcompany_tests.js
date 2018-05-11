@@ -137,24 +137,32 @@ global.contract('Microcompany', (accounts) => {
 
 		// check the voting data
 		const voteAddress = await mcStorage.getVoteAtIndex(0);
-		const vote = await Vote.at(voteAddress);
-		const d = await vote.getData();
+		const voting = await Vote.at(voteAddress);
+		const d = await voting.getData();
 		global.assert.equal(d[0],'IssueTokens','vote data should be correct'); 
-		//console.log('D:');
-		//console.log(d);
-		global.assert.strictEqual(await vote.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await vote.isYes(),false,'Voting is still not finished');
+		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+
+		const r = await voting.getFinalResults();
+		global.assert.equal(r[0],1,'yes');			// 1 already voted (who started the voting)
+		global.assert.equal(r[1],0,'no');
+		global.assert.equal(r[2],1,'total');
 
 		// should not call action if not finished
-		await CheckExceptions.checkContractThrows(vote.action.sendTransaction,
+		await CheckExceptions.checkContractThrows(voting.action.sendTransaction,
 			[{ from: creator}],
 			'Should not allow to call action');
 
-		const r = await vote.getFinalResults();
-		global.assert.equal(r[0],1,'yes');
-		global.assert.equal(r[1],0,'no');
-		global.assert.equal(r[2],1,'total');
-	});
+		// vote again
+		await voting.vote(1,{from:employee1});
+		const r2 = await voting.getFinalResults();
+		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
+		global.assert.equal(r2[1],0,'no');
+		global.assert.equal(r2[2],2,'total');
 
+		// TODO: calculate voting results...
+		global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
+		global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
+	});
 });
 
