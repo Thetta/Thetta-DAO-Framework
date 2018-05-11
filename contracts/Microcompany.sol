@@ -242,15 +242,13 @@ contract AutoActionCaller {
 	}
 
 	function issueTokensAuto(address _to, uint _amount) public {
-		//if(mc.isCanDoAction(msg.sender, "issueTokens")){
+		if(mc.isCanDoAction(msg.sender, "issueTokens")){
 			// 1 - create new task immediately
-		//	mc.issueTokens(_to, _amount);
-		//}else{
-
+			mc.issueTokens(_to, _amount);
+		}else{
 			// 2 - create new vote instead
 			VoteIssueTokens vit = new VoteIssueTokens(mc, _to, _amount);
 			mc.addNewVote(vit);		// msg.sender will be AutoActionCaller that has no rights to add votes
-
-		//}
+		}
 	}
 }

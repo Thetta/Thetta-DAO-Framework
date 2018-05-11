@@ -7,7 +7,9 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "coverage": "scripts/coverage.sh",
+    "test": "scripts/test.sh",
+    "coverage2": "./node_modules/.bin/solidity-coverage"
   },
   "repository": {
     "type": "git",
@@ -24,7 +26,7 @@
     "babel-polyfill": "^6.26.0",
     "babel-register": "^6.26.0",
     "ethereumjs-testrpc": "^6.0.3",
-    "solidity-coverage": "^0.4.2",
+    "solidity-coverage": "^0.4.15",
     "truffle": "^4.1.8",
     "zeppelin-solidity": "^1.9.0"
   }

@@ -24,8 +24,9 @@ global.contract('Microcompany', (accounts) => {
 	});
 
 	global.it('should set everything correctly',async() => {
+		///
 		const isCan = await mcStorage.isCanDoByEmployee("addNewVote");
-		global.assert.strictEqual(isCan,true,'Permission should be set correctly');
+		global.assert.equal(isCan,true,'Permission should be set correctly');
 
 		const isMajority = await mcInstance.isInMajority(creator);
 		global.assert.strictEqual(isMajority,true,'Creator should be in majority');
@@ -82,20 +83,29 @@ global.contract('Microcompany', (accounts) => {
 			{from: creator}
 		);
 		await mcInstance.addNewVote(vote1.address);
-	});
-
-	global.it('should require voting to add new employee by creator',async() => {
-		// TODO:
+		const votesCount1 = await mcStorage.votesCount();
+		global.assert.equal(votesCount1,1,'Vote should be added');
 	});
 
 	global.it('should require voting to issue more tokens',async() => {
 		const votesCount1 = await mcStorage.votesCount();
 		global.assert.equal(votesCount1,0,'No votes should be added');
-		await aacInstance.issueTokensAuto(employee1,1000,{from: creator});
+
+		// add new employee1
+		await mcInstance.addNewEmployee(employee1,{from: creator});
+		const isEmployeeAdded = await mcInstance.isEmployee(employee1);
+		global.assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
+
+		// employee1 is NOT in the majority
+		const isCanDo1 = await mcInstance.isCanDoAction(employee1,"issueTokens");
+		global.assert.strictEqual(isCanDo1,false,'employee1 is NOT in the majority, so can issue token only with voting');
+		const isCanDo2 = await mcInstance.isCanDoAction(employee1,"addNewVote");
+		global.assert.strictEqual(isCanDo2,true,'employee1 can add new vote');
+
+		await aacInstance.issueTokensAuto(employee1,1000,{from: employee1});
 
 		// new vote should be added 
 		const votesCount2 = await mcStorage.votesCount();
-		console.log('VC2: ', votesCount2.toString(10));
 		global.assert.equal(votesCount2,1,'New vote should be added'); 
 	});
 });
