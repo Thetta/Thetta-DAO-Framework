@@ -108,5 +108,18 @@ global.contract('Microcompany', (accounts) => {
 		const votesCount2 = await mcStorage.votesCount();
 		global.assert.equal(votesCount2,1,'New vote should be added'); 
 	});
+
+	global.it('should issue tokens to employee1',async() => {
+		await mcInstance.issueTokens(employee1,2000,{from: creator});
+
+		const isMajority1 = await mcInstance.isInMajority(creator);
+		global.assert.strictEqual(isMajority1,false,'Creator should NOT be in majority now');
+
+		const isMajority2 = await mcInstance.isInMajority(employee1);
+		global.assert.strictEqual(isMajority2,true,'employee1 is now in majority');
+
+		// TODO:
+	});
+
 });
 

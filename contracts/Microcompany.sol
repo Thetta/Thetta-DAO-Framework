@@ -167,8 +167,8 @@ contract Microcompany is IMicrocompany, Ownable {
 		store.addNewWeiTask(_task);
 	}
 
-	function issueTokens(address _to, uint amount)public isCanDo("issueTokens") byVotingOnly {
-		// TODO
+	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") byVotingOnly {
+		issueTokensInternal(_to, _amount);
 	}
 
 	// caller should make sure that he is not adding same employee twice
