@@ -76,6 +76,7 @@ contract GenericTask is WeiAbsoluteExpense {
 	function GenericTask(address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
 		WeiAbsoluteExpense(_neededWei) 
 	{
+		require( !(!_isPostpaid&&_isDonation) );
 		mc = _mc;
 		caption = _caption;
 		desc = _desc;
@@ -113,7 +114,7 @@ contract GenericTask is WeiAbsoluteExpense {
 		return state; 
 	}
 
-	function cancell() public onlyOwner {
+	function cancel() public onlyOwner {
 		require(getCurrentState()==State.Init || getCurrentState()==State.PrePaid);
 		if(getCurrentState()==State.PrePaid){
 			// return money to 'moneySource'
