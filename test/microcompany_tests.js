@@ -8,6 +8,7 @@ var CheckExceptions = require('./utils/checkexceptions');
 global.contract('Microcompany', (accounts) => {
 	let mcStorage;
 	let mcInstance;
+	let aacInstance;
 
 	const creator = accounts[0];
 	const employee1 = accounts[1];
@@ -18,6 +19,8 @@ global.contract('Microcompany', (accounts) => {
 		const mcStorageAddress = mcStorage.address;
 
 		mcInstance = await Microcompany.new(mcStorageAddress,{gas: 10000000, from: creator});
+		aacInstance = await AutoActionCaller.new(mcInstance.address, {from: creator});
+		mcInstance.setAutoActionCallerAddress(aacInstance.address);
 	});
 
 	global.it('should set everything correctly',async() => {
@@ -86,10 +89,14 @@ global.contract('Microcompany', (accounts) => {
 	});
 
 	global.it('should require voting to issue more tokens',async() => {
-		// TODO:
-		let aac = await AutoActionCaller.new(mcInstance.address, {from: creator});
-		await aac.issueTokensAuto(employee1,1000,{from: creator});
-	});
+		const votesCount1 = await mcStorage.votesCount();
+		global.assert.equal(votesCount1,0,'No votes should be added');
+		await aacInstance.issueTokensAuto(employee1,1000,{from: creator});
 
+		// new vote should be added 
+		const votesCount2 = await mcStorage.votesCount();
+		console.log('VC2: ', votesCount2.toString(10));
+		global.assert.equal(votesCount2,1,'New vote should be added'); 
+	});
 });
 

@@ -4,8 +4,9 @@ import "./IMicrocompany.sol";
 
 import "./tasks/Tasks.sol";
 import "./governance/Votes.sol";
-
 import "./token/MicrocompanyTokens.sol";
+
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 // Different types of Members:
 // 1) Gov.token holder
@@ -27,13 +28,13 @@ import "./token/MicrocompanyTokens.sol";
 //		
 contract MicrocompanyStorage {
 	mapping (uint=>address) tasks;
-	uint tasksCount = 0;
+	uint public tasksCount = 0;
 
 	mapping (uint=>address) votes;
-	uint votesCount = 0;
+	uint public votesCount = 0;
 
 	mapping (uint=>address) employees;
-	uint employeesCount = 0;
+	uint public employeesCount = 0;
 
 	mapping (string=>bool) byEmployee;
 	mapping (string=>bool) byVoting;
@@ -75,6 +76,11 @@ contract MicrocompanyStorage {
 		votesCount++;
 	}
 
+	function getVoteAtIndex(uint _i)public returns(address){
+		require(_i<votesCount);
+		return votes[_i];
+	}
+
 	function getVotingResults(address _vote) public constant returns (bool isVotingFound, bool votingResult){
 		// scan all votings and search for the one that is finished 
 		for(uint i=0; i<votesCount; ++i){
@@ -107,9 +113,10 @@ contract MicrocompanyStorage {
 	// TODO: get (enumerator) for tasks 
 }
 
-contract Microcompany is IMicrocompany {
+contract Microcompany is IMicrocompany, Ownable {
 	MicrocompanyStorage store;
 	StdMicrocompanyToken stdToken;
+	address autoActionCallerAddress = 0x0;
 
 	// Constructor
 	function Microcompany(MicrocompanyStorage _store) public {
@@ -132,6 +139,10 @@ contract Microcompany is IMicrocompany {
 		store.addNewEmployee(msg.sender);			// add creator as first employee	
 	}
 
+	function setAutoActionCallerAddress(address _a) public onlyOwner {
+		autoActionCallerAddress = _a;
+	}
+
 	// just an informative modifier
    modifier byVotingOnly(){
 		_; 
@@ -144,7 +155,10 @@ contract Microcompany is IMicrocompany {
 
 // IMicrocompany:
 	//
-	function addNewVote(address _vote) public isCanDo("addNewVote"){
+	function addNewVote(address _vote) public { 
+		bool isCan = isCanDoAction(msg.sender,"addNewVote") || (msg.sender==autoActionCallerAddress);
+		require(isCan);
+
 		store.addNewVote(_vote);
 	}
 
@@ -232,9 +246,11 @@ contract AutoActionCaller {
 			// 1 - create new task immediately
 		//	mc.issueTokens(_to, _amount);
 		//}else{
+
 			// 2 - create new vote instead
 			VoteIssueTokens vit = new VoteIssueTokens(mc, _to, _amount);
-			mc.addNewVote(vit);
+			mc.addNewVote(vit);		// msg.sender will be AutoActionCaller that has no rights to add votes
+
 		//}
 	}
 }
