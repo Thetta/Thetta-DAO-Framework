@@ -158,7 +158,7 @@ contract VoteAddNewTask is Vote {
 	}
 
 // IVote implementation
-	function getData()constant public returns(string outType, string desc, string comment){
+	function getData()constant public returns(string _outType, string _desc, string _comment){
 		return ("AddNewTask","TODO","");
 	}
 

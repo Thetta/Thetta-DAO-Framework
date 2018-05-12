@@ -5,6 +5,7 @@ import "./IMicrocompany.sol";
 import "./tasks/Tasks.sol";
 import "./governance/Votes.sol";
 import "./token/MicrocompanyTokens.sol";
+import "./moneyflow/Moneyflow.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -62,13 +63,6 @@ contract MicrocompanyStorage {
 		return byVoting[_permissionName];
 	}
 
-// Tasks:
-	// TODO: public
-	function addNewWeiTask(address _task) public {
-		tasks[tasksCount] = _task;
-		tasksCount++;
-	}
-
 // Vote:
 	// TODO: public
 	function addNewVote(address _vote) public {
@@ -115,11 +109,13 @@ contract MicrocompanyStorage {
 
 contract Microcompany is IMicrocompany, Ownable {
 	StdMicrocompanyToken public stdToken;
+	//MoneyFlow public moneyflow;
+
 	MicrocompanyStorage store;
 	address autoActionCallerAddress = 0x0;
 
 	// Constructor
-	function Microcompany(MicrocompanyStorage _store, uint _tokensAmountToIssue) public {
+	function Microcompany(MicrocompanyStorage _store, /*MoneyFlow _moneyflow,*/ uint _tokensAmountToIssue) public {
 		// TODO: symbol, name, etc...
 		stdToken = new StdMicrocompanyToken("StdToken","STDT",18);
 		store = _store;
@@ -131,6 +127,7 @@ contract Microcompany is IMicrocompany, Ownable {
 		store.addActionByEmployeesOnly("startBounty");
 		// this is a list of actions that require voting
 		store.addActionByVoting("addNewEmployee");
+		store.addActionByVoting("removeEmployee");
 		store.addActionByVoting("addNewTask");
 		store.addActionByVoting("issueTokens");
 
@@ -168,7 +165,7 @@ contract Microcompany is IMicrocompany, Ownable {
 
 	// this should be called either directly or from the Vote...
 	function addNewWeiTask(address _task) public isCanDo("addNewTask") byVotingOnly {
-		store.addNewWeiTask(_task);
+		// TODO:
 	}
 
 	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") byVotingOnly {
@@ -182,6 +179,10 @@ contract Microcompany is IMicrocompany, Ownable {
 	// caller should make sure that he is not adding same employee twice
 	function addNewEmployee(address _newEmployee) public isCanDo("addNewEmployee") byVotingOnly {
 		store.addNewEmployee(_newEmployee);
+	}
+
+	function removeEmployee(address _employee) public isCanDo("removeEmployee") byVotingOnly {
+		// TODO:
 	}
 
 	function isEmployee(address _a)public constant returns(bool){

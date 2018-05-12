@@ -29,12 +29,6 @@ global.contract('Microcompany', (accounts) => {
 		///
 		const isCan = await mcStorage.isCanDoByEmployee("addNewVote");
 		global.assert.equal(isCan,true,'Permission should be set correctly');
-	});
-
-	global.it('should set everything correctly',async() => {
-		///
-		const isCan = await mcStorage.isCanDoByEmployee("addNewVote");
-		global.assert.equal(isCan,true,'Permission should be set correctly');
 
 		const isMajority = await mcInstance.isInMajority(creator);
 		global.assert.strictEqual(isMajority,true,'Creator should be in majority');
