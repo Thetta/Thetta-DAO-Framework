@@ -1,0 +1,30 @@
+EthereumJS TestRPC v6.0.3 (ganache-core: 2.0.2)
+/usr/local/lib/node_modules/ethereumjs-testrpc/build/cli.node.js:74143
+var Module;if(!Module)Module=(typeof Module!=="undefined"?Module:null)||{};var moduleOverrides={};for(var key in Module){if(Module.hasOwnProperty(key)){moduleOverrides[key]=Module[key]}}var ENVIRONMENT_IS_WEB=false;var ENVIRONMENT_IS_WORKER=false;var ENVIRONMENT_IS_NODE=false;var ENVIRONMENT_IS_SHELL=false;if(Module["ENVIRONMENT"]){if(Module["ENVIRONMENT"]==="WEB"){ENVIRONMENT_IS_WEB=true}else if(Module["ENVIRONMENT"]==="WORKER"){ENVIRONMENT_IS_WORKER=true}else if(Module["ENVIRONMENT"]==="NODE"){ENVIRONMENT_IS_NODE=true}else if(Module["ENVIRONMENT"]==="SHELL"){ENVIRONMENT_IS_SHELL=true}else{throw new Error("The provided Module['ENVIRONMENT'] value is not valid. It must be one of: WEB|WORKER|NODE|SHELL.")}}else{ENVIRONMENT_IS_WEB=typeof window==="object";ENVIRONMENT_IS_WORKER=typeof importScripts==="function";ENVIRONMENT_IS_NODE=typeof process==="object"&&"function"==="function"&&!ENVIRONMENT_IS_WEB&&!ENVIRONMENT_IS_WORKER;ENVIRONMENT_IS_
+
+Error: listen EADDRINUSE :::8989
+    at Object._errnoException (util.js:1022:11)
+    at _exceptionWithHostPort (util.js:1044:20)
+    at Server.setupListenHandle [as _listen2] (net.js:1367:14)
+    at listenInCluster (net.js:1408:12)
+    at Server.listen (net.js:1492:7)
+    at Server.server.listen (/usr/local/lib/node_modules/ethereumjs-testrpc/build/cli.node.js:106030:17)
+    at Object.<anonymous> (/usr/local/lib/node_modules/ethereumjs-testrpc/build/cli.node.js:50244:8)
+    at __webpack_require__ (/usr/local/lib/node_modules/ethereumjs-testrpc/build/cli.node.js:21:30)
+    at /usr/local/lib/node_modules/ethereumjs-testrpc/build/cli.node.js:64:18
+    at Object.<anonymous> (/usr/local/lib/node_modules/ethereumjs-testrpc/build/cli.node.js:67:10)
+EthereumJS TestRPC v6.0.3 (ganache-core: 2.0.2)
+/usr/local/lib/node_modules/ethereumjs-testrpc/build/cli.node.js:74143
+var Module;if(!Module)Module=(typeof Module!=="undefined"?Module:null)||{};var moduleOverrides={};for(var key in Module){if(Module.hasOwnProperty(key)){moduleOverrides[key]=Module[key]}}var ENVIRONMENT_IS_WEB=false;var ENVIRONMENT_IS_WORKER=false;var ENVIRONMENT_IS_NODE=false;var ENVIRONMENT_IS_SHELL=false;if(Module["ENVIRONMENT"]){if(Module["ENVIRONMENT"]==="WEB"){ENVIRONMENT_IS_WEB=true}else if(Module["ENVIRONMENT"]==="WORKER"){ENVIRONMENT_IS_WORKER=true}else if(Module["ENVIRONMENT"]==="NODE"){ENVIRONMENT_IS_NODE=true}else if(Module["ENVIRONMENT"]==="SHELL"){ENVIRONMENT_IS_SHELL=true}else{throw new Error("The provided Module['ENVIRONMENT'] value is not valid. It must be one of: WEB|WORKER|NODE|SHELL.")}}else{ENVIRONMENT_IS_WEB=typeof window==="object";ENVIRONMENT_IS_WORKER=typeof importScripts==="function";ENVIRONMENT_IS_NODE=typeof process==="object"&&"function"==="function"&&!ENVIRONMENT_IS_WEB&&!ENVIRONMENT_IS_WORKER;ENVIRONMENT_IS_
+
+Error: listen EADDRINUSE :::8989
+    at Object._errnoException (util.js:1022:11)
+    at _exceptionWithHostPort (util.js:1044:20)
+    at Server.setupListenHandle [as _listen2] (net.js:1367:14)
+    at listenInCluster (net.js:1408:12)
+    at Server.listen (net.js:1492:7)
+    at Server.server.listen (/usr/local/lib/node_modules/ethereumjs-testrpc/build/cli.node.js:106030:17)
+    at Object.<anonymous> (/usr/local/lib/node_modules/ethereumjs-testrpc/build/cli.node.js:50244:8)
+    at __webpack_require__ (/usr/local/lib/node_modules/ethereumjs-testrpc/build/cli.node.js:21:30)
+    at /usr/local/lib/node_modules/ethereumjs-testrpc/build/cli.node.js:64:18
+    at Object.<anonymous> (/usr/local/lib/node_modules/ethereumjs-testrpc/build/cli.node.js:67:10)

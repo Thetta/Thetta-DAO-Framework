@@ -58,7 +58,7 @@ contract WeiAbsoluteExpense is IWeiReceiver, IWeiDestination, Ownable {
 
 	// receive money one time only
 	function processFunds(uint _currentFlow) public payable{
-		require(!isNeedsMoney());
+		require(isNeedsMoney());
 		require(neededWei!=0);		// should be set
 
 		// DO NOT SEND LESS!
