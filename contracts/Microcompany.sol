@@ -119,7 +119,7 @@ contract Microcompany is IMicrocompany, Ownable {
 	address autoActionCallerAddress = 0x0;
 
 	// Constructor
-	function Microcompany(MicrocompanyStorage _store) public {
+	function Microcompany(MicrocompanyStorage _store, uint _tokensAmountToIssue) public {
 		// TODO: symbol, name, etc...
 		stdToken = new StdMicrocompanyToken("StdToken","STDT",18);
 		store = _store;
@@ -135,7 +135,11 @@ contract Microcompany is IMicrocompany, Ownable {
 		store.addActionByVoting("issueTokens");
 
 		// 3 - do other preparations
-		issueTokensInternal(msg.sender,1000);		// issue all 100% tokens to the creator
+		// issue all 100% tokens to the creator
+		require(0!=_tokensAmountToIssue);			// we need to issue at least 1 token in order for the creator to be 
+																// a majority
+		issueTokensInternal(msg.sender, _tokensAmountToIssue);		
+
 		store.addNewEmployee(msg.sender);			// add creator as first employee	
 	}
 
@@ -169,6 +173,10 @@ contract Microcompany is IMicrocompany, Ownable {
 
 	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") byVotingOnly {
 		issueTokensInternal(_to, _amount);
+	}
+
+	function getTokenInfo() public constant returns(address _out){
+		return address(stdToken);
 	}
 
 	// caller should make sure that he is not adding same employee twice

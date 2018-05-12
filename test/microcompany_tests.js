@@ -19,7 +19,8 @@ global.contract('Microcompany', (accounts) => {
 
 	global.beforeEach(async() => {
 		mcStorage = await MicrocompanyStorage.new({gas: 10000000, from: creator});
-		mcInstance = await Microcompany.new(mcStorage.address,{gas: 10000000, from: creator});
+		// issue 1000 tokens
+		mcInstance = await Microcompany.new(mcStorage.address,1000,{gas: 10000000, from: creator});
 		aacInstance = await AutoActionCaller.new(mcInstance.address, {from: creator});
 		mcInstance.setAutoActionCallerAddress(aacInstance.address);
 	});
@@ -180,6 +181,7 @@ global.contract('Microcompany', (accounts) => {
 		const balance2 = await smt.balanceOf(employee1);
 		global.assert.equal(balance2,1000,'employee1 balance should be updated');
 
+		// TODO:
 		// should not call action again 
 		/*
 		await CheckExceptions.checkContractThrows(voting.action.sendTransaction,

@@ -166,8 +166,9 @@ contract VoteAddNewTask is Vote {
 		// voting should be finished
 		require(isFinished());
 
-		// this is not needed, because Microcompany.isCanDoAction() will check how THIS vote is 
+		// TODO: should not be callable again!!!
 
+		// this is not needed, because Microcompany.isCanDoAction() will check how THIS vote is 
 		//if(isYes()){
 			// cool! voting is over and the majority said YES -> so let's go!
 			IMicrocompany tmp = IMicrocompany(mc);
@@ -204,6 +205,8 @@ contract VoteIssueTokens is Vote {
 	function action() public {
 		// voting should be finished
 		require(isFinished());
+
+		// TODO: should not be callable again!!!
 
 		// as long as we call this method from WITHIN the vote contract 
 		// isCanDoAction() should return yes if voting finished with Yes result
