@@ -13,8 +13,12 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 contract WeiFund is IWeiReceiver, IWeiDestination, Ownable {
 	address public output;
 
+	function WeiFund(address _output) public {
+		output = _output;
+	}
+
 	// Process funds, send it to the Output
-	function flush() public onlyOwner{
+	function flush() public onlyOwner {
 		// TODO: check for vulnerabilities
 		output.transfer(msg.value);
 	}
