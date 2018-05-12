@@ -31,7 +31,7 @@ contract Vote is IVote {
 		QuadraticTokenVote
 	}
 
-	address mc;
+	IMicrocompany mc;
 	VoteType public voteType;
 	uint public minutesToVote;
 	address public tokenAddress;
@@ -45,15 +45,14 @@ contract Vote is IVote {
 	// we can use _origin instead of tx.origin
 	function Vote(address _mc, address _origin, 
 					  VoteType _voteType, uint _minutesToVote, address _tokenAddress){
-		mc = _mc;
+		mc = IMicrocompany(_mc);
 		voteType = _voteType;	
 		minutesToVote = _minutesToVote;
 		tokenAddress = _tokenAddress;
 
 		if(voteType==VoteType.EmployeesVote){
 			// first vote 
-			IMicrocompany tmp = IMicrocompany(mc);
-			require(tmp.isEmployee(_origin));
+			require(mc.isEmployee(_origin));
 			internalEmployeeVote(_origin, true);
 		}else{
 			// TODO: initial vote for other types...
@@ -63,8 +62,7 @@ contract Vote is IVote {
 	// TODO: count
 	function vote(bool _yes) public{
 		if(voteType==VoteType.EmployeesVote){
-			IMicrocompany tmp = IMicrocompany(mc);
-			require(tmp.isEmployee(msg.sender));
+			require(mc.isEmployee(msg.sender));
 			internalEmployeeVote(msg.sender, _yes);
 		}
 	}
@@ -76,15 +74,6 @@ contract Vote is IVote {
 		return (0,0,0);
 	}
 
-	function isFinished()public constant returns(bool){
-		// TODO:
-		// 1 - if minutes elapsed
-
-		// 2 - if voted enough participants
-
-		return false;
-	}
-
 	function isYes()public constant returns(bool){
 		// WARNING: this line is commented, so will not check if voting is finished!
 		//if(!isFinished(){return false;}
@@ -92,9 +81,24 @@ contract Vote is IVote {
 		var(yesResults, noResults, totalResults) = getFinalResults();
 
 		// TODO: calculate results
-
-		return false;
+		// TODO: JUST FOR DEBUGGGGG!!!
+		return (yesResults > totalResults/2) && (totalResults>1);
 	}
+
+	// TODO: out of GAS!!!
+	function isFinished() public constant returns(bool){
+		// 1 - if minutes elapsed
+
+		// 2 - if voted enough participants
+		//if((mc.getEmployeesCount()/2) < employeesVotedCount){
+	   //		return true;
+		//}
+
+		// TODO: JUST FOR DEBUGGGGG!!!
+		var(yesResults, noResults, totalResults) = getFinalResults();
+		return (totalResults>1);
+	}
+
 
 ////// EMPLOYEE type:
 	// remember who voted yes or no
@@ -107,7 +111,6 @@ contract Vote is IVote {
 	}
 
 	function employee_getFinalResults() internal constant returns(uint yesResults, uint noResults, uint totalResults){
-		IMicrocompany tmp = IMicrocompany(mc);
 		yesResults = 0;
 		noResults = 0;
 		totalResults = 0;
@@ -118,7 +121,7 @@ contract Vote is IVote {
 		// each employee has 1 vote 
 		for(uint i=0; i<employeesVotedCount; ++i){
 			address e = employeesVoted[i];
-			if(tmp.isEmployee(e)){
+			if(mc.isEmployee(e)){
 				// count this vote
 				if(votes[e]){
 					yesResults++;
@@ -134,7 +137,6 @@ contract Vote is IVote {
 ////////////////////// 
 //////////////////////
 contract VoteAddNewTask is Vote {
-	address mc;
   	string caption;
 	string desc;
   	bool isPostpaid;
@@ -148,7 +150,6 @@ contract VoteAddNewTask is Vote {
 		Vote(_mc, _origin, VoteType.EmployeesVote, 24 *60, 0x0)
 		public 
 	{
-		mc = _mc;
 		caption = _caption;
 		desc = _desc;
 		isPostpaid = _isPostpaid;
@@ -180,7 +181,6 @@ contract VoteAddNewTask is Vote {
 }
 
 contract VoteIssueTokens is Vote {
-	address mc;
 	address to;
 	uint amount;
 
@@ -191,7 +191,6 @@ contract VoteIssueTokens is Vote {
 		Vote(_mc, _origin, VoteType.EmployeesVote, 24 *60, 0x0)
 		public 
 	{
-		mc = _mc;
 		to = _to; 
 		amount = _amount;
 	}

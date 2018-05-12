@@ -4,6 +4,7 @@ contract IMicrocompany {
 	// Employee
 	function addNewEmployee(address _newEmployee) public;
 	function isEmployee(address _a)public constant returns(bool);
+	function getEmployeesCount()public constant returns(uint);
 
 	// Tokens
 	// TODO: what type of tokens?

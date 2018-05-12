@@ -28,6 +28,12 @@ global.contract('Microcompany', (accounts) => {
 		///
 		const isCan = await mcStorage.isCanDoByEmployee("addNewVote");
 		global.assert.equal(isCan,true,'Permission should be set correctly');
+	});
+
+	global.it('should set everything correctly',async() => {
+		///
+		const isCan = await mcStorage.isCanDoByEmployee("addNewVote");
+		global.assert.equal(isCan,true,'Permission should be set correctly');
 
 		const isMajority = await mcInstance.isInMajority(creator);
 		global.assert.strictEqual(isMajority,true,'Creator should be in majority');
@@ -116,6 +122,11 @@ global.contract('Microcompany', (accounts) => {
 	});
 
 	global.it('should require voting to issue more tokens',async() => {
+		var ta = await mcInstance.stdToken();
+		const smt = await StdMicrocompanyToken.at(ta);
+		const balance1 = await smt.balanceOf(employee1);
+		global.assert.equal(balance1,0,'initial employee1 balance');
+
 		const votesCount1 = await mcStorage.votesCount();
 		global.assert.equal(votesCount1,0,'No votes should be added');
 
@@ -160,9 +171,21 @@ global.contract('Microcompany', (accounts) => {
 		global.assert.equal(r2[1],0,'no');
 		global.assert.equal(r2[2],2,'total');
 
-		// TODO: calculate voting results...
+		// get voting results again
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
+
+		// now should execute the action (issue tokens)
+		await voting.action({from:employee1});		// can be called from any account
+		const balance2 = await smt.balanceOf(employee1);
+		global.assert.equal(balance2,1000,'employee1 balance should be updated');
+
+		// should not call action again 
+		/*
+		await CheckExceptions.checkContractThrows(voting.action.sendTransaction,
+			[{ from: creator}],
+			'Should not call action again');
+		*/
 	});
 });
 

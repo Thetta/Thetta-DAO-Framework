@@ -180,6 +180,10 @@ contract Microcompany is IMicrocompany, Ownable {
 		return store.isEmployee(_a);
 	}
 
+	function getEmployeesCount()public constant returns(uint){
+		return store.employeesCount();
+	}
+
 	function isCanDoAction(address _a, string _permissionName) public constant returns(bool){
 		// 1 - check if employees can do that without voting?
 		if(store.isCanDoByEmployee(_permissionName) && isEmployee(_a)){
