@@ -78,7 +78,11 @@ contract GenericTask is WeiAbsoluteExpense {
 	{
 		// Donation should be prepaid
 		if(_isDonation) {
-			require(!isPostpaid); 
+			require(_isPostpaid); 
+		}
+
+		if(!_isPostpaid){
+			require(_neededWei>0);
 		}
 
 		mc = _mc;
