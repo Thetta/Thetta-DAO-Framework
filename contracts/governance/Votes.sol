@@ -136,25 +136,18 @@ contract Vote is IVote {
 
 ////////////////////// 
 //////////////////////
+/*
 contract VoteAddNewTask is Vote {
-  	string caption;
-	string desc;
-  	bool isPostpaid;
-  	bool isDonation; 
-	uint neededWei;
+	WeiTask wt;
 
-	function VoteAddNewTask(address _mc, address _origin,
-									string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) 
+	function VoteAddNewTask(address _mc, address _moneyflow, address _origin,
+									WeiTask _wt) 
 		// TODO: remove default parameters, let Vote to read data in its constructor
 		// each employee has 1 vote 
 		Vote(_mc, _origin, VoteType.EmployeesVote, 24 *60, 0x0)
 		public 
 	{
-		caption = _caption;
-		desc = _desc;
-		isPostpaid = _isPostpaid;
-		isDonation = _isDonation;
-		neededWei = _neededWei;
+		wt = _wt;
 	}
 
 // IVote implementation
@@ -170,16 +163,16 @@ contract VoteAddNewTask is Vote {
 
 		// this is not needed, because Microcompany.isCanDoAction() will check how THIS vote is 
 		//if(isYes()){
-			// cool! voting is over and the majority said YES -> so let's go!
-			IMicrocompany tmp = IMicrocompany(mc);
-			WeiTask wt = new WeiTask(mc,caption,desc,isPostpaid,isDonation,neededWei);
 
-			// as long as we call this method from WITHIN the vote contract 
-			// isCanDoAction() should return yes if voting finished with Yes result
-			tmp.addNewWeiTask(wt);
-		//}
+		// cool! voting is over and the majority said YES -> so let's go!
+		IMicrocompany tmp = IMicrocompany(mc);
+
+		// as long as we call this method from WITHIN the vote contract 
+		// isCanDoAction() should return yes if voting finished with Yes result
+		tmp.addNewWeiTask(wt);
 	}
 }
+*/
 
 contract VoteIssueTokens is Vote {
 	address to;

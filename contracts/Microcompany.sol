@@ -120,6 +120,8 @@ contract Microcompany is IMicrocompany, Ownable {
 		stdToken = new StdMicrocompanyToken("StdToken","STDT",18);
 		store = _store;
 
+		// TODO: this can be moved to the Bylaws 
+
 		// 2 - set permissions
 		// this is a list of action that any employee can do without voting
 		store.addActionByEmployeesOnly("addNewVote");
@@ -164,9 +166,11 @@ contract Microcompany is IMicrocompany, Ownable {
 	}
 
 	// this should be called either directly or from the Vote...
+	/*
 	function addNewWeiTask(address _task) public isCanDo("addNewTask") byVotingOnly {
 		// TODO:
 	}
+   */
 
 	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") byVotingOnly {
 		issueTokensInternal(_to, _amount);
@@ -242,20 +246,24 @@ contract AutoActionCaller {
 	}
 
 	// experimental...
+	// TODO: 
+	/*
 	function addNewWeiTaskAuto(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public returns(address voteOut){
+		WeiTask wt = new WeiTask(mc, _caption, _desc, _isPostpaid, _isDonation, _neededWei);
+
 		if(mc.isCanDoAction(msg.sender, "addNewTask")){
-			// 1 - create new task immediately
-			WeiTask wt = new WeiTask(mc, _caption, _desc, _isPostpaid, _isDonation, _neededWei);
+			// 1 - add new task immediately
 			mc.addNewWeiTask(wt);
 			return 0x0;
 		}else{
 			// 2 - create new vote instead
 			// we pass msg.sender (just like tx.origin) 
-			VoteAddNewTask vant = new VoteAddNewTask(mc, msg.sender, _caption, _desc, _isPostpaid, _isDonation, _neededWei);
+			VoteAddNewTask vant = new VoteAddNewTask(mc, msg.sender, wt);
 			mc.addNewVote(vant);
 			return vant;
 		}
 	}
+	*/
 
 	function issueTokensAuto(address _to, uint _amount) public returns(address voteOut){
 		if(mc.isCanDoAction(msg.sender, "issueTokens")){

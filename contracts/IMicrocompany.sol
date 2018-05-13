@@ -18,5 +18,4 @@ contract IMicrocompany {
 
 // Tasks
 	function isCanDoAction(address _a, string _permissionName)public constant returns(bool);
-	function addNewWeiTask(address _weiTask) public;
 }

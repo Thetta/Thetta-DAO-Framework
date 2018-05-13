@@ -4,4 +4,5 @@ pragma solidity ^0.4.15;
 contract IWeiDestination {
 	// pull model
 	function flush() public;
+	function flushTo(address _to) public;
 }

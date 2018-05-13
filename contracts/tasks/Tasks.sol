@@ -173,6 +173,10 @@ contract GenericTask is WeiAbsoluteExpense {
 		state = State.Finished;
 	}
 
+	function flushTo(address _to) public {
+		revert();
+	}
+
 	function processFunds(uint _currentFlow) public payable{
 		if(isPostpaid && (0==neededWei) && (State.Complete==state)){
 			// this is a donation

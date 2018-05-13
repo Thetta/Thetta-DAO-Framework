@@ -35,6 +35,10 @@ contract WeiAbsoluteExpense is IWeiReceiver, IWeiDestination, Ownable {
 		msg.sender.transfer(this.balance);
 	}
 
+	function flushTo(address _to) public {
+		revert();
+	}
+
 // IWeiReceiver:
 	function getMinWeiNeeded()constant public returns(uint){
 		// if already recevied -> then return 0
@@ -86,6 +90,10 @@ contract WeiRelativeExpense is IWeiReceiver, IWeiDestination, Ownable {
 	// pull model
 	function flush()public onlyOwner{
 		msg.sender.transfer(this.balance);
+	}
+
+	function flushTo(address _to) public {
+		revert();
 	}
 
 // IWeiReceiver:
