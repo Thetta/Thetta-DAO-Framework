@@ -27,9 +27,9 @@ contract GenericTask is WeiAbsoluteExpense {
 										// can be set later too
 	string public caption = "";
 	string public desc = "";
-	bool isPostpaid = false;		// prepaid/postpaid switch
+	bool public isPostpaid = false;		// prepaid/postpaid switch
 
-	bool isDonation = false;		// if true -> any price
+	bool public isDonation = false;		// if true -> any price
 	// TODO: use it
 	uint64 public timeToCancel = 0;
 
@@ -98,6 +98,10 @@ contract GenericTask is WeiAbsoluteExpense {
 		output = _output;
 	}
 
+	function getBalance()public constant returns(uint){
+		return this.balance;
+	}
+
 	function getCurrentState()public constant returns(State){
 		// for Prepaid task -> client should call processFunds method to put money into this task
 		// when state is Init
@@ -118,7 +122,7 @@ contract GenericTask is WeiAbsoluteExpense {
 		return state; 
 	}
 
-	function cancel() public onlyOwner {
+	function cancell() public onlyOwner {
 		require(getCurrentState()==State.Init || getCurrentState()==State.PrePaid);
 		if(getCurrentState()==State.PrePaid){
 			// return money to 'moneySource'
@@ -127,10 +131,10 @@ contract GenericTask is WeiAbsoluteExpense {
 		state = State.Cancelled;
 	}
 
-	function notifyOnCompletion() public onlyEmployeeOrOwner {
+	function notifyThatCompleted() public onlyEmployeeOrOwner {
 		require(getCurrentState()==State.InProgress);
 
-		if((0!=neededWei) || (isDonation)){
+		if((0!=neededWei) || (isDonation)){ // if donation or prePaid - no need in ev-ion; if postpaid with unknown payment - neededWei=0 yet
 			state = State.Complete;
 		}else{
 			state = State.CompleteButNeedsEvaluation;
@@ -150,7 +154,7 @@ contract GenericTask is WeiAbsoluteExpense {
 	function confirmCompletion() public onlyByMoneySource {
 		require(getCurrentState()==State.Complete);
 		require(!isPostpaid);
-		assert(0!=neededWei);
+		require(0!=neededWei);
 
 		state = State.CanGetFunds;
 	}
