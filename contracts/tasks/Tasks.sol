@@ -76,7 +76,11 @@ contract GenericTask is WeiAbsoluteExpense {
 	function GenericTask(address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
 		WeiAbsoluteExpense(_neededWei) 
 	{
-		require( !(!_isPostpaid&&_isDonation) );
+		// Donation should be prepaid
+		if(_isDonation) {
+			require(!isPostpaid); 
+		}
+
 		mc = _mc;
 		caption = _caption;
 		desc = _desc;

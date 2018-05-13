@@ -4,8 +4,10 @@ import "./IMicrocompany.sol";
 
 import "./tasks/Tasks.sol";
 import "./governance/Votes.sol";
-
 import "./token/MicrocompanyTokens.sol";
+import "./moneyflow/Moneyflow.sol";
+
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 // Different types of Members:
 // 1) Gov.token holder
@@ -27,13 +29,13 @@ import "./token/MicrocompanyTokens.sol";
 //		
 contract MicrocompanyStorage {
 	mapping (uint=>address) tasks;
-	uint tasksCount = 0;
+	uint public tasksCount = 0;
 
 	mapping (uint=>address) votes;
-	uint votesCount = 0;
+	uint public votesCount = 0;
 
 	mapping (uint=>address) employees;
-	uint employeesCount = 0;
+	uint public employeesCount = 0;
 
 	mapping (string=>bool) byEmployee;
 	mapping (string=>bool) byVoting;
@@ -61,18 +63,16 @@ contract MicrocompanyStorage {
 		return byVoting[_permissionName];
 	}
 
-// Tasks:
-	// TODO: public
-	function addNewWeiTask(address _task) public {
-		tasks[tasksCount] = _task;
-		tasksCount++;
-	}
-
 // Vote:
 	// TODO: public
 	function addNewVote(address _vote) public {
 		votes[votesCount] = _vote;
 		votesCount++;
+	}
+
+	function getVoteAtIndex(uint _i)public constant returns(address){
+		require(_i<votesCount);
+		return votes[_i];
 	}
 
 	function getVotingResults(address _vote) public constant returns (bool isVotingFound, bool votingResult){
@@ -107,12 +107,15 @@ contract MicrocompanyStorage {
 	// TODO: get (enumerator) for tasks 
 }
 
-contract Microcompany is IMicrocompany {
+contract Microcompany is IMicrocompany, Ownable {
+	StdMicrocompanyToken public stdToken;
+	//MoneyFlow public moneyflow;
+
 	MicrocompanyStorage store;
-	StdMicrocompanyToken stdToken;
+	address autoActionCallerAddress = 0x0;
 
 	// Constructor
-	function Microcompany(MicrocompanyStorage _store) public {
+	function Microcompany(MicrocompanyStorage _store, /*MoneyFlow _moneyflow,*/ uint _tokensAmountToIssue) public {
 		// TODO: symbol, name, etc...
 		stdToken = new StdMicrocompanyToken("StdToken","STDT",18);
 		store = _store;
@@ -124,12 +127,21 @@ contract Microcompany is IMicrocompany {
 		store.addActionByEmployeesOnly("startBounty");
 		// this is a list of actions that require voting
 		store.addActionByVoting("addNewEmployee");
+		store.addActionByVoting("removeEmployee");
 		store.addActionByVoting("addNewTask");
 		store.addActionByVoting("issueTokens");
 
 		// 3 - do other preparations
-		issueTokensInternal(msg.sender,1000);		// issue all 100% tokens to the creator
+		// issue all 100% tokens to the creator
+		require(0!=_tokensAmountToIssue);			// we need to issue at least 1 token in order for the creator to be 
+																// a majority
+		issueTokensInternal(msg.sender, _tokensAmountToIssue);		
+
 		store.addNewEmployee(msg.sender);			// add creator as first employee	
+	}
+
+	function setAutoActionCallerAddress(address _a) public onlyOwner {
+		autoActionCallerAddress = _a;
 	}
 
 	// just an informative modifier
@@ -144,17 +156,24 @@ contract Microcompany is IMicrocompany {
 
 // IMicrocompany:
 	//
-	function addNewVote(address _vote) public isCanDo("addNewVote"){
+	function addNewVote(address _vote) public { 
+		bool isCan = isCanDoAction(msg.sender,"addNewVote") || (msg.sender==autoActionCallerAddress);
+		require(isCan);
+
 		store.addNewVote(_vote);
 	}
 
 	// this should be called either directly or from the Vote...
 	function addNewWeiTask(address _task) public isCanDo("addNewTask") byVotingOnly {
-		store.addNewWeiTask(_task);
+		// TODO:
 	}
 
-	function issueTokens(address _to, uint amount)public isCanDo("issueTokens") byVotingOnly {
-		// TODO
+	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") byVotingOnly {
+		issueTokensInternal(_to, _amount);
+	}
+
+	function getTokenInfo() public constant returns(address _out){
+		return address(stdToken);
 	}
 
 	// caller should make sure that he is not adding same employee twice
@@ -162,8 +181,16 @@ contract Microcompany is IMicrocompany {
 		store.addNewEmployee(_newEmployee);
 	}
 
+	function removeEmployee(address _employee) public isCanDo("removeEmployee") byVotingOnly {
+		// TODO:
+	}
+
 	function isEmployee(address _a)public constant returns(bool){
 		return store.isEmployee(_a);
+	}
+
+	function getEmployeesCount()public constant returns(uint){
+		return store.employeesCount();
 	}
 
 	function isCanDoAction(address _a, string _permissionName) public constant returns(bool){
@@ -215,26 +242,32 @@ contract AutoActionCaller {
 	}
 
 	// experimental...
-	function addNewWeiTaskAuto(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public {
+	function addNewWeiTaskAuto(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public returns(address voteOut){
 		if(mc.isCanDoAction(msg.sender, "addNewTask")){
 			// 1 - create new task immediately
 			WeiTask wt = new WeiTask(mc, _caption, _desc, _isPostpaid, _isDonation, _neededWei);
 			mc.addNewWeiTask(wt);
+			return 0x0;
 		}else{
 			// 2 - create new vote instead
-			VoteAddNewTask vant = new VoteAddNewTask(mc, _caption, _desc, _isPostpaid, _isDonation, _neededWei);
+			// we pass msg.sender (just like tx.origin) 
+			VoteAddNewTask vant = new VoteAddNewTask(mc, msg.sender, _caption, _desc, _isPostpaid, _isDonation, _neededWei);
 			mc.addNewVote(vant);
+			return vant;
 		}
 	}
 
-	function issueTokensAuto(address _to, uint _amount) public {
-		//if(mc.isCanDoAction(msg.sender, "issueTokens")){
+	function issueTokensAuto(address _to, uint _amount) public returns(address voteOut){
+		if(mc.isCanDoAction(msg.sender, "issueTokens")){
 			// 1 - create new task immediately
-		//	mc.issueTokens(_to, _amount);
-		//}else{
+			mc.issueTokens(_to, _amount);
+			return 0x0;
+		}else{
 			// 2 - create new vote instead
-			VoteIssueTokens vit = new VoteIssueTokens(mc, _to, _amount);
-			mc.addNewVote(vit);
-		//}
+			// we pass msg.sender (just like tx.origin) 
+			VoteIssueTokens vit = new VoteIssueTokens(mc, msg.sender, _to, _amount);
+			mc.addNewVote(vit);		
+			return vit;
+		}
 	}
 }

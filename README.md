@@ -20,7 +20,5 @@ npm install -g ethereumjs-testrpc
 npm install -g truffle
 
 # test
-npm install
-nohup bash -c "testrpc --port 8989 --gasLimit 10000000 2>&1 &"
-truffle test
+npm run test
 ```
