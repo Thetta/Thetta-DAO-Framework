@@ -71,6 +71,8 @@ contract MoneyFlow is IMoneyflow, Ownable {
 contract DefaultMoneyflowScheme is WeiTopDownSplitter {
 	function DefaultMoneyflowScheme() public {
 		WeiUnsortedSplitter spends = new WeiUnsortedSplitter("spends");
+		WeiUnsortedSplitter bonuses = new WeiUnsortedSplitter("bonuses");
+		WeiUnsortedSplitter rest = new WeiUnsortedSplitter("rest");
 
 		WeiUnsortedSplitter salaries = new WeiUnsortedSplitter("salaries");
 		WeiUnsortedSplitter other = new WeiUnsortedSplitter("other");
@@ -81,6 +83,8 @@ contract DefaultMoneyflowScheme is WeiTopDownSplitter {
 		// This contract is itself a top down (Root) splitter
 		// just call a 'processFunds(uint _currentFlow)' method and it will
 		this.addChild(spends);
+		this.addChild(bonuses);
+		this.addChild(rest);
 
 		//this.addChild(bonuses);
 		//this.addChild(rest);

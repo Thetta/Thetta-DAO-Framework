@@ -23,4 +23,4 @@ else
   testrpc_pid=$!
 fi
 
-truffle test
+truffle test $1
