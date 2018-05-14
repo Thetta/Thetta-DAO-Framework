@@ -76,8 +76,8 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 
 			// 2 - create new vote instead
 			// we pass msg.sender (just like tx.origin) 
-			//VoteAddNewTask vant = new VoteAddNewTask(mc, msg.sender, wt);
-			//mc.addNewVote(vant);
+			//ProposalAddNewTask vant = new ProposalAddNewTask(mc, msg.sender, wt);
+			//mc.addNewProposal(vant);
 			//return vant;
 		}
 	}

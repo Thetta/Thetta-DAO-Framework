@@ -3,8 +3,13 @@ pragma solidity ^0.4.15;
 import '../IMicrocompany.sol';
 import '../tasks/Tasks.sol';
 
+import './IProposal.sol';
+
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+
 contract IVote {
 	function vote(bool _yes) public;
+	function cancelVote() public;
 
 // These should be implemented in the less abstract contracts like Vote, etc:
 	// This is for statistics
@@ -13,13 +18,9 @@ contract IVote {
 	function isFinished()public constant returns(bool);
 	// The result of voting
 	function isYes()public constant returns(bool);
-
-// PLEASE implement these in your contract:
-	function getData()constant public returns(string outType, string desc, string comment);
-	function action()public;
 }
 
-contract Vote is IVote {
+contract Vote is IVote, Ownable {
 	enum VoteType {
 		// 1 employee = 1 vote
 		EmployeesVote,
@@ -65,6 +66,10 @@ contract Vote is IVote {
 			require(mc.isEmployee(msg.sender));
 			internalEmployeeVote(msg.sender, _yes);
 		}
+	}
+
+	function cancelVote() public onlyOwner {
+		// TODO:
 	}
 
 	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults){
@@ -137,10 +142,10 @@ contract Vote is IVote {
 ////////////////////// 
 //////////////////////
 /*
-contract VoteAddNewTask is Vote {
+contract ProposalAddNewTask is Vote {
 	WeiTask wt;
 
-	function VoteAddNewTask(address _mc, address _moneyflow, address _origin,
+	function ProposalAddNewTask(address _mc, address _moneyflow, address _origin,
 									WeiTask _wt) 
 		// TODO: remove default parameters, let Vote to read data in its constructor
 		// each employee has 1 vote 
@@ -151,10 +156,6 @@ contract VoteAddNewTask is Vote {
 	}
 
 // IVote implementation
-	function getData()constant public returns(string _outType, string _desc, string _comment){
-		return ("AddNewTask","TODO","");
-	}
-
 	function action() public {
 		// voting should be finished
 		require(isFinished());
@@ -174,36 +175,37 @@ contract VoteAddNewTask is Vote {
 }
 */
 
-contract VoteIssueTokens is Vote {
+
+contract ProposalIssueTokens is IProposal {
+	Vote vote; 
 	address to;
 	uint amount;
 
-	function VoteIssueTokens(address _mc, address _origin,
-									 address _to, uint _amount)
+	function ProposalIssueTokens(address _mc, address _origin,
+										address _to, uint _amount) public 
+	{
 		// TODO: remove default parameters, let Vote to read data in its constructor
 		// each employee has 1 vote 
-		Vote(_mc, _origin, VoteType.EmployeesVote, 24 *60, 0x0)
-		public 
-	{
+		vote = new Vote(_mc, _origin, Vote.VoteType.EmployeesVote, 24 *60, 0x0);
+
 		to = _to; 
 		amount = _amount;
 	}
 
-// IVote implementation
-	function getData()constant public returns(string outType, string desc, string comment){
-		// TODO:
-		return ("IssueTokens","Issue XXX tokens to YYY address","");
-	}
-
+// IProposal implementation
 	function action() public {
-		// voting should be finished
-		require(isFinished());
+		// TODO: open
 
 		// TODO: should not be callable again!!!
 
 		// as long as we call this method from WITHIN the vote contract 
 		// isCanDoAction() should return yes if voting finished with Yes result
-		IMicrocompany tmp = IMicrocompany(mc);
-		tmp.issueTokens(to, amount);
+
+		//IMicrocompany tmp = IMicrocompany(mc);
+		//tmp.issueTokens(to, amount);
+	}
+
+	function getVote()public constant returns(address){
+		return address(vote);
 	}
 }

@@ -31,8 +31,8 @@ contract MicrocompanyStorage {
 	mapping (uint=>address) tasks;
 	uint public tasksCount = 0;
 
-	mapping (uint=>address) votes;
-	uint public votesCount = 0;
+	mapping (uint=>address) proposals;
+	uint public proposalsCount = 0;
 
 	mapping (uint=>address) employees;
 	uint public employeesCount = 0;
@@ -65,21 +65,22 @@ contract MicrocompanyStorage {
 
 // Vote:
 	// TODO: public
-	function addNewVote(address _vote) public {
-		votes[votesCount] = _vote;
-		votesCount++;
+	function addNewProposal(IProposal _proposal) public {
+		proposals[proposalsCount] = _proposal;
+		proposalsCount++;
 	}
 
-	function getVoteAtIndex(uint _i)public constant returns(address){
-		require(_i<votesCount);
-		return votes[_i];
+	function getProposalAtIndex(uint _i)public constant returns(address){
+		require(_i<proposalsCount);
+		return proposals[_i];
 	}
 
+	// TODO: rename? 
 	function getVotingResults(address _vote) public constant returns (bool isVotingFound, bool votingResult){
 		// scan all votings and search for the one that is finished 
-		for(uint i=0; i<votesCount; ++i){
-			if(votes[i]==_vote){
-				IVote vote = IVote(votes[i]);
+		for(uint i=0; i<proposalsCount; ++i){
+			if(proposals[i]==_vote){
+				IVote vote = IVote(proposals[i]);
 				return (true, 	vote.isFinished() && vote.isYes());
 			}
 		}
@@ -103,7 +104,7 @@ contract MicrocompanyStorage {
 		return false;
 	}
 
-	// TODO: get (enumerator) for votes
+	// TODO: get (enumerator) for proposals 
 	// TODO: get (enumerator) for tasks 
 }
 
@@ -124,7 +125,7 @@ contract Microcompany is IMicrocompany, Ownable {
 
 		// 2 - set permissions
 		// this is a list of action that any employee can do without voting
-		store.addActionByEmployeesOnly("addNewVote");
+		store.addActionByEmployeesOnly("addNewProposal");
 		store.addActionByEmployeesOnly("startTask");
 		store.addActionByEmployeesOnly("startBounty");
 		// this is a list of actions that require voting
@@ -158,19 +159,12 @@ contract Microcompany is IMicrocompany, Ownable {
 
 // IMicrocompany:
 	//
-	function addNewVote(address _vote) public { 
-		bool isCan = isCanDoAction(msg.sender,"addNewVote") || (msg.sender==autoActionCallerAddress);
+	function addNewProposal(IProposal _proposal) public { 
+		bool isCan = isCanDoAction(msg.sender,"addNewProposal") || (msg.sender==autoActionCallerAddress);
 		require(isCan);
 
-		store.addNewVote(_vote);
+		store.addNewProposal(_proposal);
 	}
-
-	// this should be called either directly or from the Vote...
-	/*
-	function addNewWeiTask(address _task) public isCanDo("addNewTask") byVotingOnly {
-		// TODO:
-	}
-   */
 
 	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") byVotingOnly {
 		issueTokensInternal(_to, _amount);
@@ -258,8 +252,8 @@ contract AutoActionCaller {
 		}else{
 			// 2 - create new vote instead
 			// we pass msg.sender (just like tx.origin) 
-			VoteAddNewTask vant = new VoteAddNewTask(mc, msg.sender, wt);
-			mc.addNewVote(vant);
+			ProposalAddNewTask vant = new ProposalAddNewTask(mc, msg.sender, wt);
+			mc.addNewProposal(vant);
 			return vant;
 		}
 	}
@@ -273,9 +267,9 @@ contract AutoActionCaller {
 		}else{
 			// 2 - create new vote instead
 			// we pass msg.sender (just like tx.origin) 
-			VoteIssueTokens vit = new VoteIssueTokens(mc, msg.sender, _to, _amount);
-			mc.addNewVote(vit);		
-			return vit;
+			ProposalIssueTokens pit = new ProposalIssueTokens(mc, msg.sender, _to, _amount);
+			mc.addNewProposal(pit);		
+			return pit;
 		}
 	}
 }

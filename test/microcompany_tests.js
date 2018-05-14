@@ -1,9 +1,11 @@
 var Microcompany = artifacts.require("./Microcompany");
 var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
-//var VoteAddNewTask = artifacts.require("./VoteAddNewTask");
+//var ProposalAddNewTask = artifacts.require("./ProposalAddNewTask");
 var AutoActionCaller = artifacts.require("./AutoActionCaller");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
+
 var Vote = artifacts.require("./Vote");
+var IProposal = artifacts.require("./IProposal");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
@@ -27,7 +29,7 @@ global.contract('Microcompany', (accounts) => {
 
 	global.it('should set everything correctly',async() => {
 		///
-		const isCan = await mcStorage.isCanDoByEmployee("addNewVote");
+		const isCan = await mcStorage.isCanDoByEmployee("addNewProposal");
 		global.assert.equal(isCan,true,'Permission should be set correctly');
 
 		const isMajority = await mcInstance.isInMajority(creator);
@@ -41,7 +43,7 @@ global.contract('Microcompany', (accounts) => {
 	});
 
 	global.it('should return correct permissions for an outsider',async() => {
-		const isCanDo1 = await mcInstance.isCanDoAction(outsider,"addNewVote");
+		const isCanDo1 = await mcInstance.isCanDoAction(outsider,"addNewProposal");
 		const isCanDo2 = await mcInstance.isCanDoAction(outsider,"startTask");
 		const isCanDo3 = await mcInstance.isCanDoAction(outsider,"startBounty");
 		global.assert.strictEqual(isCanDo1,false,'Outsider should not be able to do that ');
@@ -57,7 +59,7 @@ global.contract('Microcompany', (accounts) => {
 	});
 
 	global.it('should return correct permissions for creator',async() => {
-		const isCanDo1 = await mcInstance.isCanDoAction(creator,"addNewVote");
+		const isCanDo1 = await mcInstance.isCanDoAction(creator,"addNewProposal");
 		const isCanDo2 = await mcInstance.isCanDoAction(creator,"startTask");
 		const isCanDo3 = await mcInstance.isCanDoAction(creator,"startBounty");
 		global.assert.strictEqual(isCanDo1,true,'Creator should be able to do that ');
@@ -75,7 +77,7 @@ global.contract('Microcompany', (accounts) => {
 	global.it('should not add new vote if not employee',async() => {
 		// employee1 is still not added to Microcompany as an employee
 		let newVote = 0x123;
-		await CheckExceptions.checkContractThrows(mcInstance.addNewVote.sendTransaction,
+		await CheckExceptions.checkContractThrows(mcInstance.addNewProposal.sendTransaction,
 			[newVote, { from: employee1}],
 			'Should not add new vote because employee1 has no permission');
 	});
@@ -84,10 +86,10 @@ global.contract('Microcompany', (accounts) => {
 	// TODO: commented because vote is not needed anymore
 	//
 	global.it('should add new vote by creator',async() => {
-		let vote1 = await VoteAddNewTask.new(mcInstance.address,creator,"SampleTaskCaption","SomeTaskDescription",false,false,100,
+		let p1 = await ProposalAddNewTask.new(mcInstance.address,creator,"SampleTaskCaption","SomeTaskDescription",false,false,100,
 			{from: creator}
 		);
-		await mcInstance.addNewVote(vote1.address);
+		await mcInstance.addNewProposal(p1.address);
 		const votesCount1 = await mcStorage.votesCount();
 		global.assert.equal(votesCount1,1,'Vote should be added');
 	});
@@ -126,8 +128,8 @@ global.contract('Microcompany', (accounts) => {
 		const balance1 = await smt.balanceOf(employee1);
 		global.assert.equal(balance1,0,'initial employee1 balance');
 
-		const votesCount1 = await mcStorage.votesCount();
-		global.assert.equal(votesCount1,0,'No votes should be added');
+		const proposalsCount1 = await mcStorage.proposalsCount();
+		global.assert.equal(proposalsCount1,0,'No proposals should be added');
 
 		// add new employee1
 		await mcInstance.addNewEmployee(employee1,{from: creator});
@@ -137,19 +139,19 @@ global.contract('Microcompany', (accounts) => {
 		// employee1 is NOT in the majority
 		const isCanDo1 = await mcInstance.isCanDoAction(employee1,"issueTokens");
 		global.assert.strictEqual(isCanDo1,false,'employee1 is NOT in the majority, so can issue token only with voting');
-		const isCanDo2 = await mcInstance.isCanDoAction(employee1,"addNewVote");
+		const isCanDo2 = await mcInstance.isCanDoAction(employee1,"addNewProposal");
 		global.assert.strictEqual(isCanDo2,true,'employee1 can add new vote');
 
-		// new vote should be added 
+		// new proposal should be added 
 		await aacInstance.issueTokensAuto(employee1,1000,{from: employee1});
-		const votesCount2 = await mcStorage.votesCount();
-		global.assert.equal(votesCount2,1,'New vote should be added'); 
+		const proposalsCount2 = await mcStorage.proposalsCount();
+		global.assert.equal(proposalsCount2,1,'New proposal should be added'); 
 
 		// check the voting data
-		const voteAddress = await mcStorage.getVoteAtIndex(0);
+		const pa = await mcStorage.getProposalAtIndex(0);
+		const proposal = await IProposal.at(pa);
+		const voteAddress = await proposal.getVote();
 		const voting = await Vote.at(voteAddress);
-		const d = await voting.getData();
-		global.assert.equal(d[0],'IssueTokens','vote data should be correct'); 
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -158,10 +160,12 @@ global.contract('Microcompany', (accounts) => {
 		global.assert.equal(r[1],0,'no');
 		global.assert.equal(r[2],1,'total');
 
+		/*
 		// should not call action if not finished
 		await CheckExceptions.checkContractThrows(voting.action.sendTransaction,
 			[{ from: creator}],
 			'Should not allow to call action');
+		*/
 
 		// vote again
 		await voting.vote(1,{from:employee1});
@@ -175,9 +179,11 @@ global.contract('Microcompany', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
 
 		// now should execute the action (issue tokens)
+		/*
 		await voting.action({from:employee1});		// can be called from any account
 		const balance2 = await smt.balanceOf(employee1);
 		global.assert.equal(balance2,1000,'employee1 balance should be updated');
+		*/
 
 		// TODO:
 		// should not call action again 

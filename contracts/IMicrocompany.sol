@@ -1,5 +1,7 @@
 pragma solidity ^0.4.15;
 
+import './governance/IProposal.sol';
+
 contract IMicrocompany {
 // Employees
 	function addNewEmployee(address _newEmployee) public;
@@ -14,7 +16,7 @@ contract IMicrocompany {
 	function issueTokens(address _to, uint amount)public;
 
 // Governance 
-	function addNewVote(address _vote) public;
+	function addNewProposal(IProposal _proposal) public;
 
 // Tasks
 	function isCanDoAction(address _a, string _permissionName)public constant returns(bool);
