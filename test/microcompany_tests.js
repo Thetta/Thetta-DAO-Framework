@@ -4,7 +4,7 @@ var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
 var AutoActionCaller = artifacts.require("./AutoActionCaller");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
 
-var Vote = artifacts.require("./Vote");
+var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
 
 var CheckExceptions = require('./utils/checkexceptions');
@@ -76,10 +76,10 @@ global.contract('Microcompany', (accounts) => {
 
 	global.it('should not add new vote if not employee',async() => {
 		// employee1 is still not added to Microcompany as an employee
-		let newVote = 0x123;
+		let newProposal = 0x123;
 		await CheckExceptions.checkContractThrows(mcInstance.addNewProposal.sendTransaction,
-			[newVote, { from: employee1}],
-			'Should not add new vote because employee1 has no permission');
+			[newProposal, { from: employee1}],
+			'Should not add new proposal because employee1 has no permission');
 	});
 
 	/*
@@ -150,8 +150,8 @@ global.contract('Microcompany', (accounts) => {
 		// check the voting data
 		const pa = await mcStorage.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
-		const voteAddress = await proposal.getVote();
-		const voting = await Vote.at(voteAddress);
+		const votingAddress = await proposal.getVoting();
+		const voting = await Voting.at(votingAddress);
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 

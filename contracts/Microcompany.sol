@@ -3,7 +3,7 @@ pragma solidity ^0.4.15;
 import "./IMicrocompany.sol";
 
 import "./tasks/Tasks.sol";
-import "./governance/Votes.sol";
+import "./governance/Voting.sol";
 import "./token/MicrocompanyTokens.sol";
 import "./moneyflow/Moneyflow.sol";
 
@@ -80,7 +80,7 @@ contract MicrocompanyStorage {
 		// scan all votings and search for the one that is finished 
 		for(uint i=0; i<proposalsCount; ++i){
 			if(proposals[i]==_vote){
-				IVote vote = IVote(proposals[i]);
+				IVoting vote = IVoting(proposals[i]);
 				return (true, 	vote.isFinished() && vote.isYes());
 			}
 		}

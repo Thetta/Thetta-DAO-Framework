@@ -7,11 +7,13 @@ import './IProposal.sol';
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract IVote {
+contract IVoting {
+	// will execute action if the voting is finished 
 	function vote(bool _yes) public;
-	function cancelVote() public;
 
-// These should be implemented in the less abstract contracts like Vote, etc:
+	function cancelVoting() public;
+
+// These should be implemented in the less abstract contracts like Voting, etc:
 	// This is for statistics
 	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults);
 	// Is voting finished?
@@ -20,7 +22,7 @@ contract IVote {
 	function isYes()public constant returns(bool);
 }
 
-contract Vote is IVote, Ownable {
+contract Voting is IVoting, Ownable {
 	enum VoteType {
 		// 1 employee = 1 vote
 		EmployeesVote,
@@ -44,8 +46,8 @@ contract Vote is IVote, Ownable {
 
 ////////
 	// we can use _origin instead of tx.origin
-	function Vote(address _mc, address _origin, 
-					  VoteType _voteType, uint _minutesToVote, address _tokenAddress){
+	function Voting(address _mc, address _origin, 
+						VoteType _voteType, uint _minutesToVote, address _tokenAddress){
 		mc = IMicrocompany(_mc);
 		voteType = _voteType;	
 		minutesToVote = _minutesToVote;
@@ -68,7 +70,7 @@ contract Vote is IVote, Ownable {
 		}
 	}
 
-	function cancelVote() public onlyOwner {
+	function cancelVoting() public onlyOwner {
 		// TODO:
 	}
 
@@ -149,13 +151,13 @@ contract ProposalAddNewTask is Vote {
 									WeiTask _wt) 
 		// TODO: remove default parameters, let Vote to read data in its constructor
 		// each employee has 1 vote 
-		Vote(_mc, _origin, VoteType.EmployeesVote, 24 *60, 0x0)
+		Voting(_mc, _origin, VoteType.EmployeesVote, 24 *60, 0x0)
 		public 
 	{
 		wt = _wt;
 	}
 
-// IVote implementation
+// IVoting implementation
 	function action() public {
 		// voting should be finished
 		require(isFinished());
@@ -177,16 +179,16 @@ contract ProposalAddNewTask is Vote {
 
 
 contract ProposalIssueTokens is IProposal {
-	Vote vote; 
+	Voting voting;
 	address to;
 	uint amount;
 
 	function ProposalIssueTokens(address _mc, address _origin,
 										address _to, uint _amount) public 
 	{
-		// TODO: remove default parameters, let Vote to read data in its constructor
+		// TODO: remove default parameters, let Voting to read data in its constructor
 		// each employee has 1 vote 
-		vote = new Vote(_mc, _origin, Vote.VoteType.EmployeesVote, 24 *60, 0x0);
+		voting = new Voting(_mc, _origin, Voting.VoteType.EmployeesVote, 24 *60, 0x0);
 
 		to = _to; 
 		amount = _amount;
@@ -205,7 +207,7 @@ contract ProposalIssueTokens is IProposal {
 		//tmp.issueTokens(to, amount);
 	}
 
-	function getVote()public constant returns(address){
-		return address(vote);
+	function getVoting()public constant returns(address){
+		return address(voting);
 	}
 }
