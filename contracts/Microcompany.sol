@@ -5,7 +5,6 @@ import "./IMicrocompany.sol";
 import "./tasks/Tasks.sol";
 import "./governance/Voting.sol";
 import "./token/MicrocompanyTokens.sol";
-import "./moneyflow/Moneyflow.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -27,9 +26,10 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 //		
 //		start task -> any employee 
 //		
-contract MicrocompanyStorage {
-	mapping (uint=>address) tasks;
-	uint public tasksCount = 0;
+contract MicrocompanyBase is IMicrocompanyBase, Ownable {
+	StdMicrocompanyToken public stdToken;
+
+	address autoActionCallerAddress = 0x0;
 
 	mapping (uint=>address) proposals;
 	uint public proposalsCount = 0;
@@ -40,107 +40,11 @@ contract MicrocompanyStorage {
 	mapping (string=>bool) byEmployee;
 	mapping (string=>bool) byVoting;
 
-	function MicrocompanyStorage() public {
-
-	}
-
-// Permissions:
-	// TODO: public
-	function addActionByEmployeesOnly(string _what) public {
-		byEmployee[_what] = true;
-	}
-
-	// TODO: public
-	function addActionByVoting(string _what) public {
-		byVoting[_what] = true;
-	}
-
-	function isCanDoByEmployee(string _permissionName) public constant returns(bool){
-		return byEmployee[_permissionName];
-	}
-
-	function isCanDoByVoting(string _permissionName) public constant returns(bool){
-		return byVoting[_permissionName];
-	}
-
-// Vote:
-	// TODO: public
-	function addNewProposal(IProposal _proposal) public {
-		proposals[proposalsCount] = _proposal;
-		proposalsCount++;
-	}
-
-	function getProposalAtIndex(uint _i)public constant returns(address){
-		require(_i<proposalsCount);
-		return proposals[_i];
-	}
-
-	function getProposalVotingResults(address _p) public constant returns (bool isVotingFound, bool votingResult){
-		// scan all votings and search for the one that is finished 
-		for(uint i=0; i<proposalsCount; ++i){
-			if(proposals[i]==_p){
-				IProposal proposal = IProposal(_p);
-				IVoting vote = IVoting(proposal.getVoting());
-				return (true, 	vote.isFinished() && vote.isYes());
-			}
-		}
-
-		return (false,false);
-	}
-
-// Employees:
-	// TODO: public
-	function addNewEmployee(address _newEmployee) public {
-		employees[employeesCount] = _newEmployee;
-		employeesCount++;
-	}
-
-	function isEmployee(address _a)public constant returns(bool){
-		for(uint i=0; i<employeesCount; ++i){
-			if(employees[i]==_a){
-				return true;
-			}
-		}
-		return false;
-	}
-
-	// TODO: get (enumerator) for proposals 
-	// TODO: get (enumerator) for tasks 
-}
-
-contract Microcompany is IMicrocompany, Ownable {
-	StdMicrocompanyToken public stdToken;
-	//MoneyFlow public moneyflow;
-
-	MicrocompanyStorage store;
-	address autoActionCallerAddress = 0x0;
-
+//////////////////////
 	// Constructor
-	function Microcompany(MicrocompanyStorage _store, /*MoneyFlow _moneyflow,*/ uint _tokensAmountToIssue) public {
+	function MicrocompanyBase(uint _tokensAmountToIssue) public {
 		// TODO: symbol, name, etc...
 		stdToken = new StdMicrocompanyToken("StdToken","STDT",18);
-		store = _store;
-
-		// TODO: this can be moved to the Bylaws 
-
-		// 2 - set permissions
-		// this is a list of action that any employee can do without voting
-		store.addActionByEmployeesOnly("addNewProposal");
-		store.addActionByEmployeesOnly("startTask");
-		store.addActionByEmployeesOnly("startBounty");
-		// this is a list of actions that require voting
-		store.addActionByVoting("addNewEmployee");
-		store.addActionByVoting("removeEmployee");
-		store.addActionByVoting("addNewTask");
-		store.addActionByVoting("issueTokens");
-
-		// 3 - do other preparations
-		// issue all 100% tokens to the creator
-		require(0!=_tokensAmountToIssue);			// we need to issue at least 1 token in order for the creator to be 
-																// a majority
-		issueTokensInternal(msg.sender, _tokensAmountToIssue);		
-
-		store.addNewEmployee(msg.sender);			// add creator as first employee	
 	}
 
 	function setAutoActionCallerAddress(address _a) public onlyOwner {
@@ -158,25 +62,31 @@ contract Microcompany is IMicrocompany, Ownable {
 	}
 
 // IMicrocompany:
-	//
 	function addNewProposal(IProposal _proposal) public { 
 		bool isCan = isCanDoAction(msg.sender,"addNewProposal") || (msg.sender==autoActionCallerAddress);
 		require(isCan);
 
-		store.addNewProposal(_proposal);
+		proposals[proposalsCount] = _proposal;
+		proposalsCount++;
 	}
 
-	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") byVotingOnly {
-		issueTokensInternal(_to, _amount);
+	function getProposalAtIndex(uint _i)public constant returns(address){
+		require(_i<proposalsCount);
+		return proposals[_i];
 	}
 
 	function getTokenInfo() public constant returns(address _out){
 		return address(stdToken);
 	}
 
+	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") byVotingOnly {
+		issueTokensInternal(_to, _amount);
+	}
+
 	// caller should make sure that he is not adding same employee twice
 	function addNewEmployee(address _newEmployee) public isCanDo("addNewEmployee") byVotingOnly {
-		store.addNewEmployee(_newEmployee);
+		employees[employeesCount] = _newEmployee;
+		employeesCount++;
 	}
 
 	function removeEmployee(address _employee) public isCanDo("removeEmployee") byVotingOnly {
@@ -184,22 +94,45 @@ contract Microcompany is IMicrocompany, Ownable {
 	}
 
 	function isEmployee(address _a)public constant returns(bool){
-		return store.isEmployee(_a);
+		for(uint i=0; i<employeesCount; ++i){
+			if(employees[i]==_a){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	function getEmployeesCount()public constant returns(uint){
-		return store.employeesCount();
+		return employeesCount;
+	}
+
+// Permissions:
+	// TODO: public
+	function addActionByEmployeesOnly(string _what) internal {
+		byEmployee[_what] = true;
+	}
+
+	function addActionByVoting(string _what) internal {
+		byVoting[_what] = true;
+	}
+
+	function isCanDoByEmployee(string _permissionName) public constant returns(bool){
+		return byEmployee[_permissionName];
+	}
+
+	function isCanDoByVoting(string _permissionName) public constant returns(bool){
+		return byVoting[_permissionName];
 	}
 
 	function isCanDoAction(address _a, string _permissionName) public constant returns(bool){
 		// 1 - check if employees can do that without voting?
-		if(store.isCanDoByEmployee(_permissionName) && isEmployee(_a)){
+		if(isCanDoByEmployee(_permissionName) && isEmployee(_a)){
 			return true;
 		}
 
 		// 2 - can do action only by starting new vote first?
-		if(store.isCanDoByVoting(_permissionName)){
-			var (isVotingFound, votingResult) = store.getProposalVotingResults(msg.sender);
+		if(isCanDoByVoting(_permissionName)){
+			var (isVotingFound, votingResult) = getProposalVotingResults(msg.sender);
 			if(isVotingFound){
 				return votingResult;
 			}
@@ -216,6 +149,20 @@ contract Microcompany is IMicrocompany, Ownable {
 		return false;
 	}
 
+	function getProposalVotingResults(address _p) internal constant returns (bool isVotingFound, bool votingResult){
+		// scan all votings and search for the one that is finished 
+		for(uint i=0; i<proposalsCount; ++i){
+			if(proposals[i]==_p){
+				IProposal proposal = IProposal(_p);
+				IVoting vote = IVoting(proposal.getVoting());
+				return (true, 	vote.isFinished() && vote.isYes());
+			}
+		}
+
+		return (false,false);
+	}
+
+
 // Public (for tests)
 	// only token holders with > 51% of gov.tokens can add new task immediately 
 	function isInMajority(address _a) public constant returns(bool){
@@ -225,9 +172,35 @@ contract Microcompany is IMicrocompany, Ownable {
 		return(stdToken.balanceOf(_a)>=stdToken.totalSupply()/2);
 	}
 
-// Internal:
 	function issueTokensInternal(address _to, uint _amount) internal {
 		stdToken.mint(_to, _amount);
+	}
+}
+
+
+contract Microcompany is MicrocompanyBase {
+	function Microcompany(uint _tokensAmountToIssue) public 
+		MicrocompanyBase(_tokensAmountToIssue)
+	{
+		// 1 - set permissions
+		// this is a list of action that any employee can do without voting
+		addActionByEmployeesOnly("addNewProposal");
+		addActionByEmployeesOnly("startTask");
+		addActionByEmployeesOnly("startBounty");
+
+		// this is a list of actions that require voting
+		addActionByVoting("addNewEmployee");
+		addActionByVoting("removeEmployee");
+		addActionByVoting("addNewTask");
+		addActionByVoting("issueTokens");
+
+		// 2 - issue tokens  
+		// issue all 100% tokens to the creator
+		require(0!=_tokensAmountToIssue);			// we need to issue at least 1 token in order for the creator to be 
+																// a majority
+		issueTokensInternal(msg.sender, _tokensAmountToIssue);		
+
+		addNewEmployee(msg.sender);			// add creator as first employee	
 	}
 }
 

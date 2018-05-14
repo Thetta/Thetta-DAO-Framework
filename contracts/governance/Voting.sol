@@ -19,7 +19,7 @@ contract Voting is IVoting, Ownable {
 		QuadraticTokenVote
 	}
 
-	IMicrocompany mc;
+	IMicrocompanyBase mc;
 	IProposal proposal; 
 
 	VoteType public voteType;
@@ -34,7 +34,7 @@ contract Voting is IVoting, Ownable {
 
 ////////
 	// we can use _origin instead of tx.origin
-	function Voting(IMicrocompany _mc, IProposal _proposal, address _origin, 
+	function Voting(IMicrocompanyBase _mc, IProposal _proposal, address _origin, 
 						VoteType _voteType, uint _minutesToVote, address _tokenAddress){
 		mc = _mc;
 		proposal = _proposal; 
@@ -156,7 +156,7 @@ contract ProposalAddNewTask is Vote {
 	}
 
 // IVoting implementation
-	function action(IMicrocompany _mc, IVoting _voting) public {
+	function action(IMicrocompanyBase _mc, IVoting _voting) public {
 		// cool! voting is over and the majority said YES -> so let's go!
 		// as long as we call this method from WITHIN the vote contract 
 		// isCanDoAction() should return yes if voting finished with Yes result
@@ -171,7 +171,7 @@ contract ProposalIssueTokens is IProposal {
 	address to;
 	uint amount;
 
-	function ProposalIssueTokens(IMicrocompany _mc, address _origin,
+	function ProposalIssueTokens(IMicrocompanyBase _mc, address _origin,
 										address _to, uint _amount) public 
 	{
 		// TODO: remove default parameters, let Voting to read data in its constructor
@@ -184,7 +184,7 @@ contract ProposalIssueTokens is IProposal {
 
 // IProposal implementation
 	// should be called from Voting
-	function action(IMicrocompany _mc, IVoting _voting) public {
+	function action(IMicrocompanyBase _mc, IVoting _voting) public {
 		require(msg.sender==address(voting));
 
 		// as long as we call this method from WITHIN the vote contract 

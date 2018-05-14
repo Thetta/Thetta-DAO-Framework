@@ -1,5 +1,4 @@
 var Microcompany = artifacts.require("./Microcompany");
-var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
 //var ProposalAddNewTask = artifacts.require("./ProposalAddNewTask");
 var AutoActionCaller = artifacts.require("./AutoActionCaller");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
@@ -10,7 +9,6 @@ var IProposal = artifacts.require("./IProposal");
 var CheckExceptions = require('./utils/checkexceptions');
 
 global.contract('Microcompany', (accounts) => {
-	let mcStorage;
 	let mcInstance;
 	let aacInstance;
 
@@ -20,16 +18,15 @@ global.contract('Microcompany', (accounts) => {
 	const outsider = accounts[3];
 
 	global.beforeEach(async() => {
-		mcStorage = await MicrocompanyStorage.new({gas: 10000000, from: creator});
 		// issue 1000 tokens
-		mcInstance = await Microcompany.new(mcStorage.address,1000,{gas: 10000000, from: creator});
+		mcInstance = await Microcompany.new(1000,{gas: 10000000, from: creator});
 		aacInstance = await AutoActionCaller.new(mcInstance.address, {from: creator});
 		mcInstance.setAutoActionCallerAddress(aacInstance.address);
 	});
 
 	global.it('should set everything correctly',async() => {
 		///
-		const isCan = await mcStorage.isCanDoByEmployee("addNewProposal");
+		const isCan = await mcInstance.isCanDoByEmployee("addNewProposal");
 		global.assert.equal(isCan,true,'Permission should be set correctly');
 
 		const isMajority = await mcInstance.isInMajority(creator);
@@ -90,7 +87,7 @@ global.contract('Microcompany', (accounts) => {
 			{from: creator}
 		);
 		await mcInstance.addNewProposal(p1.address);
-		const votesCount1 = await mcStorage.votesCount();
+		const votesCount1 = await mcInstance.votesCount();
 		global.assert.equal(votesCount1,1,'Vote should be added');
 	});
 	*/
@@ -126,7 +123,7 @@ global.contract('Microcompany', (accounts) => {
 		var ta = await mcInstance.stdToken();
 		const smt = await StdMicrocompanyToken.at(ta);
 
-		const proposalsCount1 = await mcStorage.proposalsCount();
+		const proposalsCount1 = await mcInstance.proposalsCount();
 		global.assert.equal(proposalsCount1,0,'No proposals should be added');
 
 		// add new employee1
@@ -142,11 +139,11 @@ global.contract('Microcompany', (accounts) => {
 
 		// new proposal should be added 
 		await aacInstance.issueTokensAuto(employee1,1000,{from: employee1});
-		const proposalsCount2 = await mcStorage.proposalsCount();
+		const proposalsCount2 = await mcInstance.proposalsCount();
 		global.assert.equal(proposalsCount2,1,'New proposal should be added'); 
 
 		// check the voting data
-		const pa = await mcStorage.getProposalAtIndex(0);
+		const pa = await mcInstance.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting.at(votingAddress);
