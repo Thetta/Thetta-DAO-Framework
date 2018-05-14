@@ -2,25 +2,10 @@ pragma solidity ^0.4.15;
 
 import '../IMicrocompany.sol';
 import '../tasks/Tasks.sol';
-
+import './IVoting.sol';
 import './IProposal.sol';
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
-
-contract IVoting {
-	// will execute action if the voting is finished 
-	function vote(bool _yes) public;
-
-	function cancelVoting() public;
-
-// These should be implemented in the less abstract contracts like Voting, etc:
-	// This is for statistics
-	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults);
-	// Is voting finished?
-	function isFinished()public constant returns(bool);
-	// The result of voting
-	function isYes()public constant returns(bool);
-}
 
 contract Voting is IVoting, Ownable {
 	enum VoteType {
@@ -35,9 +20,12 @@ contract Voting is IVoting, Ownable {
 	}
 
 	IMicrocompany mc;
+	IProposal proposal; 
+
 	VoteType public voteType;
 	uint public minutesToVote;
 	address public tokenAddress;
+	bool isCalled = false;
 
 ////////
 	mapping (uint=>address) employeesVoted;
@@ -46,9 +34,11 @@ contract Voting is IVoting, Ownable {
 
 ////////
 	// we can use _origin instead of tx.origin
-	function Voting(address _mc, address _origin, 
+	function Voting(IMicrocompany _mc, IProposal _proposal, address _origin, 
 						VoteType _voteType, uint _minutesToVote, address _tokenAddress){
-		mc = IMicrocompany(_mc);
+		mc = _mc;
+		proposal = _proposal; 
+
 		voteType = _voteType;	
 		minutesToVote = _minutesToVote;
 		tokenAddress = _tokenAddress;
@@ -62,11 +52,20 @@ contract Voting is IVoting, Ownable {
 		}
 	}
 
-	// TODO: count
-	function vote(bool _yes) public{
+	function vote(bool _yes) public {
+		require(!isFinished());
+
 		if(voteType==VoteType.EmployeesVote){
 			require(mc.isEmployee(msg.sender));
 			internalEmployeeVote(msg.sender, _yes);
+		}
+
+		// if voting is finished -> then call action()
+		if(!isCalled && isFinished() && isYes()){
+			// should not be callable again!!!
+			isCalled = true;
+
+			proposal.action(mc, this);
 		}
 	}
 
@@ -84,7 +83,6 @@ contract Voting is IVoting, Ownable {
 	function isYes()public constant returns(bool){
 		// WARNING: this line is commented, so will not check if voting is finished!
 		//if(!isFinished(){return false;}
-
 		var(yesResults, noResults, totalResults) = getFinalResults();
 
 		// TODO: calculate results
@@ -110,7 +108,7 @@ contract Voting is IVoting, Ownable {
 ////// EMPLOYEE type:
 	// remember who voted yes or no
 	function internalEmployeeVote(address _who, bool _yes) internal {
-		// voter can vote again and change the vote!
+		// voter can not vote again and change the vote!
 		votes[_who] = _yes;
 
 		employeesVoted[employeesVotedCount] = _who;
@@ -158,21 +156,11 @@ contract ProposalAddNewTask is Vote {
 	}
 
 // IVoting implementation
-	function action() public {
-		// voting should be finished
-		require(isFinished());
-
-		// TODO: should not be callable again!!!
-
-		// this is not needed, because Microcompany.isCanDoAction() will check how THIS vote is 
-		//if(isYes()){
-
+	function action(IMicrocompany _mc, IVoting _voting) public {
 		// cool! voting is over and the majority said YES -> so let's go!
-		IMicrocompany tmp = IMicrocompany(mc);
-
 		// as long as we call this method from WITHIN the vote contract 
 		// isCanDoAction() should return yes if voting finished with Yes result
-		tmp.addNewWeiTask(wt);
+		_mc.addNewWeiTask(wt);
 	}
 }
 */
@@ -183,28 +171,25 @@ contract ProposalIssueTokens is IProposal {
 	address to;
 	uint amount;
 
-	function ProposalIssueTokens(address _mc, address _origin,
+	function ProposalIssueTokens(IMicrocompany _mc, address _origin,
 										address _to, uint _amount) public 
 	{
 		// TODO: remove default parameters, let Voting to read data in its constructor
 		// each employee has 1 vote 
-		voting = new Voting(_mc, _origin, Voting.VoteType.EmployeesVote, 24 *60, 0x0);
+		voting = new Voting(_mc, this, _origin, Voting.VoteType.EmployeesVote, 24 *60, 0x0);
 
 		to = _to; 
 		amount = _amount;
 	}
 
 // IProposal implementation
-	function action() public {
-		// TODO: open
-
-		// TODO: should not be callable again!!!
+	// should be called from Voting
+	function action(IMicrocompany _mc, IVoting _voting) public {
+		require(msg.sender==address(voting));
 
 		// as long as we call this method from WITHIN the vote contract 
 		// isCanDoAction() should return yes if voting finished with Yes result
-
-		//IMicrocompany tmp = IMicrocompany(mc);
-		//tmp.issueTokens(to, amount);
+		_mc.issueTokens(to, amount);
 	}
 
 	function getVoting()public constant returns(address){

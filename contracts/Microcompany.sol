@@ -75,12 +75,12 @@ contract MicrocompanyStorage {
 		return proposals[_i];
 	}
 
-	// TODO: rename? 
-	function getVotingResults(address _vote) public constant returns (bool isVotingFound, bool votingResult){
+	function getProposalVotingResults(address _p) public constant returns (bool isVotingFound, bool votingResult){
 		// scan all votings and search for the one that is finished 
 		for(uint i=0; i<proposalsCount; ++i){
-			if(proposals[i]==_vote){
-				IVoting vote = IVoting(proposals[i]);
+			if(proposals[i]==_p){
+				IProposal proposal = IProposal(_p);
+				IVoting vote = IVoting(proposal.getVoting());
 				return (true, 	vote.isFinished() && vote.isYes());
 			}
 		}
@@ -199,7 +199,7 @@ contract Microcompany is IMicrocompany, Ownable {
 
 		// 2 - can do action only by starting new vote first?
 		if(store.isCanDoByVoting(_permissionName)){
-			var (isVotingFound, votingResult) = store.getVotingResults(msg.sender);
+			var (isVotingFound, votingResult) = store.getProposalVotingResults(msg.sender);
 			if(isVotingFound){
 				return votingResult;
 			}

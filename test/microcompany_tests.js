@@ -125,8 +125,6 @@ global.contract('Microcompany', (accounts) => {
 	global.it('should require voting to issue more tokens',async() => {
 		var ta = await mcInstance.stdToken();
 		const smt = await StdMicrocompanyToken.at(ta);
-		const balance1 = await smt.balanceOf(employee1);
-		global.assert.equal(balance1,0,'initial employee1 balance');
 
 		const proposalsCount1 = await mcStorage.proposalsCount();
 		global.assert.equal(proposalsCount1,0,'No proposals should be added');
@@ -160,15 +158,12 @@ global.contract('Microcompany', (accounts) => {
 		global.assert.equal(r[1],0,'no');
 		global.assert.equal(r[2],1,'total');
 
-		/*
-		// should not call action if not finished
-		await CheckExceptions.checkContractThrows(voting.action.sendTransaction,
-			[{ from: creator}],
-			'Should not allow to call action');
-		*/
+		const balance1 = await smt.balanceOf(employee1);
+		global.assert.strictEqual(balance1.toNumber(),0,'initial employee1 balance');
 
 		// vote again
-		await voting.vote(1,{from:employee1});
+		// should execute the action (issue tokens)!
+		await voting.vote(true,{from:employee1});
 		const r2 = await voting.getFinalResults();
 		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1],0,'no');
@@ -178,20 +173,13 @@ global.contract('Microcompany', (accounts) => {
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
 
-		// now should execute the action (issue tokens)
-		/*
-		await voting.action({from:employee1});		// can be called from any account
 		const balance2 = await smt.balanceOf(employee1);
-		global.assert.equal(balance2,1000,'employee1 balance should be updated');
-		*/
+		global.assert.strictEqual(balance2.toNumber(),1000,'employee1 balance should be updated');
 
-		// TODO:
-		// should not call action again 
-		/*
-		await CheckExceptions.checkContractThrows(voting.action.sendTransaction,
-			[{ from: creator}],
+		// should not call vote again 
+		await CheckExceptions.checkContractThrows(voting.vote.sendTransaction,
+			[true,{ from: creator}],
 			'Should not call action again');
-		*/
 	});
 });
 
