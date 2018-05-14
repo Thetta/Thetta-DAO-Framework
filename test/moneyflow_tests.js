@@ -13,6 +13,8 @@ global.contract('Moneyflow', (accounts) => {
 	let mcInstance;
 	let moneyflowInstance;
 
+	let money = web3.toWei(0.001, "ether")
+
 	const creator = accounts[0];
 	const employee1 = accounts[1];
 	const employee2 = accounts[2];
@@ -42,24 +44,24 @@ global.contract('Moneyflow', (accounts) => {
 		global.assert.equal(revEndpoint2,ftwr.address,'Endpoint should be non zero now');
 
 		// now send some money to the revenue endpoint 
-		web3.eth.sendTransaction({ from: creator, to: revEndpoint2, value: web3.toWei(0.001, "ether")})
+		web3.eth.sendTransaction({ from: creator, to: revEndpoint2, value: money})
 
 		// money should end up in the fund
 
 		// test fund.flush()
-		
+
 		let fundBalance = await web3.eth.getBalance(fund.address);
 		global.assert.equal(fundBalance,1000000000000000,'Money should be transferred to the fund');
 		let firstCreatorBalance = await web3.eth.getBalance(creator);
 		let th = await fund.flush({from:creator, gas:1000000, gasPrice:100000000})
 		let secondCreatorBalance = await web3.eth.getBalance(creator);
 		let creatorBalanceDelta = secondCreatorBalance.toNumber() - firstCreatorBalance.toNumber()
-		global.assert.equal(creatorBalanceDelta>0.95*web3.toWei(0.001, "ether"), true)
+		global.assert.equal(creatorBalanceDelta>0.95*money, true)
 		let fundBalance2 = await web3.eth.getBalance(fund.address);
 		let fundBalanceDelta = fundBalance.toNumber() - fundBalance2.toNumber()
-		global.assert.equal(fundBalanceDelta>0.95*web3.toWei(0.001, "ether"), true)
+		global.assert.equal(fundBalanceDelta>0.95*money, true)
 
-		web3.eth.sendTransaction({ from: creator, to: revEndpoint2, value: web3.toWei(0.001, "ether")})
+		web3.eth.sendTransaction({ from: creator, to: revEndpoint2, value: money})
 
 		// test fund.flushTo()
 
@@ -71,10 +73,10 @@ global.contract('Moneyflow', (accounts) => {
 		let secondOutsiderBalance = await web3.eth.getBalance(outsider);
 		let outsiderBalanceDelta = secondOutsiderBalance.toNumber() - firstOutsiderBalance.toNumber()
 
-		global.assert.equal(outsiderBalanceDelta>0.95*web3.toWei(0.001, "ether"), true)
+		global.assert.equal(outsiderBalanceDelta>0.95*money, true)
 		let fundBalance4 = await web3.eth.getBalance(fund.address);
 		let fundBalanceDelta2 = fundBalance3.toNumber() - fundBalance4.toNumber()
-		global.assert.equal(fundBalanceDelta2>0.95*web3.toWei(0.001, "ether"), true)
+		global.assert.equal(fundBalanceDelta2>0.95*money, true)
 
 	});
 
