@@ -31,11 +31,12 @@ global.contract('Moneyflow', (accounts) => {
 		const revEndpoint = await moneyflowInstance.getRevenueEndpointAddress();
 		global.assert.equal(revEndpoint,0x0,'Endpoint should be zero');
 
-		let fund = await WeiFund.new(creator,{from:creator});
+		const isEnableFlushTo = true;
+		let fund = await WeiFund.new(creator,isEnableFlushTo,{from:creator});
 		global.assert.notEqual(fund.address,0x0,'Fund should be created');
 		let ftwr = await FallbackToWeiReceiver.new(fund.address,{from:creator});
 
-		await moneyflowInstance.setWeiReceiver(ftwr.address);
+		await moneyflowInstance.setRootWeiReceiver(ftwr.address);
 
 		const revEndpoint2 = await moneyflowInstance.getRevenueEndpointAddress();
 		global.assert.equal(revEndpoint2,ftwr.address,'Endpoint should be non zero now');
@@ -48,6 +49,8 @@ global.contract('Moneyflow', (accounts) => {
 		global.assert.equal(balance,1000000000000000,'Money should be transferred to the fund');
 
 		// TODO: test fund.flush()
+		
+		// TODO: test fund.flushTo()
 	});
 
 	global.it('should allow to get donations',async() => {
@@ -66,7 +69,7 @@ global.contract('Moneyflow', (accounts) => {
 		// add 3 WeiAbsoluteExpense outputs to the splitter
 		
 		// add WeiTopDownSplitter to the moneyflow
-		// await moneyflowInstance.setWeiReceiver(splitter.address);
+		// await moneyflowInstance.setRootWeiReceiver(splitter.address);
 
 		// now send some money to the revenue endpoint 
 		
@@ -80,7 +83,7 @@ global.contract('Moneyflow', (accounts) => {
 		// add 3 WeiAbsoluteExpense outputs to the splitter
 		
 		// add WeiTopDownSplitter to the moneyflow
-		// await moneyflowInstance.setWeiReceiver(splitter.address);
+		// await moneyflowInstance.setRootWeiReceiver(splitter.address);
 
 		// now send some money to the revenue endpoint 
 		

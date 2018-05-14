@@ -21,4 +21,7 @@ npm install -g truffle
 
 # test
 npm run test
+
+# run specific test  
+npm run test -- test/moneyflow_tests.js
 ```

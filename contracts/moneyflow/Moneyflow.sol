@@ -19,7 +19,7 @@ contract MoneyFlow is IMoneyflow, Ownable {
 
 	// by default - this is 0x0, please use setWeiReceiver method
 	// this can be a WeiSplitter (top-down or unsorted)
-	IWeiReceiver public firstReceiver;
+	IWeiReceiver rootReceiver;
 
 	function MoneyFlow()public{
 		donationEndpoint = new DonationEndpoint();
@@ -37,14 +37,14 @@ contract MoneyFlow is IMoneyflow, Ownable {
 	// WARNING: this can be 0x0!
 	// Do not send money here!
 	function getRevenueEndpointAddress()public constant returns(address){
-		return address(firstReceiver);
+		return address(rootReceiver);
 	}
 
 // WeiReceivers:
 	// receiver can be a splitter, fund or event task
 	// _receiver can be 0x0!
-	function setWeiReceiver(address _receiver) public {
-		firstReceiver = IWeiReceiver(_receiver);
+	function setRootWeiReceiver(IWeiReceiver _receiver) public onlyOwner {
+		rootReceiver = _receiver;
 	}
 
 ///////////////////

@@ -1,6 +1,6 @@
 var Microcompany = artifacts.require("./Microcompany");
 var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
-var VoteAddNewTask = artifacts.require("./VoteAddNewTask");
+//var VoteAddNewTask = artifacts.require("./VoteAddNewTask");
 var AutoActionCaller = artifacts.require("./AutoActionCaller");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
 var Vote = artifacts.require("./Vote");
@@ -80,6 +80,9 @@ global.contract('Microcompany', (accounts) => {
 			'Should not add new vote because employee1 has no permission');
 	});
 
+	/*
+	// TODO: commented because vote is not needed anymore
+	//
 	global.it('should add new vote by creator',async() => {
 		let vote1 = await VoteAddNewTask.new(mcInstance.address,creator,"SampleTaskCaption","SomeTaskDescription",false,false,100,
 			{from: creator}
@@ -88,6 +91,7 @@ global.contract('Microcompany', (accounts) => {
 		const votesCount1 = await mcStorage.votesCount();
 		global.assert.equal(votesCount1,1,'Vote should be added');
 	});
+	*/
 
 	global.it('should issue tokens to employee1 and employee2',async() => {
 		await mcInstance.issueTokens(employee1,1000,{from: creator});

@@ -1,5 +1,7 @@
 pragma solidity ^0.4.15;
 
+import "./WeiExpense.sol";
+
 contract IMoneyflow {
 	// send revenue here!
 	function getRevenueEndpointAddress()public constant returns(address);
@@ -10,5 +12,9 @@ contract IMoneyflow {
 	function withdrawDonations()public;
 
 // Receivers
-	function setWeiReceiver(address _receiver) public;
+	function setRootWeiReceiver(IWeiReceiver _receiver) public;
+}
+
+contract IMoneyflowScheme {
+	function addNewTaskAuto(WeiAbsoluteExpense wt) public returns(address voteOut);
 }

@@ -17,10 +17,10 @@ testrpc_running() {
 if testrpc_running; then
   echo "Using existing testrpc-sc instance"
 else
-  echo "Starting testrpc-sc to generate coverage"
+  echo "Starting testrpc-sc"
   ./node_modules/ethereumjs-testrpc-sc/build/cli.node.js --gasLimit 0xfffffffffff --port 8555\
   > /dev/null &
   testrpc_pid=$!
 fi
 
-truffle test
+truffle test $1
