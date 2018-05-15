@@ -8,11 +8,16 @@ var FallbackToWeiReceiver = artifacts.require("./FallbackToWeiReceiver");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
+var WeiTopDownSplitter = require('./WeiTopDownSplitter');
+var WeiUnsortedSplitter = require('./WeiUnsortedSplitter');
+
 global.contract('Moneyflow', (accounts) => {
 	let token;
 	let store;
 	let mcInstance;
 	let moneyflowInstance;
+
+	let money = web3.toWei(0.001, "ether")
 
 	const creator = accounts[0];
 	const employee1 = accounts[1];
@@ -64,29 +69,80 @@ global.contract('Moneyflow', (accounts) => {
 		global.assert.equal(revEndpoint2,ftwr.address,'Endpoint should be non zero now');
 
 		// now send some money to the revenue endpoint 
-		web3.eth.sendTransaction({ from: creator, to: revEndpoint2, value: web3.toWei(0.001, "ether")})
+		web3.eth.sendTransaction({ from: creator, to: revEndpoint2, value: money})
 
 		// money should end up in the fund
-		const balance = await web3.eth.getBalance(fund.address);
-		global.assert.equal(balance,1000000000000000,'Money should be transferred to the fund');
 
-		// TODO: test fund.flush()
+		// test fund.flush()
+
+		let fundBalance = await web3.eth.getBalance(fund.address);
+		global.assert.equal(fundBalance,1000000000000000,'Money should be transferred to the fund');
+		let firstCreatorBalance = await web3.eth.getBalance(creator);
+		let th = await fund.flush({from:creator, gas:1000000, gasPrice:100000000})
+		let secondCreatorBalance = await web3.eth.getBalance(creator);
+		let creatorBalanceDelta = secondCreatorBalance.toNumber() - firstCreatorBalance.toNumber()
+		global.assert.equal(creatorBalanceDelta>0.95*money, true)
+		let fundBalance2 = await web3.eth.getBalance(fund.address);
+		let fundBalanceDelta = fundBalance.toNumber() - fundBalance2.toNumber()
+		global.assert.equal(fundBalanceDelta>0.95*money, true)
+
+		web3.eth.sendTransaction({ from: creator, to: revEndpoint2, value: money})
+
+		// test fund.flushTo()
+
+		let fundBalance3 = await web3.eth.getBalance(fund.address);
+		global.assert.equal(fundBalance,money,'Money should be transferred to the fund');
 		
-		// TODO: test fund.flushTo()
+		let firstOutsiderBalance = await web3.eth.getBalance(outsider);
+		let th2 = await fund.flushTo(outsider, {from:creator, gas:1000000, gasPrice:100000000})
+		let secondOutsiderBalance = await web3.eth.getBalance(outsider);
+		let outsiderBalanceDelta = secondOutsiderBalance.toNumber() - firstOutsiderBalance.toNumber()
+
+		global.assert.equal(outsiderBalanceDelta>0.95*money, true)
+		let fundBalance4 = await web3.eth.getBalance(fund.address);
+		let fundBalanceDelta2 = fundBalance3.toNumber() - fundBalance4.toNumber()
+		global.assert.equal(fundBalanceDelta2>0.95*money, true)
+
 	});
 
 	global.it('should allow to get donations',async() => {
-		// TODO: write test
-		// use getDonationEndpointAddress() to get address 
-		//
+		const donationEndpoint = await moneyflowInstance.getDonationEndpointAddress();
+
+		const isEnableFlushTo = true;
+		let fund = await WeiFund.new(creator,isEnableFlushTo,{from:creator});
+		// global.assert.notEqual(fund.address,0x0,'Fund should be created');
+		let ftwr = await FallbackToWeiReceiver.new(fund.address,{from:creator});
+
 		// send some money to the donation endpoint 
-		//
-		// withdraw that money by the creator (without voting!!!)
+
+		web3.eth.sendTransaction({ from: creator, to: donationEndpoint, value: money})
+
+		let donationBalance = await web3.eth.getBalance(donationEndpoint);
+		global.assert.equal(donationBalance.toNumber(),money);
+		
+		let creatorBalance = await web3.eth.getBalance(creator);
+		
+		let th2 = await moneyflowInstance.setRootWeiReceiver(creator,{from:creator, gas:100000, gasPrice:0})
+		let th = await moneyflowInstance.withdrawDonations({from:creator, gas:100000, gasPrice:0})
+		let creatorBalance2 = await web3.eth.getBalance(creator);
+
+		let donationBalance2 = await web3.eth.getBalance(donationEndpoint);
+
+		global.assert.equal(donationBalance2.toNumber(),0);
+
+		let creatorBalanceDelta = creatorBalance2.toNumber() - creatorBalance.toNumber()
+		global.assert.equal(creatorBalanceDelta, money)
 	});
 
 	global.it('should process money with WeiTopDownSplitter + 3 WeiAbsoluteExpense',async() => {
 		// TODO:
 		// create WeiTopDownSplitter 
+
+
+
+		let weiAbsoluteExpense1 = await WeiAbsoluteExpense.new(1*money, {from:creator, gasPrice:0})
+		let weiAbsoluteExpense2 = await WeiAbsoluteExpense.new(2*money, {from:creator, gasPrice:0})
+		let weiAbsoluteExpense3 = await WeiAbsoluteExpense.new(3*money, {from:creator, gasPrice:0})
 		
 		// add 3 WeiAbsoluteExpense outputs to the splitter
 		

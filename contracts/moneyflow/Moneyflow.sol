@@ -12,6 +12,10 @@ contract DonationEndpoint is Ownable {
 	function withdrawDonations(address _to)public onlyOwner{
 		_to.transfer(this.balance);
 	}
+
+	function() public payable{
+		
+	}
 }
 
 contract MoneyFlow is IMoneyflow, Ownable {
@@ -31,7 +35,7 @@ contract MoneyFlow is IMoneyflow, Ownable {
 	}
 
 	function withdrawDonations()public onlyOwner{
-		donationEndpoint.withdrawDonations(msg.sender);
+		donationEndpoint.withdrawDonations(rootReceiver);
 	}
 
 	// WARNING: this can be 0x0!

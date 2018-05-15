@@ -22,13 +22,13 @@ contract WeiFund is IWeiReceiver, IWeiDestination, Ownable {
 	// Process funds, send it to the Output
 	function flushTo(address _to) public onlyOwner {
 		require(allowFlushTo);		// this operation can be prohibited
-		_to.transfer(msg.value);
+		_to.transfer(this.balance);
 	}
 
 	// Process funds, send it to the Output
 	function flush() public onlyOwner {
 		// TODO: check for vulnerabilities
-		output.transfer(msg.value);
+		output.transfer(this.balance);
 	}
 
 // IWeiReceiver:
