@@ -19,7 +19,6 @@ contract IMicrocompanyBase {
 // Tokens
 	// TODO: curently Microcompany has only 1 type of tokens
 	// that gives full governance rights - "DefaultToken"
-	function getTokenInfo() public constant returns(address _out);
 	function issueTokens(address _to, uint amount)public;
 }
 

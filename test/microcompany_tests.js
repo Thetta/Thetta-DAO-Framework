@@ -2,6 +2,7 @@ var Microcompany = artifacts.require("./Microcompany");
 //var ProposalAddNewTask = artifacts.require("./ProposalAddNewTask");
 var AutoActionCaller = artifacts.require("./AutoActionCaller");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
+var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
 
 var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
@@ -10,6 +11,7 @@ var CheckExceptions = require('./utils/checkexceptions');
 
 global.contract('Microcompany', (accounts) => {
 	let token;
+	let storageInstance;
 	let mcInstance;
 	let aacInstance;
 
@@ -22,7 +24,10 @@ global.contract('Microcompany', (accounts) => {
 		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 
-		mcInstance = await Microcompany.new(token.address,{gas: 10000000, from: creator});
+		storageInstance = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
+
+		mcInstance = await Microcompany.new(storageInstance.address,{gas: 10000000, from: creator});
+
 		// do not forget to transfer ownership
 		token.transferOwnership(mcInstance.address);
 
@@ -32,7 +37,7 @@ global.contract('Microcompany', (accounts) => {
 
 	global.it('should set everything correctly',async() => {
 		///
-		const isCan = await mcInstance.isCanDoByEmployee("addNewProposal");
+		const isCan = await storageInstance.isCanDoByEmployee("addNewProposal");
 		global.assert.equal(isCan,true,'Permission should be set correctly');
 
 		const isMajority = await mcInstance.isInMajority(creator);
@@ -123,10 +128,7 @@ global.contract('Microcompany', (accounts) => {
 	});
 
 	global.it('should require voting to issue more tokens',async() => {
-		var ta = await mcInstance.stdToken();
-		const smt = await StdMicrocompanyToken.at(ta);
-
-		const proposalsCount1 = await mcInstance.proposalsCount();
+		const proposalsCount1 = await mcInstance.getProposalsCount();
 		global.assert.equal(proposalsCount1,0,'No proposals should be added');
 
 		// add new employee1
@@ -142,7 +144,7 @@ global.contract('Microcompany', (accounts) => {
 
 		// new proposal should be added 
 		await aacInstance.issueTokensAuto(employee1,1000,{from: employee1});
-		const proposalsCount2 = await mcInstance.proposalsCount();
+		const proposalsCount2 = await mcInstance.getProposalsCount();
 		global.assert.equal(proposalsCount2,1,'New proposal should be added'); 
 
 		// check the voting data
@@ -158,7 +160,7 @@ global.contract('Microcompany', (accounts) => {
 		global.assert.equal(r[1],0,'no');
 		global.assert.equal(r[2],1,'total');
 
-		const balance1 = await smt.balanceOf(employee1);
+		const balance1 = await token.balanceOf(employee1);
 		global.assert.strictEqual(balance1.toNumber(),0,'initial employee1 balance');
 
 		// vote again
@@ -173,7 +175,7 @@ global.contract('Microcompany', (accounts) => {
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
 
-		const balance2 = await smt.balanceOf(employee1);
+		const balance2 = await token.balanceOf(employee1);
 		global.assert.strictEqual(balance2.toNumber(),1000,'employee1 balance should be updated');
 
 		// should not call vote again 
