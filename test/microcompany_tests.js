@@ -37,6 +37,7 @@ global.contract('Microcompany', (accounts) => {
 			await store.addActionByVoting("removeEmployee");
 			await store.addActionByVoting("addNewTask");
 			await store.addActionByVoting("issueTokens");
+			await store.addActionByVoting("upgradeMicrocompany");
 			// add creator as first employee	
 			await store.addNewEmployee(creator);			
 		}
@@ -103,19 +104,6 @@ global.contract('Microcompany', (accounts) => {
 			[newProposal, { from: employee1}],
 			'Should not add new proposal because employee1 has no permission');
 	});
-
-	/*
-	// TODO: commented because vote is not needed anymore
-	//
-	global.it('should add new vote by creator',async() => {
-		let p1 = await ProposalAddNewTask.new(mcInstance.address,creator,"SampleTaskCaption","SomeTaskDescription",false,false,100,
-			{from: creator}
-		);
-		await mcInstance.addNewProposal(p1.address);
-		const votesCount1 = await mcInstance.votesCount();
-		global.assert.equal(votesCount1,1,'Vote should be added');
-	});
-	*/
 
 	global.it('should issue tokens to employee1 and employee2',async() => {
 		await mcInstance.issueTokens(employee1,1000,{from: creator});
@@ -196,6 +184,17 @@ global.contract('Microcompany', (accounts) => {
 		await CheckExceptions.checkContractThrows(voting.vote.sendTransaction,
 			[true,{ from: creator}],
 			'Should not call action again');
+	});
+
+	global.it('should be able to upgrade',async() => {
+		// TODO: 
+		//
+		// 1 - create new Microcompany
+		
+		// 2 - 
+		// TODO: call upgradeMicrocompanyContract method	
+		
+		// 3 - check that everything works fine with new contract (issue tokens, etc)
 	});
 });
 

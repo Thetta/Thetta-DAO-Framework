@@ -35,6 +35,8 @@ contract MoneyFlow is IMoneyflow, Ownable {
 	}
 
 	function withdrawDonations()public onlyOwner{
+		assert(0x0!=address(rootReceiver));	// please set root receiver first
+
 		donationEndpoint.withdrawDonations(rootReceiver);
 	}
 
