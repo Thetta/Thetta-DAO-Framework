@@ -79,11 +79,7 @@ global.contract('Moneyflow', (accounts) => {
 		let fundBalance = await web3.eth.getBalance(fund.address);
 		global.assert.equal(fundBalance,1000000000000000,'Money should be transferred to the fund');
 		let firstCreatorBalance = await web3.eth.getBalance(creator);
-<<<<<<< HEAD
-		let th = await fund.flush({from:creator, gas:1000000, gasPrice:100000000});
-=======
-		await fund.flush({from:creator, gas:1000000, gasPrice:100000000})
->>>>>>> f253a573632e929ea08a11f1cb8c76e94f3e8863
+		await fund.flush({from:creator, gas:1000000, gasPrice:100000000});
 		let secondCreatorBalance = await web3.eth.getBalance(creator);
 		let creatorBalanceDelta = secondCreatorBalance.toNumber() - firstCreatorBalance.toNumber();
 		global.assert.equal(creatorBalanceDelta>0.95*money, true);
@@ -99,11 +95,7 @@ global.contract('Moneyflow', (accounts) => {
 		global.assert.equal(fundBalance,money,'Money should be transferred to the fund');
 		
 		let firstOutsiderBalance = await web3.eth.getBalance(outsider);
-<<<<<<< HEAD
-		let th2 = await fund.flushTo(outsider, {from:creator, gas:1000000, gasPrice:100000000});
-=======
-		await fund.flushTo(outsider, {from:creator, gas:1000000, gasPrice:100000000})
->>>>>>> f253a573632e929ea08a11f1cb8c76e94f3e8863
+		await fund.flushTo(outsider, {from:creator, gas:1000000, gasPrice:100000000});
 		let secondOutsiderBalance = await web3.eth.getBalance(outsider);
 		let outsiderBalanceDelta = secondOutsiderBalance.toNumber() - firstOutsiderBalance.toNumber();
 
@@ -118,18 +110,8 @@ global.contract('Moneyflow', (accounts) => {
 
 		const isEnableFlushTo = true;
 		let fund = await WeiFund.new(creator,isEnableFlushTo,{from:creator});
-<<<<<<< HEAD
-		// global.assert.notEqual(fund.address,0x0,'Fund should be created');
-		// let ftwr = await FallbackToWeiReceiver.new(fund.address,{from:creator});
-
 		// send some money to the donation endpoint 
-
 		web3.eth.sendTransaction({ from: creator, to: donationEndpoint, value: money});
-=======
-
-		// send some money to the donation endpoint 
-		web3.eth.sendTransaction({ from: creator, to: donationEndpoint, value: money})
->>>>>>> f253a573632e929ea08a11f1cb8c76e94f3e8863
 
 		let donationBalance = await web3.eth.getBalance(donationEndpoint);
 		global.assert.equal(donationBalance.toNumber(),money);
@@ -137,14 +119,9 @@ global.contract('Moneyflow', (accounts) => {
 		let creatorBalance = await web3.eth.getBalance(creator);
 		await moneyflowInstance.setRootWeiReceiver(creator,{from:creator, gas:100000, gasPrice:0})
 		
-<<<<<<< HEAD
-		let th2 = await moneyflowInstance.setRootWeiReceiver(creator,{from:creator, gas:100000, gasPrice:0});
-		let th = await moneyflowInstance.withdrawDonations({from:creator, gas:100000, gasPrice:0});
-=======
 		// get the donations 
 		// donation will go to the root receiver
-		await moneyflowInstance.withdrawDonations({from:creator, gas:100000, gasPrice:0})
->>>>>>> f253a573632e929ea08a11f1cb8c76e94f3e8863
+		await moneyflowInstance.withdrawDonations({from:creator, gas:100000, gasPrice:0});
 		let creatorBalance2 = await web3.eth.getBalance(creator);
 		let donationBalance2 = await web3.eth.getBalance(donationEndpoint);
 
