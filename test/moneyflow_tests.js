@@ -8,6 +8,9 @@ var FallbackToWeiReceiver = artifacts.require("./FallbackToWeiReceiver");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
+var WeiTopDownSplitter = require('./WeiTopDownSplitter');
+var WeiUnsortedSplitter = require('./WeiUnsortedSplitter');
+
 global.contract('Moneyflow', (accounts) => {
 	let mcStorage;
 	let mcInstance;
@@ -21,11 +24,11 @@ global.contract('Moneyflow', (accounts) => {
 	const outsider = accounts[3];
 
 	global.beforeEach(async() => {
-		mcStorage = await MicrocompanyStorage.new({gas: 10000000, from: creator});
+		mcStorage = await MicrocompanyStorage.new({gas: 10000000, from: creator, gasPrice:0});
 		// issue 1000 tokens
-		mcInstance = await Microcompany.new(mcStorage.address,1000,{gas: 10000000, from: creator});
+		mcInstance = await Microcompany.new(mcStorage.address,1000,{gas: 10000000, from: creator, gasPrice:0});
 		//mcInstance.setAutoActionCallerAddress(aacInstance.address);
-		moneyflowInstance = await MoneyFlow.new({from: creator});
+		moneyflowInstance = await MoneyFlow.new({from: creator, gasPrice:0});
 	});
 
 	global.it('should allow to send revenue',async() => {
@@ -66,7 +69,7 @@ global.contract('Moneyflow', (accounts) => {
 		// test fund.flushTo()
 
 		let fundBalance3 = await web3.eth.getBalance(fund.address);
-		global.assert.equal(fundBalance,1000000000000000,'Money should be transferred to the fund');
+		global.assert.equal(fundBalance,money,'Money should be transferred to the fund');
 		
 		let firstOutsiderBalance = await web3.eth.getBalance(outsider);
 		let th2 = await fund.flushTo(outsider, {from:creator, gas:1000000, gasPrice:100000000})
@@ -81,17 +84,43 @@ global.contract('Moneyflow', (accounts) => {
 	});
 
 	global.it('should allow to get donations',async() => {
-		// TODO: write test
-		// use getDonationEndpointAddress() to get address 
-		//
+		const donationEndpoint = await moneyflowInstance.getDonationEndpointAddress();
+
+		const isEnableFlushTo = true;
+		let fund = await WeiFund.new(creator,isEnableFlushTo,{from:creator});
+		// global.assert.notEqual(fund.address,0x0,'Fund should be created');
+		let ftwr = await FallbackToWeiReceiver.new(fund.address,{from:creator});
+
 		// send some money to the donation endpoint 
-		//
-		// withdraw that money by the creator (without voting!!!)
+
+		web3.eth.sendTransaction({ from: creator, to: donationEndpoint, value: money})
+
+		let donationBalance = await web3.eth.getBalance(donationEndpoint);
+		global.assert.equal(donationBalance.toNumber(),money);
+		
+		let creatorBalance = await web3.eth.getBalance(creator);
+		
+		let th2 = await moneyflowInstance.setRootWeiReceiver(creator,{from:creator, gas:100000, gasPrice:0})
+		let th = await moneyflowInstance.withdrawDonations({from:creator, gas:100000, gasPrice:0})
+		let creatorBalance2 = await web3.eth.getBalance(creator);
+
+		let donationBalance2 = await web3.eth.getBalance(donationEndpoint);
+
+		global.assert.equal(donationBalance2.toNumber(),0);
+
+		let creatorBalanceDelta = creatorBalance2.toNumber() - creatorBalance.toNumber()
+		global.assert.equal(creatorBalanceDelta, money)
 	});
 
 	global.it('should process money with WeiTopDownSplitter + 3 WeiAbsoluteExpense',async() => {
 		// TODO:
 		// create WeiTopDownSplitter 
+
+
+
+		let weiAbsoluteExpense1 = await WeiAbsoluteExpense.new(1*money, {from:creator, gasPrice:0})
+		let weiAbsoluteExpense2 = await WeiAbsoluteExpense.new(2*money, {from:creator, gasPrice:0})
+		let weiAbsoluteExpense3 = await WeiAbsoluteExpense.new(3*money, {from:creator, gasPrice:0})
 		
 		// add 3 WeiAbsoluteExpense outputs to the splitter
 		
