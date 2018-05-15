@@ -8,8 +8,8 @@ var FallbackToWeiReceiver = artifacts.require("./FallbackToWeiReceiver");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
-var WeiTopDownSplitter = require('./WeiTopDownSplitter');
-var WeiUnsortedSplitter = require('./WeiUnsortedSplitter');
+var WeiTopDownSplitter = require("./WeiTopDownSplitter");
+var WeiUnsortedSplitter = require("./WeiUnsortedSplitter");
 
 global.contract('Moneyflow', (accounts) => {
 	let token;
@@ -74,7 +74,6 @@ global.contract('Moneyflow', (accounts) => {
 		// money should end up in the fund
 
 		// test fund.flush()
-
 		let fundBalance = await web3.eth.getBalance(fund.address);
 		global.assert.equal(fundBalance,1000000000000000,'Money should be transferred to the fund');
 		let firstCreatorBalance = await web3.eth.getBalance(creator);
@@ -89,7 +88,6 @@ global.contract('Moneyflow', (accounts) => {
 		web3.eth.sendTransaction({ from: creator, to: revEndpoint2, value: money})
 
 		// test fund.flushTo()
-
 		let fundBalance3 = await web3.eth.getBalance(fund.address);
 		global.assert.equal(fundBalance,money,'Money should be transferred to the fund');
 		
@@ -102,7 +100,6 @@ global.contract('Moneyflow', (accounts) => {
 		let fundBalance4 = await web3.eth.getBalance(fund.address);
 		let fundBalanceDelta2 = fundBalance3.toNumber() - fundBalance4.toNumber()
 		global.assert.equal(fundBalanceDelta2>0.95*money, true)
-
 	});
 
 	global.it('should allow to get donations',async() => {
@@ -135,24 +132,27 @@ global.contract('Moneyflow', (accounts) => {
 	});
 
 	global.it('should process money with WeiTopDownSplitter + 3 WeiAbsoluteExpense',async() => {
-		// TODO:
+
 		// create WeiTopDownSplitter 
+		let weiTopDownSplitter = await WeiTopDownSplitter.new('JustSplitter');
 
-
-
-		let weiAbsoluteExpense1 = await WeiAbsoluteExpense.new(1*money, {from:creator, gasPrice:0})
-		let weiAbsoluteExpense2 = await WeiAbsoluteExpense.new(2*money, {from:creator, gasPrice:0})
-		let weiAbsoluteExpense3 = await WeiAbsoluteExpense.new(3*money, {from:creator, gasPrice:0})
+		let weiAbsoluteExpense1 = await WeiAbsoluteExpense.new(1*money, {from:creator, gasPrice:0});
+		let weiAbsoluteExpense2 = await WeiAbsoluteExpense.new(2*money, {from:creator, gasPrice:0});
+		let weiAbsoluteExpense3 = await WeiAbsoluteExpense.new(3*money, {from:creator, gasPrice:0});
 		
 		// add 3 WeiAbsoluteExpense outputs to the splitter
-		
+		let th1 = await weiTopDownSplitter.addChild(weiAbsoluteExpense1.address)
+		let th2 = await weiTopDownSplitter.addChild(weiAbsoluteExpense2.address)
+		let th3 = await weiTopDownSplitter.addChild(weiAbsoluteExpense3.address)
+
 		// add WeiTopDownSplitter to the moneyflow
-		// await moneyflowInstance.setRootWeiReceiver(splitter.address);
+		let th4 = await moneyflowInstance.setRootWeiReceiver(weiTopDownSplitter.address);
 
 		// now send some money to the revenue endpoint 
 		
 		// money should end up in the outputs
 	});
+
 
 	global.it('should process money with WeiUnsortedSplitter + 3 WeiAbsoluteExpense',async() => {
 		// TODO:
