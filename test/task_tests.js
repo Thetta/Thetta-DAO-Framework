@@ -1,11 +1,14 @@
 var WeiTask = artifacts.require("./WeiTask");
 var WeiBounty = artifacts.require("./WeiBounty");
 var Microcompany = artifacts.require("./Microcompany");
+var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
 
 var AutoActionCaller = artifacts.require("./AutoActionCaller");
 var CheckExceptions = require('./utils/checkexceptions');
 
 global.contract('0.Tasks: prepaid positive scenario. Task created by creator', (accounts) => {
+	let token;
+
 	let task;
 	let mcInstance;
 
@@ -25,7 +28,10 @@ global.contract('0.Tasks: prepaid positive scenario. Task created by creator', (
 	const ETH = 1000000000000000000;
 
 	global.beforeEach(async() => {
-		mcInstance = await Microcompany.new(1000,{gas: 10000000, from: creator});
+		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		mcInstance = await Microcompany.new(token.address,{gas: 10000000, from: creator});
+		// do not forget to transfer ownership
+		token.transferOwnership(mcInstance.address);
 	});
 
 	global.it('N1. should not create weiTask (prepaid + donation)',async() => {
@@ -186,7 +192,10 @@ global.contract('1.Tasks: postpaid positive scenario with UNKNOWN price. Task cr
 	const ETH = 10000000000000000;
 
 	global.beforeEach(async() => {
-		mcInstance = await Microcompany.new(1000,{gas: 10000000, from: creator});
+		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		mcInstance = await Microcompany.new(token.address,{gas: 10000000, from: creator});
+		// do not forget to transfer ownership
+		token.transferOwnership(mcInstance.address);
 	});
 
 	global.it('T1.1. should create weiTask',async() => {
@@ -306,7 +315,10 @@ global.contract('2.Tasks: postpaid positive scenario with KNOWN price. Task crea
 	const ETH = 10000000000000000;
 
 	global.beforeEach(async() => {
-		mcInstance = await Microcompany.new(1000,{gas: 10000000, from: creator});
+		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		mcInstance = await Microcompany.new(token.address,{gas: 10000000, from: creator});
+		// do not forget to transfer ownership
+		token.transferOwnership(mcInstance.address);
 	});
 
 	global.it('T2.1. should create weiTask',async() => {
@@ -404,7 +416,10 @@ global.contract('3.Tasks: donation positive scenario. Task created by creator', 
 	const ETH = 10000000000000000;
 
 	global.beforeEach(async() => {
-		mcInstance = await Microcompany.new(1000,{gas: 10000000, from: creator});
+		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		mcInstance = await Microcompany.new(token.address,{gas: 10000000, from: creator});
+		// do not forget to transfer ownership
+		token.transferOwnership(mcInstance.address);
 	});
 
 	global.it('T3.1. should create weiTask',async() => {
@@ -512,7 +527,10 @@ global.contract('4.Tasks: cancel on init state.', (accounts) => {
 	const ETH = 10000000000000000;
 
 	global.beforeEach(async() => {
-		mcInstance = await Microcompany.new(1000,{gas: 10000000, from: creator});
+		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		mcInstance = await Microcompany.new(token.address,{gas: 10000000, from: creator});
+		// do not forget to transfer ownership
+		token.transferOwnership(mcInstance.address);
 	});
 
 	global.it('T4.1. should create weiTask',async() => {
@@ -556,7 +574,10 @@ global.contract('5.Tasks: cancel on prepaid state.', (accounts) => {
 	const ETH = 10000000000000000;
 
 	global.beforeEach(async() => {
-		mcInstance = await Microcompany.new(1000,{gas: 10000000, from: creator});
+		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		mcInstance = await Microcompany.new(token.address,{gas: 10000000, from: creator});
+		// do not forget to transfer ownership
+		token.transferOwnership(mcInstance.address);
 	});
 
 	global.it('T5.1. should create weiTask',async() => {

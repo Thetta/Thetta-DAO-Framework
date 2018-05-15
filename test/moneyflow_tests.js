@@ -8,6 +8,7 @@ var FallbackToWeiReceiver = artifacts.require("./FallbackToWeiReceiver");
 var CheckExceptions = require('./utils/checkexceptions');
 
 global.contract('Moneyflow', (accounts) => {
+	let token;
 	let mcInstance;
 	let moneyflowInstance;
 
@@ -17,8 +18,14 @@ global.contract('Moneyflow', (accounts) => {
 	const outsider = accounts[3];
 
 	global.beforeEach(async() => {
+		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		await token.mint(creator, 1000);
+
 		// issue 1000 tokens
-		mcInstance = await Microcompany.new(1000,{gas: 10000000, from: creator});
+		mcInstance = await Microcompany.new(token.address,{gas: 10000000, from: creator});
+		// do not forget to transfer ownership
+		token.transferOwnership(mcInstance.address);
+
 		//mcInstance.setAutoActionCallerAddress(aacInstance.address);
 		moneyflowInstance = await MoneyFlow.new({from: creator});
 	});

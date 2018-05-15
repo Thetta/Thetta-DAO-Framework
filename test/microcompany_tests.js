@@ -9,6 +9,7 @@ var IProposal = artifacts.require("./IProposal");
 var CheckExceptions = require('./utils/checkexceptions');
 
 global.contract('Microcompany', (accounts) => {
+	let token;
 	let mcInstance;
 	let aacInstance;
 
@@ -18,8 +19,13 @@ global.contract('Microcompany', (accounts) => {
 	const outsider = accounts[3];
 
 	global.beforeEach(async() => {
-		// issue 1000 tokens
-		mcInstance = await Microcompany.new(1000,{gas: 10000000, from: creator});
+		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		await token.mint(creator, 1000);
+
+		mcInstance = await Microcompany.new(token.address,{gas: 10000000, from: creator});
+		// do not forget to transfer ownership
+		token.transferOwnership(mcInstance.address);
+
 		aacInstance = await AutoActionCaller.new(mcInstance.address, {from: creator});
 		mcInstance.setAutoActionCallerAddress(aacInstance.address);
 	});
@@ -106,16 +112,13 @@ global.contract('Microcompany', (accounts) => {
 		global.assert.strictEqual(isMajority3,false,'employee1 is now in majority');
 
 		// CHECK this .at syntax!!!
-		var ta = await mcInstance.stdToken();
-		const smt = await StdMicrocompanyToken.at(ta);
-
-		const balance1 = await smt.balanceOf(creator);
+		const balance1 = await token.balanceOf(creator);
 		global.assert.equal(balance1,1000,'initial balance');
 
-		const balance2 = await smt.balanceOf(employee1);
+		const balance2 = await token.balanceOf(employee1);
 		global.assert.equal(balance2,1000,'employee1 balance');
 		
-		const balance3 = await smt.balanceOf(employee2);
+		const balance3 = await token.balanceOf(employee2);
 		global.assert.equal(balance3,1000,'employee2 balance');
 	});
 

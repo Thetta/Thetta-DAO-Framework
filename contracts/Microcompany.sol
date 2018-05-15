@@ -2,9 +2,9 @@ pragma solidity ^0.4.15;
 
 import "./IMicrocompany.sol";
 
+import "./token/MicrocompanyTokens.sol";
 import "./tasks/Tasks.sol";
 import "./governance/Voting.sol";
-import "./token/MicrocompanyTokens.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -42,9 +42,8 @@ contract MicrocompanyBase is IMicrocompanyBase, Ownable {
 
 //////////////////////
 	// Constructor
-	function MicrocompanyBase(uint _tokensAmountToIssue) public {
-		// TODO: symbol, name, etc...
-		stdToken = new StdMicrocompanyToken("StdToken","STDT",18);
+	function MicrocompanyBase(StdMicrocompanyToken _stdToken) public {
+		stdToken = _stdToken;
 	}
 
 	function setAutoActionCallerAddress(address _a) public onlyOwner {
@@ -177,10 +176,9 @@ contract MicrocompanyBase is IMicrocompanyBase, Ownable {
 	}
 }
 
-
 contract Microcompany is MicrocompanyBase {
-	function Microcompany(uint _tokensAmountToIssue) public 
-		MicrocompanyBase(_tokensAmountToIssue)
+	function Microcompany(StdMicrocompanyToken _stdToken) public 
+		MicrocompanyBase(_stdToken)
 	{
 		// 1 - set permissions
 		// this is a list of action that any employee can do without voting
@@ -194,12 +192,7 @@ contract Microcompany is MicrocompanyBase {
 		addActionByVoting("addNewTask");
 		addActionByVoting("issueTokens");
 
-		// 2 - issue tokens  
-		// issue all 100% tokens to the creator
-		require(0!=_tokensAmountToIssue);			// we need to issue at least 1 token in order for the creator to be 
-																// a majority
-		issueTokensInternal(msg.sender, _tokensAmountToIssue);		
-
+		// add new employee to the company
 		addNewEmployee(msg.sender);			// add creator as first employee	
 	}
 }
