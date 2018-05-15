@@ -2,24 +2,12 @@ pragma solidity ^0.4.15;
 
 import '../IMicrocompany.sol';
 import '../tasks/Tasks.sol';
+import './IVoting.sol';
+import './IProposal.sol';
 
-contract IVote {
-	function vote(bool _yes) public;
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-// These should be implemented in the less abstract contracts like Vote, etc:
-	// This is for statistics
-	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults);
-	// Is voting finished?
-	function isFinished()public constant returns(bool);
-	// The result of voting
-	function isYes()public constant returns(bool);
-
-// PLEASE implement these in your contract:
-	function getData()constant public returns(string outType, string desc, string comment);
-	function action()public;
-}
-
-contract Vote is IVote {
+contract Voting is IVoting, Ownable {
 	enum VoteType {
 		// 1 employee = 1 vote
 		EmployeesVote,
@@ -31,10 +19,13 @@ contract Vote is IVote {
 		QuadraticTokenVote
 	}
 
-	IMicrocompany mc;
+	IMicrocompanyBase mc;
+	IProposal proposal; 
+
 	VoteType public voteType;
 	uint public minutesToVote;
 	address public tokenAddress;
+	bool isCalled = false;
 
 ////////
 	mapping (uint=>address) employeesVoted;
@@ -43,9 +34,11 @@ contract Vote is IVote {
 
 ////////
 	// we can use _origin instead of tx.origin
-	function Vote(address _mc, address _origin, 
-					  VoteType _voteType, uint _minutesToVote, address _tokenAddress){
-		mc = IMicrocompany(_mc);
+	function Voting(IMicrocompanyBase _mc, IProposal _proposal, address _origin, 
+						VoteType _voteType, uint _minutesToVote, address _tokenAddress){
+		mc = _mc;
+		proposal = _proposal; 
+
 		voteType = _voteType;	
 		minutesToVote = _minutesToVote;
 		tokenAddress = _tokenAddress;
@@ -59,12 +52,25 @@ contract Vote is IVote {
 		}
 	}
 
-	// TODO: count
-	function vote(bool _yes) public{
+	function vote(bool _yes) public {
+		require(!isFinished());
+
 		if(voteType==VoteType.EmployeesVote){
 			require(mc.isEmployee(msg.sender));
 			internalEmployeeVote(msg.sender, _yes);
 		}
+
+		// if voting is finished -> then call action()
+		if(!isCalled && isFinished() && isYes()){
+			// should not be callable again!!!
+			isCalled = true;
+
+			proposal.action(mc, this);
+		}
+	}
+
+	function cancelVoting() public onlyOwner {
+		// TODO:
 	}
 
 	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults){
@@ -77,7 +83,6 @@ contract Vote is IVote {
 	function isYes()public constant returns(bool){
 		// WARNING: this line is commented, so will not check if voting is finished!
 		//if(!isFinished(){return false;}
-
 		var(yesResults, noResults, totalResults) = getFinalResults();
 
 		// TODO: calculate results
@@ -103,7 +108,7 @@ contract Vote is IVote {
 ////// EMPLOYEE type:
 	// remember who voted yes or no
 	function internalEmployeeVote(address _who, bool _yes) internal {
-		// voter can vote again and change the vote!
+		// voter can not vote again and change the vote!
 		votes[_who] = _yes;
 
 		employeesVoted[employeesVotedCount] = _who;
@@ -137,73 +142,57 @@ contract Vote is IVote {
 ////////////////////// 
 //////////////////////
 /*
-contract VoteAddNewTask is Vote {
+contract ProposalAddNewTask is Vote {
 	WeiTask wt;
 
-	function VoteAddNewTask(address _mc, address _moneyflow, address _origin,
+	function ProposalAddNewTask(address _mc, address _moneyflow, address _origin,
 									WeiTask _wt) 
 		// TODO: remove default parameters, let Vote to read data in its constructor
 		// each employee has 1 vote 
-		Vote(_mc, _origin, VoteType.EmployeesVote, 24 *60, 0x0)
+		Voting(_mc, _origin, VoteType.EmployeesVote, 24 *60, 0x0)
 		public 
 	{
 		wt = _wt;
 	}
 
-// IVote implementation
-	function getData()constant public returns(string _outType, string _desc, string _comment){
-		return ("AddNewTask","TODO","");
-	}
-
-	function action() public {
-		// voting should be finished
-		require(isFinished());
-
-		// TODO: should not be callable again!!!
-
-		// this is not needed, because Microcompany.isCanDoAction() will check how THIS vote is 
-		//if(isYes()){
-
+// IVoting implementation
+	function action(IMicrocompanyBase _mc, IVoting _voting) public {
 		// cool! voting is over and the majority said YES -> so let's go!
-		IMicrocompany tmp = IMicrocompany(mc);
-
 		// as long as we call this method from WITHIN the vote contract 
 		// isCanDoAction() should return yes if voting finished with Yes result
-		tmp.addNewWeiTask(wt);
+		_mc.addNewWeiTask(wt);
 	}
 }
 */
 
-contract VoteIssueTokens is Vote {
+
+contract ProposalIssueTokens is IProposal {
+	Voting voting;
 	address to;
 	uint amount;
 
-	function VoteIssueTokens(address _mc, address _origin,
-									 address _to, uint _amount)
-		// TODO: remove default parameters, let Vote to read data in its constructor
-		// each employee has 1 vote 
-		Vote(_mc, _origin, VoteType.EmployeesVote, 24 *60, 0x0)
-		public 
+	function ProposalIssueTokens(IMicrocompanyBase _mc, address _origin,
+										address _to, uint _amount) public 
 	{
+		// TODO: remove default parameters, let Voting to read data in its constructor
+		// each employee has 1 vote 
+		voting = new Voting(_mc, this, _origin, Voting.VoteType.EmployeesVote, 24 *60, 0x0);
+
 		to = _to; 
 		amount = _amount;
 	}
 
-// IVote implementation
-	function getData()constant public returns(string outType, string desc, string comment){
-		// TODO:
-		return ("IssueTokens","Issue XXX tokens to YYY address","");
-	}
-
-	function action() public {
-		// voting should be finished
-		require(isFinished());
-
-		// TODO: should not be callable again!!!
+// IProposal implementation
+	// should be called from Voting
+	function action(IMicrocompanyBase _mc, IVoting _voting) public {
+		require(msg.sender==address(voting));
 
 		// as long as we call this method from WITHIN the vote contract 
 		// isCanDoAction() should return yes if voting finished with Yes result
-		IMicrocompany tmp = IMicrocompany(mc);
-		tmp.issueTokens(to, amount);
+		_mc.issueTokens(to, amount);
+	}
+
+	function getVoting()public constant returns(address){
+		return address(voting);
 	}
 }

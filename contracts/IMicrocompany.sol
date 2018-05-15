@@ -1,6 +1,16 @@
 pragma solidity ^0.4.15;
 
-contract IMicrocompany {
+import './governance/IProposal.sol';
+
+interface IMicrocompanyBase {
+// Permissions
+	function isCanDoAction(address _a, string _permissionName)public constant returns(bool);
+
+// Governance/Proposals
+	function addNewProposal(IProposal _proposal) public;
+	function getProposalAtIndex(uint _i)public constant returns(address);
+	function getProposalsCount()public constant returns(uint);
+
 // Employees
 	function addNewEmployee(address _newEmployee) public;
 	function removeEmployee(address _employee) public;
@@ -10,12 +20,6 @@ contract IMicrocompany {
 // Tokens
 	// TODO: curently Microcompany has only 1 type of tokens
 	// that gives full governance rights - "DefaultToken"
-	function getTokenInfo() public constant returns(address _out);
 	function issueTokens(address _to, uint amount)public;
-
-// Governance 
-	function addNewVote(address _vote) public;
-
-// Tasks
-	function isCanDoAction(address _a, string _permissionName)public constant returns(bool);
 }
+

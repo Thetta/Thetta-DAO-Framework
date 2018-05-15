@@ -19,7 +19,7 @@ import "./IMoneyflow.sol";
 //			ReserveFund - fund 
 //			DividendsFund - fund
 contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
-	IMicrocompany mc;
+	IMicrocompanyBase mc;
 
 	WeiUnsortedSplitter spends; 
 	WeiUnsortedSplitter bonuses; 
@@ -37,8 +37,10 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 	}
 
 /////
-	function DefaultMoneyflowScheme(address _fundOutput) public {
+	function DefaultMoneyflowScheme(IMicrocompanyBase _mc, address _fundOutput) public {
 		require(0x0!=_fundOutput);
+
+		mc = _mc;
 
 		spends = new WeiUnsortedSplitter("spends");
 		bonuses = new WeiUnsortedSplitter("bonuses");
@@ -76,8 +78,8 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 
 			// 2 - create new vote instead
 			// we pass msg.sender (just like tx.origin) 
-			//VoteAddNewTask vant = new VoteAddNewTask(mc, msg.sender, wt);
-			//mc.addNewVote(vant);
+			//ProposalAddNewTask vant = new ProposalAddNewTask(mc, msg.sender, wt);
+			//mc.addNewProposal(vant);
 			//return vant;
 		}
 	}

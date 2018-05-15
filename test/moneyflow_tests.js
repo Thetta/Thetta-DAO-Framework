@@ -1,6 +1,6 @@
 var Microcompany = artifacts.require("./Microcompany");
-var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
+var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
 
 var MoneyFlow = artifacts.require("./MoneyFlow");
 var WeiFund = artifacts.require("./WeiFund");
@@ -12,7 +12,8 @@ var WeiTopDownSplitter = require('./WeiTopDownSplitter');
 var WeiUnsortedSplitter = require('./WeiUnsortedSplitter');
 
 global.contract('Moneyflow', (accounts) => {
-	let mcStorage;
+	let token;
+	let store;
 	let mcInstance;
 	let moneyflowInstance;
 
@@ -24,11 +25,32 @@ global.contract('Moneyflow', (accounts) => {
 	const outsider = accounts[3];
 
 	global.beforeEach(async() => {
-		mcStorage = await MicrocompanyStorage.new({gas: 10000000, from: creator, gasPrice:0});
+		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		await token.mint(creator, 1000);
+		store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
+
 		// issue 1000 tokens
-		mcInstance = await Microcompany.new(mcStorage.address,1000,{gas: 10000000, from: creator, gasPrice:0});
-		//mcInstance.setAutoActionCallerAddress(aacInstance.address);
-		moneyflowInstance = await MoneyFlow.new({from: creator, gasPrice:0});
+		mcInstance = await Microcompany.new(store.address,{gas: 10000000, from: creator});
+
+		{
+			// manually setup the Default organization 
+			await store.addActionByEmployeesOnly("addNewProposal");
+			await store.addActionByEmployeesOnly("startTask");
+			await store.addActionByEmployeesOnly("startBounty");
+			// this is a list of actions that require voting
+			await store.addActionByVoting("addNewEmployee");
+			await store.addActionByVoting("removeEmployee");
+			await store.addActionByVoting("addNewTask");
+			await store.addActionByVoting("issueTokens");
+			// add creator as first employee	
+			await store.addNewEmployee(creator);			
+		}
+
+		// do not forget to transfer ownership
+		await token.transferOwnership(mcInstance.address);
+		await store.transferOwnership(mcInstance.address);
+
+		moneyflowInstance = await MoneyFlow.new({from: creator});
 	});
 
 	global.it('should allow to send revenue',async() => {

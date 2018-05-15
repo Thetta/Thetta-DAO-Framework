@@ -2,10 +2,9 @@ pragma solidity ^0.4.15;
 
 import "./IMicrocompany.sol";
 
-import "./tasks/Tasks.sol";
-import "./governance/Votes.sol";
 import "./token/MicrocompanyTokens.sol";
-import "./moneyflow/Moneyflow.sol";
+import "./tasks/Tasks.sol";
+import "./governance/Voting.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -27,12 +26,14 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 //		
 //		start task -> any employee 
 //		
-contract MicrocompanyStorage {
+contract MicrocompanyStorage is Ownable {
+	StdMicrocompanyToken public stdToken;
+
 	mapping (uint=>address) tasks;
 	uint public tasksCount = 0;
 
-	mapping (uint=>address) votes;
-	uint public votesCount = 0;
+	mapping (uint=>address) proposals;
+	uint public proposalsCount = 0;
 
 	mapping (uint=>address) employees;
 	uint public employeesCount = 0;
@@ -40,18 +41,18 @@ contract MicrocompanyStorage {
 	mapping (string=>bool) byEmployee;
 	mapping (string=>bool) byVoting;
 
-	function MicrocompanyStorage() public {
-
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+	function MicrocompanyStorage(StdMicrocompanyToken _stdToken) public {
+		stdToken = _stdToken;
 	}
 
 // Permissions:
-	// TODO: public
-	function addActionByEmployeesOnly(string _what) public {
+	function addActionByEmployeesOnly(string _what) public onlyOwner {
 		byEmployee[_what] = true;
 	}
 
-	// TODO: public
-	function addActionByVoting(string _what) public {
+	function addActionByVoting(string _what) public onlyOwner {
 		byVoting[_what] = true;
 	}
 
@@ -65,21 +66,22 @@ contract MicrocompanyStorage {
 
 // Vote:
 	// TODO: public
-	function addNewVote(address _vote) public {
-		votes[votesCount] = _vote;
-		votesCount++;
+	function addNewProposal(IProposal _proposal) public onlyOwner {
+		proposals[proposalsCount] = _proposal;
+		proposalsCount++;
 	}
 
-	function getVoteAtIndex(uint _i)public constant returns(address){
-		require(_i<votesCount);
-		return votes[_i];
+	function getProposalAtIndex(uint _i)public constant returns(address){
+		require(_i<proposalsCount);
+		return proposals[_i];
 	}
 
-	function getVotingResults(address _vote) public constant returns (bool isVotingFound, bool votingResult){
-		// scan all votings and search for the one that is finished 
-		for(uint i=0; i<votesCount; ++i){
-			if(votes[i]==_vote){
-				IVote vote = IVote(votes[i]);
+	function getProposalVotingResults(address _p) public constant returns (bool isVotingFound, bool votingResult){
+		// scan all votings and search for the one that is finished
+		for(uint i=0; i<proposalsCount; ++i){
+			if(proposals[i]==_p){
+				IProposal proposal = IProposal(_p);
+				IVoting vote = IVoting(proposal.getVoting());
 				return (true, 	vote.isFinished() && vote.isYes());
 			}
 		}
@@ -88,8 +90,7 @@ contract MicrocompanyStorage {
 	}
 
 // Employees:
-	// TODO: public
-	function addNewEmployee(address _newEmployee) public {
+	function addNewEmployee(address _newEmployee) onlyOwner public {
 		employees[employeesCount] = _newEmployee;
 		employeesCount++;
 	}
@@ -103,43 +104,27 @@ contract MicrocompanyStorage {
 		return false;
 	}
 
-	// TODO: get (enumerator) for votes
-	// TODO: get (enumerator) for tasks 
+	// TODO: get (enumerator) for proposals
+	// TODO: get (enumerator) for tasks
 }
 
-contract Microcompany is IMicrocompany, Ownable {
-	StdMicrocompanyToken public stdToken;
-	//MoneyFlow public moneyflow;
-
-	MicrocompanyStorage store;
+contract Microcompany is IMicrocompanyBase, Ownable {
 	address autoActionCallerAddress = 0x0;
 
+	MicrocompanyStorage public store;
+
+//////////////////////
 	// Constructor
-	function Microcompany(MicrocompanyStorage _store, /*MoneyFlow _moneyflow,*/ uint _tokensAmountToIssue) public {
-		// TODO: symbol, name, etc...
-		stdToken = new StdMicrocompanyToken("StdToken","STDT",18);
+	function Microcompany(MicrocompanyStorage _store) public {
+		// the ownership should be transferred to microcompany
 		store = _store;
 
-		// TODO: this can be moved to the Bylaws 
+		/*
+		// TODO: move to MicrocompanyBuilder
 
-		// 2 - set permissions
+		// 1 - set permissions
 		// this is a list of action that any employee can do without voting
-		store.addActionByEmployeesOnly("addNewVote");
-		store.addActionByEmployeesOnly("startTask");
-		store.addActionByEmployeesOnly("startBounty");
-		// this is a list of actions that require voting
-		store.addActionByVoting("addNewEmployee");
-		store.addActionByVoting("removeEmployee");
-		store.addActionByVoting("addNewTask");
-		store.addActionByVoting("issueTokens");
-
-		// 3 - do other preparations
-		// issue all 100% tokens to the creator
-		require(0!=_tokensAmountToIssue);			// we need to issue at least 1 token in order for the creator to be 
-																// a majority
-		issueTokensInternal(msg.sender, _tokensAmountToIssue);		
-
-		store.addNewEmployee(msg.sender);			// add creator as first employee	
+		*/
 	}
 
 	function setAutoActionCallerAddress(address _a) public onlyOwner {
@@ -157,27 +142,23 @@ contract Microcompany is IMicrocompany, Ownable {
 	}
 
 // IMicrocompany:
-	//
-	function addNewVote(address _vote) public { 
-		bool isCan = isCanDoAction(msg.sender,"addNewVote") || (msg.sender==autoActionCallerAddress);
+	function addNewProposal(IProposal _proposal) public { 
+		bool isCan = isCanDoAction(msg.sender,"addNewProposal") || (msg.sender==autoActionCallerAddress);
 		require(isCan);
 
-		store.addNewVote(_vote);
+		store.addNewProposal(_proposal);
 	}
 
-	// this should be called either directly or from the Vote...
-	/*
-	function addNewWeiTask(address _task) public isCanDo("addNewTask") byVotingOnly {
-		// TODO:
+	function getProposalAtIndex(uint _i)public constant returns(address){
+		return store.getProposalAtIndex(_i);
 	}
-   */
+
+	function getProposalsCount()public constant returns(uint){
+		return store.proposalsCount();
+	}
 
 	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") byVotingOnly {
 		issueTokensInternal(_to, _amount);
-	}
-
-	function getTokenInfo() public constant returns(address _out){
-		return address(stdToken);
 	}
 
 	// caller should make sure that he is not adding same employee twice
@@ -197,6 +178,7 @@ contract Microcompany is IMicrocompany, Ownable {
 		return store.employeesCount();
 	}
 
+// Permissions:
 	function isCanDoAction(address _a, string _permissionName) public constant returns(bool){
 		// 1 - check if employees can do that without voting?
 		if(store.isCanDoByEmployee(_permissionName) && isEmployee(_a)){
@@ -205,7 +187,7 @@ contract Microcompany is IMicrocompany, Ownable {
 
 		// 2 - can do action only by starting new vote first?
 		if(store.isCanDoByVoting(_permissionName)){
-			var (isVotingFound, votingResult) = store.getVotingResults(msg.sender);
+			var (isVotingFound, votingResult) = store.getProposalVotingResults(msg.sender);
 			if(isVotingFound){
 				return votingResult;
 			}
@@ -227,13 +209,12 @@ contract Microcompany is IMicrocompany, Ownable {
 	function isInMajority(address _a) public constant returns(bool){
 		// TODO:
 		// if we have many tokens -> we should scan all and check if have more than 51% of governance type 
-
-		return(stdToken.balanceOf(_a)>=stdToken.totalSupply()/2);
+		return(store.stdToken().balanceOf(_a)>=store.stdToken().totalSupply()/2);
 	}
 
-// Internal:
 	function issueTokensInternal(address _to, uint _amount) internal {
-		stdToken.mint(_to, _amount);
+		// token ownership should be transferred to the current Microcompany
+		store.stdToken().mint(_to, _amount);
 	}
 }
 
@@ -258,8 +239,8 @@ contract AutoActionCaller {
 		}else{
 			// 2 - create new vote instead
 			// we pass msg.sender (just like tx.origin) 
-			VoteAddNewTask vant = new VoteAddNewTask(mc, msg.sender, wt);
-			mc.addNewVote(vant);
+			ProposalAddNewTask vant = new ProposalAddNewTask(mc, msg.sender, wt);
+			mc.addNewProposal(vant);
 			return vant;
 		}
 	}
@@ -273,9 +254,9 @@ contract AutoActionCaller {
 		}else{
 			// 2 - create new vote instead
 			// we pass msg.sender (just like tx.origin) 
-			VoteIssueTokens vit = new VoteIssueTokens(mc, msg.sender, _to, _amount);
-			mc.addNewVote(vit);		
-			return vit;
+			ProposalIssueTokens pit = new ProposalIssueTokens(mc, msg.sender, _to, _amount);
+			mc.addNewProposal(pit);		
+			return pit;
 		}
 	}
 }

@@ -20,7 +20,7 @@ import '../IMicrocompany.sol';
 //		has 'setNeededWei(uint _neededWei)' 
 // 
 contract GenericTask is WeiAbsoluteExpense {
-	address mc = 0x0;
+	IMicrocompanyBase mc;
 	address employee = 0x0;		// who should complete this task and report on completion
 										// this will be set later
 	address output = 0x0;		// where to send money (can be split later)
@@ -60,20 +60,18 @@ contract GenericTask is WeiAbsoluteExpense {
 
 	/*
 	modifier onlyAnyEmployeeOrOwner() { 
-		IMicrocompany tmp = IMicrocompany(mc);
-		require(tmp.isEmployee(msg.sender) || msg.sender==owner); 
+		require(mc.isEmployee(msg.sender) || msg.sender==owner); 
 		_; 
 	}
    */
 
    modifier isCanDo(string _what){
-		IMicrocompany tmp = IMicrocompany(mc);
-		require(tmp.isCanDoAction(msg.sender,_what)); 
+		require(mc.isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
 
 	// if _neededWei==0 -> this is an 'Unknown cost' situation. use 'setNeededWei' method of WeiAbsoluteExpense
-	function GenericTask(address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
+	function GenericTask(IMicrocompanyBase _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
 		WeiAbsoluteExpense(_neededWei) 
 	{
 		// Donation should be prepaid
@@ -195,7 +193,7 @@ contract GenericTask is WeiAbsoluteExpense {
 }
 
 contract WeiTask is GenericTask {
-	function WeiTask(address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
+	function WeiTask(IMicrocompanyBase _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
 		GenericTask(_mc, _caption, _desc, _isPostpaid, _isDonation, _neededWei) 
 	{
 	}
@@ -216,7 +214,7 @@ contract WeiTask is GenericTask {
 
 // Bounty is always prepaid 
 contract WeiBounty is GenericTask {
-	function WeiBounty(address _mc, string _caption, string _desc, uint _neededWei) public 
+	function WeiBounty(IMicrocompanyBase _mc, string _caption, string _desc, uint _neededWei) public 
 		GenericTask(_mc, _caption, _desc, false, false, _neededWei) 
 	{
 	}
