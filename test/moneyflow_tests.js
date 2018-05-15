@@ -8,8 +8,8 @@ var FallbackToWeiReceiver = artifacts.require("./FallbackToWeiReceiver");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
-var WeiTopDownSplitter = require("./WeiTopDownSplitter");
-var WeiUnsortedSplitter = require("./WeiUnsortedSplitter");
+var WeiTopDownSplitter = artifacts.require("./WeiTopDownSplitter");
+var WeiUnsortedSplitter = artifacts.require("./WeiUnsortedSplitter");
 
 global.contract('Moneyflow', (accounts) => {
 	let token;
