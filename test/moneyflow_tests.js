@@ -134,19 +134,19 @@ global.contract('Moneyflow', (accounts) => {
 	global.it('should process money with WeiTopDownSplitter + 3 WeiAbsoluteExpense',async() => {
 
 		// create WeiTopDownSplitter 
-		let weiTopDownSplitter = await WeiTopDownSplitter.new('JustSplitter');
+		// let weiTopDownSplitter = await WeiTopDownSplitter.new('JustSplitter');
 
-		let weiAbsoluteExpense1 = await WeiAbsoluteExpense.new(1*money, {from:creator, gasPrice:0});
-		let weiAbsoluteExpense2 = await WeiAbsoluteExpense.new(2*money, {from:creator, gasPrice:0});
-		let weiAbsoluteExpense3 = await WeiAbsoluteExpense.new(3*money, {from:creator, gasPrice:0});
+		// let weiAbsoluteExpense1 = await WeiAbsoluteExpense.new(1*money, {from:creator, gasPrice:0});
+		// let weiAbsoluteExpense2 = await WeiAbsoluteExpense.new(2*money, {from:creator, gasPrice:0});
+		// let weiAbsoluteExpense3 = await WeiAbsoluteExpense.new(3*money, {from:creator, gasPrice:0});
 		
-		// add 3 WeiAbsoluteExpense outputs to the splitter
-		let th1 = await weiTopDownSplitter.addChild(weiAbsoluteExpense1.address)
-		let th2 = await weiTopDownSplitter.addChild(weiAbsoluteExpense2.address)
-		let th3 = await weiTopDownSplitter.addChild(weiAbsoluteExpense3.address)
+		// // add 3 WeiAbsoluteExpense outputs to the splitter
+		// let th1 = await weiTopDownSplitter.addChild(weiAbsoluteExpense1.address)
+		// let th2 = await weiTopDownSplitter.addChild(weiAbsoluteExpense2.address)
+		// let th3 = await weiTopDownSplitter.addChild(weiAbsoluteExpense3.address)
 
-		// add WeiTopDownSplitter to the moneyflow
-		let th4 = await moneyflowInstance.setRootWeiReceiver(weiTopDownSplitter.address);
+		// // add WeiTopDownSplitter to the moneyflow
+		// let th4 = await moneyflowInstance.setRootWeiReceiver(weiTopDownSplitter.address);
 
 		// now send some money to the revenue endpoint 
 		
