@@ -3,6 +3,8 @@ pragma solidity ^0.4.15;
 import './governance/IProposal.sol';
 
 interface IMicrocompanyBase {
+	function upgradeMicrocompanyContract(IMicrocompanyBase _new)public;
+
 // Permissions
 	function isCanDoAction(address _a, string _permissionName)public constant returns(bool);
 

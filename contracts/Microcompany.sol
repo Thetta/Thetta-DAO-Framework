@@ -118,13 +118,6 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 	function Microcompany(MicrocompanyStorage _store) public {
 		// the ownership should be transferred to microcompany
 		store = _store;
-
-		/*
-		// TODO: move to MicrocompanyBuilder
-
-		// 1 - set permissions
-		// this is a list of action that any employee can do without voting
-		*/
 	}
 
 	function setAutoActionCallerAddress(address _a) public onlyOwner {
@@ -139,6 +132,12 @@ contract Microcompany is IMicrocompanyBase, Ownable {
    modifier isCanDo(string _what){
 		require(isCanDoAction(msg.sender,_what)); 
 		_; 
+	}
+
+	// TODO: public!
+	function upgradeMicrocompanyContract(IMicrocompanyBase _new)public{
+		store.transferOwnership(_new);
+		store.stdToken().transferOwnership(_new);
 	}
 
 // IMicrocompany:
