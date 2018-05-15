@@ -11,7 +11,7 @@ var CheckExceptions = require('./utils/checkexceptions');
 
 global.contract('Microcompany', (accounts) => {
 	let token;
-	let storageInstance;
+	let store;
 	let mcInstance;
 	let aacInstance;
 
@@ -23,21 +23,35 @@ global.contract('Microcompany', (accounts) => {
 	global.beforeEach(async() => {
 		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
+		store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
 
-		storageInstance = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
+		mcInstance = await Microcompany.new(store.address,{gas: 10000000, from: creator});
 
-		mcInstance = await Microcompany.new(storageInstance.address,{gas: 10000000, from: creator});
+		{
+			// manually setup the Default organization 
+			await store.addActionByEmployeesOnly("addNewProposal");
+			await store.addActionByEmployeesOnly("startTask");
+			await store.addActionByEmployeesOnly("startBounty");
+			// this is a list of actions that require voting
+			await store.addActionByVoting("addNewEmployee");
+			await store.addActionByVoting("removeEmployee");
+			await store.addActionByVoting("addNewTask");
+			await store.addActionByVoting("issueTokens");
+			// add creator as first employee	
+			await store.addNewEmployee(creator);			
+		}
 
 		// do not forget to transfer ownership
-		token.transferOwnership(mcInstance.address);
+		await token.transferOwnership(mcInstance.address);
+		await store.transferOwnership(mcInstance.address);
 
 		aacInstance = await AutoActionCaller.new(mcInstance.address, {from: creator});
-		mcInstance.setAutoActionCallerAddress(aacInstance.address);
+		await mcInstance.setAutoActionCallerAddress(aacInstance.address);
 	});
 
 	global.it('should set everything correctly',async() => {
 		///
-		const isCan = await storageInstance.isCanDoByEmployee("addNewProposal");
+		const isCan = await store.isCanDoByEmployee("addNewProposal");
 		global.assert.equal(isCan,true,'Permission should be set correctly');
 
 		const isMajority = await mcInstance.isInMajority(creator);

@@ -1,5 +1,6 @@
 var Microcompany = artifacts.require("./Microcompany");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
+var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
 
 var MoneyFlow = artifacts.require("./MoneyFlow");
 var WeiFund = artifacts.require("./WeiFund");
@@ -9,6 +10,7 @@ var CheckExceptions = require('./utils/checkexceptions');
 
 global.contract('Moneyflow', (accounts) => {
 	let token;
+	let store;
 	let mcInstance;
 	let moneyflowInstance;
 
@@ -20,13 +22,29 @@ global.contract('Moneyflow', (accounts) => {
 	global.beforeEach(async() => {
 		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
+		store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
 
 		// issue 1000 tokens
-		mcInstance = await Microcompany.new(token.address,{gas: 10000000, from: creator});
-		// do not forget to transfer ownership
-		token.transferOwnership(mcInstance.address);
+		mcInstance = await Microcompany.new(store.address,{gas: 10000000, from: creator});
 
-		//mcInstance.setAutoActionCallerAddress(aacInstance.address);
+		{
+			// manually setup the Default organization 
+			await store.addActionByEmployeesOnly("addNewProposal");
+			await store.addActionByEmployeesOnly("startTask");
+			await store.addActionByEmployeesOnly("startBounty");
+			// this is a list of actions that require voting
+			await store.addActionByVoting("addNewEmployee");
+			await store.addActionByVoting("removeEmployee");
+			await store.addActionByVoting("addNewTask");
+			await store.addActionByVoting("issueTokens");
+			// add creator as first employee	
+			await store.addNewEmployee(creator);			
+		}
+
+		// do not forget to transfer ownership
+		await token.transferOwnership(mcInstance.address);
+		await store.transferOwnership(mcInstance.address);
+
 		moneyflowInstance = await MoneyFlow.new({from: creator});
 	});
 

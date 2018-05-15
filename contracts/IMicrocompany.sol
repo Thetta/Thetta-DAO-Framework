@@ -2,13 +2,14 @@ pragma solidity ^0.4.15;
 
 import './governance/IProposal.sol';
 
-contract IMicrocompanyBase {
+interface IMicrocompanyBase {
 // Permissions
 	function isCanDoAction(address _a, string _permissionName)public constant returns(bool);
 
 // Governance/Proposals
 	function addNewProposal(IProposal _proposal) public;
 	function getProposalAtIndex(uint _i)public constant returns(address);
+	function getProposalsCount()public constant returns(uint);
 
 // Employees
 	function addNewEmployee(address _newEmployee) public;

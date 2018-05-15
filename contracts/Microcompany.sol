@@ -48,13 +48,11 @@ contract MicrocompanyStorage is Ownable {
 	}
 
 // Permissions:
-	// TODO: public
-	function addActionByEmployeesOnly(string _what) public {
+	function addActionByEmployeesOnly(string _what) public onlyOwner {
 		byEmployee[_what] = true;
 	}
 
-	// TODO: public
-	function addActionByVoting(string _what) public {
+	function addActionByVoting(string _what) public onlyOwner {
 		byVoting[_what] = true;
 	}
 
@@ -68,7 +66,7 @@ contract MicrocompanyStorage is Ownable {
 
 // Vote:
 	// TODO: public
-	function addNewProposal(IProposal _proposal) public {
+	function addNewProposal(IProposal _proposal) public onlyOwner {
 		proposals[proposalsCount] = _proposal;
 		proposalsCount++;
 	}
@@ -92,8 +90,7 @@ contract MicrocompanyStorage is Ownable {
 	}
 
 // Employees:
-	// TODO: public
-	function addNewEmployee(address _newEmployee) public {
+	function addNewEmployee(address _newEmployee) onlyOwner public {
 		employees[employeesCount] = _newEmployee;
 		employeesCount++;
 	}
@@ -122,22 +119,12 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		// the ownership should be transferred to microcompany
 		store = _store;
 
+		/*
 		// TODO: move to MicrocompanyBuilder
 
 		// 1 - set permissions
 		// this is a list of action that any employee can do without voting
-		store.addActionByEmployeesOnly("addNewProposal");
-		store.addActionByEmployeesOnly("startTask");
-		store.addActionByEmployeesOnly("startBounty");
-
-		// this is a list of actions that require voting
-		store.addActionByVoting("addNewEmployee");
-		store.addActionByVoting("removeEmployee");
-		store.addActionByVoting("addNewTask");
-		store.addActionByVoting("issueTokens");
-
-		// add new employee to the company
-		addNewEmployee(msg.sender);			// add creator as first employee	
+		*/
 	}
 
 	function setAutoActionCallerAddress(address _a) public onlyOwner {
@@ -230,7 +217,6 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		store.stdToken().mint(_to, _amount);
 	}
 }
-
 
 // TODO:
 contract AutoActionCaller {
