@@ -22,16 +22,17 @@ async function setup(creator){
 
 	{
 		// manually setup the Default organization 
-		store.addActionByEmployeesOnly("addNewProposal");
-		store.addActionByEmployeesOnly("startTask");
-		store.addActionByEmployeesOnly("startBounty");
+		await store.addActionByEmployeesOnly("addNewProposal");
+		await store.addActionByEmployeesOnly("startTask");
+		await store.addActionByEmployeesOnly("startBounty");
 		// this is a list of actions that require voting
-		store.addActionByVoting("addNewEmployee");
-		store.addActionByVoting("removeEmployee");
-		store.addActionByVoting("addNewTask");
-		store.addActionByVoting("issueTokens");
+		await store.addActionByVoting("addNewEmployee");
+		await store.addActionByVoting("removeEmployee");
+		await store.addActionByVoting("addNewTask");
+		await store.addActionByVoting("issueTokens");
+		await store.addActionByVoting("upgradeMicrocompany");
 		// add creator as first employee	
-		store.addNewEmployee(creator);			
+		await store.addNewEmployee(creator);			
 	}
 
 	// do not forget to transfer ownership

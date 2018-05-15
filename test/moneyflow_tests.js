@@ -42,6 +42,7 @@ global.contract('Moneyflow', (accounts) => {
 			await store.addActionByVoting("removeEmployee");
 			await store.addActionByVoting("addNewTask");
 			await store.addActionByVoting("issueTokens");
+			await store.addActionByVoting("upgradeMicrocompany");
 			// add creator as first employee	
 			await store.addNewEmployee(creator);			
 		}

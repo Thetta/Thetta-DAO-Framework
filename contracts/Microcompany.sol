@@ -3,8 +3,9 @@ pragma solidity ^0.4.15;
 import "./IMicrocompany.sol";
 
 import "./token/MicrocompanyTokens.sol";
-import "./tasks/Tasks.sol";
 import "./governance/Voting.sol";
+
+import "./tasks/Tasks.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -29,10 +30,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 contract MicrocompanyStorage is Ownable {
 	StdMicrocompanyToken public stdToken;
 
-	mapping (uint=>address) tasks;
-	uint public tasksCount = 0;
-
-	mapping (uint=>address) proposals;
+	mapping (uint=>IProposal) proposals;
 	uint public proposalsCount = 0;
 
 	mapping (uint=>address) employees;
@@ -71,7 +69,7 @@ contract MicrocompanyStorage is Ownable {
 		proposalsCount++;
 	}
 
-	function getProposalAtIndex(uint _i)public constant returns(address){
+	function getProposalAtIndex(uint _i)public constant returns(IProposal){
 		require(_i<proposalsCount);
 		return proposals[_i];
 	}
@@ -103,9 +101,6 @@ contract MicrocompanyStorage is Ownable {
 		}
 		return false;
 	}
-
-	// TODO: get (enumerator) for proposals
-	// TODO: get (enumerator) for tasks
 }
 
 contract Microcompany is IMicrocompanyBase, Ownable {
@@ -134,13 +129,12 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		_; 
 	}
 
-	// TODO: public!
-	function upgradeMicrocompanyContract(IMicrocompanyBase _new)public{
+// IMicrocompany:
+	function upgradeMicrocompanyContract(IMicrocompanyBase _new) public isCanDo("upgradeMicrocompany") byVotingOnly {
 		store.transferOwnership(_new);
 		store.stdToken().transferOwnership(_new);
 	}
 
-// IMicrocompany:
 	function addNewProposal(IProposal _proposal) public { 
 		bool isCan = isCanDoAction(msg.sender,"addNewProposal") || (msg.sender==autoActionCallerAddress);
 		require(isCan);
@@ -148,7 +142,7 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		store.addNewProposal(_proposal);
 	}
 
-	function getProposalAtIndex(uint _i)public constant returns(address){
+	function getProposalAtIndex(uint _i)public constant returns(IProposal){
 		return store.getProposalAtIndex(_i);
 	}
 

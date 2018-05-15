@@ -10,7 +10,7 @@ interface IMicrocompanyBase {
 
 // Governance/Proposals
 	function addNewProposal(IProposal _proposal) public;
-	function getProposalAtIndex(uint _i)public constant returns(address);
+	function getProposalAtIndex(uint _i)public constant returns(IProposal);
 	function getProposalsCount()public constant returns(uint);
 
 // Employees
