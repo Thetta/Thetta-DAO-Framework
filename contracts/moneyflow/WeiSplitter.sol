@@ -103,7 +103,7 @@ contract WeiTopDownSplitter is WeiSplitterBase, IWeiReceiver {
 
 		// TODO: can remove this line?
 		// transfer below will throw if not enough money?
-		require(amount>=getTotalWeiNeeded(_currentFlow));
+		// require(amount>=getTotalWeiNeeded(_currentFlow));
 		// ???
 		//require(amount>=getMinWeiNeeded());
 
@@ -192,7 +192,7 @@ contract WeiUnsortedSplitter is WeiSplitterBase, IWeiReceiver {
 
 		// TODO: can remove this line?
 		// transfer below will throw if not enough money?
-		require(amount>=getTotalWeiNeeded(_currentFlow));
+		// require(amount>=getTotalWeiNeeded(_currentFlow));
 
 		// DO NOT SEND LESS!
 		// DO NOT SEND MORE!

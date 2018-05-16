@@ -11,6 +11,7 @@ var CheckExceptions = require('./utils/checkexceptions');
 var WeiTopDownSplitter = artifacts.require("./WeiTopDownSplitter");
 var WeiUnsortedSplitter = artifacts.require("./WeiUnsortedSplitter");
 var WeiAbsoluteExpense = artifacts.require("./WeiAbsoluteExpense");
+var WeiRelativeExpense = artifacts.require("./WeiRelativeExpense");
 
 global.contract('Moneyflow', (accounts) => {
 	let token;
@@ -196,34 +197,86 @@ global.contract('Moneyflow', (accounts) => {
 		global.assert.equal(weiAbsoluteExpense2Balance.toNumber(),2*money, 'resource point received money from splitter');
 		
 		let weiAbsoluteExpense3Balance = await web3.eth.getBalance(weiAbsoluteExpense3.address);
-		global.assert.equal(weiAbsoluteExpense3Balance.toNumber(),3*money, 'resource point received money from splitter')	
+		global.assert.equal(weiAbsoluteExpense3Balance.toNumber(),3*money, 'resource point received money from splitter');
 	});
 
 	global.it('should process money with a scheme just like in the paper',async() => {
-		// TODO:
-		// Document is here:
-		// https://docs.google.com/document/d/15UOnXM_iPudD95m-UYBcYns-SeqM2ksDecjYhZrqybQ/edit?usp=sharing
-		//
-		// top-down splitter 
-		//		Spends - unsorted splitter
-		//			Salaries - unsorted splitter 
-		//				Employee1 
-		//				Employee2 
-		//				Employee3 
-		//			Other - unsorted splitter 
-		//				Office 
-		//				Internet
-		//			Tasks - unsorted splitter
-		//				Task1
-		//				Task2
-		//				Task3
-		//		Bonuses - unsorted splitter
-		//			Employee1 
-		//			Employee2 
-		//			Employee3 
-		//		Rest - unsorted splitter
-		//			ReserveFund - fund 
-		//			DividendsFund - fund
+		// Document is here: https://docs.google.com/document/d/15UOnXM_iPudD95m-UYBcYns-SeqM2ksDecjYhZrqybQ/edit?usp=sharing
+		
+		// STRUCTURE
+		let AllOutpults = await WeiTopDownSplitter.new('AllOutpults', {from:creator, gasPrice:0});
+			let Spends = await WeiUnsortedSplitter.new('Spends', {from:creator, gasPrice:0});
+				let Salaries = await WeiUnsortedSplitter.new('Salaries', {from:creator, gasPrice:0});
+					let Employee1 = await WeiAbsoluteExpense.new(1000*money, {from:creator, gasPrice:0});
+					let Employee2 = await WeiAbsoluteExpense.new(1500*money, {from:creator, gasPrice:0});
+					let Employee3 = await WeiAbsoluteExpense.new(800*money, {from:creator, gasPrice:0});
+				let Other = await WeiUnsortedSplitter.new('Other', {from:creator, gasPrice:0});
+					let Office = await WeiAbsoluteExpense.new(500*money, {from:creator, gasPrice:0});
+					let Internet = await WeiAbsoluteExpense.new(300*money, {from:creator, gasPrice:0});
+				let Tasks = await WeiUnsortedSplitter.new('Tasks', {from:creator, gasPrice:0});
+					let Task1 = await WeiAbsoluteExpense.new(500*money, {from:creator, gasPrice:0});
+					let Task2 = await WeiAbsoluteExpense.new(300*money, {from:creator, gasPrice:0});
+					let Task3 = await WeiAbsoluteExpense.new(1000*money, {from:creator, gasPrice:0});
+			let Bonuses = await WeiUnsortedSplitter.new('Bonuses', {from:creator, gasPrice:0});
+				let Bonus1 = await WeiRelativeExpense.new(100, {from:creator, gasPrice:0});
+				let Bonus2 = await WeiRelativeExpense.new(100, {from:creator, gasPrice:0});
+				let Bonus3 = await WeiRelativeExpense.new(200, {from:creator, gasPrice:0});
+			let Rest = await WeiUnsortedSplitter.new('Rest', {from:creator, gasPrice:0});
+				let ReserveFund = await WeiRelativeExpense.new(7500, {from:creator, gasPrice:0});
+				let DividendsFund = await WeiRelativeExpense.new(2500, {from:creator, gasPrice:0});
+		
+		// CONNECTIONS
+		await AllOutpults.addChild(Spends.address, {from:creator, gas:1000000, gasPrice:0});
+			await Spends.addChild(Salaries.address);
+				await Salaries.addChild(Employee1.address, {from:creator, gas:1000000, gasPrice:0});
+				await Salaries.addChild(Employee2.address, {from:creator, gas:1000000, gasPrice:0});
+				await Salaries.addChild(Employee3.address, {from:creator, gas:1000000, gasPrice:0});
+			// await AllOutpults.addChild(Other.address);
+			// 	await Other.addChild(Office.address);
+			// 	await Other.addChild(Internet.address);
+			// await AllOutpults.addChild(Tasks.address);
+			// 	await Tasks.addChild(Task1.address);
+			// 	await Tasks.addChild(Task2.address);
+			// 	await Tasks.addChild(Task3.address);			
+		// await AllOutpults.addChild(Bonuses.address);
+		// 	await Bonuses.addChild(Bonus1.address);
+		// 	await Bonuses.addChild(Bonus2.address);
+		// 	await Bonuses.addChild(Bonus3.address);
+		// await AllOutpults.addChild(Rest.address);
+		// 	await Rest.addChild(ReserveFund.address);
+		// 	await Rest.addChild(DividendsFund.address);
+
+		// await moneyflowInstance.setRootWeiReceiver(AllOutpults.address);
+		// let revenueEndpointAddress = await moneyflowInstance.getRevenueEndpointAddress();	
+		// global.assert.equal(revenueEndpointAddress, AllOutpults.address, 'AllOutpults.address saved in moneyflowInstance as revenueEndpointAddress');
+
+		let AllOutpultsNeeds = await AllOutpults.getTotalWeiNeeded(3300*money);
+		console.log('AllOutpultsNeeds:', AllOutpultsNeeds.toNumber())
+
+		let MinOutpultsNeeds = await AllOutpults.getMinWeiNeeded();
+		console.log('MinOutpultsNeeds:', MinOutpultsNeeds.toNumber())
+
+		let OutputChildrenCount = await AllOutpults.getChildrenCount();
+		console.log('OutputChildrenCount:', OutputChildrenCount.toNumber())
+
+		let SpendsChildrenCount = await Spends.getChildrenCount();
+		console.log('SpendsChildrenCount:', SpendsChildrenCount.toNumber())
+
+		let SalariesChildrenCount = await Salaries.getChildrenCount();
+		console.log('SalariesChildrenCount:', SalariesChildrenCount.toNumber())
+
+		console.log('money:', money)
+		let th = await AllOutpults.processFunds(3300*money, {value:3300*money, from:creator, gas:1000000, gasPrice:0});
+
+
+
+// console.log('Spends min:', await Spends.getTotalWeiNeeded(1000*money), 'min:', await Spends.getMinWeiNeeded())
+// console.log('Salaries min:', await Salaries.getTotalWeiNeeded(1000*money), 'min:', await Salaries.getMinWeiNeeded())
+// console.log('Other min:', await Other.getTotalWeiNeeded(1000*money), 'min:', await Other.getMinWeiNeeded())
+// console.log('Tasks min:', await Tasks.getTotalWeiNeeded(1000*money), 'min:', await Tasks.getMinWeiNeeded())
+// console.log('Bonuses min:', await Bonuses.getTotalWeiNeeded(1000*money), 'min:', await Bonuses.getMinWeiNeeded())
+// console.log('Rest min:', await Rest.getTotalWeiNeeded(1000*money), 'min:', await Rest.getMinWeiNeeded())
+
 	});
 });
 

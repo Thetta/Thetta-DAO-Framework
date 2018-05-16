@@ -77,7 +77,7 @@ contract WeiAbsoluteExpense is IWeiReceiver, IWeiDestination, Ownable {
 }
 
 // TODO 
-/*
+
 contract WeiRelativeExpense is IWeiReceiver, IWeiDestination, Ownable {
 	bool public isMoneyReceived = false;
 	uint public percentsDiv100Needed = 0;
@@ -106,9 +106,8 @@ contract WeiRelativeExpense is IWeiReceiver, IWeiDestination, Ownable {
 		if(!isNeedsMoney()){
 			return 0;
 		}
-
-		// TODO: calculate percents of _inputWei
-		return 0; 
+		// calculate percents of _inputWei
+		return (getTotalPercentsDiv100Needed() * _inputWei) / 10000;
 	}
 
 	function getTotalPercentsDiv100Needed()constant public returns(uint){
@@ -141,5 +140,5 @@ contract WeiAbsoluteExpenseWithPeriod {
 contract WeiRelativeExpenseWithPeriod {
 
 }
-*/
+
 
