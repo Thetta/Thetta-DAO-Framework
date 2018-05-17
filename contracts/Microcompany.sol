@@ -9,25 +9,6 @@ import "./tasks/Tasks.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-// Different types of Members:
-// 1) Specific token holder 
-// 2) Employee 
-// 3) Specific address 
-// 4) Any address
-
-// Conditions
-// 1) With a specific role -> permission (“addNewBounty”) 
-// 2) With reputation
-// 3) 
-
-// Examples:
-//		add new task -> voting
-//		add new expense -> voting
-//		issue tokens -> voting 
-//		add new employee -> voting
-//		
-//		start task -> any employee 
-//		
 contract MicrocompanyStorage is Ownable {
 	StdMicrocompanyToken public stdToken;
 
@@ -220,8 +201,8 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 	}
 }
 
-// TODO:
-// this contract should be 
+////////////////////
+// This contract is a helper that will create new Proposal (i.e. voting) if the action is not allowed directly
 contract AutoActionCaller {
 	Microcompany mc;
 
@@ -229,35 +210,17 @@ contract AutoActionCaller {
 		mc = _mc;
 	}
 
-	// experimental...
-	// TODO: 
-	/*
-	function addNewWeiTaskAuto(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public returns(address voteOut){
-		WeiTask wt = new WeiTask(mc, _caption, _desc, _isPostpaid, _isDonation, _neededWei);
-
-		if(mc.isCanDoAction(msg.sender, "addNewTask")){
-			// 1 - add new task immediately
-			mc.addNewWeiTask(wt);
-			return 0x0;
-		}else{
-			// 2 - create new vote instead
-			// we pass msg.sender (just like tx.origin) 
-			ProposalAddNewTask vant = new ProposalAddNewTask(mc, msg.sender, wt);
-			mc.addNewProposal(vant);
-			return vant;
-		}
-	}
-	*/
-
 	function issueTokensAuto(address _to, uint _amount) public returns(address voteOut){
+		// 1 - create new task immediately?
 		if(mc.isCanDoAction(msg.sender, "issueTokens")){
-			// 1 - create new task immediately
 			mc.issueTokens(_to, _amount);
 			return 0x0;
 		}else{
 			// 2 - create new vote instead
 			// we pass msg.sender (just like tx.origin) 
 			ProposalIssueTokens pit = new ProposalIssueTokens(mc, msg.sender, _to, _amount);
+
+			// WARNING: should be permitted to add new proposal by the current contract address!!!
 			mc.addNewProposal(pit);		
 			return pit;
 		}

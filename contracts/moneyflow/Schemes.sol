@@ -4,8 +4,11 @@ import "./WeiSplitter.sol";
 import "./WeiExpense.sol";
 import "./WeiFund.sol";
 
+import "../governance/Voting.sol";
+
 import "../IMicrocompany.sol";
 import "./IMoneyflow.sol";
+
 
 // this contract should be used to automatically instantiate Default scheme for a microcompany:
 //
@@ -74,13 +77,11 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 			tasks.addChild(wt);
 			return 0x0;
 		}else{
-			// TODO: 
+			ProposalAddNewTask vant = new ProposalAddNewTask(mc, this, msg.sender, wt);
 
-			// 2 - create new vote instead
-			// we pass msg.sender (just like tx.origin) 
-			//ProposalAddNewTask vant = new ProposalAddNewTask(mc, msg.sender, wt);
-			//mc.addNewProposal(vant);
-			//return vant;
+			// WARNING: should be permitted to add new proposal by the current contract address!!!
+			mc.addNewProposal(vant);
+			return vant;
 		}
 	}
 
