@@ -48,7 +48,7 @@ contract WeiTopDownSplitter is WeiSplitterBase, IWeiReceiver {
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
 			uint needed = c.getMinWeiNeeded();
-			total.add(needed);
+			total = total + needed;
 		}
 		return total;
 	}
@@ -58,7 +58,7 @@ contract WeiTopDownSplitter is WeiSplitterBase, IWeiReceiver {
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
 			uint needed = c.getTotalWeiNeeded(_inputWei);
-			total.add(needed);
+			total = total + needed;
 
 			// this should be reduced because next child can get only '_inputWei minus what prev. child got'
 			if(_inputWei>needed){
@@ -74,7 +74,7 @@ contract WeiTopDownSplitter is WeiSplitterBase, IWeiReceiver {
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
-			total.add(c.getTotalPercentsDiv100Needed());	
+			total = total + c.getTotalPercentsDiv100Needed();	
 		}
 
 		// truncate, no more than 100% allowed!
@@ -103,7 +103,7 @@ contract WeiTopDownSplitter is WeiSplitterBase, IWeiReceiver {
 
 		// TODO: can remove this line?
 		// transfer below will throw if not enough money?
-		// require(amount>=getTotalWeiNeeded(_currentFlow));
+		require(amount>=getTotalWeiNeeded(_currentFlow));
 		// ???
 		//require(amount>=getMinWeiNeeded());
 
@@ -119,8 +119,8 @@ contract WeiTopDownSplitter is WeiSplitterBase, IWeiReceiver {
 			c.processFunds.value(needed)(amount);
 
 			// this should be reduced because next child can get only 'amount minus what prev. child got'
-			if(amount>needed){
-				amount-=needed;
+			if(amount>=needed){
+				amount = amount - needed;
 			}else{
 				amount = 0;
 			}
@@ -144,7 +144,7 @@ contract WeiUnsortedSplitter is WeiSplitterBase, IWeiReceiver {
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
 			uint needed = c.getMinWeiNeeded();
-			total.add(needed);
+			total = total + needed;
 		}
 		return total;
 	}
@@ -154,7 +154,7 @@ contract WeiUnsortedSplitter is WeiSplitterBase, IWeiReceiver {
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
 			uint needed = c.getTotalWeiNeeded(_inputWei);
-			total.add(needed);
+			total = total + needed;
 		}
 		return total;
 	}
@@ -163,7 +163,7 @@ contract WeiUnsortedSplitter is WeiSplitterBase, IWeiReceiver {
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
-			total.add(c.getTotalPercentsDiv100Needed());	
+			total = total + c.getTotalPercentsDiv100Needed();
 		}
 
 		// truncate, no more than 100% allowed!
@@ -192,7 +192,7 @@ contract WeiUnsortedSplitter is WeiSplitterBase, IWeiReceiver {
 
 		// TODO: can remove this line?
 		// transfer below will throw if not enough money?
-		// require(amount>=getTotalWeiNeeded(_currentFlow));
+		require(amount>=getTotalWeiNeeded(_currentFlow));
 
 		// DO NOT SEND LESS!
 		// DO NOT SEND MORE!

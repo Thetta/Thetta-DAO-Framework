@@ -200,6 +200,46 @@ global.contract('Moneyflow', (accounts) => {
 		global.assert.equal(weiAbsoluteExpense3Balance.toNumber(),3*money, 'resource point received money from splitter');
 	});
 
+	global.it('should process money in structure o-> o-> o-o-o',async() => {
+		let AllOutpults = await WeiTopDownSplitter.new('AllOutpults', {from:creator, gasPrice:0});
+		let Salaries = await WeiUnsortedSplitter.new('Salaries', {from:creator, gasPrice:0});
+
+		let Employee1 = await WeiAbsoluteExpense.new(1000*money, {from:creator, gasPrice:0});
+		let Employee2 = await WeiAbsoluteExpense.new(1500*money, {from:creator, gasPrice:0});
+		let Employee3 = await WeiAbsoluteExpense.new(800*money, {from:creator, gasPrice:0});		
+
+		await AllOutpults.addChild(Salaries.address, {from:creator, gas:1000000, gasPrice:0});
+
+		await Salaries.addChild(Employee1.address, {from:creator, gas:1000000, gasPrice:0});
+		await Salaries.addChild(Employee2.address, {from:creator, gas:1000000, gasPrice:0});
+		await Salaries.addChild(Employee3.address, {from:creator, gas:1000000, gasPrice:0});
+
+		let Employee1Needs = await Employee1.getTotalWeiNeeded(3300*money);
+			console.log('Employee1Needs:', Employee1Needs.toNumber())
+		let Employee2Needs = await Employee2.getTotalWeiNeeded(3300*money);
+			console.log('Employee2Needs:', Employee2Needs.toNumber())
+		let Employee3Needs = await Employee3.getTotalWeiNeeded(3300*money);
+			console.log('Employee3Needs:', Employee3Needs.toNumber())
+
+		let SalariesNeeds = await Salaries.getTotalWeiNeeded(3300*money);
+			console.log('SalariesNeeds:', SalariesNeeds.toNumber())
+		let SalariesMinNeeds = await Salaries.getMinWeiNeeded();
+			console.log('SalariesMinNeeds:', SalariesMinNeeds.toNumber())
+
+		let AllOutpultsNeeds = await AllOutpults.getTotalWeiNeeded(3300*money);
+			console.log('AllOutpultsNeeds:', AllOutpultsNeeds.toNumber())
+		let MinOutpultsNeeds = await AllOutpults.getMinWeiNeeded();
+			console.log('MinOutpultsNeeds:', MinOutpultsNeeds.toNumber())
+		let OutputChildrenCount = await AllOutpults.getChildrenCount();
+			console.log('OutputChildrenCount:', OutputChildrenCount.toNumber())
+		let SalariesChildrenCount = await Salaries.getChildrenCount();
+			console.log('SalariesChildrenCount:', SalariesChildrenCount.toNumber())
+
+		console.log('money:', money)
+		let th = await Salaries.processFunds(3300*money, {value:3300*money, from:creator, gas:1000000, gasPrice:0});
+
+	})
+
 	global.it('should process money with a scheme just like in the paper',async() => {
 		// Document is here: https://docs.google.com/document/d/15UOnXM_iPudD95m-UYBcYns-SeqM2ksDecjYhZrqybQ/edit?usp=sharing
 		
@@ -227,55 +267,69 @@ global.contract('Moneyflow', (accounts) => {
 		
 		// CONNECTIONS
 		await AllOutpults.addChild(Spends.address, {from:creator, gas:1000000, gasPrice:0});
-			await Spends.addChild(Salaries.address);
+			await Spends.addChild(Salaries.address, {from:creator, gas:1000000, gasPrice:0});
 				await Salaries.addChild(Employee1.address, {from:creator, gas:1000000, gasPrice:0});
 				await Salaries.addChild(Employee2.address, {from:creator, gas:1000000, gasPrice:0});
 				await Salaries.addChild(Employee3.address, {from:creator, gas:1000000, gasPrice:0});
-			// await AllOutpults.addChild(Other.address);
-			// 	await Other.addChild(Office.address);
-			// 	await Other.addChild(Internet.address);
-			// await AllOutpults.addChild(Tasks.address);
-			// 	await Tasks.addChild(Task1.address);
-			// 	await Tasks.addChild(Task2.address);
-			// 	await Tasks.addChild(Task3.address);			
-		// await AllOutpults.addChild(Bonuses.address);
-		// 	await Bonuses.addChild(Bonus1.address);
-		// 	await Bonuses.addChild(Bonus2.address);
-		// 	await Bonuses.addChild(Bonus3.address);
-		// await AllOutpults.addChild(Rest.address);
-		// 	await Rest.addChild(ReserveFund.address);
-		// 	await Rest.addChild(DividendsFund.address);
+			await Spends.addChild(Other.address, {from:creator, gas:1000000, gasPrice:0});
+				await Other.addChild(Office.address, {from:creator, gas:1000000, gasPrice:0});
+				await Other.addChild(Internet.address, {from:creator, gas:1000000, gasPrice:0});
+			await Spends.addChild(Tasks.address, {from:creator, gas:1000000, gasPrice:0});
+				await Tasks.addChild(Task1.address, {from:creator, gas:1000000, gasPrice:0});
+				await Tasks.addChild(Task2.address, {from:creator, gas:1000000, gasPrice:0});
+				await Tasks.addChild(Task3.address, {from:creator, gas:1000000, gasPrice:0});			
+		await AllOutpults.addChild(Bonuses.address, {from:creator, gas:1000000, gasPrice:0});
+			await Bonuses.addChild(Bonus1.address, {from:creator, gas:1000000, gasPrice:0});
+			await Bonuses.addChild(Bonus2.address, {from:creator, gas:1000000, gasPrice:0});
+			await Bonuses.addChild(Bonus3.address, {from:creator, gas:1000000, gasPrice:0});
+		await AllOutpults.addChild(Rest.address, {from:creator, gas:1000000, gasPrice:0});
+			await Rest.addChild(ReserveFund.address, {from:creator, gas:1000000, gasPrice:0});
+			await Rest.addChild(DividendsFund.address, {from:creator, gas:1000000, gasPrice:0});
 
-		// await moneyflowInstance.setRootWeiReceiver(AllOutpults.address);
-		// let revenueEndpointAddress = await moneyflowInstance.getRevenueEndpointAddress();	
-		// global.assert.equal(revenueEndpointAddress, AllOutpults.address, 'AllOutpults.address saved in moneyflowInstance as revenueEndpointAddress');
+		let Employee1Needs = await Employee1.getTotalWeiNeeded(30900*money);
+			console.log('Employee1Needs:', Employee1Needs.toNumber()/money);
+		let Employee2Needs = await Employee2.getTotalWeiNeeded(30900*money);
+			console.log('Employee2Needs:', Employee2Needs.toNumber()/money);
+		let Employee3Needs = await Employee3.getTotalWeiNeeded(30900*money);
+			console.log('Employee3Needs:', Employee3Needs.toNumber()/money);
 
-		let AllOutpultsNeeds = await AllOutpults.getTotalWeiNeeded(3300*money);
-		console.log('AllOutpultsNeeds:', AllOutpultsNeeds.toNumber())
-
-		let MinOutpultsNeeds = await AllOutpults.getMinWeiNeeded();
-		console.log('MinOutpultsNeeds:', MinOutpultsNeeds.toNumber())
-
-		let OutputChildrenCount = await AllOutpults.getChildrenCount();
-		console.log('OutputChildrenCount:', OutputChildrenCount.toNumber())
-
+		let AllOutpultsTotalNeed = await AllOutpults.getTotalWeiNeeded(30900*money, {from:creator});
+		let AllOutpultsMinNeed = await AllOutpults.getMinWeiNeeded();
+		let AllOutpultsChildrenCount = await AllOutpults.getChildrenCount();
+			console.log(`AllOutpults: ---- childrens: ${AllOutpultsChildrenCount.toNumber()} ------- total: ${AllOutpultsTotalNeed.toNumber()/money} ------- min: ${AllOutpultsMinNeed.toNumber()/money}`)
+		let SpendsTotalNeed = await Spends.getTotalWeiNeeded(30900*money, {from:creator});
+		let SpendsMinNeed = await Spends.getMinWeiNeeded();
 		let SpendsChildrenCount = await Spends.getChildrenCount();
-		console.log('SpendsChildrenCount:', SpendsChildrenCount.toNumber())
-
+			console.log(`Spends:   ------- childrens: ${SpendsChildrenCount.toNumber()} ------- total: ${SpendsTotalNeed.toNumber()/money} ------- min: ${SpendsMinNeed.toNumber()/money}`)
+		let SalariesTotalNeed = await Salaries.getTotalWeiNeeded(30900*money, {from:creator});
+		let SalariesMinNeed = await Salaries.getMinWeiNeeded();
 		let SalariesChildrenCount = await Salaries.getChildrenCount();
-		console.log('SalariesChildrenCount:', SalariesChildrenCount.toNumber())
+			console.log(`Salaries: ------- childrens: ${SalariesChildrenCount.toNumber()} ------- total: ${SalariesTotalNeed.toNumber()/money} ------- min: ${SalariesMinNeed.toNumber()/money}`)
+		let OtherTotalNeed = await Other.getTotalWeiNeeded(30900*money, {from:creator});
+		let OtherMinNeed = await Other.getMinWeiNeeded();
+		let OtherChildrenCount = await Other.getChildrenCount();
+			console.log(`Other:    ------- childrens: ${OtherChildrenCount.toNumber()} ------- total: ${OtherTotalNeed.toNumber()/money} ------- min: ${OtherMinNeed.toNumber()/money}`)
+		let TasksTotalNeed = await Tasks.getTotalWeiNeeded(30900*money, {from:creator});
+		let TasksMinNeed = await Tasks.getMinWeiNeeded();
+		let TasksChildrenCount = await Tasks.getChildrenCount();
+			console.log(`Tasks:    ------- childrens: ${TasksChildrenCount.toNumber()} ------- total: ${TasksTotalNeed.toNumber()/money} ------- min: ${TasksMinNeed.toNumber()/money}`)
+		let BonusesTotalNeed = await Bonuses.getTotalWeiNeeded(30900*money, {from:creator});
+		let BonusesMinNeed = await Bonuses.getMinWeiNeeded();
+		let BonusesChildrenCount = await Bonuses.getChildrenCount();
+			console.log(`Bonuses:  ------- childrens: ${BonusesChildrenCount.toNumber()} ------- total: ${BonusesTotalNeed.toNumber()/money} ------- min: ${BonusesMinNeed.toNumber()/money}`)
+		let RestTotalNeed = await Rest.getTotalWeiNeeded(30900*money, {from:creator});
+		let RestMinNeed = await Rest.getMinWeiNeeded();
+		let RestChildrenCount = await Rest.getChildrenCount();
+			console.log(`Rest:     ------- childrens: ${RestChildrenCount.toNumber()} ------- total: ${RestTotalNeed.toNumber()/money} ------- min: ${RestMinNeed.toNumber()/money}`)
+		let ReserveFundTotalNeed = await ReserveFund.getTotalWeiNeeded(30900*money, {from:creator});
+		let ReserveFundMinNeed = await ReserveFund.getMinWeiNeeded();
+			console.log(`ReserveFund: ---- childrens: x ------- total: ${ReserveFundTotalNeed.toNumber()/money} ------- min: ${ReserveFundMinNeed.toNumber()/money}`)
+		let DividendsFundTotalNeed = await DividendsFund.getTotalWeiNeeded(30900*money, {from:creator});
+		let DividendsFundMinNeed = await DividendsFund.getMinWeiNeeded();
+			console.log(`DividendsFund: -- childrens: x ------- total: ${DividendsFundTotalNeed.toNumber()/money} ------- min: ${DividendsFundMinNeed.toNumber()/money}`)
 
-		console.log('money:', money)
-		let th = await AllOutpults.processFunds(3300*money, {value:3300*money, from:creator, gas:1000000, gasPrice:0});
 
-
-
-// console.log('Spends min:', await Spends.getTotalWeiNeeded(1000*money), 'min:', await Spends.getMinWeiNeeded())
-// console.log('Salaries min:', await Salaries.getTotalWeiNeeded(1000*money), 'min:', await Salaries.getMinWeiNeeded())
-// console.log('Other min:', await Other.getTotalWeiNeeded(1000*money), 'min:', await Other.getMinWeiNeeded())
-// console.log('Tasks min:', await Tasks.getTotalWeiNeeded(1000*money), 'min:', await Tasks.getMinWeiNeeded())
-// console.log('Bonuses min:', await Bonuses.getTotalWeiNeeded(1000*money), 'min:', await Bonuses.getMinWeiNeeded())
-// console.log('Rest min:', await Rest.getTotalWeiNeeded(1000*money), 'min:', await Rest.getMinWeiNeeded())
+		let th = await AllOutpults.processFunds(5900*money, {value:5900*money, from:creator, gas:1000000, gasPrice:0});
 
 	});
 });
