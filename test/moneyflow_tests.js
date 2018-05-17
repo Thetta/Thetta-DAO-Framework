@@ -215,25 +215,26 @@ global.contract('Moneyflow', (accounts) => {
 		await Salaries.addChild(Employee3.address, {from:creator, gas:1000000, gasPrice:0});
 
 		let Employee1Needs = await Employee1.getTotalWeiNeeded(3300*money);
-			console.log('Employee1Needs:', Employee1Needs.toNumber())
+			global.assert.equal(Employee1Needs.toNumber()/money, 1000, 'Employee1 Needs 1000 money' )
 		let Employee2Needs = await Employee2.getTotalWeiNeeded(3300*money);
-			console.log('Employee2Needs:', Employee2Needs.toNumber())
+			global.assert.equal(Employee1Needs.toNumber()/money, 1500, 'Employee1 Needs 1000 money' )
 		let Employee3Needs = await Employee3.getTotalWeiNeeded(3300*money);
-			console.log('Employee3Needs:', Employee3Needs.toNumber())
+			global.assert.equal(Employee1Needs.toNumber()/money, 800, 'Employee1 Needs 1000 money' )
 
 		let SalariesNeeds = await Salaries.getTotalWeiNeeded(3300*money);
-			console.log('SalariesNeeds:', SalariesNeeds.toNumber())
+			global.assert.equal(SalariesNeeds.toNumber()/money, 5900, 'Salaries Needs 5900 money' )
+
 		let SalariesMinNeeds = await Salaries.getMinWeiNeeded();
-			console.log('SalariesMinNeeds:', SalariesMinNeeds.toNumber())
+			global.assert.equal(SalariesNeeds.toNumber()/money, 5900, 'Salaries min Needs 5900 money' )
 
 		let AllOutpultsNeeds = await AllOutpults.getTotalWeiNeeded(3300*money);
-			console.log('AllOutpultsNeeds:', AllOutpultsNeeds.toNumber())
+			global.assert.equal(AllOutpultsNeeds.toNumber()/money, 5900, 'AllOutpults Needs 5900 money' )
 		let MinOutpultsNeeds = await AllOutpults.getMinWeiNeeded();
-			console.log('MinOutpultsNeeds:', MinOutpultsNeeds.toNumber())
+			global.assert.equal(AllOutpultsNeeds.toNumber()/money, 5900, 'AllOutpults Needs min 5900 money' )
 		let OutputChildrenCount = await AllOutpults.getChildrenCount();
-			console.log('OutputChildrenCount:', OutputChildrenCount.toNumber())
+			global.assert.equal(OutputChildrenCount.toNumber(), 1, 'OutputChildrenCount should be 1')
 		let SalariesChildrenCount = await Salaries.getChildrenCount();
-			console.log('SalariesChildrenCount:', SalariesChildrenCount.toNumber())
+			global.assert.equal(SalariesChildrenCount.toNumber(), 3, 'SalariesChildrenCount should be 3')
 
 		console.log('money:', money)
 		let th = await Salaries.processFunds(3300*money, {value:3300*money, from:creator, gas:1000000, gasPrice:0});
@@ -286,47 +287,68 @@ global.contract('Moneyflow', (accounts) => {
 			await Rest.addChild(ReserveFund.address, {from:creator, gas:1000000, gasPrice:0});
 			await Rest.addChild(DividendsFund.address, {from:creator, gas:1000000, gasPrice:0});
 
-		let Employee1Needs = await Employee1.getTotalWeiNeeded(30900*money);
-			console.log('Employee1Needs:', Employee1Needs.toNumber()/money);
-		let Employee2Needs = await Employee2.getTotalWeiNeeded(30900*money);
-			console.log('Employee2Needs:', Employee2Needs.toNumber()/money);
-		let Employee3Needs = await Employee3.getTotalWeiNeeded(30900*money);
-			console.log('Employee3Needs:', Employee3Needs.toNumber()/money);
+		let Employee1Needs = await Employee1.getTotalWeiNeeded(3300*money);
+			global.assert.equal(Employee1Needs.toNumber()/money, 1000, 'Employee1 Needs 1000 money' )
+		let Employee2Needs = await Employee2.getTotalWeiNeeded(3300*money);
+			global.assert.equal(Employee1Needs.toNumber()/money, 1500, 'Employee1 Needs 1000 money' )
+		let Employee3Needs = await Employee3.getTotalWeiNeeded(3300*money);
+			global.assert.equal(Employee1Needs.toNumber()/money, 800, 'Employee1 Needs 1000 money' )
 
 		let AllOutpultsTotalNeed = await AllOutpults.getTotalWeiNeeded(30900*money, {from:creator});
 		let AllOutpultsMinNeed = await AllOutpults.getMinWeiNeeded();
 		let AllOutpultsChildrenCount = await AllOutpults.getChildrenCount();
-			console.log(`AllOutpults: ---- childrens: ${AllOutpultsChildrenCount.toNumber()} ------- total: ${AllOutpultsTotalNeed.toNumber()/money} ------- min: ${AllOutpultsMinNeed.toNumber()/money}`)
+			
+			global.assert.equal(AllOutpultsChildrenCount.toNumber(), 5900, 'Children count should be 3');		
+			global.assert.equal(AllOutpultsTotalNeed.toNumber()/money, 30900, 'AllOutpults Total Need should be 30900');
+			global.assert.equal(AllOutpultsMinNeed.toNumber()/money, 5900, 'AllOutpults Total Need should be 0');
+
 		let SpendsTotalNeed = await Spends.getTotalWeiNeeded(30900*money, {from:creator});
 		let SpendsMinNeed = await Spends.getMinWeiNeeded();
 		let SpendsChildrenCount = await Spends.getChildrenCount();
-			console.log(`Spends:   ------- childrens: ${SpendsChildrenCount.toNumber()} ------- total: ${SpendsTotalNeed.toNumber()/money} ------- min: ${SpendsMinNeed.toNumber()/money}`)
+
+			global.assert.equal(SpendsChildrenCount.toNumber(), 5900, 'Children count should be 3');
+			global.assert.equal(SpendsTotalNeed.toNumber()/money, 5900, 'Spends Total Need should be 30900');
+			global.assert.equal(SpendsMinNeed.toNumber()/money, 0, 'Spends Total Need should be 0');
+
 		let SalariesTotalNeed = await Salaries.getTotalWeiNeeded(30900*money, {from:creator});
 		let SalariesMinNeed = await Salaries.getMinWeiNeeded();
 		let SalariesChildrenCount = await Salaries.getChildrenCount();
-			console.log(`Salaries: ------- childrens: ${SalariesChildrenCount.toNumber()} ------- total: ${SalariesTotalNeed.toNumber()/money} ------- min: ${SalariesMinNeed.toNumber()/money}`)
+
+			global.assert.equal(SalariesChildrenCount.toNumber(), 3300, 'Children count should be 3');
+			global.assert.equal(SalariesTotalNeed.toNumber()/money, 3300, 'Salaries Total Need should be 30900');
+			global.assert.equal(SalariesMinNeed.toNumber()/money, 0, 'Salaries Total Need should be 0');
+
 		let OtherTotalNeed = await Other.getTotalWeiNeeded(30900*money, {from:creator});
 		let OtherMinNeed = await Other.getMinWeiNeeded();
 		let OtherChildrenCount = await Other.getChildrenCount();
-			console.log(`Other:    ------- childrens: ${OtherChildrenCount.toNumber()} ------- total: ${OtherTotalNeed.toNumber()/money} ------- min: ${OtherMinNeed.toNumber()/money}`)
+
+			global.assert.equal(OtherChildrenCount.toNumber(), 800, 'Children count should be 3');
+			global.assert.equal(OtherTotalNeed.toNumber()/money, 800, 'Other Total Need should be 30900');
+			global.assert.equal(OtherMinNeed.toNumber()/money, 0, 'Other Total Need should be 0');
+
 		let TasksTotalNeed = await Tasks.getTotalWeiNeeded(30900*money, {from:creator});
 		let TasksMinNeed = await Tasks.getMinWeiNeeded();
 		let TasksChildrenCount = await Tasks.getChildrenCount();
-			console.log(`Tasks:    ------- childrens: ${TasksChildrenCount.toNumber()} ------- total: ${TasksTotalNeed.toNumber()/money} ------- min: ${TasksMinNeed.toNumber()/money}`)
+
+			global.assert.equal(TasksChildrenCount.toNumber(), 1800, 'Children count should be 3');
+			global.assert.equal(TasksTotalNeed.toNumber()/money, 1800, 'Tasks Total Need should be 30900');
+			global.assert.equal(TasksMinNeed.toNumber()/money, 0, 'Tasks Total Need should be 0');
+
 		let BonusesTotalNeed = await Bonuses.getTotalWeiNeeded(30900*money, {from:creator});
 		let BonusesMinNeed = await Bonuses.getMinWeiNeeded();
 		let BonusesChildrenCount = await Bonuses.getChildrenCount();
-			console.log(`Bonuses:  ------- childrens: ${BonusesChildrenCount.toNumber()} ------- total: ${BonusesTotalNeed.toNumber()/money} ------- min: ${BonusesMinNeed.toNumber()/money}`)
+
+			global.assert.equal(BonusesChildrenCount.toNumber(), 0, 'Children count should be 3');
+			global.assert.equal(BonusesTotalNeed.toNumber()/money, 1236, 'Bonuses Total Need should be 30900');
+			global.assert.equal(BonusesMinNeed.toNumber()/money, 0, 'Bonuses Total Need should be 0');
+
 		let RestTotalNeed = await Rest.getTotalWeiNeeded(30900*money, {from:creator});
 		let RestMinNeed = await Rest.getMinWeiNeeded();
 		let RestChildrenCount = await Rest.getChildrenCount();
-			console.log(`Rest:     ------- childrens: ${RestChildrenCount.toNumber()} ------- total: ${RestTotalNeed.toNumber()/money} ------- min: ${RestMinNeed.toNumber()/money}`)
-		let ReserveFundTotalNeed = await ReserveFund.getTotalWeiNeeded(30900*money, {from:creator});
-		let ReserveFundMinNeed = await ReserveFund.getMinWeiNeeded();
-			console.log(`ReserveFund: ---- childrens: x ------- total: ${ReserveFundTotalNeed.toNumber()/money} ------- min: ${ReserveFundMinNeed.toNumber()/money}`)
-		let DividendsFundTotalNeed = await DividendsFund.getTotalWeiNeeded(30900*money, {from:creator});
-		let DividendsFundMinNeed = await DividendsFund.getMinWeiNeeded();
-			console.log(`DividendsFund: -- childrens: x ------- total: ${DividendsFundTotalNeed.toNumber()/money} ------- min: ${DividendsFundMinNeed.toNumber()/money}`)
+
+			global.assert.equal(RestChildrenCount.toNumber(), 0, 'Children count should be 3');
+			global.assert.equal(RestTotalNeed.toNumber()/money, 30900, 'Bonuses Total Need should be 30900');
+			global.assert.equal(RestMinNeed.toNumber()/money, 0, 'Bonuses Total Need should be 0');
 
 
 		let th = await AllOutpults.processFunds(5900*money, {value:5900*money, from:creator, gas:1000000, gasPrice:0});
