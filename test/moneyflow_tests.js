@@ -57,15 +57,12 @@ global.contract('Moneyflow', (accounts) => {
 	});
 
 	global.it('should allow to send revenue',async() => {
-		// Moneyflow.getRevenueEndpointAddress() -> FallbackToWeiReceiver -> Fund
+		// Moneyflow.getRevenueEndpointAddress() -> Fund
 		const revEndpoint = await moneyflowInstance.getRevenueEndpointAddress();
 		global.assert.equal(revEndpoint,0x0,'Endpoint should be zero');
 
 		const isEnableFlushTo = true;
-		let fund = await WeiFund.new(creator,isEnableFlushTo,{from:creator});
-		global.assert.notEqual(fund.address,0x0,'Fund should be created');
-		// let ftwr = await FallbackToWeiReceiver.new(fund.address,{from:creator});
-
+		let fund = await WeiFund.new(creator,isEnableFlushTo,10000,{from:creator});
 		await moneyflowInstance.setRootWeiReceiver(fund.address);
 
 		const revEndpoint2 = await moneyflowInstance.getRevenueEndpointAddress();
@@ -75,19 +72,21 @@ global.contract('Moneyflow', (accounts) => {
 		await fund.processFunds(money, { from: creator, value: money});
 
 		// money should end up in the fund
-
-		// test fund.flush();
 		let fundBalance = await web3.eth.getBalance(fund.address);
 		global.assert.equal(fundBalance,1000000000000000,'Money should be transferred to the fund');
+
 		let firstCreatorBalance = await web3.eth.getBalance(creator);
 		await fund.flush({from:creator, gas:1000000, gasPrice:0});
 		let secondCreatorBalance = await web3.eth.getBalance(creator);
 		let creatorBalanceDelta = secondCreatorBalance.toNumber() - firstCreatorBalance.toNumber();
 		global.assert.equal(creatorBalanceDelta, money, 'creator gets all money by flush();');
+
 		let fundBalance2 = await web3.eth.getBalance(fund.address);
 		let fundBalanceDelta = fundBalance.toNumber() - fundBalance2.toNumber();
 		global.assert.equal(fundBalanceDelta, money, 'fund have given all money to creator by flush();');
 
+		const isNeeds = await fund.isNeedsMoney();
+		global.assert.isTrue(isNeeds,'Fund should ask for more money always!');
 
 		await fund.processFunds(money, { from: creator, value: money});
 
@@ -110,7 +109,7 @@ global.contract('Moneyflow', (accounts) => {
 		const donationEndpoint = await moneyflowInstance.getDonationEndpointAddress();
 
 		const isEnableFlushTo = true;
-		let fund = await WeiFund.new(creator,isEnableFlushTo,{from:creator});
+		let fund = await WeiFund.new(creator,isEnableFlushTo,10000,{from:creator});
 		// send some money to the donation endpoint 
 		web3.eth.sendTransaction({ from: creator, to: donationEndpoint, value: money});
 

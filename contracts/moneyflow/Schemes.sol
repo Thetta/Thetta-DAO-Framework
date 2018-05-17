@@ -33,6 +33,7 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 	WeiUnsortedSplitter tasks; 
 
 	WeiFund reserveFund;
+	WeiFund dividendsFund;
 
    modifier isCanDo(string _what){
 		require(mc.isCanDoAction(msg.sender, _what)); 
@@ -54,7 +55,13 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 		tasks = new WeiUnsortedSplitter("tasks");
 
 		// Only msg sender can do that
-		reserveFund = new WeiFund(_fundOutput, true);
+		// 50%
+		// use .setPercents() to change 
+		reserveFund = new WeiFund(_fundOutput, true, 5000);
+
+		// 50%
+		// use .setPercents() to change 
+		dividendsFund = new WeiFund(_fundOutput, true, 5000);
 
 		spends.addChild(salaries);
 		spends.addChild(other);
@@ -67,8 +74,7 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 		this.addChild(rest);
 
 		rest.addChild(reserveFund);
-
-		// TODO: dividends fund
+		rest.addChild(dividendsFund);
 	}
 
 	function addNewTaskAuto(WeiAbsoluteExpense wt) public returns(address voteOut){
