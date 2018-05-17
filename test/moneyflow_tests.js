@@ -522,8 +522,8 @@ global.contract('Moneyflow', (accounts) => {
 				let Bonus2 = await WeiRelativeExpense.new(100, {from:creator, gasPrice:0});
 				let Bonus3 = await WeiRelativeExpense.new(200, {from:creator, gasPrice:0});
 			let Rest = await WeiUnsortedSplitter.new('Rest', {from:creator, gasPrice:0});
-				let ReserveFund = await WeiRelativeExpense.new(8000, {from:creator, gasPrice:0});
-				let DividendsFund = await WeiRelativeExpense.new(2000, {from:creator, gasPrice:0});
+				let ReserveFund = await WeiRelativeExpense.new(1000, {from:creator, gasPrice:0});
+				let DividendsFund = await WeiRelativeExpense.new(1500, {from:creator, gasPrice:0});
 		
 		// CONNECTIONS
 		await AllOutpults.addChild(Spends.address, {from:creator, gas:1000000, gasPrice:0});
@@ -556,7 +556,7 @@ global.contract('Moneyflow', (accounts) => {
 		let BonusesBalance = await web3.eth.getBalance(Bonuses.address);
 		let RestBalance = await web3.eth.getBalance(Rest.address);
 				
-		global.assert.equal(AllOutpultsBalance.toNumber(), 0, 'AllOutpults balance should be 0');
+		global.assert.equal(AllOutpultsBalance.toNumber()/money, 18000, 'AllOutpults balance should be 0');
 		global.assert.equal(SpendsBalance.toNumber(), 0, 'Spends balance should be 0');
 		global.assert.equal(SalariesBalance.toNumber(), 0, 'Salaries balance should be 0');
 		global.assert.equal(OtherBalance.toNumber(), 0, 'Other balance should be 0');
@@ -586,8 +586,8 @@ global.contract('Moneyflow', (accounts) => {
 		global.assert.equal(Task1Balance.toNumber()/money, 500, 'Task1Balance should be 500 money');
 		global.assert.equal(Task2Balance.toNumber()/money, 300, 'Task2Balance should be 300 money');
 		global.assert.equal(Task3Balance.toNumber()/money, 1000, 'Task3Balance should be 1000 money');
-		global.assert.equal(Reserve3Balance.toNumber()/money, 19200, 'Reserve3Balance should be 19200 money');
-		global.assert.equal(Dividends3Balance.toNumber()/money, 4800, 'Dividends3Balance should be 4800 money');
+		global.assert.equal(Reserve3Balance.toNumber()/money, 2400, 'Reserve3Balance should be 19200 money');
+		global.assert.equal(Dividends3Balance.toNumber()/money, 3600, 'Dividends3Balance should be 4800 money');
 		global.assert.equal(Bonus1Balance.toNumber()/money, 250, 'Bonus1Balance should be 250 money');
 		global.assert.equal(Bonus2Balance.toNumber()/money, 250, 'Bonus2Balance should be 250 money');
 		global.assert.equal(Bonus3Balance.toNumber()/money, 500, 'Bonus3Balance should be 500 money');
