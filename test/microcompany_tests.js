@@ -26,6 +26,7 @@ global.contract('Microcompany', (accounts) => {
 		store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
 
 		mcInstance = await Microcompany.new(store.address,{gas: 10000000, from: creator});
+		aacInstance = await AutoActionCaller.new(mcInstance.address, {from: creator});
 
 		{
 			// manually setup the Default organization 
@@ -38,6 +39,10 @@ global.contract('Microcompany', (accounts) => {
 			await store.addActionByVoting("addNewTask");
 			await store.addActionByVoting("issueTokens");
 			await store.addActionByVoting("upgradeMicrocompany");
+
+			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
+			await store.addActionByAddress("addNewProposal", aacInstance.address);
+
 			// add creator as first employee	
 			await store.addNewEmployee(creator);			
 		}
@@ -45,9 +50,6 @@ global.contract('Microcompany', (accounts) => {
 		// do not forget to transfer ownership
 		await token.transferOwnership(mcInstance.address);
 		await store.transferOwnership(mcInstance.address);
-
-		aacInstance = await AutoActionCaller.new(mcInstance.address, {from: creator});
-		await mcInstance.setAutoActionCallerAddress(aacInstance.address);
 	});
 
 	global.it('should set everything correctly',async() => {

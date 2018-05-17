@@ -10,9 +10,10 @@ import "./tasks/Tasks.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 // Different types of Members:
-// 1) Gov.token holder
+// 1) Specific token holder 
 // 2) Employee 
-// 3) Any address
+// 3) Specific address 
+// 4) Any address
 
 // Conditions
 // 1) With a specific role -> permission (“addNewBounty”) 
@@ -38,6 +39,7 @@ contract MicrocompanyStorage is Ownable {
 
 	mapping (string=>bool) byEmployee;
 	mapping (string=>bool) byVoting;
+	mapping (address=>mapping(string=>bool)) byAddress;
 
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -54,12 +56,20 @@ contract MicrocompanyStorage is Ownable {
 		byVoting[_what] = true;
 	}
 
+	function addActionByAddress(string _what, address _a) public onlyOwner {
+		byAddress[_a][_what] = true;
+	}
+
 	function isCanDoByEmployee(string _permissionName) public constant returns(bool){
 		return byEmployee[_permissionName];
 	}
 
 	function isCanDoByVoting(string _permissionName) public constant returns(bool){
 		return byVoting[_permissionName];
+	}
+
+	function isCanDoByAddress(string _permissionName, address _a) public constant returns(bool){
+		return byAddress[_a][_permissionName];
 	}
 
 // Vote:
@@ -104,8 +114,6 @@ contract MicrocompanyStorage is Ownable {
 }
 
 contract Microcompany is IMicrocompanyBase, Ownable {
-	address autoActionCallerAddress = 0x0;
-
 	MicrocompanyStorage public store;
 
 //////////////////////
@@ -113,10 +121,6 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 	function Microcompany(MicrocompanyStorage _store) public {
 		// the ownership should be transferred to microcompany
 		store = _store;
-	}
-
-	function setAutoActionCallerAddress(address _a) public onlyOwner {
-		autoActionCallerAddress = _a;
 	}
 
 	// just an informative modifier
@@ -136,7 +140,7 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 	}
 
 	function addNewProposal(IProposal _proposal) public { 
-		bool isCan = isCanDoAction(msg.sender,"addNewProposal") || (msg.sender==autoActionCallerAddress);
+		bool isCan = isCanDoAction(msg.sender,"addNewProposal");
 		require(isCan);
 
 		store.addNewProposal(_proposal);
@@ -173,6 +177,11 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 
 // Permissions:
 	function isCanDoAction(address _a, string _permissionName) public constant returns(bool){
+		// 0 - is can do by address?
+		if(store.isCanDoByAddress(_permissionName, _a)){
+			return true;
+		}
+
 		// 1 - check if employees can do that without voting?
 		if(store.isCanDoByEmployee(_permissionName) && isEmployee(_a)){
 			return true;
@@ -212,6 +221,7 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 }
 
 // TODO:
+// this contract should be 
 contract AutoActionCaller {
 	Microcompany mc;
 
