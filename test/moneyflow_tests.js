@@ -79,13 +79,13 @@ global.contract('Moneyflow', (accounts) => {
 		let fundBalance = await web3.eth.getBalance(fund.address);
 		global.assert.equal(fundBalance,1000000000000000,'Money should be transferred to the fund');
 		let firstCreatorBalance = await web3.eth.getBalance(creator);
-		await fund.flush({from:creator, gas:1000000, gasPrice:100000000});
+		await fund.flush({from:creator, gas:1000000, gasPrice:0});
 		let secondCreatorBalance = await web3.eth.getBalance(creator);
 		let creatorBalanceDelta = secondCreatorBalance.toNumber() - firstCreatorBalance.toNumber();
-		global.assert.equal(creatorBalanceDelta>0.95*money, true);
+		global.assert.equal(creatorBalanceDelta, money, 'creator gets all money by flush();');
 		let fundBalance2 = await web3.eth.getBalance(fund.address);
 		let fundBalanceDelta = fundBalance.toNumber() - fundBalance2.toNumber();
-		global.assert.equal(fundBalanceDelta>0.95*money, true);
+		global.assert.equal(fundBalanceDelta, money, 'fund have given all money to creator by flush();');
 
 
 		await fund.processFunds(money, { from: creator, value: money});
@@ -95,14 +95,14 @@ global.contract('Moneyflow', (accounts) => {
 		global.assert.equal(fundBalance,money,'Money should be transferred to the fund');
 		
 		let firstOutsiderBalance = await web3.eth.getBalance(outsider);
-		await fund.flushTo(outsider, {from:creator, gas:1000000, gasPrice:100000000});
+		await fund.flushTo(outsider, {from:creator, gas:1000000, gasPrice:0});
 		let secondOutsiderBalance = await web3.eth.getBalance(outsider);
 		let outsiderBalanceDelta = secondOutsiderBalance.toNumber() - firstOutsiderBalance.toNumber();
-
-		global.assert.equal(outsiderBalanceDelta>0.95*money, true);
+		global.assert.equal(outsiderBalanceDelta, money, 'outsider gets all money by flushTo();');
+		
 		let fundBalance4 = await web3.eth.getBalance(fund.address);
 		let fundBalanceDelta2 = fundBalance3.toNumber() - fundBalance4.toNumber();
-		global.assert.equal(fundBalanceDelta2>0.95*money, true);
+		global.assert.equal(fundBalanceDelta2, money, 'fund have given all money to creator by flushTo();');
 	});
 
 	global.it('should allow to get donations',async() => {
@@ -114,7 +114,7 @@ global.contract('Moneyflow', (accounts) => {
 		web3.eth.sendTransaction({ from: creator, to: donationEndpoint, value: money});
 
 		let donationBalance = await web3.eth.getBalance(donationEndpoint);
-		global.assert.equal(donationBalance.toNumber(),money);
+		global.assert.equal(donationBalance.toNumber(),money, 'all money at donation point now');
 		
 		let creatorBalance = await web3.eth.getBalance(creator);
 		await moneyflowInstance.setRootWeiReceiver(creator,{from:creator, gas:100000, gasPrice:0})
@@ -125,10 +125,10 @@ global.contract('Moneyflow', (accounts) => {
 		let creatorBalance2 = await web3.eth.getBalance(creator);
 		let donationBalance2 = await web3.eth.getBalance(donationEndpoint);
 
-		global.assert.equal(donationBalance2.toNumber(),0);
+		global.assert.equal(donationBalance2.toNumber(),0, 'all donations now on creator`s balance');
 
 		let creatorBalanceDelta = creatorBalance2.toNumber() - creatorBalance.toNumber();
-		global.assert.equal(creatorBalanceDelta, money);
+		global.assert.equal(creatorBalanceDelta, money, 'all donations now on creator`s balance');
 	});
 
 	global.it('should process money with WeiTopDownSplitter + 3 WeiAbsoluteExpense',async() => {
@@ -149,20 +149,20 @@ global.contract('Moneyflow', (accounts) => {
 
 		let revenueEndpointAddress = await moneyflowInstance.getRevenueEndpointAddress();
 		
-		global.assert.equal(revenueEndpointAddress, weiTopDownSplitter.address);
+		global.assert.equal(revenueEndpointAddress, weiTopDownSplitter.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
 
 		// now send some money to the revenue endpoint 
 		await weiTopDownSplitter.processFunds(6*money, {value:6*money, from:creator});
 
 		// money should end up in the outputs
 		let weiAbsoluteExpense1Balance = await web3.eth.getBalance(weiAbsoluteExpense1.address);
-		global.assert.equal(weiAbsoluteExpense1Balance.toNumber(),1*money);
+		global.assert.equal(weiAbsoluteExpense1Balance.toNumber(),1*money, 'resource point received money from splitter');
 		
 		let weiAbsoluteExpense2Balance = await web3.eth.getBalance(weiAbsoluteExpense2.address);
-		global.assert.equal(weiAbsoluteExpense2Balance.toNumber(),2*money);
+		global.assert.equal(weiAbsoluteExpense2Balance.toNumber(),2*money, 'resource point received money from splitter');
 		
 		let weiAbsoluteExpense3Balance = await web3.eth.getBalance(weiAbsoluteExpense3.address);
-		global.assert.equal(weiAbsoluteExpense3Balance.toNumber(),3*money)		
+		global.assert.equal(weiAbsoluteExpense3Balance.toNumber(),3*money, 'resource point received money from splitter')
 	});
 
 	global.it('should process money with WeiUnsortedSplitter + 3 WeiAbsoluteExpense',async() => {
@@ -183,20 +183,20 @@ global.contract('Moneyflow', (accounts) => {
 
 		let revenueEndpointAddress = await moneyflowInstance.getRevenueEndpointAddress();
 		
-		global.assert.equal(revenueEndpointAddress, weiUnsortedSplitter.address);
+		global.assert.equal(revenueEndpointAddress, weiUnsortedSplitter.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
 
 		// now send some money to the revenue endpoint 
 		await weiUnsortedSplitter.processFunds(6*money, {value:6*money, from:creator});
 
 		// money should end up in the outputs
 		let weiAbsoluteExpense1Balance = await web3.eth.getBalance(weiAbsoluteExpense1.address);
-		global.assert.equal(weiAbsoluteExpense1Balance.toNumber(),1*money);
+		global.assert.equal(weiAbsoluteExpense1Balance.toNumber(),1*money, 'resource point received money from splitter');
 		
 		let weiAbsoluteExpense2Balance = await web3.eth.getBalance(weiAbsoluteExpense2.address);
-		global.assert.equal(weiAbsoluteExpense2Balance.toNumber(),2*money);
+		global.assert.equal(weiAbsoluteExpense2Balance.toNumber(),2*money, 'resource point received money from splitter');
 		
 		let weiAbsoluteExpense3Balance = await web3.eth.getBalance(weiAbsoluteExpense3.address);
-		global.assert.equal(weiAbsoluteExpense3Balance.toNumber(),3*money)	
+		global.assert.equal(weiAbsoluteExpense3Balance.toNumber(),3*money, 'resource point received money from splitter')	
 	});
 
 	global.it('should process money with a scheme just like in the paper',async() => {
