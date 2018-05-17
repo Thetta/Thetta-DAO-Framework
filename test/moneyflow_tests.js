@@ -217,26 +217,25 @@ global.contract('Moneyflow', (accounts) => {
 		let Employee1Needs = await Employee1.getTotalWeiNeeded(3300*money);
 			global.assert.equal(Employee1Needs.toNumber()/money, 1000, 'Employee1 Needs 1000 money' )
 		let Employee2Needs = await Employee2.getTotalWeiNeeded(3300*money);
-			global.assert.equal(Employee1Needs.toNumber()/money, 1500, 'Employee1 Needs 1000 money' )
+			global.assert.equal(Employee2Needs.toNumber()/money, 1500, 'Employee1 Needs 1500 money' )
 		let Employee3Needs = await Employee3.getTotalWeiNeeded(3300*money);
-			global.assert.equal(Employee1Needs.toNumber()/money, 800, 'Employee1 Needs 1000 money' )
+			global.assert.equal(Employee3Needs.toNumber()/money, 800, 'Employee1 Needs 800 money' )
 
 		let SalariesNeeds = await Salaries.getTotalWeiNeeded(3300*money);
-			global.assert.equal(SalariesNeeds.toNumber()/money, 5900, 'Salaries Needs 5900 money' )
+			global.assert.equal(SalariesNeeds.toNumber()/money, 3300, 'Salaries Needs 3300 money' )
 
 		let SalariesMinNeeds = await Salaries.getMinWeiNeeded();
-			global.assert.equal(SalariesNeeds.toNumber()/money, 5900, 'Salaries min Needs 5900 money' )
+			global.assert.equal(SalariesNeeds.toNumber()/money, 3300, 'Salaries min Needs 3300 money' )
 
 		let AllOutpultsNeeds = await AllOutpults.getTotalWeiNeeded(3300*money);
-			global.assert.equal(AllOutpultsNeeds.toNumber()/money, 5900, 'AllOutpults Needs 5900 money' )
+			global.assert.equal(AllOutpultsNeeds.toNumber()/money, 3300, 'AllOutpults Needs 3300 money' )
 		let MinOutpultsNeeds = await AllOutpults.getMinWeiNeeded();
-			global.assert.equal(AllOutpultsNeeds.toNumber()/money, 5900, 'AllOutpults Needs min 5900 money' )
+			global.assert.equal(AllOutpultsNeeds.toNumber()/money, 3300, 'AllOutpults Needs min 3300 money' )
 		let OutputChildrenCount = await AllOutpults.getChildrenCount();
 			global.assert.equal(OutputChildrenCount.toNumber(), 1, 'OutputChildrenCount should be 1')
 		let SalariesChildrenCount = await Salaries.getChildrenCount();
 			global.assert.equal(SalariesChildrenCount.toNumber(), 3, 'SalariesChildrenCount should be 3')
 
-		console.log('money:', money)
 		let th = await Salaries.processFunds(3300*money, {value:3300*money, from:creator, gas:1000000, gasPrice:0});
 
 	})
@@ -290,68 +289,110 @@ global.contract('Moneyflow', (accounts) => {
 		let Employee1Needs = await Employee1.getTotalWeiNeeded(3300*money);
 			global.assert.equal(Employee1Needs.toNumber()/money, 1000, 'Employee1 Needs 1000 money' )
 		let Employee2Needs = await Employee2.getTotalWeiNeeded(3300*money);
-			global.assert.equal(Employee1Needs.toNumber()/money, 1500, 'Employee1 Needs 1000 money' )
+			global.assert.equal(Employee2Needs.toNumber()/money, 1500, 'Employee1 Needs 1000 money' )
 		let Employee3Needs = await Employee3.getTotalWeiNeeded(3300*money);
-			global.assert.equal(Employee1Needs.toNumber()/money, 800, 'Employee1 Needs 1000 money' )
-
+			global.assert.equal(Employee3Needs.toNumber()/money, 800, 'Employee1 Needs 1000 money' )
 		let AllOutpultsTotalNeed = await AllOutpults.getTotalWeiNeeded(30900*money, {from:creator});
 		let AllOutpultsMinNeed = await AllOutpults.getMinWeiNeeded();
 		let AllOutpultsChildrenCount = await AllOutpults.getChildrenCount();
 			
-			global.assert.equal(AllOutpultsChildrenCount.toNumber(), 5900, 'Children count should be 3');		
+			global.assert.equal(AllOutpultsChildrenCount.toNumber(), 3, 'Children count should be 3');		
 			global.assert.equal(AllOutpultsTotalNeed.toNumber()/money, 30900, 'AllOutpults Total Need should be 30900');
-			global.assert.equal(AllOutpultsMinNeed.toNumber()/money, 5900, 'AllOutpults Total Need should be 0');
+			global.assert.equal(AllOutpultsMinNeed.toNumber()/money, 5900, 'AllOutpults min Need should be 5900');
 
 		let SpendsTotalNeed = await Spends.getTotalWeiNeeded(30900*money, {from:creator});
 		let SpendsMinNeed = await Spends.getMinWeiNeeded();
 		let SpendsChildrenCount = await Spends.getChildrenCount();
 
-			global.assert.equal(SpendsChildrenCount.toNumber(), 5900, 'Children count should be 3');
-			global.assert.equal(SpendsTotalNeed.toNumber()/money, 5900, 'Spends Total Need should be 30900');
-			global.assert.equal(SpendsMinNeed.toNumber()/money, 0, 'Spends Total Need should be 0');
+			global.assert.equal(SpendsChildrenCount.toNumber(), 3, 'Children count should be 3');
+			global.assert.equal(SpendsTotalNeed.toNumber()/money, 5900, 'Spends Total Need should be 5900');
+			global.assert.equal(SpendsMinNeed.toNumber()/money, 5900, 'Spends min Need should be 5900');
 
 		let SalariesTotalNeed = await Salaries.getTotalWeiNeeded(30900*money, {from:creator});
 		let SalariesMinNeed = await Salaries.getMinWeiNeeded();
 		let SalariesChildrenCount = await Salaries.getChildrenCount();
 
-			global.assert.equal(SalariesChildrenCount.toNumber(), 3300, 'Children count should be 3');
-			global.assert.equal(SalariesTotalNeed.toNumber()/money, 3300, 'Salaries Total Need should be 30900');
-			global.assert.equal(SalariesMinNeed.toNumber()/money, 0, 'Salaries Total Need should be 0');
+			global.assert.equal(SalariesChildrenCount.toNumber(), 3, 'Children count should be 3');
+			global.assert.equal(SalariesTotalNeed.toNumber()/money, 3300, 'Salaries Total Need should be 3300');
+			global.assert.equal(SalariesMinNeed.toNumber()/money, 3300, 'Salaries min Need should be 3300');
 
 		let OtherTotalNeed = await Other.getTotalWeiNeeded(30900*money, {from:creator});
 		let OtherMinNeed = await Other.getMinWeiNeeded();
 		let OtherChildrenCount = await Other.getChildrenCount();
 
-			global.assert.equal(OtherChildrenCount.toNumber(), 800, 'Children count should be 3');
-			global.assert.equal(OtherTotalNeed.toNumber()/money, 800, 'Other Total Need should be 30900');
-			global.assert.equal(OtherMinNeed.toNumber()/money, 0, 'Other Total Need should be 0');
+			global.assert.equal(OtherChildrenCount.toNumber(), 2, 'Children count should be 2');
+			global.assert.equal(OtherTotalNeed.toNumber()/money, 800, 'Other Total Need should be 800');
+			global.assert.equal(OtherMinNeed.toNumber()/money, 800, 'Other min Need should be 800');
 
 		let TasksTotalNeed = await Tasks.getTotalWeiNeeded(30900*money, {from:creator});
 		let TasksMinNeed = await Tasks.getMinWeiNeeded();
 		let TasksChildrenCount = await Tasks.getChildrenCount();
 
-			global.assert.equal(TasksChildrenCount.toNumber(), 1800, 'Children count should be 3');
-			global.assert.equal(TasksTotalNeed.toNumber()/money, 1800, 'Tasks Total Need should be 30900');
-			global.assert.equal(TasksMinNeed.toNumber()/money, 0, 'Tasks Total Need should be 0');
+			global.assert.equal(TasksChildrenCount.toNumber(), 3, 'Children count should be 3');
+			global.assert.equal(TasksTotalNeed.toNumber()/money, 1800, 'Tasks Total Need should be 1800');
+			global.assert.equal(TasksMinNeed.toNumber()/money, 1800, 'Tasks min Need should be 1800');
 
 		let BonusesTotalNeed = await Bonuses.getTotalWeiNeeded(30900*money, {from:creator});
 		let BonusesMinNeed = await Bonuses.getMinWeiNeeded();
 		let BonusesChildrenCount = await Bonuses.getChildrenCount();
 
-			global.assert.equal(BonusesChildrenCount.toNumber(), 0, 'Children count should be 3');
-			global.assert.equal(BonusesTotalNeed.toNumber()/money, 1236, 'Bonuses Total Need should be 30900');
-			global.assert.equal(BonusesMinNeed.toNumber()/money, 0, 'Bonuses Total Need should be 0');
+			global.assert.equal(BonusesChildrenCount.toNumber(), 3, 'Children count should be 3');
+			global.assert.equal(BonusesTotalNeed.toNumber()/money, 1236, 'Bonuses Total Need should be 1236');
+			global.assert.equal(BonusesMinNeed.toNumber()/money, 0, 'Bonuses min Need should be 0');
 
 		let RestTotalNeed = await Rest.getTotalWeiNeeded(30900*money, {from:creator});
 		let RestMinNeed = await Rest.getMinWeiNeeded();
 		let RestChildrenCount = await Rest.getChildrenCount();
 
-			global.assert.equal(RestChildrenCount.toNumber(), 0, 'Children count should be 3');
+			global.assert.equal(RestChildrenCount.toNumber(), 2, 'Children count should be 2');
 			global.assert.equal(RestTotalNeed.toNumber()/money, 30900, 'Bonuses Total Need should be 30900');
-			global.assert.equal(RestMinNeed.toNumber()/money, 0, 'Bonuses Total Need should be 0');
+			global.assert.equal(RestMinNeed.toNumber()/money, 0, 'Bonuses min Need should be 0');
 
+		let th = await AllOutpults.processFunds(30900*money, {value:30900*money, from:creator, gas:1000000, gasPrice:0});
 
-		let th = await AllOutpults.processFunds(5900*money, {value:5900*money, from:creator, gas:1000000, gasPrice:0});
+		let AllOutpultsBalance = await web3.eth.getBalance(AllOutpults.address);
+		let SpendsBalance = await web3.eth.getBalance(Spends.address);
+		let SalariesBalance = await web3.eth.getBalance(Salaries.address);
+		let OtherBalance = await web3.eth.getBalance(Other.address);
+		let TasksBalance = await web3.eth.getBalance(Tasks.address);
+		let BonusesBalance = await web3.eth.getBalance(Bonuses.address);
+		let RestBalance = await web3.eth.getBalance(Rest.address);
+				
+		global.assert.equal(AllOutpultsBalance.toNumber(), 0, 'AllOutpults balance should be 0');
+		global.assert.equal(SpendsBalance.toNumber(), 0, 'Spends balance should be 0');
+		global.assert.equal(SalariesBalance.toNumber(), 0, 'Salaries balance should be 0');
+		global.assert.equal(OtherBalance.toNumber(), 0, 'Other balance should be 0');
+		global.assert.equal(TasksBalance.toNumber(), 0, 'Tasks balance should be 0');
+		global.assert.equal(BonusesBalance.toNumber(), 0, 'Bonuses balance should be 0');
+		global.assert.equal(RestBalance.toNumber(), 0, 'Rest balance should be 0');				
+
+		let Employee1Balance = await web3.eth.getBalance(Employee1.address);
+		let Employee2Balance = await web3.eth.getBalance(Employee2.address);
+		let Employee3Balance = await web3.eth.getBalance(Employee3.address);
+		let OfficeBalance = await web3.eth.getBalance(Office.address);
+		let InternetBalance = await web3.eth.getBalance(Internet.address);
+		let Task1Balance = await web3.eth.getBalance(Task1.address);
+		let Task2Balance = await web3.eth.getBalance(Task2.address);
+		let Task3Balance = await web3.eth.getBalance(Task3.address);
+		let Reserve3Balance = await web3.eth.getBalance(ReserveFund.address);
+		let Dividends3Balance = await web3.eth.getBalance(DividendsFund.address);
+		let Bonus1Balance = await web3.eth.getBalance(Bonus1.address);
+		let Bonus2Balance = await web3.eth.getBalance(Bonus2.address);
+		let Bonus3Balance = await web3.eth.getBalance(Bonus3.address);
+
+		global.assert.equal(Employee1Balance.toNumber()/money, 1000, 'Employee1Balance should be 1000 money');		
+		global.assert.equal(Employee2Balance.toNumber()/money, 1500, 'Employee2Balance should be 1500 money');
+		global.assert.equal(Employee3Balance.toNumber()/money, 800, 'Employee3Balance should be 800 money');
+		global.assert.equal(OfficeBalance.toNumber()/money, 500, 'OfficeBalance should be 500 money');
+		global.assert.equal(InternetBalance.toNumber()/money, 300, 'InternetBalance should be 300 money');
+		global.assert.equal(Task1Balance.toNumber()/money, 500, 'Task1Balance should be 500 money');
+		global.assert.equal(Task2Balance.toNumber()/money, 300, 'Task2Balance should be 300 money');
+		global.assert.equal(Task3Balance.toNumber()/money, 1000, 'Task3Balance should be 1000 money');
+		global.assert.equal(Reserve3Balance.toNumber()/money, 18000, 'Reserve3Balance should be 18000 money');
+		global.assert.equal(Dividends3Balance.toNumber()/money, 6000, 'Dividends3Balance should be 6000 money');
+		global.assert.equal(Bonus1Balance.toNumber()/money, 250, 'Bonus1Balance should be 250 money');
+		global.assert.equal(Bonus2Balance.toNumber()/money, 250, 'Bonus2Balance should be 250 money');
+		global.assert.equal(Bonus3Balance.toNumber()/money, 500, 'Bonus3Balance should be 500 money');
 
 	});
 });
