@@ -27,7 +27,6 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 //		modifyMoneyscheme
 //		withdrawDonations
 //
-
 contract MicrocompanyStorage is Ownable {
 	StdMicrocompanyToken public stdToken;
 
@@ -73,7 +72,6 @@ contract MicrocompanyStorage is Ownable {
 	}
 
 // Vote:
-	// TODO: public
 	function addNewProposal(IProposal _proposal) public onlyOwner {
 		proposals[proposalsCount] = _proposal;
 		proposalsCount++;
@@ -123,18 +121,13 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		store = _store;
 	}
 
-	// just an informative modifier
-   modifier byVotingOnly(){
-		_; 
-	}
-
-   modifier isCanDo(string _what){
+	modifier isCanDo(string _what){
 		require(isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
 
 // IMicrocompany:
-	function upgradeMicrocompanyContract(IMicrocompanyBase _new) public isCanDo("upgradeMicrocompany") byVotingOnly {
+	function upgradeMicrocompanyContract(IMicrocompanyBase _new) public isCanDo("upgradeMicrocompany") {
 		store.transferOwnership(_new);
 		store.stdToken().transferOwnership(_new);
 	}
@@ -154,16 +147,16 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		return store.proposalsCount();
 	}
 
-	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") byVotingOnly {
+	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") {
 		issueTokensInternal(_to, _amount);
 	}
 
 	// caller should make sure that he is not adding same employee twice
-	function addNewEmployee(address _newEmployee) public isCanDo("addNewEmployee") byVotingOnly {
+	function addNewEmployee(address _newEmployee) public isCanDo("addNewEmployee") {
 		store.addNewEmployee(_newEmployee);
 	}
 
-	function removeEmployee(address _employee) public isCanDo("removeEmployee") byVotingOnly {
+	function removeEmployee(address _employee) public isCanDo("removeEmployee") {
 		// TODO:
 	}
 

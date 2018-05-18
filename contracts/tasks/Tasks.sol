@@ -74,7 +74,7 @@ contract GenericTask is WeiAbsoluteExpense {
 	function GenericTask(IMicrocompanyBase _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
 		WeiAbsoluteExpense(_neededWei) 
 	{
-		// Donation should be prepaid
+		// Donation should be postpaid 
 		if(_isDonation) {
 			require(_isPostpaid); 
 		}
@@ -182,8 +182,6 @@ contract GenericTask is WeiAbsoluteExpense {
 			neededWei = msg.value;		
 		}
 
-		// TODO: this doesn't compile. is it ok?
-		//super.processFunds.value(msg.value)(_currentFlow);
 		super.processFunds(_currentFlow);
 	}
 
