@@ -3,12 +3,15 @@ pragma solidity ^0.4.15;
 import "./WeiExpense.sol";
 
 contract IMoneyflow {
-	// send revenue here!
+	// send Ether using 'sendFunds' method here
 	function getRevenueEndpoint()public constant returns(IWeiReceiver);
 	function getDonationEndpoint()public constant returns(IWeiReceiver);
 
+	// send Ether using default fallback functions here
+	function getRevenueEndpointAddress()public constant returns(address);
+	function getDonationEndpointAddress()public constant returns(address);
+
 	// send all donations to the msg.sender (onlyOwner of this contract)
-	// TODO: should require VOTING
 	function withdrawDonationsTo(address _out)public;
 
 // Receivers

@@ -300,7 +300,11 @@ global.contract('Moneyflow', (accounts) => {
 		global.assert.equal(donationBalance.toNumber(),money, 'all money at donation point now');
 		
 		let creatorBalance = await web3.eth.getBalance(creator);
-		await moneyflowInstance.setRootWeiReceiver(creator,{from:creator, gas:100000, gasPrice:0});
+
+		// this should not work, because creator is NOT a IWeiReceiver
+		await CheckExceptions.checkContractThrows(moneyflowInstance.setRootWeiReceiver, 
+			[creator, {gas: 10000000, value:1000*money, from: creator}]
+		);		
 		
 		// get the donations 
 		await moneyflowInstance.withdrawDonationsTo(creator,{from:creator, gas:100000, gasPrice:0});
@@ -838,6 +842,5 @@ global.contract('Moneyflow', (accounts) => {
 		await struct.Bonus2.flush({from:creator});
 		await struct.Bonus3.flush({from:creator});
 	});
-
 });
 
