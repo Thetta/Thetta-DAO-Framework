@@ -1,9 +1,12 @@
 pragma solidity ^0.4.15;
 
 import '../IMicrocompany.sol';
-import '../tasks/Tasks.sol';
 import './IVoting.sol';
 import './IProposal.sol';
+
+// for Proposals
+import '../moneyflow/WeiExpense.sol';
+import "../moneyflow/IMoneyflow.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -141,17 +144,20 @@ contract Voting is IVoting, Ownable {
 
 ////////////////////// 
 //////////////////////
-/*
-contract ProposalAddNewTask is Vote {
-	WeiTask wt;
+contract ProposalAddNewTask is IProposal {
+	IMoneyflowScheme ms;
+	Voting voting;
+	WeiAbsoluteExpense wt;
 
-	function ProposalAddNewTask(address _mc, address _moneyflow, address _origin,
-									WeiTask _wt) 
+	function ProposalAddNewTask(IMicrocompanyBase _mc, IMoneyflowScheme _ms, address _origin,
+									WeiAbsoluteExpense _wt) public 
+	{
+		ms = _ms;
+
 		// TODO: remove default parameters, let Vote to read data in its constructor
 		// each employee has 1 vote 
-		Voting(_mc, _origin, VoteType.EmployeesVote, 24 *60, 0x0)
-		public 
-	{
+		voting = new Voting(_mc, this, _origin, Voting.VoteType.EmployeesVote, 24 *60, 0x0);
+
 		wt = _wt;
 	}
 
@@ -160,11 +166,13 @@ contract ProposalAddNewTask is Vote {
 		// cool! voting is over and the majority said YES -> so let's go!
 		// as long as we call this method from WITHIN the vote contract 
 		// isCanDoAction() should return yes if voting finished with Yes result
-		_mc.addNewWeiTask(wt);
+		ms.addNewTaskAuto(wt);
+	}
+
+	function getVoting()public constant returns(address){
+		return address(voting);
 	}
 }
-*/
-
 
 contract ProposalIssueTokens is IProposal {
 	Voting voting;

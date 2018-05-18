@@ -76,13 +76,15 @@ contract WeiAbsoluteExpense is IWeiReceiver, IWeiDestination, Ownable {
 	}
 }
 
-// TODO 
-
 contract WeiRelativeExpense is IWeiReceiver, IWeiDestination, Ownable {
 	bool public isMoneyReceived = false;
 	uint public percentsDiv100Needed = 0;
 
 	function WeiRelativeExpense(uint _percentsDiv100Needed)public {
+		percentsDiv100Needed = _percentsDiv100Needed;
+	}
+
+	function setPercents(uint _percentsDiv100Needed) public onlyOwner {
 		percentsDiv100Needed = _percentsDiv100Needed;
 	}
 
@@ -92,7 +94,7 @@ contract WeiRelativeExpense is IWeiReceiver, IWeiDestination, Ownable {
 		msg.sender.transfer(this.balance);
 	}
 
-	function flushTo(address _to) public {
+	function flushTo(address _to) public onlyOwner {
 		revert();
 	}
 

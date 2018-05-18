@@ -4,8 +4,11 @@ import "./WeiSplitter.sol";
 import "./WeiExpense.sol";
 import "./WeiFund.sol";
 
+import "../governance/Voting.sol";
+
 import "../IMicrocompany.sol";
 import "./IMoneyflow.sol";
+
 
 // this contract should be used to automatically instantiate Default scheme for a microcompany:
 //
@@ -30,6 +33,7 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 	WeiUnsortedSplitter tasks; 
 
 	WeiFund reserveFund;
+	WeiFund dividendsFund;
 
    modifier isCanDo(string _what){
 		require(mc.isCanDoAction(msg.sender, _what)); 
@@ -37,7 +41,8 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 	}
 
 /////
-	function DefaultMoneyflowScheme(IMicrocompanyBase _mc, address _fundOutput) public {
+	function DefaultMoneyflowScheme(IMicrocompanyBase _mc, address _fundOutput, 
+											  uint percentsReserve, uint dividendsReserve) public {
 		require(0x0!=_fundOutput);
 
 		mc = _mc;
@@ -50,8 +55,11 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 		other = new WeiUnsortedSplitter("other");
 		tasks = new WeiUnsortedSplitter("tasks");
 
-		// Only msg sender can do that
-		reserveFund = new WeiFund(_fundOutput, true);
+		// use .setPercents() to change 
+		reserveFund = new WeiFund(_fundOutput, true, percentsReserve);
+
+		// use .setPercents() to change 
+		dividendsFund = new WeiFund(_fundOutput, true, dividendsReserve);
 
 		spends.addChild(salaries);
 		spends.addChild(other);
@@ -64,8 +72,7 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 		this.addChild(rest);
 
 		rest.addChild(reserveFund);
-
-		// TODO: dividends fund
+		rest.addChild(dividendsFund);
 	}
 
 	function addNewTaskAuto(WeiAbsoluteExpense wt) public returns(address voteOut){
@@ -74,13 +81,44 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 			tasks.addChild(wt);
 			return 0x0;
 		}else{
-			// TODO: 
+			ProposalAddNewTask vant = new ProposalAddNewTask(mc, this, msg.sender, wt);
 
-			// 2 - create new vote instead
-			// we pass msg.sender (just like tx.origin) 
-			//ProposalAddNewTask vant = new ProposalAddNewTask(mc, msg.sender, wt);
-			//mc.addNewProposal(vant);
-			//return vant;
+			// WARNING: should be permitted to add new proposal by the current contract address!!!
+			mc.addNewProposal(vant);
+			return vant;
+		}
+	}
+
+	// if _employee is not in the flow -> will add new WeiAbsoluteExpense
+	// if _employee is already in the flow -> will update the needed amount, i.e. call setNeededWei()
+	function setSalaryForEmployee(address _employee, uint _weiPerMonth) public {
+		// 0 - check if _employee is employee 
+		require(mc.isEmployee(_employee));
+
+		// 1 - is can do immediately?
+		if(mc.isCanDoAction(msg.sender, "addNewEmployee")){
+
+		}else{
+			// 2 - add new proposal
+
+			// TODO:	
+			// do not forget that employee can be alrady in the flow 
+		}
+	}
+
+	function setBonusForEmployee(address _employee, uint _bonusPercentsPerMonth) public{
+		// TODO:	
+		if(mc.isCanDoAction(msg.sender, "addNewEmployee")){
+
+		}
+	}
+
+	// to "remove" the spend -> set (_weiPerMonth==0)
+	// this method WILL NOT really remove the item!
+	function setOtherSpend(string _name, uint _weiPerMonth) public{
+		// TODO:	
+		if(mc.isCanDoAction(msg.sender, "modifyMoneyscheme")){
+
 		}
 	}
 

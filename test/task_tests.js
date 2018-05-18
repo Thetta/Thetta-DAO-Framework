@@ -25,6 +25,8 @@ async function setup(creator){
 		await store.addActionByEmployeesOnly("addNewProposal");
 		await store.addActionByEmployeesOnly("startTask");
 		await store.addActionByEmployeesOnly("startBounty");
+		await store.addActionByEmployeesOnly("modifyMoneyscheme");
+
 		// this is a list of actions that require voting
 		await store.addActionByVoting("addNewEmployee");
 		await store.addActionByVoting("removeEmployee");
