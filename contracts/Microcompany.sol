@@ -9,6 +9,26 @@ import "./tasks/Tasks.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+//////////////////////////////////////////////////////////
+// Permissions:
+// 
+// addNewProposal
+// addNewEmployee
+// removeEmployee
+// issueTokens
+// upgradeMicrocompany
+//
+// Tasks:
+//		startTask
+//		startBounty
+//		addNewTask
+//
+// MoneyflowScheme:
+//		modifyMoneyscheme
+//
+// MoneyFlow:
+//		withdrawDonations
+
 contract MicrocompanyStorage is Ownable {
 	StdMicrocompanyToken public stdToken;
 

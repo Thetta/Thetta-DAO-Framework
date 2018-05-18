@@ -4,6 +4,7 @@ var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
 
 var MoneyFlow = artifacts.require("./MoneyFlow");
 var WeiFund = artifacts.require("./WeiFund");
+var IWeiReceiver = artifacts.require("./IWeiReceiver");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
@@ -184,8 +185,6 @@ async function splitterBalancesAsserts(i, money, allOutpultsBalance, spendsBalan
 	global.assert.equal(i.RestBalance.toNumber()/money, restBalance, `Rest balance should be ${restBalance} money`);
 }
 
-
-
 global.contract('Moneyflow', (accounts) => {
 	let token;
 	let store;
@@ -230,15 +229,15 @@ global.contract('Moneyflow', (accounts) => {
 	});
 
 	global.it('should allow to send revenue',async() => {
-		// Moneyflow.getRevenueEndpointAddress() -> Fund
-		const revEndpoint = await moneyflowInstance.getRevenueEndpointAddress();
+		// Moneyflow.getRevenueEndpoint() -> Fund
+		const revEndpoint = await moneyflowInstance.getRevenueEndpoint();
 		global.assert.equal(revEndpoint,0x0,'Endpoint should be zero');
 
 		const isEnableFlushTo = true;
 		let fund = await WeiFund.new(creator,isEnableFlushTo,10000,{from:creator});
 		await moneyflowInstance.setRootWeiReceiver(fund.address);
 
-		const revEndpoint2 = await moneyflowInstance.getRevenueEndpointAddress();
+		const revEndpoint2 = await moneyflowInstance.getRevenueEndpoint();
 		global.assert.equal(revEndpoint2,fund.address,'Endpoint should be non zero now');
 
 		// now send some money to the revenue endpoint 
@@ -250,6 +249,7 @@ global.contract('Moneyflow', (accounts) => {
 
 		let firstCreatorBalance = await web3.eth.getBalance(creator);
 		await fund.flush({from:creator, gas:1000000, gasPrice:0});
+
 		let secondCreatorBalance = await web3.eth.getBalance(creator);
 		let creatorBalanceDelta = secondCreatorBalance.toNumber() - firstCreatorBalance.toNumber();
 		global.assert.equal(creatorBalanceDelta, money, 'creator gets all money by flush();');
@@ -261,6 +261,7 @@ global.contract('Moneyflow', (accounts) => {
 		const isNeeds = await fund.isNeedsMoney();
 		global.assert.isTrue(isNeeds,'Fund should ask for more money always!');
 
+		// TODO: should be revenueEndpoint address instead
 		await fund.processFunds(money, { from: creator, value: money});
 
 		// test fund.flushTo();
@@ -279,14 +280,16 @@ global.contract('Moneyflow', (accounts) => {
 	});
 
 	global.it('should allow to get donations',async() => {
-		const donationEndpoint = await moneyflowInstance.getDonationEndpointAddress();
-
 		const isEnableFlushTo = true;
 		let fund = await WeiFund.new(creator,isEnableFlushTo,10000,{from:creator});
-		// send some money to the donation endpoint 
-		web3.eth.sendTransaction({ from: creator, to: donationEndpoint, value: money});
 
-		let donationBalance = await web3.eth.getBalance(donationEndpoint);
+		///
+		const dea = await moneyflowInstance.getDonationEndpoint(); 
+		global.assert.notEqual(dea,0x0, 'donation endpoint should be created');
+		const donationEndpoint = await IWeiReceiver.at(dea);
+		await donationEndpoint.processFunds(money, { from: creator, value: money});
+
+		let donationBalance = await web3.eth.getBalance(donationEndpoint.address);
 		global.assert.equal(donationBalance.toNumber(),money, 'all money at donation point now');
 		
 		let creatorBalance = await web3.eth.getBalance(creator);
@@ -294,12 +297,11 @@ global.contract('Moneyflow', (accounts) => {
 		
 		// get the donations 
 		// donation will go to the root receiver
-		await moneyflowInstance.withdrawDonations({from:creator, gas:100000, gasPrice:0});
+		await moneyflowInstance.withdrawDonationsTo(creator,{from:creator, gas:100000, gasPrice:0});
 		let creatorBalance2 = await web3.eth.getBalance(creator);
-		let donationBalance2 = await web3.eth.getBalance(donationEndpoint);
+		let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);
 
 		global.assert.equal(donationBalance2.toNumber(),0, 'all donations now on creator`s balance');
-
 		let creatorBalanceDelta = creatorBalance2.toNumber() - creatorBalance.toNumber();
 		global.assert.equal(creatorBalanceDelta, money, 'all donations now on creator`s balance');
 	});
@@ -320,7 +322,7 @@ global.contract('Moneyflow', (accounts) => {
 		// add WeiTopDownSplitter to the moneyflow
 		await moneyflowInstance.setRootWeiReceiver(weiTopDownSplitter.address);
 
-		let revenueEndpointAddress = await moneyflowInstance.getRevenueEndpointAddress();
+		let revenueEndpointAddress = await moneyflowInstance.getRevenueEndpoint();
 		
 		global.assert.equal(revenueEndpointAddress, weiTopDownSplitter.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
 
@@ -354,7 +356,7 @@ global.contract('Moneyflow', (accounts) => {
 		// add WeiUnsortedSplitter to the moneyflow
 		await moneyflowInstance.setRootWeiReceiver(weiUnsortedSplitter.address);
 
-		let revenueEndpointAddress = await moneyflowInstance.getRevenueEndpointAddress();
+		let revenueEndpointAddress = await moneyflowInstance.getRevenueEndpoint();
 		
 		global.assert.equal(revenueEndpointAddress, weiUnsortedSplitter.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
 
@@ -501,7 +503,6 @@ global.contract('Moneyflow', (accounts) => {
 		);	
 	});
 
-
 	global.it('should process money with a scheme just like in the paper: 10/15 others, send MORE than minNeed; ',async() => {
 		const CURRENT_INPUT = 20900;
 		let e1 = 1000;
@@ -634,7 +635,11 @@ global.contract('Moneyflow', (accounts) => {
 		await struct.Bonus1.flush({from:creator});
 		await struct.Bonus2.flush({from:creator});
 		await struct.Bonus3.flush({from:creator});
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> 37e5ad0e9db6fc603b3986528191572f207f2d84
 		let balances2 = await getBalances(struct);
 		await balancesAsserts(balances2, CURRENT_INPUT, money, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		
@@ -644,6 +649,7 @@ global.contract('Moneyflow', (accounts) => {
 		await balancesAsserts(balances3, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await splitterBalancesAsserts(balances3, money, 0, 0, 0, 0, 0, 0, 0);
 	});
+<<<<<<< HEAD
 
 	global.it('should process money with WeiAbsoluteExpenseWithPeriod, then 25 hours, then money needs again',async() => {
 		const CURRENT_INPUT = 30900;
@@ -831,5 +837,7 @@ global.contract('Moneyflow', (accounts) => {
 		await struct.Bonus2.flush({from:creator});
 		await struct.Bonus3.flush({from:creator});
 	});
+=======
+>>>>>>> 37e5ad0e9db6fc603b3986528191572f207f2d84
 });
 
