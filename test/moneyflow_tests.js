@@ -466,7 +466,7 @@ global.contract('Moneyflow', (accounts) => {
 
 	});
 
-	global.it('should process money with a scheme just like in the paper: 75/25 others, send LESS than minNeed',async() => {
+	global.it('should not process money: send LESS than minNeed',async() => {
 		const CURRENT_INPUT = 5900;
 		let e1 = 1000;
 		let e2 = 1500;
@@ -557,7 +557,7 @@ global.contract('Moneyflow', (accounts) => {
 		await splitterBalancesAsserts(balances, money, 0, 0, 0, 0, 0, 0, 0);
 	});
 
-	global.it('should process money with a scheme just like in the paper: 10/15 others, send LESS than minNeed; ',async() => {
+	global.it('should not process money: send LESS than minNeed; ',async() => {
 		const CURRENT_INPUT = 30900;
 		let e1 = 1000;
 		let e2 = 1500; 
