@@ -30,6 +30,7 @@ contract WeiFund is WeiRelativeExpense {
 		require(0x0!=output);
 
 		// TODO: check for vulnerabilities
+		isMoneyReceived = false;
 		output.transfer(this.balance);
 	}
 

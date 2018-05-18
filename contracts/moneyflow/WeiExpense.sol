@@ -32,6 +32,7 @@ contract WeiAbsoluteExpense is IWeiReceiver, IWeiDestination, Ownable {
 // IWeiDestination:
 	// pull model
 	function flush()public onlyOwner {
+		isMoneyReceived = false;
 		msg.sender.transfer(this.balance);
 	}
 
@@ -91,6 +92,7 @@ contract WeiRelativeExpense is IWeiReceiver, IWeiDestination, Ownable {
 // IWeiDestination:
 	// pull model
 	function flush()public onlyOwner{
+		isMoneyReceived = false;
 		msg.sender.transfer(this.balance);
 	}
 
