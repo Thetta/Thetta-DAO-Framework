@@ -11,6 +11,10 @@ var WeiTopDownSplitter = artifacts.require("./WeiTopDownSplitter");
 var WeiUnsortedSplitter = artifacts.require("./WeiUnsortedSplitter");
 var WeiAbsoluteExpense = artifacts.require("./WeiAbsoluteExpense");
 var WeiRelativeExpense = artifacts.require("./WeiRelativeExpense");
+var WeiAbsoluteExpenseWithPeriod = artifacts.require("./WeiAbsoluteExpenseWithPeriod");
+var WeiRelativeExpenseWithPeriod = artifacts.require("./WeiRelativeExpenseWithPeriod");
+
+
 
 async function createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends){
 	let callParams = {from:creator, gasPrice:0}	
@@ -405,7 +409,6 @@ global.contract('Moneyflow', (accounts) => {
 			global.assert.equal(SalariesChildrenCount.toNumber(), 3, 'SalariesChildrenCount should be 3');
 
 		let th = await Salaries.processFunds(3300*money, {value:3300*money, from:creator, gas:1000000, gasPrice:0});
-
 	});
 
 	global.it('should process money with a scheme just like in the paper: 75/25 others, send MORE than minNeed; ',async() => {
@@ -434,7 +437,6 @@ global.contract('Moneyflow', (accounts) => {
 		let balances = await getBalances(struct);
 		await balancesAsserts(balances, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await splitterBalancesAsserts(balances, money, 0, 0, 0, 0, 0, 0, 0);
-
 	});
 
 	global.it('should process money with a scheme just like in the paper: 75/25 others, send EQUAL to minNeed',async() => {
@@ -463,7 +465,6 @@ global.contract('Moneyflow', (accounts) => {
 		let balances = await getBalances(struct);
 		await balancesAsserts(balances, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, 0, 0, 0, 0, 0);
 		await splitterBalancesAsserts(balances, money, 0, 0, 0, 0, 0, 0, 0);
-
 	});
 
 	global.it('should not process money: send LESS than minNeed',async() => {
@@ -607,7 +608,7 @@ global.contract('Moneyflow', (accounts) => {
 		let reserve = 7500;
 		let dividends = 2500;
 
-		await web3.eth.sendTransaction({from:outsider, to:creator, value: 50*1000*money}) // not enough money on creators balance
+		await web3.eth.sendTransaction({from:outsider, to:creator, value: 90*1000*money}) // not enough money on creators balance
 
 		let struct = await createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);	
@@ -633,23 +634,202 @@ global.contract('Moneyflow', (accounts) => {
 		await struct.Bonus1.flush({from:creator});
 		await struct.Bonus2.flush({from:creator});
 		await struct.Bonus3.flush({from:creator});
-
-		// 
 		
 		let balances2 = await getBalances(struct);
 		await balancesAsserts(balances2, CURRENT_INPUT, money, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		
 		await struct.AllOutpults.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money, from:creator, gas:1000000, gasPrice:0});
 
-
 		let balances3 = await getBalances(struct);
 		await balancesAsserts(balances3, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await splitterBalancesAsserts(balances3, money, 0, 0, 0, 0, 0, 0, 0);
-
-
-
 	});
 
+	global.it('should process money with WeiAbsoluteExpenseWithPeriod, then 25 hours, then money needs again',async() => {
+		const CURRENT_INPUT = 30900;
+		let e1 = 1000;
+		let e2 = 1500;
+		let e3 = 800;
+		let office = 500;
+		let internet = 300;
+		let t1 = 500;
+		let t2 = 300;
+		let t3 = 1000;
+		let b1 = 100;
+		let b2 = 100;
+		let b3 = 200;
+		let reserve = 7500;
+		let dividends = 2500;
 
+		let timePeriod = 25;
+
+		let callParams = {from:creator, gasPrice:0}	
+		let struct = {};
+
+		struct.AllOutpults = await WeiTopDownSplitter.new('AllOutpults', callParams);
+			struct.Spends = await WeiUnsortedSplitter.new('Spends', callParams);
+				struct.Salaries = await WeiUnsortedSplitter.new('Salaries', callParams);
+					struct.Employee1 = await WeiAbsoluteExpenseWithPeriod.new(e1*money, timePeriod, callParams);
+					struct.Employee2 = await WeiAbsoluteExpenseWithPeriod.new(e2*money, timePeriod, callParams);
+					struct.Employee3 = await WeiAbsoluteExpenseWithPeriod.new(e3*money, timePeriod, callParams);
+				struct.Other = await WeiUnsortedSplitter.new('Other', callParams);
+					struct.Office = await WeiAbsoluteExpenseWithPeriod.new(office*money, timePeriod, callParams);
+					struct.Internet = await WeiAbsoluteExpenseWithPeriod.new(internet*money, timePeriod, callParams);
+				struct.Tasks = await WeiUnsortedSplitter.new('Tasks', callParams);
+					struct.Task1 = await WeiAbsoluteExpenseWithPeriod.new(t1*money, timePeriod, callParams);
+					struct.Task2 = await WeiAbsoluteExpenseWithPeriod.new(t2*money, timePeriod, callParams);
+					struct.Task3 = await WeiAbsoluteExpenseWithPeriod.new(t3*money, timePeriod, callParams);
+			struct.Bonuses = await WeiUnsortedSplitter.new('Bonuses', callParams);
+				struct.Bonus1 = await WeiRelativeExpenseWithPeriod.new(b1, timePeriod, callParams);
+				struct.Bonus2 = await WeiRelativeExpenseWithPeriod.new(b2, timePeriod, callParams);
+				struct.Bonus3 = await WeiRelativeExpenseWithPeriod.new(b3, timePeriod, callParams);
+			struct.Rest = await WeiUnsortedSplitter.new('Rest', callParams);
+				struct.ReserveFund = await WeiRelativeExpenseWithPeriod.new(reserve, timePeriod, callParams);
+				struct.DividendsFund = await WeiRelativeExpenseWithPeriod.new(dividends, timePeriod, callParams);
+		
+		// CONNECTIONS
+		await struct.AllOutpults.addChild(struct.Spends.address, callParams);
+			await struct.Spends.addChild(struct.Salaries.address, callParams);
+				await struct.Salaries.addChild(struct.Employee1.address, callParams);
+				await struct.Salaries.addChild(struct.Employee2.address, callParams);
+				await struct.Salaries.addChild(struct.Employee3.address, callParams);
+			await struct.Spends.addChild(struct.Other.address, callParams);
+				await struct.Other.addChild(struct.Office.address, callParams);
+				await struct.Other.addChild(struct.Internet.address, callParams);
+			await struct.Spends.addChild(struct.Tasks.address, callParams);
+				await struct.Tasks.addChild(struct.Task1.address, callParams);
+				await struct.Tasks.addChild(struct.Task2.address, callParams);
+				await struct.Tasks.addChild(struct.Task3.address, callParams);			
+		await struct.AllOutpults.addChild(struct.Bonuses.address, callParams);
+			await struct.Bonuses.addChild(struct.Bonus1.address, callParams);
+			await struct.Bonuses.addChild(struct.Bonus2.address, callParams);
+			await struct.Bonuses.addChild(struct.Bonus3.address, callParams);
+		await struct.AllOutpults.addChild(struct.Rest.address, callParams);
+			await struct.Rest.addChild(struct.ReserveFund.address, callParams);
+			await struct.Rest.addChild(struct.DividendsFund.address, callParams);
+
+		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);	
+		await totalAndMinNeedsAsserts(splitterParams, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		await structureAsserts(splitterParams);
+	
+		await struct.AllOutpults.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money, from:creator, gas:1000000, gasPrice:0});
+		
+		let balances = await getBalances(struct);
+		await balancesAsserts(balances, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		await splitterBalancesAsserts(balances, money, 0, 0, 0, 0, 0, 0, 0);
+
+		await CheckExceptions.checkContractThrows(struct.Employee1.flush, [{from:outsider}])
+		await CheckExceptions.checkContractThrows(struct.Employee2.flush, [{from:outsider}])
+		await CheckExceptions.checkContractThrows(struct.Employee3.flush, [{from:outsider}])
+		await CheckExceptions.checkContractThrows(struct.Office.flush, [{from:outsider}])
+		await CheckExceptions.checkContractThrows(struct.Internet.flush, [{from:outsider}])
+		await CheckExceptions.checkContractThrows(struct.Task1.flush, [{from:outsider}])
+		await CheckExceptions.checkContractThrows(struct.Task2.flush, [{from:outsider}])
+		await CheckExceptions.checkContractThrows(struct.Task3.flush, [{from:outsider}])
+		await CheckExceptions.checkContractThrows(struct.ReserveFund.flush, [{from:outsider}])
+		await CheckExceptions.checkContractThrows(struct.DividendsFund.flush, [{from:outsider}])
+		await CheckExceptions.checkContractThrows(struct.Bonus1.flush, [{from:outsider}])
+		await CheckExceptions.checkContractThrows(struct.Bonus2.flush, [{from:outsider}])
+		await CheckExceptions.checkContractThrows(struct.Bonus3.flush, [{from:outsider}])
+		
+		await struct.Employee1.flush({from:creator});
+		await struct.Employee2.flush({from:creator});
+		await struct.Employee3.flush({from:creator});
+		await struct.Office.flush({from:creator});
+		await struct.Internet.flush({from:creator});
+		await struct.Task1.flush({from:creator});
+		await struct.Task2.flush({from:creator});
+		await struct.Task3.flush({from:creator});
+		await struct.ReserveFund.flush({from:creator});
+		await struct.DividendsFund.flush({from:creator});
+		await struct.Bonus1.flush({from:creator});
+		await struct.Bonus2.flush({from:creator});
+		await struct.Bonus3.flush({from:creator});
+		
+		await CheckExceptions.checkContractThrows(struct.AllOutpults.processFunds, 
+			[CURRENT_INPUT*money, {value:CURRENT_INPUT*money, from: creator}]
+		);		
+
+		let needsEmployee1 = await struct.Employee1.isNeedsMoney({from:creator});
+		global.assert.equal(needsEmployee1, false);
+		let needsEmployee2 = await struct.Employee2.isNeedsMoney({from:creator});
+		global.assert.equal(needsEmployee2, false);
+		let needsEmployee3 = await struct.Employee3.isNeedsMoney({from:creator});
+		global.assert.equal(needsEmployee3, false);
+		let needsOffice = await struct.Office.isNeedsMoney({from:creator});
+		global.assert.equal(needsOffice, false);
+		let needsInternet = await struct.Internet.isNeedsMoney({from:creator});
+		global.assert.equal(needsInternet, false);
+		let needsTask1 = await struct.Task1.isNeedsMoney({from:creator});
+		global.assert.equal(needsTask1, false);
+		let needsTask2 = await struct.Task2.isNeedsMoney({from:creator});
+		global.assert.equal(needsTask2, false);
+		let needsTask3 = await struct.Task3.isNeedsMoney({from:creator});
+		global.assert.equal(needsTask3, false);
+		let needsReserveFund = await struct.ReserveFund.isNeedsMoney({from:creator});
+		global.assert.equal(needsReserveFund, false);
+		let needsDividendsFund = await struct.DividendsFund.isNeedsMoney({from:creator});
+		global.assert.equal(needsDividendsFund, false);
+		let needsBonus1 = await struct.Bonus1.isNeedsMoney({from:creator});
+		global.assert.equal(needsBonus1, false);
+		let needsBonus2 = await struct.Bonus2.isNeedsMoney({from:creator});
+		global.assert.equal(needsBonus2, false);
+		let needsBonus3 = await struct.Bonus3.isNeedsMoney({from:creator});
+		global.assert.equal(needsBonus3, false);
+
+		await web3.currentProvider.sendAsync({
+			jsonrpc: '2.0', 
+			method: 'evm_increaseTime',
+			params: [3600 * 1000 * 25],
+			id: new Date().getTime()
+		}, function(err){});
+
+		let needsEmployee1_new = await struct.Employee1.isNeedsMoney({from:creator});
+		global.assert.equal(needsEmployee1_new, true);
+		let needsEmployee2_new = await struct.Employee2.isNeedsMoney({from:creator});
+		global.assert.equal(needsEmployee2_new, true);
+		let needsEmployee3_new = await struct.Employee3.isNeedsMoney({from:creator});
+		global.assert.equal(needsEmployee3_new, true);
+		let needsOffice_new = await struct.Office.isNeedsMoney({from:creator});
+		global.assert.equal(needsOffice_new, true);
+		let needsInternet_new = await struct.Internet.isNeedsMoney({from:creator});
+		global.assert.equal(needsInternet_new, true);
+		let needsTask1_new = await struct.Task1.isNeedsMoney({from:creator});
+		global.assert.equal(needsTask1_new, true);
+		let needsTask2_new = await struct.Task2.isNeedsMoney({from:creator});
+		global.assert.equal(needsTask2_new, true);
+		let needsTask3_new = await struct.Task3.isNeedsMoney({from:creator});
+		global.assert.equal(needsTask3_new, true);
+		let needsReserveFund_new = await struct.ReserveFund.isNeedsMoney({from:creator});
+		global.assert.equal(needsReserveFund_new, true);
+		let needsDividendsFund_new = await struct.DividendsFund.isNeedsMoney({from:creator});
+		global.assert.equal(needsDividendsFund_new, true);
+		let needsBonus1_new = await struct.Bonus1.isNeedsMoney({from:creator});
+		global.assert.equal(needsBonus1_new, true);
+		let needsBonus2_new = await struct.Bonus2.isNeedsMoney({from:creator});
+		global.assert.equal(needsBonus2_new, true);
+		let needsBonus3_new = await struct.Bonus3.isNeedsMoney({from:creator});
+		global.assert.equal(needsBonus3_new, true);
+
+		await struct.AllOutpults.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money, from:creator, gas:1000000, gasPrice:0});
+		
+		let balances2 = await getBalances(struct);
+		await balancesAsserts(balances2, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		await splitterBalancesAsserts(balances2, money, 0, 0, 0, 0, 0, 0, 0);
+
+		await struct.Employee1.flush({from:creator});
+		await struct.Employee2.flush({from:creator});
+		await struct.Employee3.flush({from:creator});
+		await struct.Office.flush({from:creator});
+		await struct.Internet.flush({from:creator});
+		await struct.Task1.flush({from:creator});
+		await struct.Task2.flush({from:creator});
+		await struct.Task3.flush({from:creator});
+		await struct.ReserveFund.flush({from:creator});
+		await struct.DividendsFund.flush({from:creator});
+		await struct.Bonus1.flush({from:creator});
+		await struct.Bonus2.flush({from:creator});
+		await struct.Bonus3.flush({from:creator});
+	});
 });
 
