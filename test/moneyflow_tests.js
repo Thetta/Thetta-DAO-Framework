@@ -4,7 +4,6 @@ var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
 
 var MoneyFlow = artifacts.require("./MoneyFlow");
 var WeiFund = artifacts.require("./WeiFund");
-var FallbackToWeiReceiver = artifacts.require("./FallbackToWeiReceiver");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
@@ -30,8 +29,6 @@ global.contract('Moneyflow', (accounts) => {
 		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 		store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
-
-		// issue 1000 tokens
 		mcInstance = await Microcompany.new(store.address,{gas: 10000000, from: creator});
 
 		{
@@ -39,6 +36,8 @@ global.contract('Moneyflow', (accounts) => {
 			await store.addActionByEmployeesOnly("addNewProposal");
 			await store.addActionByEmployeesOnly("startTask");
 			await store.addActionByEmployeesOnly("startBounty");
+			await store.addActionByEmployeesOnly("modifyMoneyscheme");
+
 			// this is a list of actions that require voting
 			await store.addActionByVoting("addNewEmployee");
 			await store.addActionByVoting("removeEmployee");

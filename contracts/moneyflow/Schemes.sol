@@ -41,7 +41,8 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 	}
 
 /////
-	function DefaultMoneyflowScheme(IMicrocompanyBase _mc, address _fundOutput) public {
+	function DefaultMoneyflowScheme(IMicrocompanyBase _mc, address _fundOutput, 
+											  uint percentsReserve, uint dividendsReserve) public {
 		require(0x0!=_fundOutput);
 
 		mc = _mc;
@@ -54,14 +55,11 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 		other = new WeiUnsortedSplitter("other");
 		tasks = new WeiUnsortedSplitter("tasks");
 
-		// Only msg sender can do that
-		// 50%
 		// use .setPercents() to change 
-		reserveFund = new WeiFund(_fundOutput, true, 5000);
+		reserveFund = new WeiFund(_fundOutput, true, percentsReserve);
 
-		// 50%
 		// use .setPercents() to change 
-		dividendsFund = new WeiFund(_fundOutput, true, 5000);
+		dividendsFund = new WeiFund(_fundOutput, true, dividendsReserve);
 
 		spends.addChild(salaries);
 		spends.addChild(other);
@@ -88,6 +86,39 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 			// WARNING: should be permitted to add new proposal by the current contract address!!!
 			mc.addNewProposal(vant);
 			return vant;
+		}
+	}
+
+	// if _employee is not in the flow -> will add new WeiAbsoluteExpense
+	// if _employee is already in the flow -> will update the needed amount, i.e. call setNeededWei()
+	function setSalaryForEmployee(address _employee, uint _weiPerMonth) public {
+		// 0 - check if _employee is employee 
+		require(mc.isEmployee(_employee));
+
+		// 1 - is can do immediately?
+		if(mc.isCanDoAction(msg.sender, "addNewEmployee")){
+
+		}else{
+			// 2 - add new proposal
+
+			// TODO:	
+			// do not forget that employee can be alrady in the flow 
+		}
+	}
+
+	function setBonusForEmployee(address _employee, uint _bonusPercentsPerMonth) public{
+		// TODO:	
+		if(mc.isCanDoAction(msg.sender, "addNewEmployee")){
+
+		}
+	}
+
+	// to "remove" the spend -> set (_weiPerMonth==0)
+	// this method WILL NOT really remove the item!
+	function setOtherSpend(string _name, uint _weiPerMonth) public{
+		// TODO:	
+		if(mc.isCanDoAction(msg.sender, "modifyMoneyscheme")){
+
 		}
 	}
 
