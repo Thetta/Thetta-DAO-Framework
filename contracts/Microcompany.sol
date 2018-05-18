@@ -23,11 +23,10 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 //		startBounty
 //		addNewTask
 //
-// MoneyflowScheme:
+// Moneyflow:
 //		modifyMoneyscheme
-//
-// MoneyFlow:
 //		withdrawDonations
+//
 
 contract MicrocompanyStorage is Ownable {
 	StdMicrocompanyToken public stdToken;

@@ -21,9 +21,7 @@ import "./IMoneyflow.sol";
 //		Rest - unsorted splitter
 //			ReserveFund - fund 
 //			DividendsFund - fund
-contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
-	IMicrocompanyBase mc;
-
+contract DefaultMoneyflowScheme is IMoneyflowScheme, MicrocompanyUser, WeiTopDownSplitter {
 	WeiUnsortedSplitter spends; 
 	WeiUnsortedSplitter bonuses; 
 	WeiUnsortedSplitter rest; 
@@ -35,17 +33,12 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 	WeiFund reserveFund;
 	WeiFund dividendsFund;
 
-   modifier isCanDo(string _what){
-		require(mc.isCanDoAction(msg.sender, _what)); 
-		_; 
-	}
-
 /////
 	function DefaultMoneyflowScheme(IMicrocompanyBase _mc, address _fundOutput, 
-											  uint percentsReserve, uint dividendsReserve) public {
+											  uint percentsReserve, uint dividendsReserve) public 
+		MicrocompanyUser(_mc)											  
+	{
 		require(0x0!=_fundOutput);
-
-		mc = _mc;
 
 		spends = new WeiUnsortedSplitter("spends");
 		bonuses = new WeiUnsortedSplitter("bonuses");
@@ -75,7 +68,7 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 		rest.addChild(dividendsFund);
 	}
 
-	function addNewTaskAuto(WeiAbsoluteExpense wt) public returns(address voteOut){
+	function addNewTask(WeiAbsoluteExpense wt) public returns(address voteOut){
 		if(mc.isCanDoAction(msg.sender, "addNewTask")){
 			// 1 - add new task immediately
 			tasks.addChild(wt);

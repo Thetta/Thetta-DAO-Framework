@@ -18,5 +18,6 @@ contract IMoneyflow {
 }
 
 contract IMoneyflowScheme {
-	function addNewTaskAuto(WeiAbsoluteExpense wt) public returns(address voteOut);
+	function addNewTask(WeiAbsoluteExpense wt) public returns(address voteOut);
 }
+

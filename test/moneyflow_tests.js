@@ -217,11 +217,18 @@ global.contract('Moneyflow', (accounts) => {
 			await store.addNewEmployee(creator);			
 		}
 
+		moneyflowInstance = await MoneyFlow.new(mcInstance.address,{from: creator});
+
+		// THIS permission IS VERY DANGEROUS!!!
+		// allow creator to get donations from the Moneyflow 
+		await store.addActionByAddress("withdrawDonations", creator);
+
+		// moneyflow will not create Proposals in this case 
+		//await store.addActionByAddress("addNewProposal", moneyflowInstance.address);
+
 		// do not forget to transfer ownership
 		await token.transferOwnership(mcInstance.address);
 		await store.transferOwnership(mcInstance.address);
-
-		moneyflowInstance = await MoneyFlow.new({from: creator});
 	});
 
 	global.it('should allow to send revenue',async() => {
@@ -292,7 +299,6 @@ global.contract('Moneyflow', (accounts) => {
 		await moneyflowInstance.setRootWeiReceiver(creator,{from:creator, gas:100000, gasPrice:0});
 		
 		// get the donations 
-		// donation will go to the root receiver
 		await moneyflowInstance.withdrawDonationsTo(creator,{from:creator, gas:100000, gasPrice:0});
 		let creatorBalance2 = await web3.eth.getBalance(creator);
 		let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);

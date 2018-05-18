@@ -166,7 +166,7 @@ contract ProposalAddNewTask is IProposal {
 		// cool! voting is over and the majority said YES -> so let's go!
 		// as long as we call this method from WITHIN the vote contract 
 		// isCanDoAction() should return yes if voting finished with Yes result
-		ms.addNewTaskAuto(wt);
+		ms.addNewTask(wt);
 	}
 
 	function getVoting()public constant returns(address){
