@@ -34,8 +34,8 @@ async function createStructure(creator, money, e1, e2, e3, office, internet, t1,
 			o.Bonus2 = await WeiRelativeExpense.new(b2, callParams);
 			o.Bonus3 = await WeiRelativeExpense.new(b3, callParams);
 		o.Rest = await WeiUnsortedSplitter.new('Rest', callParams);
-			o.ReserveFund = await WeiRelativeExpense.new(reserve, callParams);
-			o.DividendsFund = await WeiRelativeExpense.new(dividends, callParams);
+			o.ReserveFund = await WeiFund.new(creator, false, reserve, callParams);
+			o.DividendsFund = await WeiFund.new(creator, false, dividends, callParams);
 	
 	// CONNECTIONS
 	await o.AllOutpults.addChild(o.Spends.address, callParams);
