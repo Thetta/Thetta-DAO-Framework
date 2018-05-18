@@ -635,11 +635,7 @@ global.contract('Moneyflow', (accounts) => {
 		await struct.Bonus1.flush({from:creator});
 		await struct.Bonus2.flush({from:creator});
 		await struct.Bonus3.flush({from:creator});
-<<<<<<< HEAD
-		
-=======
 
->>>>>>> 37e5ad0e9db6fc603b3986528191572f207f2d84
 		let balances2 = await getBalances(struct);
 		await balancesAsserts(balances2, CURRENT_INPUT, money, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		
@@ -649,7 +645,6 @@ global.contract('Moneyflow', (accounts) => {
 		await balancesAsserts(balances3, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await splitterBalancesAsserts(balances3, money, 0, 0, 0, 0, 0, 0, 0);
 	});
-<<<<<<< HEAD
 
 	global.it('should process money with WeiAbsoluteExpenseWithPeriod, then 25 hours, then money needs again',async() => {
 		const CURRENT_INPUT = 30900;
@@ -837,7 +832,6 @@ global.contract('Moneyflow', (accounts) => {
 		await struct.Bonus2.flush({from:creator});
 		await struct.Bonus3.flush({from:creator});
 	});
-=======
->>>>>>> 37e5ad0e9db6fc603b3986528191572f207f2d84
+
 });
 
