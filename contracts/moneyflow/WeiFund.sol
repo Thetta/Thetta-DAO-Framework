@@ -27,6 +27,8 @@ contract WeiFund is WeiRelativeExpense {
 
 	// Process funds, send it to the Output
 	function flush() public onlyOwner {
+		require(0x0!=output);
+
 		// TODO: check for vulnerabilities
 		output.transfer(this.balance);
 	}
