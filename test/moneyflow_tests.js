@@ -234,7 +234,7 @@ global.contract('Moneyflow', (accounts) => {
 		await token.transferOwnership(mcInstance.address);
 		await store.transferOwnership(mcInstance.address);
 	});
-/*
+
 	global.it('should allow to send revenue',async() => {
 		// Moneyflow.getRevenueEndpoint() -> Fund
 		const revEndpoint = await moneyflowInstance.getRevenueEndpoint();
@@ -655,53 +655,50 @@ global.contract('Moneyflow', (accounts) => {
 		await balancesAsserts(balances3, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await splitterBalancesAsserts(balances3, money, 0, 0, 0, 0, 0, 0, 0);
 	});
-*/
+
 	global.it('should process money with WeiAbsoluteExpenseWithPeriod, then 25 hours, then money needs again',async() => {
 		const CURRENT_INPUT = 30900;
 		let timePeriod = 25;
 		let callParams = {from:creator, gasPrice:0}	
 		let struct = {};
+		let balance0 = await web3.eth.getBalance(creator);
 
 		Employee1 = await WeiAbsoluteExpenseWithPeriod.new(1000*money, timePeriod, callParams);
 
-		await Employee1.processFunds(1000*money, {value:1000*money, from:creator, gas:1000000, gasPrice:0});	
+		await Employee1.processFunds(1000*money, {value:1000*money, from:outsider, gas:1000000, gasPrice:0});
 		await CheckExceptions.checkContractThrows(Employee1.flush, [{from:outsider}])
-		await Employee1.flush({from:creator});
+		await Employee1.flush({from:creator, gasPrice:0});
+		
+		let balance = await web3.eth.getBalance(creator);
+		global.assert.equal(balance.toNumber() - balance0.toNumber(), 1000*money, 'Should get money');
 
 		let needsEmployee1 = await Employee1.isNeedsMoney({from:creator});
 		global.assert.equal(needsEmployee1, false, 'Dont need money, because he got it');
 
-		let MomentReceived = await Employee1.getMomentReceived();
-		let NOW = await Employee1.getNow();
-		console.log('MomentReceived:', MomentReceived.toNumber(), 'Now:', NOW.toNumber())
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0', 
 			method: 'evm_increaseTime',
-			params: [3600 * 25 * 10000],
+			params: [3600 * 25 * 1000],
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		let MomentReceived2 = await Employee1.getMomentReceived();
+		let periodHours = await Employee1.periodHours();
+		let MomentReceived2 = await Employee1.momentReceived();
 		let NOW2 = await Employee1.getNow();
-		console.log('MomentReceived2:', MomentReceived2.toNumber(), 'Now2:', NOW2.toNumber())
 
-		console.log('delta:', (NOW2.toNumber() - MomentReceived2.toNumber())/3600 )
+		global.assert.equal ( Math.round((NOW2.toNumber() - MomentReceived2.toNumber())/(3600*1000)), 25 )
 		
 		let needsEmployee2 = await Employee1.isNeedsMoney({from:creator});
-		global.assert.equal(needsEmployee2, false, 'Need money, because 24 hours passed');
-		await Employee1.processFunds(1000*money, {value:1000*money, from:creator, gas:1000000, gasPrice:0});	
-		
-		let balance = await web3.eth.getBalance(Employee1.address);
-		await Employee1.flush({from:creator});
+		global.assert.equal(needsEmployee2, true, 'Need money, because 24 hours passed');
+	
+		await Employee1.processFunds(1000*money, {value:1000*money, from:outsider, gas:1000000, gasPrice:0});
+		await Employee1.flush({from:creator, gasPrice:0});
 
-		global.assert.equal(balance.toNumber(), 1000*money, 'Should get money');
-		await Employee1.flush({from:creator});
-		let balance2 = await web3.eth.getBalance(Employee1.address);
-		global.assert.equal(balance2.toNumber(), 2000*money, 'Should get money');
+		let balance2 = await web3.eth.getBalance(creator);
+		global.assert.equal(balance2.toNumber() - balance0.toNumber(), 2000*money, 'Should get money');
 
 		let needsEmployee3 = await Employee1.isNeedsMoney({from:creator});
 		global.assert.equal(needsEmployee3, false, 'Dont need money, because he got it');
 
 	});
 });
-

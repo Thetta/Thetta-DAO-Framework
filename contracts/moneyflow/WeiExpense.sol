@@ -161,13 +161,11 @@ contract WeiAbsoluteExpenseWithPeriod is  IWeiReceiver, IWeiDestination, Ownable
 	}
 
 	function isNeedsMoney()constant public returns(bool){	
-		if((now - momentReceived) >= periodHours * 3600){
+		if((now - momentReceived) >= periodHours * 3600 * 1000){
 			return true;
 		}else{
 			return !isMoneyReceived;	
-		}
-
-		
+		}	
 	}
 
 	function processFunds(uint _currentFlow) public payable{
