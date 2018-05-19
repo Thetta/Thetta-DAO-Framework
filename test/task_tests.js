@@ -4,7 +4,6 @@ var Microcompany = artifacts.require("./Microcompany");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
 var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
 
-var AutoActionCaller = artifacts.require("./AutoActionCaller");
 var CheckExceptions = require('./utils/checkexceptions');
 
 let token;
