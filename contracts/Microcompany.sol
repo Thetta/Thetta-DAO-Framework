@@ -27,6 +27,13 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 //		modifyMoneyscheme
 //		withdrawDonations
 //
+// How permissions works now:
+//		1. if caller is in the whitelist -> allow
+//		2. if caller is employee and this action can be done by employee -> allow
+//		3. if this action requires voting 
+//			a. caller is in the majority -> allow
+//			b. caller is voting and it is succeeded -> allow
+//		4. deny
 contract MicrocompanyStorage is Ownable {
 	StdMicrocompanyToken public stdToken;
 
@@ -184,6 +191,9 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		if(store.isCanDoByVoting(_permissionName)){
 			var (isVotingFound, votingResult) = store.getProposalVotingResults(msg.sender);
 			if(isVotingFound){
+				// if this action can be done by voting, then Proposal can do this action 
+				// from within its context
+				// in this case msg.sender is a Voting!
 				return votingResult;
 			}
 			
