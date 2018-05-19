@@ -152,12 +152,22 @@ contract WeiAbsoluteExpenseWithPeriod is  IWeiReceiver, IWeiDestination, Ownable
 		momentReceived = now;
 	}
 
+	function getNow()constant public returns(uint){
+		return now;
+	}
+
+	function getMomentReceived()constant public returns(uint){
+		return momentReceived;
+	}
+
 	function isNeedsMoney()constant public returns(bool){	
-		if((now - momentReceived) >= periodHours * 1000 * 3600){
+		if((now - momentReceived) >= periodHours * 3600){
 			return true;
+		}else{
+			return !isMoneyReceived;	
 		}
 
-		return !isMoneyReceived;
+		
 	}
 
 	function processFunds(uint _currentFlow) public payable{
@@ -222,7 +232,7 @@ contract WeiRelativeExpenseWithPeriod is   IWeiReceiver, IWeiDestination, Ownabl
 	}
 
 	function isNeedsMoney()constant public returns(bool){	
-		if ((now - momentReceived) >= periodHours * 3600){
+		if ((now - momentReceived) >= periodHours * 3600 * 1000){
 			return true;
 		}
 
