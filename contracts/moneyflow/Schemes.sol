@@ -5,6 +5,7 @@ import "./WeiExpense.sol";
 import "./WeiFund.sol";
 
 import "../governance/Voting.sol";
+import "../AutoAction.sol";
 
 import "../IMicrocompany.sol";
 import "./IMoneyflow.sol";
@@ -21,9 +22,7 @@ import "./IMoneyflow.sol";
 //		Rest - unsorted splitter
 //			ReserveFund - fund 
 //			DividendsFund - fund
-contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
-	IMicrocompanyBase mc;
-
+contract DefaultMoneyflowScheme is IMoneyflowScheme, MicrocompanyUser, WeiTopDownSplitter {
 	WeiUnsortedSplitter spends; 
 	WeiUnsortedSplitter bonuses; 
 	WeiUnsortedSplitter rest; 
@@ -35,17 +34,12 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 	WeiFund reserveFund;
 	WeiFund dividendsFund;
 
-   modifier isCanDo(string _what){
-		require(mc.isCanDoAction(msg.sender, _what)); 
-		_; 
-	}
-
 /////
 	function DefaultMoneyflowScheme(IMicrocompanyBase _mc, address _fundOutput, 
-											  uint percentsReserve, uint dividendsReserve) public {
+											  uint percentsReserve, uint dividendsReserve) public 
+		MicrocompanyUser(_mc)											  
+	{
 		require(0x0!=_fundOutput);
-
-		mc = _mc;
 
 		spends = new WeiUnsortedSplitter("spends");
 		bonuses = new WeiUnsortedSplitter("bonuses");
@@ -75,60 +69,37 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, WeiTopDownSplitter {
 		rest.addChild(dividendsFund);
 	}
 
-	function addNewTaskAuto(WeiAbsoluteExpense wt) public returns(address voteOut){
-		if(mc.isCanDoAction(msg.sender, "addNewTask")){
-			// 1 - add new task immediately
-			tasks.addChild(wt);
-			return 0x0;
-		}else{
-			ProposalAddNewTask vant = new ProposalAddNewTask(mc, this, msg.sender, wt);
-
-			// WARNING: should be permitted to add new proposal by the current contract address!!!
-			mc.addNewProposal(vant);
-			return vant;
-		}
+	// use AutoMoneyflowActionCaller to add new task with voting! 
+	function addNewTask(WeiAbsoluteExpense wt) public isCanDo("addNewTask") {
+		// 1 - add new task immediately
+		tasks.addChild(wt);
 	}
 
 	// if _employee is not in the flow -> will add new WeiAbsoluteExpense
 	// if _employee is already in the flow -> will update the needed amount, i.e. call setNeededWei()
-	function setSalaryForEmployee(address _employee, uint _weiPerMonth) public {
+	function setSalaryForEmployee(address _employee, uint _weiPerMonth) public isCanDo("modifyMoneyscheme") {
+		// TODO: is voting required? Move voting to AutoMoneyflowActionCaller!
+
+		// TODO: implement
 		// 0 - check if _employee is employee 
 		require(mc.isEmployee(_employee));
 
-		// 1 - is can do immediately?
-		if(mc.isCanDoAction(msg.sender, "addNewEmployee")){
+		// 1 - employee already added? 
 
-		}else{
-			// 2 - add new proposal
-
-			// TODO:	
-			// do not forget that employee can be alrady in the flow 
-		}
+		// 2 - modify or add 
 	}
 
-	function setBonusForEmployee(address _employee, uint _bonusPercentsPerMonth) public{
-		// TODO:	
-		if(mc.isCanDoAction(msg.sender, "addNewEmployee")){
+	function setBonusForEmployee(address _employee, uint _bonusPercentsPerMonth) public isCanDo("modifyMoneyscheme") {
+		// TODO: is voting required? Move voting to AutoMoneyflowActionCaller!
 
-		}
+		// TODO: implement
 	}
 
 	// to "remove" the spend -> set (_weiPerMonth==0)
 	// this method WILL NOT really remove the item!
-	function setOtherSpend(string _name, uint _weiPerMonth) public{
-		// TODO:	
-		if(mc.isCanDoAction(msg.sender, "modifyMoneyscheme")){
+	function setOtherSpend(string _name, uint _weiPerMonth) public isCanDo("modifyMoneyscheme") {
+		// TODO: is voting required? Move voting to AutoMoneyflowActionCaller!
 
-		}
+		// TODO: implement
 	}
-
-	/*
-	// commented because no direct access to elements are allowed 
-   // 
-	function getElement(string _name) public returns(address){
-		if(keccak256(_name)==keccak256("tasks")){
-			return address(tasks);
-		}
-	}
-  */
 }

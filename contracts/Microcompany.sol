@@ -23,12 +23,10 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 //		startBounty
 //		addNewTask
 //
-// MoneyflowScheme:
+// Moneyflow:
 //		modifyMoneyscheme
-//
-// MoneyFlow:
 //		withdrawDonations
-
+//
 contract MicrocompanyStorage is Ownable {
 	StdMicrocompanyToken public stdToken;
 
@@ -74,7 +72,6 @@ contract MicrocompanyStorage is Ownable {
 	}
 
 // Vote:
-	// TODO: public
 	function addNewProposal(IProposal _proposal) public onlyOwner {
 		proposals[proposalsCount] = _proposal;
 		proposalsCount++;
@@ -124,18 +121,13 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		store = _store;
 	}
 
-	// just an informative modifier
-   modifier byVotingOnly(){
-		_; 
-	}
-
-   modifier isCanDo(string _what){
+	modifier isCanDo(string _what){
 		require(isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
 
 // IMicrocompany:
-	function upgradeMicrocompanyContract(IMicrocompanyBase _new) public isCanDo("upgradeMicrocompany") byVotingOnly {
+	function upgradeMicrocompanyContract(IMicrocompanyBase _new) public isCanDo("upgradeMicrocompany") {
 		store.transferOwnership(_new);
 		store.stdToken().transferOwnership(_new);
 	}
@@ -155,16 +147,16 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		return store.proposalsCount();
 	}
 
-	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") byVotingOnly {
+	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") {
 		issueTokensInternal(_to, _amount);
 	}
 
 	// caller should make sure that he is not adding same employee twice
-	function addNewEmployee(address _newEmployee) public isCanDo("addNewEmployee") byVotingOnly {
+	function addNewEmployee(address _newEmployee) public isCanDo("addNewEmployee") {
 		store.addNewEmployee(_newEmployee);
 	}
 
-	function removeEmployee(address _employee) public isCanDo("removeEmployee") byVotingOnly {
+	function removeEmployee(address _employee) public isCanDo("removeEmployee") {
 		// TODO:
 	}
 
@@ -221,28 +213,3 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 	}
 }
 
-////////////////////
-// This contract is a helper that will create new Proposal (i.e. voting) if the action is not allowed directly
-contract AutoActionCaller {
-	Microcompany mc;
-
-	function AutoActionCaller(Microcompany _mc)public{
-		mc = _mc;
-	}
-
-	function issueTokensAuto(address _to, uint _amount) public returns(address voteOut){
-		// 1 - create new task immediately?
-		if(mc.isCanDoAction(msg.sender, "issueTokens")){
-			mc.issueTokens(_to, _amount);
-			return 0x0;
-		}else{
-			// 2 - create new vote instead
-			// we pass msg.sender (just like tx.origin) 
-			ProposalIssueTokens pit = new ProposalIssueTokens(mc, msg.sender, _to, _amount);
-
-			// WARNING: should be permitted to add new proposal by the current contract address!!!
-			mc.addNewProposal(pit);		
-			return pit;
-		}
-	}
-}

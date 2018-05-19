@@ -4,7 +4,6 @@ var Microcompany = artifacts.require("./Microcompany");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
 var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
 
-var AutoActionCaller = artifacts.require("./AutoActionCaller");
 var CheckExceptions = require('./utils/checkexceptions');
 
 let token;
@@ -77,7 +76,6 @@ global.contract('0.Tasks: prepaid positive scenario. Task created by creator', (
 	});
 
 	global.it('T0.1. should create weiTask',async() => {
-
 		firstContractBalance = await web3.eth.getBalance(mcInstance.address)
 		global.assert.strictEqual(firstContractBalance.toNumber(),0)
 
@@ -96,7 +94,6 @@ global.contract('0.Tasks: prepaid positive scenario. Task created by creator', (
 			{gas: 10000000, from: creator}
 		);
 	});
-
 
 	global.it('N3. should not become "InProgress" before "Prepaid"',async() => {
 		th = await CheckExceptions.checkContractThrows(task.startTask,
@@ -264,7 +261,6 @@ global.contract('1.Tasks: postpaid positive scenario with UNKNOWN price. Task cr
 	});
 
 	global.it('T1.4. should become "Completed" after creator calls evaluateAndSetNeededWei()',async() => {
-
 		let th = await task.evaluateAndSetNeededWei(ETH, {from:creator});
 
 		let neededWei = await task.neededWei();
@@ -278,7 +274,6 @@ global.contract('1.Tasks: postpaid positive scenario with UNKNOWN price. Task cr
 	});
 
 	global.it('T1.4. should become "CanGetFunds" after creator calls processFunds()',async() => {
-
 		let isNeedsMoneyBeforeSend = await task.isNeedsMoney();
 		global.assert.strictEqual(isNeedsMoneyBeforeSend, true);
 	

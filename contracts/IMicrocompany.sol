@@ -25,3 +25,16 @@ interface IMicrocompanyBase {
 	function issueTokens(address _to, uint amount)public;
 }
 
+// Just an easy-to-use wrapper
+contract MicrocompanyUser {
+	IMicrocompanyBase mc;
+
+   modifier isCanDo(string _what){
+		require(mc.isCanDoAction(msg.sender, _what)); 
+		_; 
+	}
+
+	function MicrocompanyUser(IMicrocompanyBase _mc)public{
+		mc = _mc;
+	}
+}

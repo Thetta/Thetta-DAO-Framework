@@ -180,8 +180,6 @@ contract WeiAbsoluteExpenseWithPeriod is  IWeiReceiver, IWeiDestination, Ownable
 		moneySource = msg.sender;
 	}
 
-
-
 	modifier onlyByMoneySource() { 
 		require(msg.sender==moneySource); 
 		_; 
@@ -192,7 +190,6 @@ contract WeiAbsoluteExpenseWithPeriod is  IWeiReceiver, IWeiDestination, Ownable
 	}
 
 // IWeiDestination:
-
 	function flushTo(address _to) public {
 		revert();
 	}
@@ -218,9 +215,11 @@ contract WeiAbsoluteExpenseWithPeriod is  IWeiReceiver, IWeiDestination, Ownable
 	}
 }
 
-contract WeiRelativeExpenseWithPeriod is   IWeiReceiver, IWeiDestination, Ownable{
+contract WeiRelativeExpenseWithPeriod is IWeiReceiver, IWeiDestination, Ownable {
 	uint public periodHours = 0;
 	uint public momentReceived;
+	bool public isMoneyReceived = false;
+	uint public percentsDiv100Needed = 0;
 
 	function flush()public onlyOwner{
 		msg.sender.transfer(this.balance);
@@ -248,15 +247,11 @@ contract WeiRelativeExpenseWithPeriod is   IWeiReceiver, IWeiDestination, Ownabl
 		momentReceived = now;
 	}
 
-	bool public isMoneyReceived = false;
-	uint public percentsDiv100Needed = 0;
-
 	function setPercents(uint _percentsDiv100Needed) public onlyOwner {
 		percentsDiv100Needed = _percentsDiv100Needed;
 	}
 
 // IWeiDestination:
-
 	function flushTo(address _to) public onlyOwner {
 		revert();
 	}
@@ -280,6 +275,4 @@ contract WeiRelativeExpenseWithPeriod is   IWeiReceiver, IWeiDestination, Ownabl
 
 	function()public{
 	}
-
-
 }
