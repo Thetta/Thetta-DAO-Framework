@@ -21,6 +21,9 @@ contract IMoneyflow {
 }
 
 contract IMoneyflowScheme {
-	function addNewTask(WeiAbsoluteExpense wt) public returns(address voteOut);
+	function addNewTask(WeiAbsoluteExpense wt) public;
+	function setSalaryForEmployee(address _employee, uint _weiPerMonth) public;
+	function setBonusForEmployee(address _employee, uint _bonusPercentsPerMonth) public;
+	function setOtherSpend(string _name, uint _weiPerMonth) public;
 }
 

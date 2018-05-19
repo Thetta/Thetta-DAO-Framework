@@ -213,28 +213,3 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 	}
 }
 
-////////////////////
-// This contract is a helper that will create new Proposal (i.e. voting) if the action is not allowed directly
-contract AutoActionCaller {
-	Microcompany mc;
-
-	function AutoActionCaller(Microcompany _mc)public{
-		mc = _mc;
-	}
-
-	function issueTokensAuto(address _to, uint _amount) public returns(address voteOut){
-		// 1 - create new task immediately?
-		if(mc.isCanDoAction(msg.sender, "issueTokens")){
-			mc.issueTokens(_to, _amount);
-			return 0x0;
-		}else{
-			// 2 - create new vote instead
-			// we pass msg.sender (just like tx.origin) 
-			ProposalIssueTokens pit = new ProposalIssueTokens(mc, msg.sender, _to, _amount);
-
-			// WARNING: should be permitted to add new proposal by the current contract address!!!
-			mc.addNewProposal(pit);		
-			return pit;
-		}
-	}
-}

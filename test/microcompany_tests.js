@@ -1,6 +1,5 @@
 var Microcompany = artifacts.require("./Microcompany");
-//var ProposalAddNewTask = artifacts.require("./ProposalAddNewTask");
-var AutoActionCaller = artifacts.require("./AutoActionCaller");
+var AutoMicrocompanyActionCaller = artifacts.require("./AutoMicrocompanyActionCaller");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
 var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
 
@@ -26,7 +25,7 @@ global.contract('Microcompany', (accounts) => {
 		store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
 
 		mcInstance = await Microcompany.new(store.address,{gas: 10000000, from: creator});
-		aacInstance = await AutoActionCaller.new(mcInstance.address, {from: creator});
+		aacInstance = await AutoMicrocompanyActionCaller.new(mcInstance.address, {from: creator});
 
 		{
 			// manually setup the Default organization 
