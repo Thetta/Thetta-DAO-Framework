@@ -1,4 +1,4 @@
-var Microcompany = artifacts.require("./Microcompany");
+var MicrocompanyWithUnpackers = artifacts.require("./MicrocompanyWithUnpackers");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
 var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
 
@@ -25,7 +25,7 @@ global.contract('Microcompany', (accounts) => {
 		await token.mint(creator, 1000);
 		store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
 
-		mcInstance = await Microcompany.new(store.address,{gas: 10000000, from: creator});
+		mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		aacInstance = await AutoMicrocompanyActionCaller.new(mcInstance.address, {from: creator});
 
 		{

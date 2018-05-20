@@ -139,11 +139,6 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		store.stdToken().transferOwnership(_new);
 	}
 
-	function upgradeMicrocompanyContractGeneric(bytes32[] _params) public {
-		IMicrocompanyBase _b = IMicrocompanyBase(address(_params[0]));
-		upgradeMicrocompanyContract(_b);
-	}
-
 	function addNewProposal(IProposal _proposal) public isCanDo("addNewProposal") { 
 		store.addNewProposal(_proposal);
 	}
@@ -160,29 +155,13 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		issueTokensInternal(_to, _amount);
 	}
 
-	function issueTokensGeneric(bytes32[] _params) public {
-		address _to = address(_params[0]);
-		uint _amount = uint(_params[1]);
-		issueTokens(_to, _amount);
-	}
-
 	// caller should make sure that he is not adding same employee twice
 	function addNewEmployee(address _newEmployee) public isCanDo("addNewEmployee") {
 		store.addNewEmployee(_newEmployee);
 	}
 
-	function addNewEmployeeGeneric(bytes32[] _params) public {
-		address _emp = address(_params[0]);
-		addNewEmployee(_emp);
-	}
-
 	function removeEmployee(address _employee) public isCanDo("removeEmployee") {
 		// TODO:
-	}
-
-	function removeEmployeeGeneric(bytes32[] _params) public {
-		address _emp = address(_params[0]);
-		removeEmployee(_emp);
 	}
 
 	function isEmployee(address _a)public constant returns(bool){
@@ -241,3 +220,30 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 	}
 }
 
+contract MicrocompanyWithUnpackers is Microcompany {
+	function MicrocompanyWithUnpackers(MicrocompanyStorage _store) public 
+		Microcompany(_store)	
+	{
+	}
+
+	function upgradeMicrocompanyContractGeneric(bytes32[] _params) public {
+		IMicrocompanyBase _b = IMicrocompanyBase(address(_params[0]));
+		upgradeMicrocompanyContract(_b);
+	}
+
+	function addNewEmployeeGeneric(bytes32[] _params) public {
+		address _emp = address(_params[0]);
+		addNewEmployee(_emp);
+	}
+
+	function removeEmployeeGeneric(bytes32[] _params) public {
+		address _emp = address(_params[0]);
+		removeEmployee(_emp);
+	}
+
+	function issueTokensGeneric(bytes32[] _params) public {
+		address _to = address(_params[0]);
+		uint _amount = uint(_params[1]);
+		issueTokens(_to, _amount);
+	}
+}

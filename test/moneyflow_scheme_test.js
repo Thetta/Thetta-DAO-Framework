@@ -3,7 +3,7 @@ var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
 var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
 
 var MoneyFlow = artifacts.require("./MoneyFlow");
-var DefaultMoneyflowScheme = artifacts.require("./DefaultMoneyflowScheme"); 
+var DefaultMoneyflowSchemeWithUnpackers = artifacts.require("./DefaultMoneyflowSchemeWithUnpackers"); 
 
 global.contract('Moneyflow', (accounts) => {
 	let token;
@@ -24,7 +24,7 @@ global.contract('Moneyflow', (accounts) => {
 		mcInstance = await Microcompany.new(store.address,{gas: 10000000, from: creator});
 
 		// 50/50 between reserve fund and dividends 
-		moneyflowScheme = await DefaultMoneyflowScheme.new(mcInstance.address, output, 5000, 5000, {from: creator});
+		moneyflowScheme = await DefaultMoneyflowSchemeWithUnpackers.new(mcInstance.address, output, 5000, 5000, {from: creator});
 
 		moneyflowInstance = await MoneyFlow.new({from: creator});
 		await moneyflowInstance.setRootWeiReceiver(moneyflowScheme.address);

@@ -36,7 +36,7 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, MicrocompanyUser, WeiTopDow
 
 /////
 	function DefaultMoneyflowScheme(IMicrocompanyBase _mc, address _fundOutput, 
-											  uint percentsReserve, uint dividendsReserve) public 
+											  uint _percentsReserve, uint _dividendsReserve) public 
 		MicrocompanyUser(_mc)											  
 	{
 		require(0x0!=_fundOutput);
@@ -50,10 +50,10 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, MicrocompanyUser, WeiTopDow
 		tasks = new WeiUnsortedSplitter("tasks");
 
 		// use .setPercents() to change 
-		reserveFund = new WeiFund(_fundOutput, true, percentsReserve);
+		reserveFund = new WeiFund(_fundOutput, true, _percentsReserve);
 
 		// use .setPercents() to change 
-		dividendsFund = new WeiFund(_fundOutput, true, dividendsReserve);
+		dividendsFund = new WeiFund(_fundOutput, true, _dividendsReserve);
 
 		spends.addChild(salaries);
 		spends.addChild(other);
@@ -73,11 +73,6 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, MicrocompanyUser, WeiTopDow
 	function addNewTask(WeiAbsoluteExpense wt) public isCanDo("addNewTask") {
 		// 1 - add new task immediately
 		tasks.addChild(wt);
-	}
-
-	function addNewTaskGeneric(bytes32[] _params) public {
-		WeiAbsoluteExpense _wae = WeiAbsoluteExpense(address(_params[0]));
-		addNewTask(_wae);
 	}
 
 	// if _employee is not in the flow -> will add new WeiAbsoluteExpense
@@ -106,5 +101,22 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, MicrocompanyUser, WeiTopDow
 		// TODO: is voting required? Move voting to AutoMoneyflowActionCaller!
 
 		// TODO: implement
+	}
+}
+
+contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
+	function DefaultMoneyflowSchemeWithUnpackers(
+			IMicrocompanyBase _mc, 
+			address _fundOutput, 
+			uint _percentsReserve, 
+			uint _dividendsReserve) public 
+		DefaultMoneyflowScheme(_mc,_fundOutput,_percentsReserve,_dividendsReserve)
+	{
+
+	}
+
+	function addNewTaskGeneric(bytes32[] _params) public {
+		WeiAbsoluteExpense _wae = WeiAbsoluteExpense(address(_params[0]));
+		addNewTask(_wae);
 	}
 }
