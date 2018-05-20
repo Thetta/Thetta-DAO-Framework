@@ -6,7 +6,6 @@ import "./governance/Voting.sol";
 import "./moneyflow/WeiExpense.sol";
 import "./moneyflow/IMoneyflow.sol";
 
-//////////// Experimental:
 contract GenericProposal is IProposal {
 	Voting voting;
 

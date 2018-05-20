@@ -9,9 +9,6 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 //////////////////////////////////////////////////////
 // WeiSplitter has multiple outputs (allows to send money only to THESE addresses)
 // 
-// TODO - avoid loops - https://github.com/Thetta/SmartContracts/issues/12
-// TODO - many owners - https://github.com/Thetta/SmartContracts/issues/13
-// 
 contract WeiSplitterBase is IWeiSplitter, Ownable {
 	using SafeMath for uint;
 
@@ -98,6 +95,11 @@ contract WeiTopDownSplitter is WeiSplitterBase, IWeiReceiver {
 	// WeiSplitter allows to receive money from ANY address
 	// WeiSplitter should not hold any funds. Instead - it should split immediately
 	// If WeiSplitter receives less or more money than needed -> exception 
+	// 
+	// TODO: this can be optimized, no need to traverse other hierarchy step 
+	// we can get the 'terminal' items and send money DIRECTLY FROM the signle source
+	// this will save gas 
+	// See this - https://github.com/Thetta/SmartContracts/issues/40
 	function processFunds(uint _currentFlow) public payable{
 		uint amount = _currentFlow;
 

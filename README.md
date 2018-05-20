@@ -1,4 +1,4 @@
-# Thetta smart contracts
+# Thetta DAO 
 
 Please [submit issues here](https://github.com/Thetta/SmartContracts/projects/1?).
 
