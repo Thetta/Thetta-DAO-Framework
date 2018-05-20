@@ -75,6 +75,11 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, MicrocompanyUser, WeiTopDow
 		tasks.addChild(wt);
 	}
 
+	function addNewTaskGeneric(bytes32[] _params) public {
+		WeiAbsoluteExpense _wae = WeiAbsoluteExpense(address(_params[0]));
+		addNewTask(_wae);
+	}
+
 	// if _employee is not in the flow -> will add new WeiAbsoluteExpense
 	// if _employee is already in the flow -> will update the needed amount, i.e. call setNeededWei()
 	function setSalaryForEmployee(address _employee, uint _weiPerMonth) public isCanDo("modifyMoneyscheme") {

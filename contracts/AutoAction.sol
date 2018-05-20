@@ -6,52 +6,24 @@ import "./governance/Voting.sol";
 import "./moneyflow/WeiExpense.sol";
 import "./moneyflow/IMoneyflow.sol";
 
-contract ProposalIssueTokens is IProposal {
+//////////// Experimental:
+contract GenericProposal is IProposal {
 	Voting voting;
-	address to;
-	uint amount;
 
-	function ProposalIssueTokens(IMicrocompanyBase _mc, address _origin,
-										address _to, uint _amount) public 
-	{
-		// TODO: remove default parameters, let Voting to read data in its constructor
-		// each employee has 1 vote 
-		voting = new Voting(_mc, this, _origin, Voting.VoteType.EmployeesVote, 24 *60, 0x0);
+	address target;
+	string methodSig;
+	bytes32[] params;
 
-		to = _to; 
-		amount = _amount;
-	}
-
-// IProposal implementation
-	// should be called from Voting
-	function action(IMicrocompanyBase _mc, IVoting _voting) public {
-		require(msg.sender==address(voting));
-
-		// as long as we call this method from WITHIN the vote contract 
-		// isCanDoAction() should return yes if voting finished with Yes result
-		_mc.issueTokens(to, amount);
-	}
-
-	function getVoting()public constant returns(address){
-		return address(voting);
-	}
-}
-
-contract ProposalAddNewTask is IProposal {
-	IMoneyflowScheme ms;
-	Voting voting;
-	WeiAbsoluteExpense wt;
-
-	function ProposalAddNewTask(IMicrocompanyBase _mc, IMoneyflowScheme _ms, address _origin,
-									WeiAbsoluteExpense _wt) public 
-	{
-		ms = _ms;
+	function GenericProposal(IMicrocompanyBase _mc, address _target, address _origin, string _methodSig, bytes32[] _params) public {
+		target = _target;
+		params = _params;
+		methodSig = _methodSig;
 
 		// TODO: remove default parameters, let Vote to read data in its constructor
 		// each employee has 1 vote 
+		// 
+		// _origin is the initial msg.sender (just like tx.origin) 
 		voting = new Voting(_mc, this, _origin, Voting.VoteType.EmployeesVote, 24 *60, 0x0);
-
-		wt = _wt;
 	}
 
 // IVoting implementation
@@ -59,7 +31,11 @@ contract ProposalAddNewTask is IProposal {
 		// cool! voting is over and the majority said YES -> so let's go!
 		// as long as we call this method from WITHIN the vote contract 
 		// isCanDoAction() should return yes if voting finished with Yes result
-		ms.addNewTask(wt);
+		target.call(
+			bytes4(keccak256(methodSig)),
+			uint256(32),				// pointer to the length of the array
+			uint256(params.length), // length of the array
+			params);						// array itself
 	}
 
 	function getVoting()public constant returns(address){
@@ -67,54 +43,70 @@ contract ProposalAddNewTask is IProposal {
 	}
 }
 
-
-////////////////////
-// This contract is a helper that will create new Proposal (i.e. voting) if the action is not allowed directly
-contract AutoMicrocompanyActionCaller {
+// This is a wrapper that help us to do action that CAN require votings
+// WARNING: should be permitted to add new proposal by the current Microcompany!!!
+contract GenericCaller {
 	IMicrocompanyBase mc;
 
-	function AutoMicrocompanyActionCaller(IMicrocompanyBase _mc)public{
+	function GenericCaller(IMicrocompanyBase _mc)public{
 		mc = _mc;
 	}
 
-	function issueTokensAuto(address _to, uint _amount) public returns(address voteOut){
-		// 1 - create new task immediately?
-		if(mc.isCanDoAction(msg.sender, "issueTokens")){
-			mc.issueTokens(_to, _amount);
+	// _actionId is something like "issueTokens"
+	// _methodSig some kind of "issueTokens(bytes32[])"
+	function doAction(string _permissionsId, address _target, address _origin, string _methodSig, bytes32[] _params) public returns(address proposalOut) 
+	{
+		if(mc.isCanDoAction(msg.sender, _permissionsId)){
+			// 1 - call immediately?
+			_target.call(
+				bytes4(keccak256(_methodSig)),
+				uint256(32),				// pointer to the length of the array
+				uint256(_params.length), // length of the array
+				_params);						// array itself
+
 			return 0x0;
 		}else{
 			// 2 - create new vote instead
-			// we pass msg.sender (just like tx.origin) 
-			ProposalIssueTokens pit = new ProposalIssueTokens(mc, msg.sender, _to, _amount);
+			GenericProposal prop = new GenericProposal(mc, _target, _origin, _methodSig, _params);
 
 			// WARNING: should be permitted to add new proposal by the current contract address!!!
-			mc.addNewProposal(pit);		
-			return pit;
+			mc.addNewProposal(prop);		
+			return prop;
 		}
+	}
+}
+
+// This contract is a helper that will create new Proposal (i.e. voting) if the action is not allowed directly
+contract AutoMicrocompanyActionCaller is GenericCaller {
+	function AutoMicrocompanyActionCaller(IMicrocompanyBase _mc)public
+		GenericCaller(_mc)
+	{
+	}
+
+	function issueTokensAuto(address _to, uint _amount) public returns(address proposalOut){
+		bytes32[] memory params = new bytes32[](3);
+		params[0] = bytes32(_to);
+		params[1] = bytes32(_amount);
+
+	   doAction("issueTokens", mc, msg.sender,"issueTokensGeneric(bytes32[])",params);
 	}
 }
 
 // TODO: add tests!
-contract AutoMoneyflowActionCaller {
-	IMicrocompanyBase mc;
+contract AutoMoneyflowActionCaller is GenericCaller {
 	IMoneyflowScheme mfs;
 
-	function AutoMoneyflowActionCaller(IMicrocompanyBase _mc, IMoneyflowScheme _mfs){
-		mc = _mc;
+	function AutoMoneyflowActionCaller(IMicrocompanyBase _mc, IMoneyflowScheme _mfs)public 
+		GenericCaller(_mc)	
+	{
 		mfs = _mfs;
 	}
 
-	function addNewTask(WeiAbsoluteExpense wt) public returns(address voteOut){
-		if(mc.isCanDoAction(msg.sender, "addNewTask")){
-			// 1 - add new task immediately
-			mfs.addNewTask(wt);
-			return 0x0;
-		}else{
-			ProposalAddNewTask vant = new ProposalAddNewTask(mc, mfs, msg.sender, wt);
+	function addNewTask(WeiAbsoluteExpense _wt) public returns(address voteOut){
+		bytes32[] memory params = new bytes32[](3);
+		params[0] = bytes32(address(_wt));
 
-			// WARNING: should be permitted to add new proposal by the current contract address!!!
-			mc.addNewProposal(vant);
-			return vant;
-		}
+	   doAction("addNewTask", mc, msg.sender,"addNewTaskGeneric(bytes32[])",params);
 	}
 }
+

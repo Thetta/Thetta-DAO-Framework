@@ -1,7 +1,8 @@
 var Microcompany = artifacts.require("./Microcompany");
-var AutoMicrocompanyActionCaller = artifacts.require("./AutoMicrocompanyActionCaller");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
 var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
+
+var AutoMicrocompanyActionCaller = artifacts.require("./AutoMicrocompanyActionCaller");
 
 var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
