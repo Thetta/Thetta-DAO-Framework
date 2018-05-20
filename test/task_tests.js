@@ -24,14 +24,12 @@ async function setup(creator){
 		await store.addActionByEmployeesOnly("addNewProposal");
 		await store.addActionByEmployeesOnly("startTask");
 		await store.addActionByEmployeesOnly("startBounty");
-		await store.addActionByEmployeesOnly("modifyMoneyscheme");
 
 		// this is a list of actions that require voting
-		await store.addActionByVoting("addNewEmployee");
-		await store.addActionByVoting("removeEmployee");
-		await store.addActionByVoting("addNewTask");
-		await store.addActionByVoting("issueTokens");
-		await store.addActionByVoting("upgradeMicrocompany");
+		await store.addActionByVoting("addNewEmployee",token.address);
+		await store.addActionByVoting("addNewTask",token.address);
+		await store.addActionByVoting("issueTokens",token.address);
+
 		// add creator as first employee	
 		await store.addNewEmployee(creator);			
 	}

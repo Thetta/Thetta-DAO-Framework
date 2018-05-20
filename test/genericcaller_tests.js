@@ -32,8 +32,8 @@ global.contract('GenericCaller', (accounts) => {
 			await store.addActionByEmployeesOnly("addNewProposal");
 
 			// this is a list of actions that require voting
-			await store.addActionByVoting("addNewEmployee");
-			await store.addActionByVoting("issueTokens");
+			await store.addActionByVoting("addNewEmployee", token.address);
+			await store.addActionByVoting("issueTokens", token.address);
 
 			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
 			// because of this AAC can't add new proposal!
@@ -78,12 +78,12 @@ global.contract('GenericCaller', (accounts) => {
 			await store.addActionByEmployeesOnly("addNewProposal");
 
 			// this is a list of actions that require voting
-			await store.addActionByVoting("addNewEmployee");
+			await store.addActionByVoting("addNewEmployee", token.address);
 
 			// SEE this -> this permissions is commented! So even if AAC has rights to add proposal, 
 			// the proposal will never be finished 
 			// 
-			//await store.addActionByVoting("issueTokens");
+			//await store.addActionByVoting("issueTokens", token.address);
 
 			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
 			await store.addActionByAddress("addNewProposal", aacInstance.address);
@@ -167,8 +167,8 @@ global.contract('GenericCaller', (accounts) => {
 			await store.addActionByEmployeesOnly("addNewProposal");
 
 			// this is a list of actions that require voting
-			await store.addActionByVoting("addNewEmployee");
-			await store.addActionByVoting("issueTokens");
+			await store.addActionByVoting("addNewEmployee", token.address);
+			await store.addActionByVoting("issueTokens", token.address);
 
 			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
 			await store.addActionByAddress("addNewProposal", aacInstance.address);

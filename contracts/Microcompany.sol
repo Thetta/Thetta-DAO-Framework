@@ -58,7 +58,8 @@ contract MicrocompanyStorage is Ownable {
 		byEmployee[_what] = true;
 	}
 
-	function addActionByVoting(string _what) public onlyOwner {
+	// TODO: use _tokenAddress
+	function addActionByVoting(string _what, address _tokenAddress) public onlyOwner {
 		byVoting[_what] = true;
 	}
 
@@ -70,8 +71,10 @@ contract MicrocompanyStorage is Ownable {
 		return byEmployee[_permissionName];
 	}
 
-	function isCanDoByVoting(string _permissionName) public constant returns(bool){
-		return byVoting[_permissionName];
+	function isCanDoByVoting(string _permissionName) public constant returns(bool,address){
+		// TODO: return _tokenAddress instead of 0x0!!!
+		// see <addActionByVoting> method
+		return (byVoting[_permissionName], 0x0);
 	}
 
 	function isCanDoByAddress(string _permissionName, address _a) public constant returns(bool){
@@ -185,7 +188,8 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		}
 
 		// 2 - can do action only by starting new vote first?
-		if(store.isCanDoByVoting(_permissionName)){
+		var (isCan, tokenAddressForVoting) = store.isCanDoByVoting(_permissionName);
+		if(isCan){
 			var (isVotingFound, votingResult) = store.getProposalVotingResults(msg.sender);
 			if(isVotingFound){
 				// if this action can be done by voting, then Proposal can do this action 
@@ -196,7 +200,7 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 			
 			// 3 - only token holders with > 51% of gov.tokens can add new task immediately 
 			// otherwise -> start voting
-			if(isInMajority(_a)){
+			if(isInMajority(_a, tokenAddressForVoting)){
 				return true;
 			}
 
@@ -208,9 +212,9 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 
 // Public (for tests)
 	// only token holders with > 51% of gov.tokens can add new task immediately 
-	function isInMajority(address _a) public constant returns(bool){
-		// TODO:
-		// if we have many tokens -> we should scan all and check if have more than 51% of governance type 
+	function isInMajority(address _a, address _tokenAddress) public constant returns(bool){
+		// TODO: use _tokenAddress
+
 		return(store.stdToken().balanceOf(_a)>=store.stdToken().totalSupply()/2);
 	}
 

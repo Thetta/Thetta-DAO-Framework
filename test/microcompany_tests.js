@@ -32,11 +32,11 @@ global.contract('Microcompany', (accounts) => {
 			await store.addActionByEmployeesOnly("modifyMoneyscheme");
 
 			// this is a list of actions that require voting
-			await store.addActionByVoting("addNewEmployee");
-			await store.addActionByVoting("removeEmployee");
-			await store.addActionByVoting("addNewTask");
-			await store.addActionByVoting("issueTokens");
-			await store.addActionByVoting("upgradeMicrocompany");
+			await store.addActionByVoting("addNewEmployee", token.address);
+			await store.addActionByVoting("removeEmployee", token.address);
+			await store.addActionByVoting("addNewTask", token.address);
+			await store.addActionByVoting("issueTokens", token.address);
+			await store.addActionByVoting("upgradeMicrocompany", token.address);
 
 			// add creator as first employee	
 			await store.addNewEmployee(creator);			
@@ -52,10 +52,10 @@ global.contract('Microcompany', (accounts) => {
 		const isCan = await store.isCanDoByEmployee("addNewProposal");
 		global.assert.equal(isCan,true,'Permission should be set correctly');
 
-		const isMajority = await mcInstance.isInMajority(creator);
+		const isMajority = await mcInstance.isInMajority(creator, token.address);
 		global.assert.strictEqual(isMajority,true,'Creator should be in majority');
 
-		const isMajority2 = await mcInstance.isInMajority(employee1);
+		const isMajority2 = await mcInstance.isInMajority(employee1, token.address);
 		global.assert.strictEqual(isMajority2,false,'Employee should not be in majority');
 
 		const isEmployeeByDefault = await mcInstance.isEmployee(creator);
@@ -106,13 +106,13 @@ global.contract('Microcompany', (accounts) => {
 		await mcInstance.issueTokens(employee1,1000,{from: creator});
 		await mcInstance.issueTokens(employee2,1000,{from: creator});
 
-		const isMajority1 = await mcInstance.isInMajority(creator);
+		const isMajority1 = await mcInstance.isInMajority(creator, token.address);
 		global.assert.strictEqual(isMajority1,false,'Creator should NOT be in majority now');
 
-		const isMajority2 = await mcInstance.isInMajority(employee1);
+		const isMajority2 = await mcInstance.isInMajority(employee1, token.address);
 		global.assert.strictEqual(isMajority2,false,'employee1 is now in majority');
 
-		const isMajority3 = await mcInstance.isInMajority(employee2);
+		const isMajority3 = await mcInstance.isInMajority(employee2, token.address);
 		global.assert.strictEqual(isMajority3,false,'employee1 is now in majority');
 
 		// CHECK this .at syntax!!!
