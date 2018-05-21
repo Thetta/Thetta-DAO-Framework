@@ -126,6 +126,31 @@ global.contract('Microcompany', (accounts) => {
 		global.assert.equal(balance3,1000,'employee2 balance');
 	});
 
+	global.it('should be able to call issueTokens directly (permissions check)',async() => {
+		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		await token.mint(creator, 1000);
+		let store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
+
+		let mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+
+		{
+			await store.addActionByEmployeesOnly("issueTokens");
+			await store.addActionByEmployeesOnly("addNewEmployee");
+			await store.addActionByEmployeesOnly("upgradeMicrocompany");
+
+			await store.addNewEmployee(creator);            
+		}
+
+		// do not forget to transfer ownership
+		await token.transferOwnership(mcInstance.address);
+		await store.transferOwnership(mcInstance.address);
+
+		await mcInstance.issueTokens(employee2,1000,{from: creator});
+		
+		const balance1 = await token.balanceOf(employee2);
+		global.assert.equal(balance1,1000,'new balance');
+	});
+
 	global.it('should be able to upgrade',async() => {
 		// TODO: 
 		//
