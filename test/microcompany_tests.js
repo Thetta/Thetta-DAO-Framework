@@ -158,6 +158,10 @@ global.contract('Microcompany', (accounts) => {
 		await mcInstanceNew.issueTokens(employee1,1000,{from: creator});
 		await mcInstanceNew.addNewEmployee(employee1);
 
+		await mcInstance.addNewEmployee(employee1,{from: creator});
+		const isEmployeeAdded = await mcInstance.isEmployee(employee1);
+		global.assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
+
 		await CheckExceptions.checkContractThrows(mcInstance.addNewEmployee,
 			[employee2, { from: creator}],
 			'Should not add new employee');
