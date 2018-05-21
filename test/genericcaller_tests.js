@@ -132,7 +132,7 @@ global.contract('GenericCaller', (accounts) => {
 		// should not vote! because ACTION will throw 
 		// i.e. 'issueTokens' action is disabled!
 		//
-		await voting.vote(true,{from:employee1});
+		await voting.vote(true,0,{from:employee1});
 
 		// TODO: uncomment! this condition should be met 
 		/*
@@ -218,7 +218,7 @@ global.contract('GenericCaller', (accounts) => {
 
 		// vote again
 		// should execute the action (issue tokens)!
-		await voting.vote(true,{from:employee1});
+		await voting.vote(true,0,{from:employee1});
 		const r2 = await voting.getFinalResults();
 		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1],0,'no');

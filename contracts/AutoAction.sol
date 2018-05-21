@@ -37,8 +37,8 @@ contract GenericProposal is IProposal {
 			params);						// array itself
 	}
 
-	function getVoting()public constant returns(address){
-		return address(voting);
+	function getVoting()public constant returns(IVoting){
+		return voting;
 	}
 }
 

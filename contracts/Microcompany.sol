@@ -96,9 +96,8 @@ contract MicrocompanyStorage is Ownable {
 		// scan all votings and search for the one that is finished
 		for(uint i=0; i<proposalsCount; ++i){
 			if(proposals[i]==_p){
-				IProposal proposal = IProposal(_p);
-				IVoting vote = IVoting(proposal.getVoting());
-				return (true, 	vote.isFinished() && vote.isYes());
+				IVoting voting = proposals[i].getVoting();
+				return (true, 	voting.isFinished() && voting.isYes());
 			}
 		}
 

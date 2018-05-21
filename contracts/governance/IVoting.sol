@@ -1,12 +1,14 @@
 pragma solidity ^0.4.15;
 
-contract IVoting {
+interface IVoting {
+	// _tokenAmount -> if this voting type DOES NOT require tokens -> set to any value (e.g., 0);
 	// will execute action if the voting is finished 
-	function vote(bool _yes) public;
+	function vote(bool _yes, uint _tokenAmount) public;
+
+	function delegateMyVoiceTo(address _to) public;
 
 	function cancelVoting() public;
 
-// These should be implemented in the less abstract contracts like Voting, etc:
 	// This is for statistics
 	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults);
 	// Is voting finished?
