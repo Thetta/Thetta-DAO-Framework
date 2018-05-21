@@ -89,6 +89,13 @@ contract AutoMicrocompanyActionCaller is GenericCaller {
 
 	   doAction("issueTokens", mc, msg.sender,"issueTokensGeneric(bytes32[])",params);
 	}
+
+	function upgradeMicrocompanyContractAuto(address _newMc) public returns(address proposalOut){
+		bytes32[] memory params = new bytes32[](1);
+		params[0] = bytes32(_newMc);
+
+		doAction("upgradeMicrocompanyContract", mc, msg.sender,"upgradeMicrocompanyContractGeneric(bytes32[])",params);
+	}
 }
 
 // TODO: add tests!
