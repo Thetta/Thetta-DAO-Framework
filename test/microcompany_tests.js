@@ -1,6 +1,8 @@
 var MicrocompanyWithUnpackers = artifacts.require("./MicrocompanyWithUnpackers");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
 var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
+var AutoMicrocompanyActionCaller = artifacts.require("./AutoMicrocompanyActionCaller");
+var MicrocompanyWithUnpackers = artifacts.require("./MicrocompanyWithUnpackers");
 
 var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
@@ -18,6 +20,7 @@ global.contract('Microcompany', (accounts) => {
 	const outsider = accounts[3];
 
 	global.beforeEach(async() => {
+		/*
 		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 		store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
@@ -39,14 +42,14 @@ global.contract('Microcompany', (accounts) => {
 			await store.addActionByVoting("upgradeMicrocompany", token.address);
 
 			// add creator as first employee	
-			await store.addNewEmployee(creator);			
+			await store.addNewEmployee(creator);
 		}
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(mcInstance.address);
-		await store.transferOwnership(mcInstance.address);
+		await store.transferOwnership(mcInstance.address);*/
 	});
-
+/*
 	global.it('should set everything correctly',async() => {
 		///
 		const isCan = await store.isCanDoByEmployee("addNewProposal");
@@ -125,16 +128,46 @@ global.contract('Microcompany', (accounts) => {
 		const balance3 = await token.balanceOf(employee2);
 		global.assert.equal(balance3,1000,'employee2 balance');
 	});
-
+*/
 	global.it('should be able to upgrade',async() => {
-		// TODO: 
-		//
-		// 1 - create new Microcompany
+		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		await token.mint(creator, 1000);
+		let store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
+
+		let mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+
+		{
+			await store.addActionByEmployeesOnly("issueTokens");
+			await store.addActionByEmployeesOnly("addNewEmployee");
+			await store.addActionByEmployeesOnly("upgradeMicrocompany");
+			// add creator as first employee	
+			await store.addNewEmployee(creator);			
+		}
+
+		// do not forget to transfer ownership
+		await token.transferOwnership(mcInstance.address);
+		await store.transferOwnership(mcInstance.address);
+
+
+		await mcInstance.issueTokens(employee2,1000,{from: creator});
+		await store.addNewEmployee(employee2);
+	
+		/*
+		let mcInstanceNew = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+
+		await mcInstance.upgradeMicrocompanyContract(mcInstanceNew.address, {gas: 10000000, from: creator})
 		
-		// 2 - 
-		// TODO: call upgradeMicrocompanyContract method	
-		
-		// 3 - check that everything works fine with new contract (issue tokens, etc)
+		 await mcInstanceNew.issueTokens(employee1,1000,{from: creator});
+		 await store.addNewEmployee(employee1);
+	
+		 await CheckExceptions.checkContractThrows(mcInstance.addNewEmployee,
+		 	[employee2, { from: creator}],
+		 	'Should not add new employee');
+	
+		 await CheckExceptions.checkContractThrows(mcInstance.issueTokens,
+		 	[employee2, { from: creator}],
+		 	'Should not issue tokens');
+		 */
 	});
 });
 
