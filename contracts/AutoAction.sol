@@ -37,8 +37,8 @@ contract GenericProposal is IProposal {
 			params);						// array itself
 	}
 
-	function getVoting()public constant returns(address){
-		return address(voting);
+	function getVoting()public constant returns(IVoting){
+		return voting;
 	}
 }
 
@@ -83,7 +83,7 @@ contract AutoMicrocompanyActionCaller is GenericCaller {
 	}
 
 	function issueTokensAuto(address _to, uint _amount) public returns(address proposalOut){
-		bytes32[] memory params = new bytes32[](3);
+		bytes32[] memory params = new bytes32[](2);
 		params[0] = bytes32(_to);
 		params[1] = bytes32(_amount);
 
@@ -102,7 +102,7 @@ contract AutoMoneyflowActionCaller is GenericCaller {
 	}
 
 	function addNewTask(WeiAbsoluteExpense _wt) public returns(address voteOut){
-		bytes32[] memory params = new bytes32[](3);
+		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(address(_wt));
 
 	   doAction("addNewTask", mc, msg.sender,"addNewTaskGeneric(bytes32[])",params);

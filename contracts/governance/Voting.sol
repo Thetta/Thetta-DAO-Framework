@@ -55,7 +55,7 @@ contract Voting is IVoting, Ownable {
 		}
 	}
 
-	function vote(bool _yes) public {
+	function vote(bool _yes, uint _tokenAmount) public {
 		require(!isFinished());
 
 		if(voteType==VoteType.EmployeesVote){
@@ -70,6 +70,11 @@ contract Voting is IVoting, Ownable {
 
 			proposal.action(mc, this);
 		}
+	}
+
+	function delegateMyVoiceTo(address _to) public {
+		// not implemented in this contract
+		revert();
 	}
 
 	function cancelVoting() public onlyOwner {
@@ -141,4 +146,3 @@ contract Voting is IVoting, Ownable {
 		}
 	}
 }
-
