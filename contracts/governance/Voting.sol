@@ -146,4 +146,3 @@ contract Voting is IVoting, Ownable {
 		}
 	}
 }
-

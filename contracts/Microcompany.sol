@@ -30,7 +30,8 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 // How permissions works now:
 //		1. if caller is in the whitelist -> allow
 //		2. if caller is employee and this action can be done by employee -> allow
-//		3. if this action requires voting 
+//		3. if caller shareholder and this action can be done by shareholder -> allow
+//		4. if this action requires voting 
 //			a. caller is in the majority -> allow
 //			b. caller is voting and it is succeeded -> allow
 //		4. deny
@@ -44,6 +45,7 @@ contract MicrocompanyStorage is Ownable {
 	uint public employeesCount = 0;
 
 	mapping (string=>bool) byEmployee;
+	mapping (string=>bool) byShareholder;
 	mapping (string=>bool) byVoting;
 	mapping (address=>mapping(string=>bool)) byAddress;
 
@@ -59,6 +61,11 @@ contract MicrocompanyStorage is Ownable {
 	}
 
 	// TODO: use _tokenAddress
+	function addActionByShareholder(string _what, address _tokenAddress) public onlyOwner {
+		byShareholder[_what] = true;
+	}
+
+	// TODO: use _tokenAddress
 	function addActionByVoting(string _what, address _tokenAddress) public onlyOwner {
 		byVoting[_what] = true;
 	}
@@ -69,6 +76,12 @@ contract MicrocompanyStorage is Ownable {
 
 	function isCanDoByEmployee(string _permissionName) public constant returns(bool){
 		return byEmployee[_permissionName];
+	}
+
+	function isCanDoByShareholder(string _permissionName) public constant returns(bool){
+		// TODO: use _tokenAddress 
+		// see <addActionBySha> method
+		return byShareholder[_permissionName];
 	}
 
 	function isCanDoByVoting(string _permissionName) public constant returns(bool,address){
@@ -117,6 +130,10 @@ contract MicrocompanyStorage is Ownable {
 			}
 		}
 		return false;
+	}
+
+	function isShareholder(address _a, address _token) public constant returns(bool){
+		return (ERC20(_token).balanceOf(_a)!=0);
 	}
 }
 
@@ -170,6 +187,10 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		return store.isEmployee(_a);
 	}
 
+	function isShareholder(address _a, address _token) public constant returns(bool){
+		return store.isShareholder(_a, _token);
+	}
+
 	function getEmployeesCount()public constant returns(uint){
 		return store.employeesCount();
 	}
@@ -183,6 +204,14 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 
 		// 1 - check if employees can do that without voting?
 		if(store.isCanDoByEmployee(_permissionName) && isEmployee(_a)){
+			return true;
+		}
+
+		// 2 - check if shareholder can do that without voting?
+		// TODO: implement this
+		// TODO: pass token address
+		address someToken = 0x0;
+		if(store.isCanDoByShareholder(_permissionName) && isShareholder(_a, someToken)){
 			return true;
 		}
 
