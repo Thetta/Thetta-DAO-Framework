@@ -237,7 +237,7 @@ global.contract('GenericCaller', (accounts) => {
 			'Should not call action again');
 	});*/
 
-	global.it('should be able to upgrade ',async() => {
+	global.it('should be able to upgrade with AAC',async() => {
 		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 		let store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
@@ -248,7 +248,12 @@ global.contract('GenericCaller', (accounts) => {
 		{
 			// await store.addActionByEmployeesOnly("issueTokens");
 			await store.addActionByEmployeesOnly("addNewEmployee");
+
 			await store.addActionByVoting("upgradeMicrocompany", token.address);
+
+			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
+			await store.addActionByAddress("addNewProposal", aacInstance.address);
+
 			// await store.addActionByEmployeesOnly("upgradeMicrocompany");
 			// add creator as first employee	
 			await store.addNewEmployee(creator);			
@@ -258,58 +263,11 @@ global.contract('GenericCaller', (accounts) => {
 		await token.transferOwnership(mcInstance.address);
 		await store.transferOwnership(mcInstance.address);
 
-		const proposalsCount1 = await mcInstance.getProposalsCount();
-		global.assert.equal(proposalsCount1,0,'No proposals should be added');
-
+		// should be able to upgrde microcompany directly without voting (creator is in majority!)
 		let mcInstanceNew = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		await aacInstance.upgradeMicrocompanyContractAuto(mcInstanceNew.address,{from: creator});
 
-
-		let upgradeMicrocompany = await mcInstance.isCanDoAction(creator, "upgradeMicrocompany")
-		console.log('upgradeMicrocompany:', upgradeMicrocompany)
-		// await aacInstance.upgradeMicrocompanyContractAuto(mcInstanceNew.address,{from: creator});
-
-		let aacInstanceNew = await AutoMicrocompanyActionCaller.new(mcInstanceNew.address, {from: creator});
-		// const proposalsCount2 = await mcInstance.getProposalsCount();
-		// global.assert.equal(proposalsCount2,1,'New proposal should be added'); 
-
-
-		// const pa = await mcInstance.getProposalAtIndex(0);
-		// const proposal = await IProposal.at(pa);
-		// const votingAddress = await proposal.getVoting();
-		// const voting = await Voting.at(votingAddress);
-		// global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		// global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
-
-		// await voting.vote(true,0,{from:employee1});
-
-		// const r2 = await voting.getFinalResults();
-		// global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
-		// global.assert.equal(r2[1],0,'no');
-		// global.assert.equal(r2[2],2,'total');
-
-		// // get voting results again
-		// global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
-		// global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
-		
-
-		// await mcInstance.issueTokens(employee2,1000,{from: creator});
-		// await mcInstance.addNewEmployee(employee2);
-		
-		
-
-		// await mcInstance.upgradeMicrocompanyContract(mcInstanceNew.address, {gas: 10000000, from: creator})
-		
-		// await mcInstanceNew.issueTokens(employee1,1000,{from: creator});
-		// await mcInstanceNew.addNewEmployee(employee1);
-
-		// await CheckExceptions.checkContractThrows(mcInstance.addNewEmployee,
-		// 	[employee2, { from: creator}],
-		// 	'Should not add new employee');
-
-		// await CheckExceptions.checkContractThrows(mcInstance.issueTokens,
-		// 	[employee2, { from: creator}],
-		// 	'Should not issue tokens');
-		
+		// TODO: add checks
 	});
 
 });

@@ -153,7 +153,7 @@ global.contract('Microcompany', (accounts) => {
 		
 		let mcInstanceNew = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 
-		await mcInstance.upgradeMicrocompanyContract(mcInstanceNew.address, {gas: 10000000, from: creator})
+		await mcInstance.upgradeMicrocompanyContract(mcInstanceNew.address, {gas: 10000000, from: creator});
 		
 		await mcInstanceNew.issueTokens(employee1,1000,{from: creator});
 		await mcInstanceNew.addNewEmployee(employee1);
@@ -165,7 +165,6 @@ global.contract('Microcompany', (accounts) => {
 		await CheckExceptions.checkContractThrows(mcInstance.issueTokens,
 			[employee2, { from: creator}],
 			'Should not issue tokens');
-		
 	});
 });
 
