@@ -6,27 +6,26 @@ import "./governance/Voting.sol";
 import "./moneyflow/WeiExpense.sol";
 import "./moneyflow/IMoneyflow.sol";
 
-contract GenericProposal is IProposal {
-	Voting voting;
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+
+contract GenericProposal is IProposal, Ownable {
+	IVoting voting;
 
 	address target;
 	string methodSig;
 	bytes32[] params;
 
-	function GenericProposal(IMicrocompanyBase _mc, address _target, address _origin, string _methodSig, bytes32[] _params) public {
+	function GenericProposal(address _target, address _origin, string _methodSig, bytes32[] _params) public {
 		target = _target;
 		params = _params;
 		methodSig = _methodSig;
-
-		// TODO: remove default parameters, let Vote to read data in its constructor
-		// each employee has 1 vote 
-		// 
-		// _origin is the initial msg.sender (just like tx.origin) 
-		voting = new Voting(_mc, this, _origin, Voting.VoteType.EmployeesVote, 24 *60, 0x0);
 	}
 
 // IVoting implementation
 	function action(IMicrocompanyBase _mc, IVoting _voting) public {
+		require(address(voting)!=0x0);
+		require(msg.sender==address(voting));
+
 		// cool! voting is over and the majority said YES -> so let's go!
 		// as long as we call this method from WITHIN the vote contract 
 		// isCanDoAction() should return yes if voting finished with Yes result
@@ -35,6 +34,10 @@ contract GenericProposal is IProposal {
 			uint256(32),				// pointer to the length of the array
 			uint256(params.length), // length of the array
 			params);						// array itself
+	}
+
+	function setVoting(IVoting _voting) public onlyOwner{
+		voting = _voting;
 	}
 
 	function getVoting()public constant returns(IVoting){
@@ -65,13 +68,24 @@ contract GenericCaller {
 
 			return 0x0;
 		}else{
-			// 2 - create new vote instead
-			GenericProposal prop = new GenericProposal(mc, _target, _origin, _methodSig, _params);
+			// 2 - create proposal + voting first  
+
+			// _origin is the initial msg.sender (just like tx.origin) 
+			GenericProposal prop = new GenericProposal(_target, _origin, _methodSig, _params);
+
+			IVoting voting = createVoting(_permissionsId, prop, _origin);
+			prop.setVoting(voting);
 
 			// WARNING: should be permitted to add new proposal by the current contract address!!!
+			// check your permissions or see examples (tests) how to do that correctly
 			mc.addNewProposal(prop);		
 			return prop;
 		}
+	}
+
+	function createVoting(string _permissionsId, IProposal _prop, address _origin)internal returns(IVoting){
+		// TODO: make Voting factory. I.e., vote type should depend on what is the _permissionsId
+		return new Voting(mc, _prop, _origin, Voting.VoteType.EmployeesVote, 24 *60, 0x0);
 	}
 }
 
