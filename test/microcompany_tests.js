@@ -1,6 +1,8 @@
 var MicrocompanyWithUnpackers = artifacts.require("./MicrocompanyWithUnpackers");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
 var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
+var AutoMicrocompanyActionCaller = artifacts.require("./AutoMicrocompanyActionCaller");
+var MicrocompanyWithUnpackers = artifacts.require("./MicrocompanyWithUnpackers");
 
 var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
@@ -39,7 +41,7 @@ global.contract('Microcompany', (accounts) => {
 			await store.addActionByVoting("upgradeMicrocompany", token.address);
 
 			// add creator as first employee	
-			await store.addNewEmployee(creator);			
+			await store.addNewEmployee(creator);
 		}
 
 		// do not forget to transfer ownership
@@ -126,7 +128,7 @@ global.contract('Microcompany', (accounts) => {
 		global.assert.equal(balance3,1000,'employee2 balance');
 	});
 
-	global.it('should be able to call issueTokens directly (permissions check)',async() => {
+	global.it('should be able to upgrade',async() => {
 		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 		let store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
@@ -137,8 +139,8 @@ global.contract('Microcompany', (accounts) => {
 			await store.addActionByEmployeesOnly("issueTokens");
 			await store.addActionByEmployeesOnly("addNewEmployee");
 			await store.addActionByEmployeesOnly("upgradeMicrocompany");
-
-			await store.addNewEmployee(creator);            
+			// add creator as first employee	
+			await store.addNewEmployee(creator);			
 		}
 
 		// do not forget to transfer ownership
@@ -146,20 +148,24 @@ global.contract('Microcompany', (accounts) => {
 		await store.transferOwnership(mcInstance.address);
 
 		await mcInstance.issueTokens(employee2,1000,{from: creator});
-		
-		const balance1 = await token.balanceOf(employee2);
-		global.assert.equal(balance1,1000,'new balance');
-	});
+		//await store.addNewEmployee(employee2);
+	
+		/*
+		let mcInstanceNew = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 
-	global.it('should be able to upgrade',async() => {
-		// TODO: 
-		//
-		// 1 - create new Microcompany
+		await mcInstance.upgradeMicrocompanyContract(mcInstanceNew.address, {gas: 10000000, from: creator})
 		
-		// 2 - 
-		// TODO: call upgradeMicrocompanyContract method	
-		
-		// 3 - check that everything works fine with new contract (issue tokens, etc)
+		 await mcInstanceNew.issueTokens(employee1,1000,{from: creator});
+		 await store.addNewEmployee(employee1);
+	
+		 await CheckExceptions.checkContractThrows(mcInstance.addNewEmployee,
+		 	[employee2, { from: creator}],
+		 	'Should not add new employee');
+	
+		 await CheckExceptions.checkContractThrows(mcInstance.issueTokens,
+		 	[employee2, { from: creator}],
+		 	'Should not issue tokens');
+		 */
 	});
 });
 
