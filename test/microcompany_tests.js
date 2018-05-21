@@ -20,7 +20,7 @@ global.contract('Microcompany', (accounts) => {
 	const outsider = accounts[3];
 
 	global.beforeEach(async() => {
-		/*
+	
 		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 		store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
@@ -47,9 +47,9 @@ global.contract('Microcompany', (accounts) => {
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(mcInstance.address);
-		await store.transferOwnership(mcInstance.address);*/
+		await store.transferOwnership(mcInstance.address);
 	});
-/*
+
 	global.it('should set everything correctly',async() => {
 		///
 		const isCan = await store.isCanDoByEmployee("addNewProposal");
@@ -128,7 +128,7 @@ global.contract('Microcompany', (accounts) => {
 		const balance3 = await token.balanceOf(employee2);
 		global.assert.equal(balance3,1000,'employee2 balance');
 	});
-*/
+
 	global.it('should be able to upgrade',async() => {
 		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
@@ -148,26 +148,24 @@ global.contract('Microcompany', (accounts) => {
 		await token.transferOwnership(mcInstance.address);
 		await store.transferOwnership(mcInstance.address);
 
-
 		await mcInstance.issueTokens(employee2,1000,{from: creator});
-		await store.addNewEmployee(employee2);
-	
-		/*
+		await mcInstance.addNewEmployee(employee2);
+		
 		let mcInstanceNew = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 
 		await mcInstance.upgradeMicrocompanyContract(mcInstanceNew.address, {gas: 10000000, from: creator})
 		
-		 await mcInstanceNew.issueTokens(employee1,1000,{from: creator});
-		 await store.addNewEmployee(employee1);
-	
-		 await CheckExceptions.checkContractThrows(mcInstance.addNewEmployee,
-		 	[employee2, { from: creator}],
-		 	'Should not add new employee');
-	
-		 await CheckExceptions.checkContractThrows(mcInstance.issueTokens,
-		 	[employee2, { from: creator}],
-		 	'Should not issue tokens');
-		 */
+		await mcInstanceNew.issueTokens(employee1,1000,{from: creator});
+		await mcInstanceNew.addNewEmployee(employee1);
+
+		await CheckExceptions.checkContractThrows(mcInstance.addNewEmployee,
+			[employee2, { from: creator}],
+			'Should not add new employee');
+
+		await CheckExceptions.checkContractThrows(mcInstance.issueTokens,
+			[employee2, { from: creator}],
+			'Should not issue tokens');
+		
 	});
 });
 
