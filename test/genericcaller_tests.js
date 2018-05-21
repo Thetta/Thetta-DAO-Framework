@@ -225,8 +225,8 @@ global.contract('GenericCaller', (accounts) => {
 		global.assert.equal(r2[2],2,'total');
 
 		// get voting results again
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
+		global.assert.strictEqual(await voting.isFinished(),true,'Voting is finished now');
+		global.assert.strictEqual(await voting.isYes(),true,'Voting result is yes!');
 
 		const balance2 = await token.balanceOf(employee1);
 		global.assert.strictEqual(balance2.toNumber(),1000,'employee1 balance should be updated');
