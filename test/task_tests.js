@@ -20,18 +20,17 @@ async function setup(creator){
 	mcInstance = await Microcompany.new(store.address,{gas: 10000000, from: creator});
 
 	{
-		// manually setup the Default organization 
-		await store.addActionByEmployeesOnly("addNewProposal");
-		await store.addActionByEmployeesOnly("startTask");
-		await store.addActionByEmployeesOnly("startBounty");
+		await store.addGroup("Employees");
+		await store.addGroupMember("Employees", creator);
+
+		await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+		await store.allowActionByAnyMemberOfGroup("startTask","Employees");
+		await store.allowActionByAnyMemberOfGroup("startBounty","Employees");
 
 		// this is a list of actions that require voting
-		await store.addActionByVoting("addNewEmployee",token.address);
+		await store.addActionByVoting("manageGroups",token.address);
 		await store.addActionByVoting("addNewTask",token.address);
 		await store.addActionByVoting("issueTokens",token.address);
-
-		// add creator as first employee	
-		await store.addNewEmployee(creator);			
 	}
 
 	// do not forget to transfer ownership

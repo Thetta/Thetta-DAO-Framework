@@ -205,19 +205,17 @@ global.contract('Moneyflow', (accounts) => {
 		mcInstance = await Microcompany.new(store.address,{gas: 10000000, from: creator});
 
 		{
+			await store.addGroup("Employees");
+			await store.addGroupMember("Employees", creator);
+
 			// manually setup the Default organization 
-			await store.addActionByEmployeesOnly("addNewProposal");
-			await store.addActionByEmployeesOnly("startTask");
-			await store.addActionByEmployeesOnly("startBounty");
-			await store.addActionByEmployeesOnly("modifyMoneyscheme");
+			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 
 			// this is a list of actions that require voting
-			await store.addActionByVoting("addNewEmployee", token.address);
-			await store.addActionByVoting("removeEmployee", token.address);
+			await store.addActionByVoting("manageGroups", token.address);
 			await store.addActionByVoting("addNewTask", token.address);
 			await store.addActionByVoting("issueTokens", token.address);
-			// add creator as first employee	
-			await store.addNewEmployee(creator);			
 		}
 
 		moneyflowInstance = await MoneyFlow.new(mcInstance.address,{from: creator});

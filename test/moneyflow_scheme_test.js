@@ -34,24 +34,21 @@ global.contract('Moneyflow', (accounts) => {
 		await moneyflowInstance.setRootWeiReceiver(moneyflowScheme.address);
 
 		{
-			// manually setup the Default organization 
-			await store.addActionByEmployeesOnly("addNewProposal");
-			await store.addActionByEmployeesOnly("startTask");
-			await store.addActionByEmployeesOnly("startBounty");
+			await store.addGroup("Employees");
+			await store.addGroupMember("Employees", creator);
 
+			// manually setup the Default organization 
+			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+			
 			// this is a list of actions that require voting
-			await store.addActionByVoting("addNewEmployee", token.address);
-			await store.addActionByVoting("removeEmployee", token.address);
+			await store.addActionByVoting("manageGroups", token.address);
 			await store.addActionByVoting("addNewTask", token.address);
 			await store.addActionByVoting("issueTokens", token.address);
 			await store.addActionByVoting("upgradeMicrocompany", token.address);
 
 			// for moneyscheme!
-			await store.addActionByEmployeesOnly("modifyMoneyscheme");
+			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 			await store.addActionByVoting("withdrawDonations", token.address);
-
-			// add creator as first employee	
-			await store.addNewEmployee(creator);	
 
 			// THIS IS REQUIRED because issueTokensAuto() will add new proposal
 			await store.addActionByAddress("addNewProposal", aacInstance.address);

@@ -2,7 +2,13 @@ pragma solidity ^0.4.15;
 
 import './governance/IProposal.sol';
 
+interface IMicrocompanyObserver {
+	function onUpgrade(address _newAddress) public;
+}
+
 interface IMicrocompanyBase {
+	function addObserver(IMicrocompanyObserver _observer)public;
+
 	function upgradeMicrocompanyContract(IMicrocompanyBase _new)public;
 
 // Permissions
@@ -13,11 +19,10 @@ interface IMicrocompanyBase {
 	function getProposalAtIndex(uint _i)public constant returns(IProposal);
 	function getProposalsCount()public constant returns(uint);
 
-// Employees
-	function addNewEmployee(address _newEmployee) public;
-	function removeEmployee(address _employee) public;
-	function isEmployee(address _a)public constant returns(bool);
-	function getEmployeesCount()public constant returns(uint);
+// Group members
+	function addGroupMember(string _groupName, address _a) public;
+	function removeGroupMember(string _groupName, address _a) public;
+	function isGroupMember(string _groupName,address _a)public constant returns(bool);
 
 // Tokens
 	// TODO: curently Microcompany has only 1 type of tokens
@@ -26,7 +31,7 @@ interface IMicrocompanyBase {
 }
 
 // Just an easy-to-use wrapper
-contract MicrocompanyUser {
+contract MicrocompanyUser is IMicrocompanyObserver {
 	IMicrocompanyBase mc;
 
    modifier isCanDo(string _what){
@@ -36,5 +41,13 @@ contract MicrocompanyUser {
 
 	function MicrocompanyUser(IMicrocompanyBase _mc)public{
 		mc = _mc;
+		mc.addObserver(this);
+	}
+
+	function onUpgrade(address _newAddress) public {
+		require(msg.sender==address(mc));	
+		mc = IMicrocompanyBase(_newAddress);
+
+		mc.addObserver(this);
 	}
 }

@@ -13,8 +13,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 // Permissions:
 // 
 // addNewProposal
-// addNewEmployee
-// removeEmployee
+// manageGroups
 // issueTokens
 // upgradeMicrocompany
 //
@@ -44,10 +43,17 @@ contract MicrocompanyStorage is Ownable {
 	mapping (uint=>address) employees;
 	uint public employeesCount = 0;
 
+	address[] observers;
+
 	mapping (string=>bool) byEmployee;
 	mapping (string=>bool) byShareholder;
 	mapping (string=>bool) byVoting;
 	mapping (address=>mapping(string=>bool)) byAddress;
+
+	// name -> members
+	mapping (string=>address[]) groups;
+	// name -> permission -> flag
+	mapping (string=>mapping(string=>bool)) groupPermissions;
 
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -55,11 +61,42 @@ contract MicrocompanyStorage is Ownable {
 		stdToken = _stdToken;
 	}
 
-// Permissions:
-	function addActionByEmployeesOnly(string _what) public onlyOwner {
-		byEmployee[_what] = true;
+	function addObserver(IMicrocompanyObserver _observer) public {
+		observers.push(_observer);
 	}
 
+// Permissions:
+	function addGroup(string _groupName) public onlyOwner{
+		// do nothing
+	}
+
+	function addGroupMember(string _groupName, address _newMember) public onlyOwner{
+		// TODO: check if already added 
+		groups[_groupName].push(_newMember);
+	}
+
+	function removeGroupMember(string _groupName, address _member)public onlyOwner {
+		// TODO:
+	}
+
+	function isGroupMember(string _groupName, address _a) public constant returns(bool){
+		for(uint i=0; i<groups[_groupName].length; ++i){
+			if(groups[_groupName][i]==_a){
+				return true;
+			}
+		}
+		return false; 
+	}
+
+	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public onlyOwner {
+		groupPermissions[_groupName][_what] = true;
+	}
+
+	function isCanDoByGroupMember(string _what, string _groupName) public constant returns(bool){
+		return groupPermissions[_groupName][_what];
+	}
+
+	//////
 	// TODO: use _tokenAddress
 	function addActionByShareholder(string _what, address _tokenAddress) public onlyOwner {
 		byShareholder[_what] = true;
@@ -72,10 +109,6 @@ contract MicrocompanyStorage is Ownable {
 
 	function addActionByAddress(string _what, address _a) public onlyOwner {
 		byAddress[_a][_what] = true;
-	}
-
-	function isCanDoByEmployee(string _permissionName) public constant returns(bool){
-		return byEmployee[_permissionName];
 	}
 
 	function isCanDoByShareholder(string _permissionName) public constant returns(bool){
@@ -117,21 +150,6 @@ contract MicrocompanyStorage is Ownable {
 		return (false,false);
 	}
 
-// Employees:
-	function addNewEmployee(address _newEmployee) onlyOwner public {
-		employees[employeesCount] = _newEmployee;
-		employeesCount++;
-	}
-
-	function isEmployee(address _a)public constant returns(bool){
-		for(uint i=0; i<employeesCount; ++i){
-			if(employees[i]==_a){
-				return true;
-			}
-		}
-		return false;
-	}
-
 	function isShareholder(address _a, address _token) public constant returns(bool){
 		return (ERC20(_token).balanceOf(_a)!=0);
 	}
@@ -153,9 +171,16 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 	}
 
 // IMicrocompany:
+	function addObserver(IMicrocompanyObserver _observer) public {
+		store.addObserver(_observer);	
+	}
+
 	function upgradeMicrocompanyContract(IMicrocompanyBase _new) public isCanDo("upgradeMicrocompany") {
 		store.transferOwnership(_new);
 		store.stdToken().transferOwnership(_new);
+
+		// TODO: 
+		// call observers.onUpgrade() for all observers
 	}
 
 	function addNewProposal(IProposal _proposal) public isCanDo("addNewProposal") { 
@@ -174,25 +199,20 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		issueTokensInternal(_to, _amount);
 	}
 
-	// caller should make sure that he is not adding same employee twice
-	function addNewEmployee(address _newEmployee) public isCanDo("addNewEmployee") {
-		store.addNewEmployee(_newEmployee);
+	function addGroupMember(string _groupName, address _a) public isCanDo("manageGroups") {
+		store.addGroupMember(_groupName, _a);
 	}
 
-	function removeEmployee(address _employee) public isCanDo("removeEmployee") {
-		// TODO:
+	function removeGroupMember(string _groupName, address _a) public isCanDo("manageGroups"){
+		store.removeGroupMember(_groupName, _a);
 	}
 
-	function isEmployee(address _a)public constant returns(bool){
-		return store.isEmployee(_a);
+	function isGroupMember(string _groupName,address _a)public constant returns(bool) {
+		return store.isGroupMember(_groupName, _a);
 	}
 
 	function isShareholder(address _a, address _token) public constant returns(bool){
 		return store.isShareholder(_a, _token);
-	}
-
-	function getEmployeesCount()public constant returns(uint){
-		return store.employeesCount();
 	}
 
 // Permissions:
@@ -203,7 +223,8 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		}
 
 		// 1 - check if employees can do that without voting?
-		if(store.isCanDoByEmployee(_permissionName) && isEmployee(_a)){
+		// TODO: generalize for ALL groups!
+		if(store.isCanDoByGroupMember(_permissionName, "Employees") && store.isGroupMember("Employees", _a)){
 			return true;
 		}
 
@@ -263,14 +284,16 @@ contract MicrocompanyWithUnpackers is Microcompany {
 		upgradeMicrocompanyContract(_b);
 	}
 
-	function addNewEmployeeGeneric(bytes32[] _params) public {
-		address _emp = address(_params[0]);
-		addNewEmployee(_emp);
-	}
+	function addGroupMemberGeneric(bytes32[] _params) public {
+		// TODO: implement
+		assert(false);
 
-	function removeEmployeeGeneric(bytes32[] _params) public {
-		address _emp = address(_params[0]);
-		removeEmployee(_emp);
+		/*
+		bytes32 _group = bytes32(_params[0]);
+		address _emp = address(_params[1]);
+
+		addGroupMember(_group, _emp);
+	   */
 	}
 
 	function issueTokensGeneric(bytes32[] _params) public {
