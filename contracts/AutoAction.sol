@@ -129,19 +129,33 @@ contract AutoMicrocompanyActionCaller is GenericCaller {
 
 // TODO: add tests!
 contract AutoMoneyflowActionCaller is GenericCaller {
-	IMoneyflowScheme mfs;
+	IMoneyflow mf;
 
-	function AutoMoneyflowActionCaller(IMicrocompanyBase _mc, IMoneyflowScheme _mfs)public 
+	function AutoMoneyflowActionCaller(IMicrocompanyBase _mc, IMoneyflow _mf)public 
 		GenericCaller(_mc)	
 	{
-		mfs = _mfs;
+		mf = _mf;
 	}
 
 	function addNewTask(WeiAbsoluteExpense _wt) public returns(address voteOut){
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(address(_wt));
 
-	   doAction("addNewTask", mc, msg.sender,"addNewTaskGeneric(bytes32[])",params);
+		doAction("addNewTask", mc, msg.sender,"addNewTaskGeneric(bytes32[])",params);
+	}
+
+	function setRootWeiReceiverAuto(WeiAbsoluteExpense _wt) public returns(address voteOut){
+		bytes32[] memory params = new bytes32[](1);
+		params[0] = bytes32(address(_wt));
+
+		doAction("setRootWeiReceiver", mc, msg.sender,"setRootWeiReceiverGeneric(bytes32[])",params);
+	}
+
+	function withdrawDonationsAuto(address _wt) public returns(address voteOut){
+		bytes32[] memory params = new bytes32[](1);
+		params[0] = bytes32(_wt);
+
+		doAction("withdrawDonations", mc, msg.sender,"withdrawDonationsGeneric(bytes32[])",params);
 	}
 }
 

@@ -1,8 +1,14 @@
 var MicrocompanyWithUnpackers = artifacts.require("./MicrocompanyWithUnpackers");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
 var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
+var WeiFund = artifacts.require("./WeiFund");
+var MoneyFlow = artifacts.require("./MoneyFlow");
+var IWeiReceiver = artifacts.require("./IWeiReceiver");
 
 var AutoMicrocompanyActionCaller = artifacts.require("./AutoMicrocompanyActionCaller");
+var AutoMoneyflowActionCaller = artifacts.require("./AutoMoneyflowActionCaller");
+var DefaultMoneyflowSchemeWithUnpackers = artifacts.require("./DefaultMoneyflowSchemeWithUnpackers");
+var DefaultMoneyflowScheme = artifacts.require("./DefaultMoneyflowScheme");
 
 var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
@@ -13,7 +19,12 @@ global.contract('GenericCaller', (accounts) => {
 	const creator = accounts[0];
 	const employee1 = accounts[1];
 	const employee2 = accounts[2];
-	const outsider = accounts[3];
+	const employee3 = accounts[3];
+	const outsider = accounts[4];
+	const output = accounts[5]; 
+
+	let money = web3.toWei(0.001, "ether");
+
 
 	global.beforeEach(async() => {
 
@@ -286,5 +297,88 @@ global.contract('GenericCaller', (accounts) => {
 		// get voting results again
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
+
+	});
+
+	global.it('should allow to get donations',async() => {
+		
+		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		await token.mint(creator, 1000);
+		// await token.mint(employee1, 500);
+		// await token.mint(employee2, 500);
+
+		let store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
+		let mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let moneyflowInstance = await MoneyFlow.new(mcInstance.address, {from: creator});
+		// await moneyflowInstance.setRootWeiReceiver(creator,{gas: 10000000, from: creator});
+
+		// await token.mint(creator, 500);
+
+		let aacInstance = await AutoMoneyflowActionCaller.new(mcInstance.address, moneyflowInstance.address, {from: creator, gas: 10000000});
+
+		{
+			await store.addActionByEmployeesOnly("addNewEmployee");
+			await store.addActionByEmployeesOnly("modifyMoneyscheme");
+			
+			await store.addActionByAddress("addNewProposal", aacInstance.address);
+			// await store.addActionByAddress("withdrawDonationsTo", aacInstance.address);
+
+			await store.addActionByVoting("withdrawDonations", token.address);
+
+			// add creator as first employee
+			await store.addNewEmployee(creator);
+			await store.addNewEmployee(employee1);
+			await store.addNewEmployee(employee2);
+		}
+
+		// do not forget to transfer ownership
+		await token.transferOwnership(mcInstance.address);
+		await store.transferOwnership(mcInstance.address);
+
+		// const isEnableFlushTo = true;
+		// let fund = await WeiFund.new(creator,isEnableFlushTo,10000,{from:creator});
+
+		const dea = await moneyflowInstance.getDonationEndpoint(); 
+		global.assert.notEqual(dea,0x0, 'donation endpoint should be created');
+		const donationEndpoint = await IWeiReceiver.at(dea);
+		await donationEndpoint.processFunds(money, { from: creator, value: money});
+
+		let donationBalance = await web3.eth.getBalance(donationEndpoint.address);
+		global.assert.equal(donationBalance.toNumber(),money, 'all money at donation point now');
+		
+		let pointBalance = await web3.eth.getBalance(output);
+
+		// get the donations 
+		await aacInstance.withdrawDonationsAuto(output, {from:creator, gas:100000, gasPrice:0});
+		let pointBalance2 = await web3.eth.getBalance(output);
+		console.log('receiverDelta:', pointBalance2.toNumber() - pointBalance.toNumber() )
+
+		// let pa = await mcInstance.getProposalAtIndex(0, {from:creator});
+		// let proposal = await IProposal.at(pa);
+		// const votingAddress = await proposal.getVoting();
+		// const voting = await Voting.at(votingAddress);
+		// global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		// global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+
+		// await voting.vote(true,0,{from:creator});
+		
+		// const r2 = await voting.getFinalResults();
+		// global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
+		// global.assert.equal(r2[1].toNumber(),0,'no');
+		// global.assert.equal(r2[2].toNumber(),2,'total');
+
+		// // get voting results again
+		// global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
+		// global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
+
+		// let creatorBalance2 = await web3.eth.getBalance(creator);
+		// let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);
+
+		// global.assert.equal(donationBalance2.toNumber(),0, 'all donations now on creator`s balance');
+		// let creatorBalanceDelta = creatorBalance2.toNumber() - creatorBalance.toNumber();
+		// global.assert.equal(output, money, 'all donations now on creator`s balance');
+
 	});
 });
+
+

@@ -49,6 +49,16 @@ contract MoneyFlow is IMoneyflow, MicrocompanyUser, Ownable {
 		return address(revenueF2WR);	
 	}
 
+	function setRootWeiReceiverGeneric(bytes32[] _params) public {
+		IWeiReceiver receiver = IWeiReceiver(address(_params[0]));
+		setRootWeiReceiver(receiver);
+	}
+
+	function withdrawDonationsGeneric(bytes32[] _params) public {
+		address out = address(_params[0]);
+		withdrawDonationsTo(out);
+	}
+
 // WeiReceivers:
 	// receiver can be a splitter, fund or event task
 	// _receiver can be 0x0!
