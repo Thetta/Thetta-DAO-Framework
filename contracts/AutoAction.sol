@@ -48,6 +48,8 @@ contract GenericProposal is IProposal, Ownable {
 // This is a wrapper that help us to do action that CAN require votings
 // WARNING: should be permitted to add new proposal by the current Microcompany!!!
 contract GenericCaller {
+	// If your company is upgraded -> then you can throw out your GenericCaller and create new one
+	// no need to update the GenericCaller (at least now, because it does not store any data)
 	IMicrocompanyBase mc;
 
 	function GenericCaller(IMicrocompanyBase _mc)public{

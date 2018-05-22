@@ -2,7 +2,13 @@ pragma solidity ^0.4.15;
 
 import './governance/IProposal.sol';
 
+interface IMicrocompanyObserver {
+	function onUpgrade(address _newAddress) public;
+}
+
 interface IMicrocompanyBase {
+	function addObserver(IMicrocompanyObserver _observer)public;
+
 	function upgradeMicrocompanyContract(IMicrocompanyBase _new)public;
 
 // Permissions
@@ -26,7 +32,7 @@ interface IMicrocompanyBase {
 }
 
 // Just an easy-to-use wrapper
-contract MicrocompanyUser {
+contract MicrocompanyUser is IMicrocompanyObserver {
 	IMicrocompanyBase mc;
 
    modifier isCanDo(string _what){
@@ -36,5 +42,11 @@ contract MicrocompanyUser {
 
 	function MicrocompanyUser(IMicrocompanyBase _mc)public{
 		mc = _mc;
+		mc.addObserver(this);
+	}
+
+	function onUpgrade(address _newAddress) public {
+		require(msg.sender==address(mc));	
+		mc = IMicrocompanyBase(_newAddress);
 	}
 }
