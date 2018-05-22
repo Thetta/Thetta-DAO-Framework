@@ -28,21 +28,21 @@ global.contract('Microcompany', (accounts) => {
 		mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 
 		{
-			// manually setup the Default organization 
-			await store.addActionByEmployeesOnly("addNewProposal");
-			await store.addActionByEmployeesOnly("startTask");
-			await store.addActionByEmployeesOnly("startBounty");
-			await store.addActionByEmployeesOnly("modifyMoneyscheme");
+			// add creator as first employee	
+			await store.addGroup("Employees");
+			await store.addGroupMember("Employees", creator);
+
+			// manually setup the Default organization permissions
+			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+			await store.allowActionByAnyMemberOfGroup("startTask","Employees");
+			await store.allowActionByAnyMemberOfGroup("startBounty","Employees");
+			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 
 			// this is a list of actions that require voting
-			await store.addActionByVoting("addNewEmployee", token.address);
-			await store.addActionByVoting("removeEmployee", token.address);
+			await store.addActionByVoting("manageGroups", token.address);
 			await store.addActionByVoting("addNewTask", token.address);
 			await store.addActionByVoting("issueTokens", token.address);
 			await store.addActionByVoting("upgradeMicrocompany", token.address);
-
-			// add creator as first employee	
-			await store.addNewEmployee(creator);
 		}
 
 		// do not forget to transfer ownership
@@ -51,8 +51,14 @@ global.contract('Microcompany', (accounts) => {
 	});
 
 	global.it('should set everything correctly',async() => {
+		const isMember = await store.isGroupMember("Employees", creator);
+		global.assert.equal(isMember,true,'Permission should be set correctly');
+
+		const isMember2 = await store.isGroupMember("Employees", employee1);
+		global.assert.equal(isMember2,false,'Permission should be set correctly');
+
 		///
-		const isCan = await store.isCanDoByEmployee("addNewProposal");
+		const isCan = await store.isCanDoByGroupMember("addNewProposal", "Employees");
 		global.assert.equal(isCan,true,'Permission should be set correctly');
 
 		const isMajority = await mcInstance.isInMajority(creator, token.address);
@@ -60,9 +66,6 @@ global.contract('Microcompany', (accounts) => {
 
 		const isMajority2 = await mcInstance.isInMajority(employee1, token.address);
 		global.assert.strictEqual(isMajority2,false,'Employee should not be in majority');
-
-		const isEmployeeByDefault = await mcInstance.isEmployee(creator);
-		global.assert.strictEqual(isEmployeeByDefault,true,'Creator should be a first employee');
 	});
 
 	global.it('should return correct permissions for an outsider',async() => {
@@ -73,7 +76,7 @@ global.contract('Microcompany', (accounts) => {
 		global.assert.strictEqual(isCanDo2,false,'Outsider should not be able to do that ');
 		global.assert.strictEqual(isCanDo3,false,'Outsider should not be able to do that ');
 
-		const isCanDo4 = await mcInstance.isCanDoAction(outsider,"addNewEmployee");
+		const isCanDo4 = await mcInstance.isCanDoAction(outsider,"manageGroups");
 		const isCanDo5 = await mcInstance.isCanDoAction(outsider,"addNewTask");
 		const isCanDo6 = await mcInstance.isCanDoAction(outsider,"issueTokens");
 		global.assert.strictEqual(isCanDo4,false,'Outsider should not be able to do that because he is in majority');
@@ -89,7 +92,7 @@ global.contract('Microcompany', (accounts) => {
 		global.assert.strictEqual(isCanDo2,true,'Creator should be able to do that ');
 		global.assert.strictEqual(isCanDo3,true,'Creator should be able to do that ');
 
-		const isCanDo4 = await mcInstance.isCanDoAction(creator,"addNewEmployee");
+		const isCanDo4 = await mcInstance.isCanDoAction(creator,"manageGroups");
 		const isCanDo5 = await mcInstance.isCanDoAction(creator,"addNewTask");
 		const isCanDo6 = await mcInstance.isCanDoAction(creator,"issueTokens");
 		global.assert.strictEqual(isCanDo4,true,'Creator should be able to do that because he is in majority');
@@ -136,39 +139,37 @@ global.contract('Microcompany', (accounts) => {
 
 		let mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 
-		{
-			await store.addActionByEmployeesOnly("issueTokens");
-			await store.addActionByEmployeesOnly("addNewEmployee");
-			await store.addActionByEmployeesOnly("upgradeMicrocompany");
-			// add creator as first employee	
-			await store.addNewEmployee(creator);			
-		}
+		await store.addGroup("Employees");
+		await store.addGroupMember("Employees", creator);
+
+		await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+		await store.allowActionByAnyMemberOfGroup("manageGroups","Employees");
+		await store.allowActionByAnyMemberOfGroup("issueTokens","Employees");
+		await store.allowActionByAnyMemberOfGroup("upgradeMicrocompany","Employees");
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(mcInstance.address);
 		await store.transferOwnership(mcInstance.address);
 
-		await mcInstance.issueTokens(employee2,1000,{from: creator});
-		await mcInstance.addNewEmployee(employee2);
-		
+		// Start
 		let mcInstanceNew = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-
 		await mcInstance.upgradeMicrocompanyContract(mcInstanceNew.address, {gas: 10000000, from: creator});
-		
-		await mcInstanceNew.issueTokens(employee1,1000,{from: creator});
-		await mcInstanceNew.addNewEmployee(employee1);
 
-		await mcInstance.addNewEmployee(employee1,{from: creator});
-		const isEmployeeAdded = await mcInstance.isEmployee(employee1);
+		await mcInstanceNew.issueTokens(employee1,1000,{from: creator});
+
+		// TODO: check employee1 balance
+
+		await mcInstanceNew.addGroupMember("Employees", employee1,{from: creator});
+		const isEmployeeAdded = await mcInstanceNew.isGroupMember("Employees",employee1);
 		global.assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
 
-		await CheckExceptions.checkContractThrows(mcInstance.addNewEmployee,
-			[employee2, { from: creator}],
-			'Should not add new employee');
+		await CheckExceptions.checkContractThrows(mcInstance.addGroupMember,
+			["Employees", employee2, { from: creator}],
+			'Should not add new employee to old MC');
 
 		await CheckExceptions.checkContractThrows(mcInstance.issueTokens,
 			[employee2, { from: creator}],
-			'Should not issue tokens');
+			'Should not issue tokens through MC');
 	});
 });
 

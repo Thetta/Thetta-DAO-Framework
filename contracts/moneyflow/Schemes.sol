@@ -82,8 +82,10 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, MicrocompanyUser, WeiTopDow
 		// TODO: is voting required? Move voting to AutoMoneyflowActionCaller!
 
 		// TODO: implement
+
 		// 0 - check if _employee is employee 
-		require(mc.isEmployee(_employee));
+		// TODO: WARNING!!!!!!!! Hard-coded type
+		require(mc.isGroupMember("Employees", _employee));
 
 		// 1 - employee already added? 
 

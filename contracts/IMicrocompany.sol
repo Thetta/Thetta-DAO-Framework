@@ -19,11 +19,10 @@ interface IMicrocompanyBase {
 	function getProposalAtIndex(uint _i)public constant returns(IProposal);
 	function getProposalsCount()public constant returns(uint);
 
-// Employees
-	function addNewEmployee(address _newEmployee) public;
-	function removeEmployee(address _employee) public;
-	function isEmployee(address _a)public constant returns(bool);
-	function getEmployeesCount()public constant returns(uint);
+// Group members
+	function addGroupMember(string _groupName, address _a) public;
+	function removeGroupMember(string _groupName, address _a) public;
+	function isGroupMember(string _groupName,address _a)public constant returns(bool);
 
 // Tokens
 	// TODO: curently Microcompany has only 1 type of tokens
@@ -48,5 +47,7 @@ contract MicrocompanyUser is IMicrocompanyObserver {
 	function onUpgrade(address _newAddress) public {
 		require(msg.sender==address(mc));	
 		mc = IMicrocompanyBase(_newAddress);
+
+		mc.addObserver(this);
 	}
 }

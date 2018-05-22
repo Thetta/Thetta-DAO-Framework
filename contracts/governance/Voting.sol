@@ -48,7 +48,8 @@ contract Voting is IVoting, Ownable {
 
 		if(voteType==VoteType.EmployeesVote){
 			// first vote 
-			require(mc.isEmployee(_origin));
+			// TODO: WARNING!!!!!!!! Hard-coded type
+			require(mc.isGroupMember("Employees",_origin));
 			internalEmployeeVote(_origin, true);
 		}else{
 			// TODO: initial vote for other types...
@@ -59,7 +60,8 @@ contract Voting is IVoting, Ownable {
 		require(!isFinished());
 
 		if(voteType==VoteType.EmployeesVote){
-			require(mc.isEmployee(msg.sender));
+			// TODO: WARNING!!!!!!!! Hard-coded type
+			require(mc.isGroupMember("Employees",msg.sender));
 			internalEmployeeVote(msg.sender, _yes);
 		}
 
@@ -134,7 +136,9 @@ contract Voting is IVoting, Ownable {
 		// each employee has 1 vote 
 		for(uint i=0; i<employeesVotedCount; ++i){
 			address e = employeesVoted[i];
-			if(mc.isEmployee(e)){
+
+			// TODO: WARNING!!!!!!!! Hard-coded type
+			if(mc.isGroupMember("Employees",e)){
 				// count this vote
 				if(votes[e]){
 					yesResults++;

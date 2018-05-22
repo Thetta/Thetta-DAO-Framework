@@ -28,20 +28,19 @@ global.contract('GenericCaller', (accounts) => {
 		let aacInstance = await AutoMicrocompanyActionCaller.new(mcInstance.address, {from: creator});
 
 		{
-			// manually setup the Default organization 
-			await store.addActionByEmployeesOnly("addNewProposal");
+			// add creator as first employee	
+			await store.addGroup("Employees");
+			await store.addGroupMember("Employees", creator);
 
-			// this is a list of actions that require voting
-			await store.addActionByVoting("addNewEmployee", token.address);
+			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+
+			await store.addActionByVoting("manageGroups", token.address);
 			await store.addActionByVoting("issueTokens", token.address);
 
 			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
 			// because of this AAC can't add new proposal!
 			// 
 			//await store.addActionByAddress("addNewProposal", aacInstance.address);
-
-			// add creator as first employee	
-			await store.addNewEmployee(creator);			
 		}
 
 		// do not forget to transfer ownership
@@ -52,8 +51,8 @@ global.contract('GenericCaller', (accounts) => {
 		global.assert.equal(proposalsCount1,0,'No proposals should be added');
 
 		// add new employee1
-		await mcInstance.addNewEmployee(employee1,{from: creator});
-		const isEmployeeAdded = await mcInstance.isEmployee(employee1);
+		await mcInstance.addGroupMember("Employees",employee1,{from: creator});
+		const isEmployeeAdded = await mcInstance.isGroupMember("Employees", employee1);
 		global.assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
 
 		// new proposal should NOT be added 
@@ -74,11 +73,14 @@ global.contract('GenericCaller', (accounts) => {
 		let aacInstance = await AutoMicrocompanyActionCaller.new(mcInstance.address, {from: creator});
 
 		{
+			await store.addGroup("Employees");
+			await store.addGroupMember("Employees", creator);
+
 			// manually setup the Default organization 
-			await store.addActionByEmployeesOnly("addNewProposal");
+			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
 
 			// this is a list of actions that require voting
-			await store.addActionByVoting("addNewEmployee", token.address);
+			await store.addActionByVoting("manageGroups", token.address);
 
 			// SEE this -> this permissions is commented! So even if AAC has rights to add proposal, 
 			// the proposal will never be finished 
@@ -87,9 +89,6 @@ global.contract('GenericCaller', (accounts) => {
 
 			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
 			await store.addActionByAddress("addNewProposal", aacInstance.address);
-
-			// add creator as first employee	
-			await store.addNewEmployee(creator);			
 		}
 
 		// do not forget to transfer ownership
@@ -106,8 +105,8 @@ global.contract('GenericCaller', (accounts) => {
 		global.assert.equal(proposalsCount1,0,'No proposals should be added');
 
 		// add new employee1
-		await mcInstance.addNewEmployee(employee1,{from: creator});
-		const isEmployeeAdded = await mcInstance.isEmployee(employee1);
+		await mcInstance.addGroupMember("Employees",employee1,{from: creator});
+		const isEmployeeAdded = await mcInstance.isGroupMember("Employees",employee1);
 		global.assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
 
 		// employee1 is NOT in the majority
@@ -139,7 +138,6 @@ global.contract('GenericCaller', (accounts) => {
 		// await CheckExceptions.checkContractThrows(voting.vote.sendTransaction,
 		// 	[true,{ from: employee1}],
 		// 	'issueTokens is not allowed!');
-		
 
 		const r2 = await voting.getFinalResults();
 		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
@@ -163,18 +161,18 @@ global.contract('GenericCaller', (accounts) => {
 		let aacInstance = await AutoMicrocompanyActionCaller.new(mcInstance.address, {from: creator});
 
 		{
+			await store.addGroup("Employees");
+			await store.addGroupMember("Employees", creator);
+
 			// manually setup the Default organization 
-			await store.addActionByEmployeesOnly("addNewProposal");
+			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
 
 			// this is a list of actions that require voting
-			await store.addActionByVoting("addNewEmployee", token.address);
+			await store.addActionByVoting("manageGroups", token.address);
 			await store.addActionByVoting("issueTokens", token.address);
 
 			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
 			await store.addActionByAddress("addNewProposal", aacInstance.address);
-
-			// add creator as first employee	
-			await store.addNewEmployee(creator);			
 		}
 
 		// do not forget to transfer ownership
@@ -185,8 +183,8 @@ global.contract('GenericCaller', (accounts) => {
 		global.assert.equal(proposalsCount1,0,'No proposals should be added');
 
 		// add new employee1
-		await mcInstance.addNewEmployee(employee1,{from: creator});
-		const isEmployeeAdded = await mcInstance.isEmployee(employee1);
+		await mcInstance.addGroupMember("Employees",employee1,{from: creator});
+		const isEmployeeAdded = await mcInstance.isGroupMember("Employees",employee1);
 		global.assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
 
 		// employee1 is NOT in the majority
@@ -248,8 +246,12 @@ global.contract('GenericCaller', (accounts) => {
 		let aacInstance = await AutoMicrocompanyActionCaller.new(mcInstance.address, {from: creator});
 
 		{
-			// await store.addActionByEmployeesOnly("issueTokens");
-			await store.addActionByEmployeesOnly("addNewEmployee");
+			await store.addGroup("Employees");
+			await store.addGroupMember("Employees", creator);
+			await store.addGroupMember("Employees", employee1);
+			await store.addGroupMember("Employees", employee2);
+
+			//await store.allowActionByAnyMemberOfGroup("manageGroups","Employees");
 
 			await store.addActionByVoting("upgradeMicrocompany", token.address);
 
@@ -257,13 +259,6 @@ global.contract('GenericCaller', (accounts) => {
 			await store.addActionByAddress("addNewProposal", aacInstance.address);
 			await store.addActionByAddress("addNewTask", aacInstance.address);
 			await store.addActionByAddress("issueTokens", aacInstance.address);
-
-
-			// await store.addActionByEmployeesOnly("upgradeMicrocompany");
-			// add creator as first employee	
-			await store.addNewEmployee(creator);
-			await store.addNewEmployee(employee1);
-			await store.addNewEmployee(employee2);
 		}
 
 		// do not forget to transfer ownership
@@ -291,7 +286,5 @@ global.contract('GenericCaller', (accounts) => {
 		// get voting results again
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
-		
 	});
-
 });
