@@ -28,9 +28,9 @@ async function setup(creator){
 		await store.allowActionByAnyMemberOfGroup("startBounty","Employees");
 
 		// this is a list of actions that require voting
-		await store.addActionByVoting("manageGroups",token.address);
-		await store.addActionByVoting("addNewTask",token.address);
-		await store.addActionByVoting("issueTokens",token.address);
+		await store.allowActionByVoting("manageGroups",token.address);
+		await store.allowActionByVoting("addNewTask",token.address);
+		await store.allowActionByVoting("issueTokens",token.address);
 	}
 
 	// do not forget to transfer ownership

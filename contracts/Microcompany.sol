@@ -103,11 +103,11 @@ contract MicrocompanyStorage is Ownable {
 	}
 
 	// TODO: use _tokenAddress
-	function addActionByVoting(string _what, address _tokenAddress) public onlyOwner {
+	function allowActionByVoting(string _what, address _tokenAddress) public onlyOwner {
 		byVoting[_what] = true;
 	}
 
-	function addActionByAddress(string _what, address _a) public onlyOwner {
+	function allowActionByAddress(string _what, address _a) public onlyOwner {
 		byAddress[_a][_what] = true;
 	}
 
@@ -119,7 +119,7 @@ contract MicrocompanyStorage is Ownable {
 
 	function isCanDoByVoting(string _permissionName) public constant returns(bool,address){
 		// TODO: return _tokenAddress instead of 0x0!!!
-		// see <addActionByVoting> method
+		// see <allowActionByVoting> method
 		return (byVoting[_permissionName], 0x0);
 	}
 

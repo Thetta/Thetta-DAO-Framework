@@ -37,19 +37,19 @@ global.contract('Moneyflow', (accounts) => {
 			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
 			
 			// this is a list of actions that require voting
-			await store.addActionByVoting("manageGroups", token.address);
-			await store.addActionByVoting("addNewTask", token.address);
-			await store.addActionByVoting("issueTokens", token.address);
-			await store.addActionByVoting("upgradeMicrocompany", token.address);
+			await store.allowActionByVoting("manageGroups", token.address);
+			await store.allowActionByVoting("addNewTask", token.address);
+			await store.allowActionByVoting("issueTokens", token.address);
+			await store.allowActionByVoting("upgradeMicrocompany", token.address);
 
 			// for moneyscheme!
 			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
-			await store.addActionByVoting("withdrawDonations", token.address);
+			await store.allowActionByVoting("withdrawDonations", token.address);
 
 			// THIS IS REQUIRED because issueTokensAuto() will add new proposal
-			await store.addActionByAddress("addNewProposal", aacInstance.address);
+			await store.allowActionByAddress("addNewProposal", aacInstance.address);
 			// THIS IS REQUIRED because MoneyflowScheme will add new proposal
-			await store.addActionByAddress("addNewProposal", moneyflowScheme.address);
+			await store.allowActionByAddress("addNewProposal", moneyflowScheme.address);
 		}
 
 		// do not forget to transfer ownership

@@ -35,7 +35,7 @@ global.contract('Governance Schemes', (accounts) => {
 		{
 			// EXPERIMENTAL Permissions:
 			/*
-			await store.addActionByAddress("manageGroups",creator);
+			await store.allowActionByAddress("manageGroups",creator);
 
 			await store.addGroup("BoD");
 			await store.addMemberToGroup("BoD", creator);

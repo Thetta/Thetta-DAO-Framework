@@ -34,13 +34,13 @@ global.contract('GenericCaller', (accounts) => {
 
 			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
 
-			await store.addActionByVoting("manageGroups", token.address);
-			await store.addActionByVoting("issueTokens", token.address);
+			await store.allowActionByVoting("manageGroups", token.address);
+			await store.allowActionByVoting("issueTokens", token.address);
 
 			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
 			// because of this AAC can't add new proposal!
 			// 
-			//await store.addActionByAddress("addNewProposal", aacInstance.address);
+			//await store.allowActionByAddress("addNewProposal", aacInstance.address);
 		}
 
 		// do not forget to transfer ownership
@@ -80,15 +80,15 @@ global.contract('GenericCaller', (accounts) => {
 			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
 
 			// this is a list of actions that require voting
-			await store.addActionByVoting("manageGroups", token.address);
+			await store.allowActionByVoting("manageGroups", token.address);
 
 			// SEE this -> this permissions is commented! So even if AAC has rights to add proposal, 
 			// the proposal will never be finished 
 			// 
-			//await store.addActionByVoting("issueTokens", token.address);
+			//await store.allowActionByVoting("issueTokens", token.address);
 
 			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
-			await store.addActionByAddress("addNewProposal", aacInstance.address);
+			await store.allowActionByAddress("addNewProposal", aacInstance.address);
 		}
 
 		// do not forget to transfer ownership
@@ -168,11 +168,11 @@ global.contract('GenericCaller', (accounts) => {
 			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
 
 			// this is a list of actions that require voting
-			await store.addActionByVoting("manageGroups", token.address);
-			await store.addActionByVoting("issueTokens", token.address);
+			await store.allowActionByVoting("manageGroups", token.address);
+			await store.allowActionByVoting("issueTokens", token.address);
 
 			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
-			await store.addActionByAddress("addNewProposal", aacInstance.address);
+			await store.allowActionByAddress("addNewProposal", aacInstance.address);
 		}
 
 		// do not forget to transfer ownership
@@ -253,12 +253,12 @@ global.contract('GenericCaller', (accounts) => {
 
 			//await store.allowActionByAnyMemberOfGroup("manageGroups","Employees");
 
-			await store.addActionByVoting("upgradeMicrocompany", token.address);
+			await store.allowActionByVoting("upgradeMicrocompany", token.address);
 
 			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
-			await store.addActionByAddress("addNewProposal", aacInstance.address);
-			await store.addActionByAddress("addNewTask", aacInstance.address);
-			await store.addActionByAddress("issueTokens", aacInstance.address);
+			await store.allowActionByAddress("addNewProposal", aacInstance.address);
+			await store.allowActionByAddress("addNewTask", aacInstance.address);
+			await store.allowActionByAddress("issueTokens", aacInstance.address);
 		}
 
 		// do not forget to transfer ownership

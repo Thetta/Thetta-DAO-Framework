@@ -213,19 +213,19 @@ global.contract('Moneyflow', (accounts) => {
 			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 
 			// this is a list of actions that require voting
-			await store.addActionByVoting("manageGroups", token.address);
-			await store.addActionByVoting("addNewTask", token.address);
-			await store.addActionByVoting("issueTokens", token.address);
+			await store.allowActionByVoting("manageGroups", token.address);
+			await store.allowActionByVoting("addNewTask", token.address);
+			await store.allowActionByVoting("issueTokens", token.address);
 		}
 
 		moneyflowInstance = await MoneyFlow.new(mcInstance.address,{from: creator});
 
 		// THIS permission IS VERY DANGEROUS!!!
 		// allow creator to get donations from the Moneyflow 
-		await store.addActionByAddress("withdrawDonations", creator);
+		await store.allowActionByAddress("withdrawDonations", creator);
 
 		// moneyflow will not create Proposals in this case 
-		//await store.addActionByAddress("addNewProposal", moneyflowInstance.address);
+		//await store.allowActionByAddress("addNewProposal", moneyflowInstance.address);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(mcInstance.address);

@@ -39,10 +39,10 @@ global.contract('Microcompany', (accounts) => {
 			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 
 			// this is a list of actions that require voting
-			await store.addActionByVoting("manageGroups", token.address);
-			await store.addActionByVoting("addNewTask", token.address);
-			await store.addActionByVoting("issueTokens", token.address);
-			await store.addActionByVoting("upgradeMicrocompany", token.address);
+			await store.allowActionByVoting("manageGroups", token.address);
+			await store.allowActionByVoting("addNewTask", token.address);
+			await store.allowActionByVoting("issueTokens", token.address);
+			await store.allowActionByVoting("upgradeMicrocompany", token.address);
 		}
 
 		// do not forget to transfer ownership
