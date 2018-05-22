@@ -27,7 +27,6 @@ contract MoneyFlow is IMoneyflow, MicrocompanyUser, Ownable {
 // IMoneyflow:
 	// will withdraw donations
 	function withdrawDonationsTo(address _out)public isCanDo("withdrawDonations"){
-		// TODO: add voting
 		donationEndpoint.flushTo(_out);
 	}
 

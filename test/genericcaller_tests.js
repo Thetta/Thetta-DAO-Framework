@@ -30,6 +30,7 @@ global.contract('GenericCaller', (accounts) => {
 
 	});
 	
+	/*
 	global.it('should not automatically create proposal because AAC has no rights',async() => {
 		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
@@ -297,8 +298,8 @@ global.contract('GenericCaller', (accounts) => {
 		// get voting results again
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
-
 	});
+	*/
 
 	global.it('should allow to get donations',async() => {
 		
@@ -317,18 +318,18 @@ global.contract('GenericCaller', (accounts) => {
 		let aacInstance = await AutoMoneyflowActionCaller.new(mcInstance.address, moneyflowInstance.address, {from: creator, gas: 10000000});
 
 		{
-			await store.addActionByEmployeesOnly("addNewEmployee");
-			await store.addActionByEmployeesOnly("modifyMoneyscheme");
-			
-			await store.addActionByAddress("addNewProposal", aacInstance.address);
-			// await store.addActionByAddress("withdrawDonationsTo", aacInstance.address);
+			await store.addGroup("Employees");
+			await store.addGroupMember("Employees", creator);
+			await store.addGroupMember("Employees", employee1);
+			await store.addGroupMember("Employees", employee2);
 
-			await store.addActionByVoting("withdrawDonations", token.address);
+			await store.allowActionByAnyMemberOfGroup("addNewEmployee","Employees");
+			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 
-			// add creator as first employee
-			await store.addNewEmployee(creator);
-			await store.addNewEmployee(employee1);
-			await store.addNewEmployee(employee2);
+			await store.allowActionByAddress("addNewProposal", aacInstance.address);
+			// await store.allowActionByAddress("withdrawDonationsTo", aacInstance.address);
+
+			await store.allowActionByVoting("withdrawDonations", token.address);
 		}
 
 		// do not forget to transfer ownership
@@ -348,10 +349,18 @@ global.contract('GenericCaller', (accounts) => {
 		
 		let pointBalance = await web3.eth.getBalance(output);
 
+		// check permissions
+		const isCanWithdraw = await mcInstance.isCanDoAction(creator,"withdrawDonations");
+		global.assert.equal(isCanWithdraw, true, 'Creator should be able to withdrawDonations directly without voting');
+
 		// get the donations 
 		await aacInstance.withdrawDonationsAuto(output, {from:creator, gas:100000, gasPrice:0});
 		let pointBalance2 = await web3.eth.getBalance(output);
-		console.log('receiverDelta:', pointBalance2.toNumber() - pointBalance.toNumber() )
+		const receiverDelta = pointBalance2.toNumber() - pointBalance.toNumber();
+		console.log('receiverDelta:', receiverDelta);
+
+		// TODO: this fails!
+		global.assert.notEqual(receiverDelta, 0, 'Donations should be withdrawn');
 
 		// let pa = await mcInstance.getProposalAtIndex(0, {from:creator});
 		// let proposal = await IProposal.at(pa);

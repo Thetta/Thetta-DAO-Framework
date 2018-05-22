@@ -141,21 +141,21 @@ contract AutoMoneyflowActionCaller is GenericCaller {
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(address(_wt));
 
-		doAction("addNewTask", mc, msg.sender,"addNewTaskGeneric(bytes32[])",params);
+		return doAction("addNewTask", mf, msg.sender,"addNewTaskGeneric(bytes32[])",params);
 	}
 
 	function setRootWeiReceiverAuto(WeiAbsoluteExpense _wt) public returns(address voteOut){
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(address(_wt));
 
-		doAction("setRootWeiReceiver", mc, msg.sender,"setRootWeiReceiverGeneric(bytes32[])",params);
+		return doAction("setRootWeiReceiver", mf, msg.sender,"setRootWeiReceiverGeneric(bytes32[])",params);
 	}
 
 	function withdrawDonationsAuto(address _wt) public returns(address voteOut){
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(_wt);
 
-		doAction("withdrawDonations", mc, msg.sender,"withdrawDonationsGeneric(bytes32[])",params);
+		return doAction("withdrawDonations", mf, msg.sender,"withdrawDonationsGeneric(bytes32[])",params);
 	}
 }
 
