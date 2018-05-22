@@ -35,7 +35,6 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, MicrocompanyUser, WeiTopDow
 	WeiFund dividendsFund;
 
 /////
-	// TODO: if Microcompany is upgraded -> mc will stop working
 	function DefaultMoneyflowScheme(IMicrocompanyBase _mc, address _fundOutput, 
 											  uint _percentsReserve, uint _dividendsReserve) public 
 		MicrocompanyUser(_mc)											  

@@ -285,10 +285,15 @@ contract MicrocompanyWithUnpackers is Microcompany {
 	}
 
 	function addGroupMemberGeneric(bytes32[] _params) public {
-		string _group = string(_params[0]);
+		// TODO: implement
+		assert(false);
+
+		/*
+		bytes32 _group = bytes32(_params[0]);
 		address _emp = address(_params[1]);
 
 		addGroupMember(_group, _emp);
+	   */
 	}
 
 	function issueTokensGeneric(bytes32[] _params) public {
