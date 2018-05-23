@@ -165,7 +165,7 @@ contract AutoMoneyflowActionCaller is GenericCaller {
 	}
 
 	function withdrawDonationsToAuto(address _wt) public returns(address voteOut){
-		bytes32[] memory params = new bytes32[](2);
+		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(_wt);
 
 		return doAction("withdrawDonations", mf, msg.sender,"withdrawDonationsToGeneric(bytes32[])",params);
