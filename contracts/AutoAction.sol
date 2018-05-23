@@ -149,7 +149,7 @@ contract AutoMoneyflowActionCaller is GenericCaller {
 		mf = _mf;
 	}
 
-	function addNewTask(WeiAbsoluteExpense _wt) public returns(address voteOut){
+	function addNewTaskAuto(WeiAbsoluteExpense _wt) public returns(address voteOut){
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(address(_wt));
 
