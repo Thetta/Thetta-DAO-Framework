@@ -47,13 +47,12 @@ contract GenericProposal is IProposal, Ownable {
 
 // This is a wrapper that help us to do action that CAN require votings
 // WARNING: should be permitted to add new proposal by the current Microcompany!!!
-contract GenericCaller {
-	// If your company is upgraded -> then you can throw out your GenericCaller and create new one
-	// no need to update the GenericCaller (at least now, because it does not store any data)
-	IMicrocompanyBase mc;
-
-	function GenericCaller(IMicrocompanyBase _mc)public{
-		mc = _mc;
+contract GenericCaller is MicrocompanyUser {
+	function GenericCaller(IMicrocompanyBase _mc)public
+		// MicrocompanyUser (for example) helps us to handle Microcompany upgrades
+		// and will automatically update the 'mc' to the new instance
+		MicrocompanyUser(_mc)	
+	{
 	}
 
 	// _actionId is something like "issueTokens"
@@ -64,9 +63,22 @@ contract GenericCaller {
 			// 1 - call immediately?
 			_target.call(
 				bytes4(keccak256(_methodSig)),
-				uint256(32),				// pointer to the length of the array
-				uint256(_params.length), // length of the array
-				_params);						// array itself
+				uint256(32),						 // pointer to the length of the array
+				uint256(_params.length),		 // length of the array
+				_params	
+			);					
+
+			/*
+			// Delegatecall: 
+			// 1. _target storage will be set to THIS contract
+			// 2. msg.sender will be set to THE CURRENT msg.sender!
+			_target.delegatecall(
+				bytes4(keccak256(_methodSig)),
+				uint256(32),						 // pointer to the length of the array
+				uint256(_params.length),		 // length of the array
+				_params	
+			);					
+		   */
 
 			return 0x0;
 		}else{
@@ -141,21 +153,21 @@ contract AutoMoneyflowActionCaller is GenericCaller {
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(address(_wt));
 
-		doAction("addNewTask", mc, msg.sender,"addNewTaskGeneric(bytes32[])",params);
+		return doAction("addNewTask", mf, msg.sender,"addNewTaskGeneric(bytes32[])",params);
 	}
 
 	function setRootWeiReceiverAuto(WeiAbsoluteExpense _wt) public returns(address voteOut){
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(address(_wt));
 
-		doAction("setRootWeiReceiver", mc, msg.sender,"setRootWeiReceiverGeneric(bytes32[])",params);
+		return doAction("setRootWeiReceiver", mf, msg.sender,"setRootWeiReceiverGeneric(bytes32[])",params);
 	}
 
-	function withdrawDonationsAuto(address _wt) public returns(address voteOut){
+	function withdrawDonationsToAuto(address _wt) public returns(address voteOut){
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(_wt);
 
-		doAction("withdrawDonations", mc, msg.sender,"withdrawDonationsGeneric(bytes32[])",params);
+		return doAction("withdrawDonations", mf, msg.sender,"withdrawDonationsToGeneric(bytes32[])",params);
 	}
 }
 

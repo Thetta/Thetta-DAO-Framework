@@ -11,18 +11,23 @@ interface IMicrocompanyBase {
 
 	function upgradeMicrocompanyContract(IMicrocompanyBase _new)public;
 
+// Groups
+	function addGroup(string _groupName) public;
+	function addGroupMember(string _groupName, address _a) public;
+	function removeGroupMember(string _groupName, address _a) public;
+	function isGroupMember(string _groupName,address _a)public constant returns(bool);
+
 // Permissions
+	function allowActionByShareholder(string _what, address _tokenAddress) public;
+	function allowActionByVoting(string _what, address _tokenAddress) public;
+	function allowActionByAddress(string _what, address _a) public;
+
 	function isCanDoAction(address _a, string _permissionName)public constant returns(bool);
 
 // Governance/Proposals
 	function addNewProposal(IProposal _proposal) public;
 	function getProposalAtIndex(uint _i)public constant returns(IProposal);
 	function getProposalsCount()public constant returns(uint);
-
-// Group members
-	function addGroupMember(string _groupName, address _a) public;
-	function removeGroupMember(string _groupName, address _a) public;
-	function isGroupMember(string _groupName,address _a)public constant returns(bool);
 
 // Tokens
 	// TODO: curently Microcompany has only 1 type of tokens
@@ -44,10 +49,15 @@ contract MicrocompanyUser is IMicrocompanyObserver {
 		mc.addObserver(this);
 	}
 
+	// If your company is upgraded -> then this will automatically update the current mc.
+	// mc will point at NEW contract!
 	function onUpgrade(address _newAddress) public {
 		require(msg.sender==address(mc));	
+
 		mc = IMicrocompanyBase(_newAddress);
 
-		mc.addObserver(this);
+		// this is not needed because we are already in the list of observers (in the store) 
+		// and the controller is upgraded only
+		//mc.addObserver(this);
 	}
 }

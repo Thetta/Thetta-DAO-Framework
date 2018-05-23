@@ -4,6 +4,10 @@ var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
 var AutoMicrocompanyActionCaller = artifacts.require("./AutoMicrocompanyActionCaller");
 var MicrocompanyWithUnpackers = artifacts.require("./MicrocompanyWithUnpackers");
 
+// to check how upgrade works with IMicrocompany clients
+var MoneyFlow = artifacts.require("./MoneyFlow");
+var IWeiReceiver = artifacts.require("./IWeiReceiver");
+
 var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
 
@@ -39,10 +43,10 @@ global.contract('Microcompany', (accounts) => {
 			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 
 			// this is a list of actions that require voting
-			await store.addActionByVoting("manageGroups", token.address);
-			await store.addActionByVoting("addNewTask", token.address);
-			await store.addActionByVoting("issueTokens", token.address);
-			await store.addActionByVoting("upgradeMicrocompany", token.address);
+			await store.allowActionByVoting("manageGroups", token.address);
+			await store.allowActionByVoting("addNewTask", token.address);
+			await store.allowActionByVoting("issueTokens", token.address);
+			await store.allowActionByVoting("upgradeMicrocompany", token.address);
 		}
 
 		// do not forget to transfer ownership
@@ -139,6 +143,9 @@ global.contract('Microcompany', (accounts) => {
 
 		let mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 
+		// one client of the IMicrocompany (to test how upgrade works with it)
+		let moneyflowInstance = await MoneyFlow.new(mcInstance.address,{from: creator});
+
 		await store.addGroup("Employees");
 		await store.addGroupMember("Employees", creator);
 
@@ -147,17 +154,23 @@ global.contract('Microcompany', (accounts) => {
 		await store.allowActionByAnyMemberOfGroup("issueTokens","Employees");
 		await store.allowActionByAnyMemberOfGroup("upgradeMicrocompany","Employees");
 
+		// THIS permission IS VERY DANGEROUS!!!
+		// allow creator to get donations from the Moneyflow 
+		await store.allowActionByAddress("withdrawDonations", creator);
+
 		// do not forget to transfer ownership
 		await token.transferOwnership(mcInstance.address);
 		await store.transferOwnership(mcInstance.address);
 
-		// Start
+		// UPGRADE!
 		let mcInstanceNew = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		await mcInstance.upgradeMicrocompanyContract(mcInstanceNew.address, {gas: 10000000, from: creator});
 
 		await mcInstanceNew.issueTokens(employee1,1000,{from: creator});
 
-		// TODO: check employee1 balance
+		// check employee1 balance
+		const balance1 = await token.balanceOf(employee1);
+		global.assert.equal(balance1,1000,'balance should be updated');
 
 		await mcInstanceNew.addGroupMember("Employees", employee1,{from: creator});
 		const isEmployeeAdded = await mcInstanceNew.isGroupMember("Employees",employee1);
@@ -170,6 +183,29 @@ global.contract('Microcompany', (accounts) => {
 		await CheckExceptions.checkContractThrows(mcInstance.issueTokens,
 			[employee2, { from: creator}],
 			'Should not issue tokens through MC');
+
+		// now try to withdraw donations with new mc
+		const money = 1000000000;
+		const dea = await moneyflowInstance.getDonationEndpoint(); 
+		const donationEndpoint = await IWeiReceiver.at(dea);
+		await donationEndpoint.processFunds(money, { from: creator, value: money, gasPrice: 0});
+
+		let donationBalance = await web3.eth.getBalance(donationEndpoint.address);
+		global.assert.equal(donationBalance.toNumber(),money, 'all money at donation point now');
+
+		// withdraw
+		let outBalance = await web3.eth.getBalance(outsider);
+		await moneyflowInstance.withdrawDonationsTo(outsider,{from:creator, gas:100000, gasPrice: 0});
+
+		let outBalance2 = await web3.eth.getBalance(outsider);
+		let balanceDelta = outBalance2.toNumber() - outBalance.toNumber();
+
+		// TODO: fix that!!!
+		// TODO: why not working? 
+		//global.assert.equal(balanceDelta, money, 'all donations now on outsiders`s balance');
+
+		let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);
+		global.assert.equal(donationBalance2.toNumber(),0, 'all donations now on creator`s balance');
 	});
 });
 

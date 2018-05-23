@@ -213,19 +213,19 @@ global.contract('Moneyflow', (accounts) => {
 			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 
 			// this is a list of actions that require voting
-			await store.addActionByVoting("manageGroups", token.address);
-			await store.addActionByVoting("addNewTask", token.address);
-			await store.addActionByVoting("issueTokens", token.address);
+			await store.allowActionByVoting("manageGroups", token.address);
+			await store.allowActionByVoting("addNewTask", token.address);
+			await store.allowActionByVoting("issueTokens", token.address);
 		}
 
 		moneyflowInstance = await MoneyFlow.new(mcInstance.address,{from: creator});
 
 		// THIS permission IS VERY DANGEROUS!!!
 		// allow creator to get donations from the Moneyflow 
-		await store.addActionByAddress("withdrawDonations", creator);
+		await store.allowActionByAddress("withdrawDonations", creator);
 
 		// moneyflow will not create Proposals in this case 
-		//await store.addActionByAddress("addNewProposal", moneyflowInstance.address);
+		//await store.allowActionByAddress("addNewProposal", moneyflowInstance.address);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(mcInstance.address);
@@ -296,21 +296,21 @@ global.contract('Moneyflow', (accounts) => {
 		let donationBalance = await web3.eth.getBalance(donationEndpoint.address);
 		global.assert.equal(donationBalance.toNumber(),money, 'all money at donation point now');
 		
-		let creatorBalance = await web3.eth.getBalance(creator);
-
 		// this should not work, because creator is NOT a IWeiReceiver
 		await CheckExceptions.checkContractThrows(moneyflowInstance.setRootWeiReceiver, 
 			[creator, {gas: 10000000, value:1000*money, from: creator}]
 		);		
 		
 		// get the donations 
-		await moneyflowInstance.withdrawDonationsTo(creator,{from:creator, gas:100000, gasPrice:0});
-		let creatorBalance2 = await web3.eth.getBalance(creator);
-		let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);
+		let outsiderBalance = await web3.eth.getBalance(outsider);
 
+		await moneyflowInstance.withdrawDonationsTo(outsider,{from:creator, gas:100000});
+		let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);
 		global.assert.equal(donationBalance2.toNumber(),0, 'all donations now on creator`s balance');
-		let creatorBalanceDelta = creatorBalance2.toNumber() - creatorBalance.toNumber();
-		global.assert.equal(creatorBalanceDelta, money, 'all donations now on creator`s balance');
+
+		let outsiderBalance2 = await web3.eth.getBalance(outsider);
+		let creatorBalanceDelta = outsiderBalance2.toNumber() - outsiderBalance.toNumber();
+		global.assert.equal(creatorBalanceDelta, money, 'all donations is transferred now');
 	});
 
 	global.it('should process money with WeiTopDownSplitter + 3 WeiAbsoluteExpense',async() => {
@@ -643,6 +643,5 @@ global.contract('Moneyflow', (accounts) => {
 
 		let needsEmployee3 = await Employee1.isNeedsMoney({from:creator});
 		global.assert.equal(needsEmployee3, false, 'Dont need money, because he got it');
-
 	});
 });
