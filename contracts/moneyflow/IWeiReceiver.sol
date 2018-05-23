@@ -17,7 +17,7 @@ contract IWeiReceiver {
 	// in 1/100th percents of input. Examples:
 	// 12 is 0.12% of input; 
 	// 100 is 1% of input
-	function getTotalPercentsDiv100Needed()constant public returns(uint);
+	function getPercentsMul100()constant public returns(uint);
 
 	// If this output needs more funds -> will return true
 	// If this output does not need more funds -> will return false 

@@ -67,11 +67,11 @@ contract WeiTopDownSplitter is WeiSplitterBase, IWeiReceiver {
 		return total;
 	}
 
-	function getTotalPercentsDiv100Needed()constant public returns(uint){
+	function getPercentsMul100()constant public returns(uint){
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
-			total = total + c.getTotalPercentsDiv100Needed();	
+			total = total + c.getPercentsMul100();	
 		}
 
 		// truncate, no more than 100% allowed!
@@ -161,11 +161,11 @@ contract WeiUnsortedSplitter is WeiSplitterBase, IWeiReceiver {
 		return total;
 	}
 
-	function getTotalPercentsDiv100Needed()constant public returns(uint){
+	function getPercentsMul100()constant public returns(uint){
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
-			total = total + c.getTotalPercentsDiv100Needed();
+			total = total + c.getPercentsMul100();
 		}
 
 		// truncate, no more than 100% allowed!

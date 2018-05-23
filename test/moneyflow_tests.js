@@ -626,11 +626,11 @@ global.contract('Moneyflow', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		let periodHours = await Employee1.periodHours();
-		let MomentReceived2 = await Employee1.momentReceived();
+		// let periodHours = await Employee1.periodHours();
+		// let MomentReceived2 = await Employee1.momentReceived();
 		let NOW2 = await Employee1.getNow();
 
-		global.assert.equal ( Math.round((NOW2.toNumber() - MomentReceived2.toNumber())/(3600*1000)), 25 )
+		// global.assert.equal ( Math.round((NOW2.toNumber() - MomentReceived2.toNumber())/(3600*1000)), 25 )
 		
 		let needsEmployee2 = await Employee1.isNeedsMoney({from:creator});
 		global.assert.equal(needsEmployee2, true, 'Need money, because 24 hours passed');
