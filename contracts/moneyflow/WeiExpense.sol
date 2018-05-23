@@ -8,11 +8,28 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 //////////////////////////////////////////////////////
-// This is a terminal item, that has no children
-// This is one-time receive only
-contract WeiAbsoluteExpense is IWeiReceiver, IWeiDestination, Ownable {
-	address public moneySource = 0x0;
+	// This is a terminal item, that has no children
+	// This is one-time receive only
+
+contract Expense is IWeiReceiver, IWeiDestination, Ownable {
 	bool public isMoneyReceived = false;
+	// uint public need = 0;
+
+	function flush()public onlyOwner{
+		msg.sender.transfer(this.balance);
+	}
+
+	function flushTo(address _to) public onlyOwner {
+		revert();
+	}
+
+	function()public{
+	}
+}
+
+contract WeiAbsoluteExpense is Expense {
+	address public moneySource = 0x0;
+	
 	uint public neededWei = 0;
 
 	modifier onlyByMoneySource() { 
@@ -29,18 +46,11 @@ contract WeiAbsoluteExpense is IWeiReceiver, IWeiDestination, Ownable {
 		neededWei = _neededWei;
 	}
 
-// IWeiDestination:
+	// IWeiDestination:
 	// pull model
-	function flush()public onlyOwner {
-		isMoneyReceived = false;
-		msg.sender.transfer(this.balance);
-	}
 
-	function flushTo(address _to) public {
-		revert();
-	}
 
-// IWeiReceiver:
+	// IWeiReceiver:
 	function getMinWeiNeeded()constant public returns(uint){
 		// if already recevied -> then return 0
 		if(!isNeedsMoney()){
@@ -72,13 +82,10 @@ contract WeiAbsoluteExpense is IWeiReceiver, IWeiDestination, Ownable {
 		isMoneyReceived = true;
 		moneySource = msg.sender;
 	}
-
-	function()public{
-	}
 }
 
-contract WeiRelativeExpense is IWeiReceiver, IWeiDestination, Ownable {
-	bool public isMoneyReceived = false;
+contract WeiRelativeExpense is Expense {
+	
 	uint public percentsDiv100Needed = 0;
 
 	function WeiRelativeExpense(uint _percentsDiv100Needed)public {
@@ -89,18 +96,10 @@ contract WeiRelativeExpense is IWeiReceiver, IWeiDestination, Ownable {
 		percentsDiv100Needed = _percentsDiv100Needed;
 	}
 
-// IWeiDestination:
+	// IWeiDestination:
 	// pull model
-	function flush()public onlyOwner{
-		isMoneyReceived = false;
-		msg.sender.transfer(this.balance);
-	}
 
-	function flushTo(address _to) public onlyOwner {
-		revert();
-	}
-
-// IWeiReceiver:
+	// IWeiReceiver:
 	function getMinWeiNeeded()constant public returns(uint){
 		return 0;
 	}
@@ -129,22 +128,14 @@ contract WeiRelativeExpense is IWeiReceiver, IWeiDestination, Ownable {
 		require(msg.value==getTotalWeiNeeded(_currentFlow));
 		isMoneyReceived = true;
 	}
-
-	function()public{
-	}
 }
 
 
-contract WeiAbsoluteExpenseWithPeriod is  IWeiReceiver, IWeiDestination, Ownable{
+contract WeiAbsoluteExpenseWithPeriod is Expense{
 	uint public periodHours = 0;
 	uint public momentReceived;
 	uint public neededWei = 0;
 	address public moneySource = 0x0;
-	bool public isMoneyReceived = false;
-
-	function flush()public onlyOwner{
-		msg.sender.transfer(this.balance);
-	}
 	
 	function WeiAbsoluteExpenseWithPeriod(uint _neededWei, uint _periodHours) public {
 		neededWei = _neededWei;	
@@ -187,12 +178,10 @@ contract WeiAbsoluteExpenseWithPeriod is  IWeiReceiver, IWeiDestination, Ownable
 		neededWei = _neededWei;
 	}
 
-// IWeiDestination:
-	function flushTo(address _to) public {
-		revert();
-	}
+	// IWeiDestination:
 
-// IWeiReceiver:
+
+	// IWeiReceiver:
 	function getMinWeiNeeded()constant public returns(uint){
 		// if already recevied -> then return 0
 		if(!isNeedsMoney()){
@@ -208,20 +197,13 @@ contract WeiAbsoluteExpenseWithPeriod is  IWeiReceiver, IWeiDestination, Ownable
 	function getTotalPercentsDiv100Needed()constant public returns(uint){
 		return 0;
 	}
-
-	function()public{
-	}
 }
 
-contract WeiRelativeExpenseWithPeriod is IWeiReceiver, IWeiDestination, Ownable {
+contract WeiRelativeExpenseWithPeriod is Expense {
 	uint public periodHours = 0;
 	uint public momentReceived;
-	bool public isMoneyReceived = false;
+	
 	uint public percentsDiv100Needed = 0;
-
-	function flush()public onlyOwner{
-		msg.sender.transfer(this.balance);
-	}
 
 	function WeiRelativeExpenseWithPeriod(uint _percentsDiv100Needed, uint _periodHours) public {
 		percentsDiv100Needed = _percentsDiv100Needed;
@@ -249,12 +231,10 @@ contract WeiRelativeExpenseWithPeriod is IWeiReceiver, IWeiDestination, Ownable 
 		percentsDiv100Needed = _percentsDiv100Needed;
 	}
 
-// IWeiDestination:
-	function flushTo(address _to) public onlyOwner {
-		revert();
-	}
+	// IWeiDestination:
 
-// IWeiReceiver:
+
+	// IWeiReceiver:
 	function getMinWeiNeeded()constant public returns(uint){
 		return 0;
 	}
@@ -269,8 +249,5 @@ contract WeiRelativeExpenseWithPeriod is IWeiReceiver, IWeiDestination, Ownable 
 
 	function getTotalPercentsDiv100Needed()constant public returns(uint){
 		return percentsDiv100Needed;
-	}
-
-	function()public{
 	}
 }

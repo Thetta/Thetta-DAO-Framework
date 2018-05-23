@@ -600,59 +600,6 @@ global.contract('Moneyflow', (accounts) => {
 		);	
 	});
 
-	global.it('should process money, then flush, then process again',async() => {
-		const CURRENT_INPUT = 30900;
-		let e1 = 1000;
-		let e2 = 1500;
-		let e3 = 800;
-		let office = 500;
-		let internet = 300;
-		let t1 = 500;
-		let t2 = 300;
-		let t3 = 1000;
-		let b1 = 100;
-		let b2 = 100;
-		let b3 = 200;
-		let reserve = 7500;
-		let dividends = 2500;
-
-		await web3.eth.sendTransaction({from:outsider, to:creator, value: 90*1000*money}) // not enough money on creators balance
-
-		let struct = await createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
-		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);	
-		await totalAndMinNeedsAsserts(splitterParams, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
-		await structureAsserts(splitterParams);
-	
-		await struct.AllOutpults.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money, from:creator, gas:1000000, gasPrice:0});
-		
-		let balances = await getBalances(struct);
-		await balancesAsserts(balances, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
-		await splitterBalancesAsserts(balances, money, 0, 0, 0, 0, 0, 0, 0);
-
-		await struct.Employee1.flush({from:creator});
-		await struct.Employee2.flush({from:creator});
-		await struct.Employee3.flush({from:creator});
-		await struct.Office.flush({from:creator});
-		await struct.Internet.flush({from:creator});
-		await struct.Task1.flush({from:creator});
-		await struct.Task2.flush({from:creator});
-		await struct.Task3.flush({from:creator});
-		await struct.ReserveFund.flush({from:creator});
-		await struct.DividendsFund.flush({from:creator});
-		await struct.Bonus1.flush({from:creator});
-		await struct.Bonus2.flush({from:creator});
-		await struct.Bonus3.flush({from:creator});
-
-		let balances2 = await getBalances(struct);
-		await balancesAsserts(balances2, CURRENT_INPUT, money, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-		
-		await struct.AllOutpults.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money, from:creator, gas:1000000, gasPrice:0});
-
-		let balances3 = await getBalances(struct);
-		await balancesAsserts(balances3, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
-		await splitterBalancesAsserts(balances3, money, 0, 0, 0, 0, 0, 0, 0);
-	});
-
 	global.it('should process money with WeiAbsoluteExpenseWithPeriod, then 25 hours, then money needs again',async() => {
 		const CURRENT_INPUT = 30900;
 		let timePeriod = 25;
