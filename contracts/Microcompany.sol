@@ -98,7 +98,7 @@ contract MicrocompanyStorage is Ownable {
 
 	//////
 	// TODO: use _tokenAddress
-	function addActionByShareholder(string _what, address _tokenAddress) public onlyOwner {
+	function allowActionByShareholder(string _what, address _tokenAddress) public onlyOwner {
 		byShareholder[_what] = true;
 	}
 
@@ -175,47 +175,29 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		store.addObserver(_observer);	
 	}
 
-	function upgradeMicrocompanyContract(IMicrocompanyBase _new) public isCanDo("upgradeMicrocompany") {
-		store.transferOwnership(_new);
-		store.stdToken().transferOwnership(_new);
-
-		// TODO: 
-		// call observers.onUpgrade() for all observers
+	function addGroup(string _groupName) public isCanDo("manageGroups"){
+		store.addGroup(_groupName);	
 	}
-
-	function addNewProposal(IProposal _proposal) public isCanDo("addNewProposal") { 
-		store.addNewProposal(_proposal);
-	}
-
-	function getProposalAtIndex(uint _i)public constant returns(IProposal){
-		return store.getProposalAtIndex(_i);
-	}
-
-	function getProposalsCount()public constant returns(uint){
-		return store.proposalsCount();
-	}
-
-	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") {
-		issueTokensInternal(_to, _amount);
-	}
-
 	function addGroupMember(string _groupName, address _a) public isCanDo("manageGroups") {
 		store.addGroupMember(_groupName, _a);
 	}
-
 	function removeGroupMember(string _groupName, address _a) public isCanDo("manageGroups"){
 		store.removeGroupMember(_groupName, _a);
 	}
-
 	function isGroupMember(string _groupName,address _a)public constant returns(bool) {
 		return store.isGroupMember(_groupName, _a);
 	}
 
-	function isShareholder(address _a, address _token) public constant returns(bool){
-		return store.isShareholder(_a, _token);
+	function allowActionByShareholder(string _what, address _tokenAddress) public isCanDo("manageGroups"){
+		store.allowActionByShareholder(_what, _tokenAddress);
+	}
+	function allowActionByVoting(string _what, address _tokenAddress) public isCanDo("manageGroups"){
+		store.allowActionByVoting(_what,_tokenAddress);
+	}
+	function allowActionByAddress(string _what, address _a) public isCanDo("manageGroups"){
+		store.allowActionByAddress(_what,_a);
 	}
 
-// Permissions:
 	function isCanDoAction(address _a, string _permissionName) public constant returns(bool){
 		// 0 - is can do by address?
 		if(store.isCanDoByAddress(_permissionName, _a)){
@@ -259,11 +241,39 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		return false;
 	}
 
+	function upgradeMicrocompanyContract(IMicrocompanyBase _new) public isCanDo("upgradeMicrocompany") {
+		store.transferOwnership(_new);
+		store.stdToken().transferOwnership(_new);
+
+		// TODO: 
+		// call observers.onUpgrade() for all observers
+	}
+
+	function addNewProposal(IProposal _proposal) public isCanDo("addNewProposal") { 
+		store.addNewProposal(_proposal);
+	}
+
+	function getProposalAtIndex(uint _i)public constant returns(IProposal){
+		return store.getProposalAtIndex(_i);
+	}
+
+	function getProposalsCount()public constant returns(uint){
+		return store.proposalsCount();
+	}
+
+	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") {
+		issueTokensInternal(_to, _amount);
+	}
+
 // Public (for tests)
+	function isShareholder(address _a, address _token) public constant returns(bool){
+		// TODO: use _tokenAddress
+		return store.isShareholder(_a, _token);
+	}
+
 	// only token holders with > 51% of gov.tokens can add new task immediately 
 	function isInMajority(address _a, address _tokenAddress) public constant returns(bool){
 		// TODO: use _tokenAddress
-
 		return(store.stdToken().balanceOf(_a)>=store.stdToken().totalSupply()/2);
 	}
 

@@ -24,9 +24,12 @@ contract MoneyFlow is IMoneyflow, MicrocompanyUser, Ownable {
 		donationF2WR = new FallbackToWeiReceiver(donationEndpoint);
 	}
 
+	event WithdrawDonation(address _by, address _to, uint _balance);
+
 // IMoneyflow:
 	// will withdraw donations
-	function withdrawDonationsTo(address _out)public isCanDo("withdrawDonations"){
+	function withdrawDonationsTo(address _out)public isCanDo("withdrawDonations") {
+		WithdrawDonation(msg.sender, _out, donationEndpoint.balance);
 		donationEndpoint.flushTo(_out);
 	}
 
@@ -35,7 +38,6 @@ contract MoneyFlow is IMoneyflow, MicrocompanyUser, Ownable {
 	}
 
 	function getRevenueEndpoint()public constant returns(IWeiReceiver){
-		//require(0x0!=rootReceiver);
 		return rootReceiver;
 	}
 
@@ -44,7 +46,6 @@ contract MoneyFlow is IMoneyflow, MicrocompanyUser, Ownable {
 	}
 
 	function getRevenueEndpointAddress()public constant returns(address){
-		//require(0x0!=rootReceiver);
 		return address(revenueF2WR);	
 	}
 
@@ -53,7 +54,7 @@ contract MoneyFlow is IMoneyflow, MicrocompanyUser, Ownable {
 		setRootWeiReceiver(receiver);
 	}
 
-	function withdrawDonationsGeneric(bytes32[] _params) public {
+	function withdrawDonationsToGeneric(bytes32[] _params) public {
 		address out = address(_params[0]);
 		withdrawDonationsTo(out);
 	}

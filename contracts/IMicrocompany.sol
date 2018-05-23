@@ -11,18 +11,23 @@ interface IMicrocompanyBase {
 
 	function upgradeMicrocompanyContract(IMicrocompanyBase _new)public;
 
+// Groups
+	function addGroup(string _groupName) public;
+	function addGroupMember(string _groupName, address _a) public;
+	function removeGroupMember(string _groupName, address _a) public;
+	function isGroupMember(string _groupName,address _a)public constant returns(bool);
+
 // Permissions
+	function allowActionByShareholder(string _what, address _tokenAddress) public;
+	function allowActionByVoting(string _what, address _tokenAddress) public;
+	function allowActionByAddress(string _what, address _a) public;
+
 	function isCanDoAction(address _a, string _permissionName)public constant returns(bool);
 
 // Governance/Proposals
 	function addNewProposal(IProposal _proposal) public;
 	function getProposalAtIndex(uint _i)public constant returns(IProposal);
 	function getProposalsCount()public constant returns(uint);
-
-// Group members
-	function addGroupMember(string _groupName, address _a) public;
-	function removeGroupMember(string _groupName, address _a) public;
-	function isGroupMember(string _groupName,address _a)public constant returns(bool);
 
 // Tokens
 	// TODO: curently Microcompany has only 1 type of tokens

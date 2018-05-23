@@ -64,9 +64,22 @@ contract GenericCaller {
 			// 1 - call immediately?
 			_target.call(
 				bytes4(keccak256(_methodSig)),
-				uint256(32),				// pointer to the length of the array
-				uint256(_params.length), // length of the array
-				_params);						// array itself
+				uint256(32),						 // pointer to the length of the array
+				uint256(_params.length),		 // length of the array
+				_params	
+			);					
+
+			/*
+			// Delegatecall: 
+			// 1. _target storage will be set to THIS contract
+			// 2. msg.sender will be set to THE CURRENT msg.sender!
+			_target.delegatecall(
+				bytes4(keccak256(_methodSig)),
+				uint256(32),						 // pointer to the length of the array
+				uint256(_params.length),		 // length of the array
+				_params	
+			);					
+		   */
 
 			return 0x0;
 		}else{
@@ -151,11 +164,11 @@ contract AutoMoneyflowActionCaller is GenericCaller {
 		return doAction("setRootWeiReceiver", mf, msg.sender,"setRootWeiReceiverGeneric(bytes32[])",params);
 	}
 
-	function withdrawDonationsAuto(address _wt) public returns(address voteOut){
-		bytes32[] memory params = new bytes32[](1);
+	function withdrawDonationsToAuto(address _wt) public returns(address voteOut){
+		bytes32[] memory params = new bytes32[](2);
 		params[0] = bytes32(_wt);
 
-		return doAction("withdrawDonations", mf, msg.sender,"withdrawDonationsGeneric(bytes32[])",params);
+		return doAction("withdrawDonations", mf, msg.sender,"withdrawDonationsToGeneric(bytes32[])",params);
 	}
 }
 

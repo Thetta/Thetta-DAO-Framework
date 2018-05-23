@@ -30,7 +30,6 @@ global.contract('GenericCaller', (accounts) => {
 
 	});
 	
-	/*
 	global.it('should not automatically create proposal because AAC has no rights',async() => {
 		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
@@ -76,7 +75,7 @@ global.contract('GenericCaller', (accounts) => {
 		global.assert.equal(proposalsCount2,0,'No new proposal should be added because'); 
 	});
 
-	global.it('should not automatically create proposal because issueTokens cant be called even with voting',async() => {
+	global.it('should not issue tokens automatically because issueTokens cant be called even with voting',async() => {
 		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 		let store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
@@ -101,18 +100,21 @@ global.contract('GenericCaller', (accounts) => {
 
 			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
 			await store.allowActionByAddress("addNewProposal", aacInstance.address);
+			// these actions required if AAC will call this actions DIRECTLY (without voting)
+			await store.allowActionByAddress("manageGroups", aacInstance.address);
+			await store.allowActionByAddress("issueTokens", aacInstance.address);
+			await store.allowActionByAddress("upgradeMicrocompanyContract", aacInstance.address);
 		}
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(mcInstance.address);
 		await store.transferOwnership(mcInstance.address);
 
-		// even creator cant issue token!
+		// even creator cant issue token directly!
 		await CheckExceptions.checkContractThrows(mcInstance.issueTokens.sendTransaction,
 			[employee1, 1500 ,{ from: creator}],
 			'Even creator cant issue tokens');
 
-		// 
 		const proposalsCount1 = await mcInstance.getProposalsCount();
 		global.assert.equal(proposalsCount1,0,'No proposals should be added');
 
@@ -185,6 +187,10 @@ global.contract('GenericCaller', (accounts) => {
 
 			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
 			await store.allowActionByAddress("addNewProposal", aacInstance.address);
+			// these actions required if AAC will call this actions DIRECTLY (without voting)
+			await store.allowActionByAddress("manageGroups", aacInstance.address);
+			await store.allowActionByAddress("issueTokens", aacInstance.address);
+			await store.allowActionByAddress("upgradeMicrocompanyContract", aacInstance.address);
 		}
 
 		// do not forget to transfer ownership
@@ -269,8 +275,11 @@ global.contract('GenericCaller', (accounts) => {
 
 			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
 			await store.allowActionByAddress("addNewProposal", aacInstance.address);
+			// these actions required if AAC will call this actions DIRECTLY (without voting)
+			await store.allowActionByAddress("manageGroups", aacInstance.address);
 			await store.allowActionByAddress("addNewTask", aacInstance.address);
 			await store.allowActionByAddress("issueTokens", aacInstance.address);
+			await store.allowActionByAddress("upgradeMicrocompanyContract", aacInstance.address);
 		}
 
 		// do not forget to transfer ownership
@@ -299,21 +308,14 @@ global.contract('GenericCaller', (accounts) => {
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
 	});
-	*/
 
-	global.it('should allow to get donations',async() => {
-		
+	global.it('should allow to get donations using AAC (direct call)',async() => {
 		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
-		// await token.mint(employee1, 500);
-		// await token.mint(employee2, 500);
 
 		let store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
 		let mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		let moneyflowInstance = await MoneyFlow.new(mcInstance.address, {from: creator});
-		// await moneyflowInstance.setRootWeiReceiver(creator,{gas: 10000000, from: creator});
-
-		// await token.mint(creator, 500);
 
 		let aacInstance = await AutoMoneyflowActionCaller.new(mcInstance.address, moneyflowInstance.address, {from: creator, gas: 10000000});
 
@@ -323,22 +325,30 @@ global.contract('GenericCaller', (accounts) => {
 			await store.addGroupMember("Employees", employee1);
 			await store.addGroupMember("Employees", employee2);
 
+			await store.allowActionByAddress("manageGroups", creator);
+
 			await store.allowActionByAnyMemberOfGroup("addNewEmployee","Employees");
 			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 
-			await store.allowActionByAddress("addNewProposal", aacInstance.address);
-			// await store.allowActionByAddress("withdrawDonationsTo", aacInstance.address);
-
 			await store.allowActionByVoting("withdrawDonations", token.address);
+
+			// AAC requires special permissions
+			await store.allowActionByAddress("addNewProposal", aacInstance.address);
+			// these actions required if AAC will call this actions DIRECTLY (without voting)
+			await store.allowActionByAddress("withdrawDonations", aacInstance.address);
+			await store.allowActionByAddress("addNewTask", aacInstance.address);
+			await store.allowActionByAddress("setRootWeiReceiver", aacInstance.address);
 		}
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(mcInstance.address);
 		await store.transferOwnership(mcInstance.address);
 
-		// const isEnableFlushTo = true;
-		// let fund = await WeiFund.new(creator,isEnableFlushTo,10000,{from:creator});
+		// check permissions
+		const isCanWithdraw = await mcInstance.isCanDoAction(creator,"withdrawDonations");
+		global.assert.equal(isCanWithdraw, true, 'Creator should be able to withdrawDonations directly without voting');
 
+		// send some money
 		const dea = await moneyflowInstance.getDonationEndpoint(); 
 		global.assert.notEqual(dea,0x0, 'donation endpoint should be created');
 		const donationEndpoint = await IWeiReceiver.at(dea);
@@ -346,47 +356,56 @@ global.contract('GenericCaller', (accounts) => {
 
 		let donationBalance = await web3.eth.getBalance(donationEndpoint.address);
 		global.assert.equal(donationBalance.toNumber(),money, 'all money at donation point now');
-		
-		let pointBalance = await web3.eth.getBalance(output);
-
-		// check permissions
-		const isCanWithdraw = await mcInstance.isCanDoAction(creator,"withdrawDonations");
-		global.assert.equal(isCanWithdraw, true, 'Creator should be able to withdrawDonations directly without voting');
 
 		// get the donations 
-		await aacInstance.withdrawDonationsAuto(output, {from:creator, gas:100000, gasPrice:0});
+		let pointBalance = await web3.eth.getBalance(output);
+		// this will call the action directly!
+		await aacInstance.withdrawDonationsToAuto(output, {from:creator, gas:100000});
+		const proposalsCount1 = await mcInstance.getProposalsCount();
+		global.assert.equal(proposalsCount1,0,'No proposals should be added');
+
 		let pointBalance2 = await web3.eth.getBalance(output);
 		const receiverDelta = pointBalance2.toNumber() - pointBalance.toNumber();
-		console.log('receiverDelta:', receiverDelta);
 
-		// TODO: this fails!
 		global.assert.notEqual(receiverDelta, 0, 'Donations should be withdrawn');
+	});
 
-		// let pa = await mcInstance.getProposalAtIndex(0, {from:creator});
-		// let proposal = await IProposal.at(pa);
-		// const votingAddress = await proposal.getVoting();
-		// const voting = await Voting.at(votingAddress);
-		// global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		// global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+	global.it('should allow to get donations using AAC (with voting)',async() => {
+		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		await token.mint(creator, 1000);
 
-		// await voting.vote(true,0,{from:creator});
-		
-		// const r2 = await voting.getFinalResults();
-		// global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
-		// global.assert.equal(r2[1].toNumber(),0,'no');
-		// global.assert.equal(r2[2].toNumber(),2,'total');
+		let store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
+		let mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let moneyflowInstance = await MoneyFlow.new(mcInstance.address, {from: creator});
 
-		// // get voting results again
-		// global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
-		// global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
+		let aacInstance = await AutoMoneyflowActionCaller.new(mcInstance.address, moneyflowInstance.address, {from: creator, gas: 10000000});
 
-		// let creatorBalance2 = await web3.eth.getBalance(creator);
-		// let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);
+		{
+			await store.addGroup("Employees");
+			await store.addGroupMember("Employees", creator);
+			await store.addGroupMember("Employees", employee1);
+			await store.addGroupMember("Employees", employee2);
 
-		// global.assert.equal(donationBalance2.toNumber(),0, 'all donations now on creator`s balance');
-		// let creatorBalanceDelta = creatorBalance2.toNumber() - creatorBalance.toNumber();
-		// global.assert.equal(output, money, 'all donations now on creator`s balance');
+			await store.allowActionByAddress("manageGroups", creator);
 
+			await store.allowActionByAnyMemberOfGroup("addNewEmployee","Employees");
+			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
+
+			await store.allowActionByVoting("withdrawDonations", token.address);
+
+			// AAC requires special permissions
+			await store.allowActionByAddress("addNewProposal", aacInstance.address);
+			// these actions required if AAC will call this actions DIRECTLY (without voting)
+			await store.allowActionByAddress("withdrawDonations", aacInstance.address);
+			await store.allowActionByAddress("addNewTask", aacInstance.address);
+			await store.allowActionByAddress("setRootWeiReceiver", aacInstance.address);
+		}
+
+		// do not forget to transfer ownership
+		await token.transferOwnership(mcInstance.address);
+		await store.transferOwnership(mcInstance.address);
+
+		// TODO: implement test 
 	});
 });
 
