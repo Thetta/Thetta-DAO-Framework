@@ -21,9 +21,6 @@ global.contract('Moneyflow', (accounts) => {
 
 	});
 
-	/*
-	// TODO: fix this test 
-		
 	global.it('should set everything correctly',async() => {
 		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
@@ -33,8 +30,11 @@ global.contract('Moneyflow', (accounts) => {
 		// 50/50 between reserve fund and dividends 
 		moneyflowScheme = await DefaultMoneyflowSchemeWithUnpackers.new(mcInstance.address, output, 5000, 5000, {from: creator});
 
-		moneyflowInstance = await MoneyFlow.new({from: creator});
-		await moneyflowInstance.setRootWeiReceiver(moneyflowScheme.address);
+		moneyflowInstance = await MoneyFlow.new(mcInstance.address,{from: creator});
+
+		// TODO: this not working...
+		/*
+		await moneyflowInstance.setRootWeiReceiver(moneyflowScheme.address, {from: creator});
 
 		{
 			await store.addGroup("Employees");
@@ -64,7 +64,7 @@ global.contract('Moneyflow', (accounts) => {
 		await store.transferOwnership(mcInstance.address);
 
 		// TODO: test DefaultMoneyflowScheme
+		*/
 	});
-	*/
 
 });
