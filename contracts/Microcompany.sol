@@ -43,7 +43,7 @@ contract MicrocompanyStorage is Ownable {
 	mapping (uint=>address) employees;
 	uint public employeesCount = 0;
 
-	address[] observers;
+	address[] public observers;
 
 	mapping (string=>bool) byEmployee;
 	mapping (string=>bool) byShareholder;
@@ -63,6 +63,14 @@ contract MicrocompanyStorage is Ownable {
 
 	function addObserver(IMicrocompanyObserver _observer) public {
 		observers.push(_observer);
+	}
+
+	function getObserverCount() constant returns(uint){
+		return observers.length;
+	}
+
+	function getObserverAtIndex(uint _index) constant returns(address){
+		return observers[_index];
 	}
 
 // Permissions:
@@ -242,11 +250,13 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 	}
 
 	function upgradeMicrocompanyContract(IMicrocompanyBase _new) public isCanDo("upgradeMicrocompany") {
+		// call observers.onUpgrade() for all observers
+		for(uint i=0; i<store.getObserverCount(); ++i){
+			IMicrocompanyObserver(store.getObserverAtIndex(i)).onUpgrade(_new);
+		}
+
 		store.transferOwnership(_new);
 		store.stdToken().transferOwnership(_new);
-
-		// TODO: 
-		// call observers.onUpgrade() for all observers
 	}
 
 	function addNewProposal(IProposal _proposal) public isCanDo("addNewProposal") { 

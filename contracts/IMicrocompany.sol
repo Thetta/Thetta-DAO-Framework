@@ -49,10 +49,15 @@ contract MicrocompanyUser is IMicrocompanyObserver {
 		mc.addObserver(this);
 	}
 
+	// If your company is upgraded -> then this will automatically update the current mc.
+	// mc will point at NEW contract!
 	function onUpgrade(address _newAddress) public {
 		require(msg.sender==address(mc));	
+
 		mc = IMicrocompanyBase(_newAddress);
 
-		mc.addObserver(this);
+		// this is not needed because we are already in the list of observers (in the store) 
+		// and the controller is upgraded only
+		//mc.addObserver(this);
 	}
 }
