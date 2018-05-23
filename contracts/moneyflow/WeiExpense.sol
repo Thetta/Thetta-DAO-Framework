@@ -14,6 +14,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 contract Expense is IWeiReceiver, IWeiDestination, Ownable {
 	bool public isMoneyReceived = false;
 	// uint public need = 0;
+	uint public percentsMul100 = 10000;
 
 	function flush()public onlyOwner{
 		msg.sender.transfer(this.balance);
@@ -21,6 +22,10 @@ contract Expense is IWeiReceiver, IWeiDestination, Ownable {
 
 	function flushTo(address _to) public onlyOwner {
 		revert();
+	}
+
+	function getPercentsMul100()constant public returns(uint){
+		return percentsMul100;
 	}
 
 	function()public{
@@ -63,10 +68,6 @@ contract WeiAbsoluteExpense is Expense {
 		return getMinWeiNeeded();
 	}
 
-	function getTotalPercentsDiv100Needed()constant public returns(uint){
-		return 0;
-	}
-
 	function isNeedsMoney()constant public returns(bool){
 		return !isMoneyReceived;
 	}
@@ -86,14 +87,14 @@ contract WeiAbsoluteExpense is Expense {
 
 contract WeiRelativeExpense is Expense {
 	
-	uint public percentsDiv100Needed = 0;
+	uint public percentsMul100 = 0;
 
-	function WeiRelativeExpense(uint _percentsDiv100Needed)public {
-		percentsDiv100Needed = _percentsDiv100Needed;
+	function WeiRelativeExpense(uint _percentsMul100)public {
+		percentsMul100 = _percentsMul100;
 	}
 
-	function setPercents(uint _percentsDiv100Needed) public onlyOwner {
-		percentsDiv100Needed = _percentsDiv100Needed;
+	function setPercents(uint _percentsMul100) public onlyOwner {
+		percentsMul100 = _percentsMul100;
 	}
 
 	// IWeiDestination:
@@ -109,12 +110,10 @@ contract WeiRelativeExpense is Expense {
 		if(!isNeedsMoney()){
 			return 0;
 		}
-		return (getTotalPercentsDiv100Needed() * _inputWei) / 10000;
+		return (getPercentsMul100() * _inputWei) / 10000;
 	}
 
-	function getTotalPercentsDiv100Needed()constant public returns(uint){
-		return percentsDiv100Needed;
-	}
+
 
 	function isNeedsMoney()constant public returns(bool){
 		return !isMoneyReceived;
@@ -129,7 +128,6 @@ contract WeiRelativeExpense is Expense {
 		isMoneyReceived = true;
 	}
 }
-
 
 contract WeiAbsoluteExpenseWithPeriod is Expense{
 	uint public periodHours = 0;
@@ -193,20 +191,16 @@ contract WeiAbsoluteExpenseWithPeriod is Expense{
 	function getTotalWeiNeeded(uint _inputWei)constant public returns(uint){
 		return getMinWeiNeeded();
 	}
-
-	function getTotalPercentsDiv100Needed()constant public returns(uint){
-		return 0;
-	}
 }
 
 contract WeiRelativeExpenseWithPeriod is Expense {
 	uint public periodHours = 0;
 	uint public momentReceived;
 	
-	uint public percentsDiv100Needed = 0;
+	uint public percentsMul100 = 0;
 
-	function WeiRelativeExpenseWithPeriod(uint _percentsDiv100Needed, uint _periodHours) public {
-		percentsDiv100Needed = _percentsDiv100Needed;
+	function WeiRelativeExpenseWithPeriod(uint _percentsMul100, uint _periodHours) public {
+		percentsMul100 = _percentsMul100;
 		periodHours = _periodHours;
 	}
 
@@ -227,8 +221,8 @@ contract WeiRelativeExpenseWithPeriod is Expense {
 		momentReceived = now;
 	}
 
-	function setPercents(uint _percentsDiv100Needed) public onlyOwner {
-		percentsDiv100Needed = _percentsDiv100Needed;
+	function setPercents(uint _percentsMul100) public onlyOwner {
+		percentsMul100 = _percentsMul100;
 	}
 
 	// IWeiDestination:
@@ -244,10 +238,6 @@ contract WeiRelativeExpenseWithPeriod is Expense {
 		if(!isNeedsMoney()){
 			return 0;
 		}
-		return (getTotalPercentsDiv100Needed() * _inputWei) / 10000;
-	}
-
-	function getTotalPercentsDiv100Needed()constant public returns(uint){
-		return percentsDiv100Needed;
+		return (getPercentsMul100() * _inputWei) / 10000;
 	}
 }
