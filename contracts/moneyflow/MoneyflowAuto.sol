@@ -4,7 +4,7 @@ import "./IMoneyflow.sol";
 
 import "./ether/WeiExpense.sol";
 
-import "../GenericCaller.sol";
+import "../utils/GenericCaller.sol";
 
 // TODO: add tests!
 contract AutoMoneyflowActionCaller is GenericCaller {

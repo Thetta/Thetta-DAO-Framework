@@ -1,8 +1,8 @@
 pragma solidity ^0.4.15;
 
-import "./IDaoBase.sol";
+import "../IDaoBase.sol";
 
-import "./governance/Voting.sol";
+import "../governance/Voting.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
