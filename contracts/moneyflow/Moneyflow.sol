@@ -2,11 +2,11 @@ pragma solidity ^0.4.15;
 import "./IMoneyflow.sol";
 import "./WeiFund.sol";
 
-import "../IMicrocompany.sol";
+import "../IDaoBase.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract MoneyFlow is IMoneyflow, MicrocompanyUser, Ownable {
+contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	WeiFund donationEndpoint;
 	// by default - this is 0x0, please use setWeiReceiver method
 	// this can be a WeiSplitter (top-down or unsorted)
@@ -16,7 +16,7 @@ contract MoneyFlow is IMoneyflow, MicrocompanyUser, Ownable {
 	FallbackToWeiReceiver revenueF2WR;
 
 	function MoneyFlow(IDaoBase _mc) public
-		MicrocompanyUser(_mc)
+		DaoClient(_mc)
 	{
 		// do not set output!
 		donationEndpoint = new WeiFund(0x0, true, 10000);

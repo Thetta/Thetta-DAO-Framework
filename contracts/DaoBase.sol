@@ -1,8 +1,8 @@
 pragma solidity ^0.4.15;
 
-import "./IMicrocompany.sol";
+import "./IDaoBase.sol";
 
-import "./token/MicrocompanyTokens.sol";
+import "./token/StdDaoToken.sol";
 import "./governance/Voting.sol";
 
 import "./tasks/Tasks.sol";
@@ -35,7 +35,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 //			b. caller is voting and it is succeeded -> allow
 //		4. deny
 contract DaoStorage is Ownable {
-	StdMicrocompanyToken public stdToken;
+	StdDaoToken public stdToken;
 
 	mapping (uint=>IProposal) proposals;
 	uint public proposalsCount = 0;
@@ -57,11 +57,11 @@ contract DaoStorage is Ownable {
 
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
-	function DaoStorage(StdMicrocompanyToken _stdToken) public {
+	function DaoStorage(StdDaoToken _stdToken) public {
 		stdToken = _stdToken;
 	}
 
-	function addObserver(IMicrocompanyObserver _observer) public {
+	function addObserver(IDaoObserver _observer) public {
 		observers.push(_observer);
 	}
 
@@ -179,7 +179,7 @@ contract Microcompany is IDaoBase, Ownable {
 	}
 
 // IMicrocompany:
-	function addObserver(IMicrocompanyObserver _observer) public {
+	function addObserver(IDaoObserver _observer) public {
 		store.addObserver(_observer);	
 	}
 
@@ -252,7 +252,7 @@ contract Microcompany is IDaoBase, Ownable {
 	function upgradeMicrocompanyContract(IDaoBase _new) public isCanDo("upgradeMicrocompany") {
 		// call observers.onUpgrade() for all observers
 		for(uint i=0; i<store.getObserverCount(); ++i){
-			IMicrocompanyObserver(store.getObserverAtIndex(i)).onUpgrade(_new);
+			IDaoObserver(store.getObserverAtIndex(i)).onUpgrade(_new);
 		}
 
 		store.transferOwnership(_new);
@@ -293,8 +293,8 @@ contract Microcompany is IDaoBase, Ownable {
 	}
 }
 
-contract MicrocompanyWithUnpackers is Microcompany {
-	function MicrocompanyWithUnpackers(DaoStorage _store) public 
+contract DaoBaseWithUnpackers is Microcompany {
+	function DaoBaseWithUnpackers(DaoStorage _store) public 
 		Microcompany(_store)	
 	{
 	}

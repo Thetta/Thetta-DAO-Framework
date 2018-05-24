@@ -1,6 +1,6 @@
 pragma solidity ^0.4.15;
 
-import '../IMicrocompany.sol';
+import '../IDaoBase.sol';
 import './IVoting.sol';
 import './IProposal.sol';
 

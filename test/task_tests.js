@@ -1,7 +1,7 @@
 var WeiTask = artifacts.require("./WeiTask");
 var WeiBounty = artifacts.require("./WeiBounty");
 var Microcompany = artifacts.require("./Microcompany");
-var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
+var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 
 var CheckExceptions = require('./utils/checkexceptions');
@@ -12,7 +12,7 @@ let task;
 let mcInstance;
 
 async function setup(creator){
-	token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+	token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 	await token.mint(creator, 1000);
 	store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 

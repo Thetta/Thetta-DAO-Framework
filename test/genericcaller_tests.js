@@ -1,5 +1,5 @@
-var MicrocompanyWithUnpackers = artifacts.require("./MicrocompanyWithUnpackers");
-var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
+var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
+var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 var WeiFund = artifacts.require("./WeiFund");
 var MoneyFlow = artifacts.require("./MoneyFlow");
@@ -30,11 +30,11 @@ global.contract('GenericCaller', (accounts) => {
 	});
 	
 	global.it('should not automatically create proposal because AAC has no rights',async() => {
-		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
-		let mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		let aacInstance = await AutoMicrocompanyActionCaller.new(mcInstance.address, {from: creator});
 
 		{
@@ -75,11 +75,11 @@ global.contract('GenericCaller', (accounts) => {
 	});
 
 	global.it('should not issue tokens automatically because issueTokens cant be called even with voting',async() => {
-		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
-		let mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		let aacInstance = await AutoMicrocompanyActionCaller.new(mcInstance.address, {from: creator});
 
 		{
@@ -166,11 +166,11 @@ global.contract('GenericCaller', (accounts) => {
 	});
 
 	global.it('should automatically create proposal and voting to issue more tokens',async() => {
-		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
-		let mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		let aacInstance = await AutoMicrocompanyActionCaller.new(mcInstance.address, {from: creator});
 
 		{
@@ -253,13 +253,13 @@ global.contract('GenericCaller', (accounts) => {
 	});
 
 	global.it('should be able to upgrade with AAC',async() => {
-		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 500);
 		await token.mint(employee1, 500);
 		await token.mint(employee2, 500);
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
-		let mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		let aacInstance = await AutoMicrocompanyActionCaller.new(mcInstance.address, {from: creator});
 
 		{
@@ -286,7 +286,7 @@ global.contract('GenericCaller', (accounts) => {
 		await store.transferOwnership(mcInstance.address);
 
 		// should be able to upgrde microcompany directly without voting (creator is in majority!)
-		let mcInstanceNew = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let mcInstanceNew = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		await aacInstance.upgradeMicrocompanyContractAuto(mcInstanceNew.address,{from: employee1});
 
 		const pa = await mcInstance.getProposalAtIndex(0);
@@ -309,11 +309,11 @@ global.contract('GenericCaller', (accounts) => {
 	});
 
 	global.it('should allow to get donations using AAC (direct call)',async() => {
-		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
-		let mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		let moneyflowInstance = await MoneyFlow.new(mcInstance.address, {from: creator});
 
 		let aacInstance = await AutoMoneyflowActionCaller.new(mcInstance.address, moneyflowInstance.address, {from: creator, gas: 10000000});
@@ -370,11 +370,11 @@ global.contract('GenericCaller', (accounts) => {
 	});
 
 	global.it('should allow to get donations using AAC (with voting)',async() => {
-		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
-		let mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		let moneyflowInstance = await MoneyFlow.new(mcInstance.address, {from: creator});
 
 		let aacInstance = await AutoMoneyflowActionCaller.new(mcInstance.address, moneyflowInstance.address, {from: creator, gas: 10000000});

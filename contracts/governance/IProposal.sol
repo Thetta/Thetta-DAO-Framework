@@ -1,7 +1,7 @@
 pragma solidity ^0.4.15;
 
 import './IVoting.sol';
-import '../IMicrocompany.sol';
+import '../IDaoBase.sol';
 
 interface IProposal {
 	function action(IDaoBase _mc, IVoting _voting)public;

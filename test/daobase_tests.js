@@ -1,8 +1,8 @@
-var MicrocompanyWithUnpackers = artifacts.require("./MicrocompanyWithUnpackers");
-var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
+var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
+var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 var AutoMicrocompanyActionCaller = artifacts.require("./AutoMicrocompanyActionCaller");
-var MicrocompanyWithUnpackers = artifacts.require("./MicrocompanyWithUnpackers");
+var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 
 // to check how upgrade works with IMicrocompany clients
 var MoneyFlow = artifacts.require("./MoneyFlow");
@@ -13,7 +13,7 @@ var IProposal = artifacts.require("./IProposal");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
-global.contract('Microcompany', (accounts) => {
+global.contract('DaoBase', (accounts) => {
 	let token;
 	let store;
 	let mcInstance;
@@ -25,11 +25,11 @@ global.contract('Microcompany', (accounts) => {
 
 	global.beforeEach(async() => {
 	
-		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 		store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
-		mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 
 		{
 			// add creator as first employee	
@@ -137,11 +137,11 @@ global.contract('Microcompany', (accounts) => {
 	});
 
 	global.it('should be able to upgrade',async() => {
-		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
+		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
-		let mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 
 		// one client of the IMicrocompany (to test how upgrade works with it)
 		let moneyflowInstance = await MoneyFlow.new(mcInstance.address,{from: creator});
@@ -163,7 +163,7 @@ global.contract('Microcompany', (accounts) => {
 		await store.transferOwnership(mcInstance.address);
 
 		// UPGRADE!
-		let mcInstanceNew = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let mcInstanceNew = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		await mcInstance.upgradeMicrocompanyContract(mcInstanceNew.address, {gas: 10000000, from: creator});
 
 		await mcInstanceNew.issueTokens(employee1,1000,{from: creator});

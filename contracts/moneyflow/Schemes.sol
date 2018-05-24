@@ -7,7 +7,7 @@ import "./WeiFund.sol";
 import "../governance/Voting.sol";
 import "../AutoAction.sol";
 
-import "../IMicrocompany.sol";
+import "../IDaoBase.sol";
 import "./IMoneyflow.sol";
 
 
@@ -22,7 +22,7 @@ import "./IMoneyflow.sol";
 //		Rest - unsorted splitter
 //			ReserveFund - fund 
 //			DividendsFund - fund
-contract DefaultMoneyflowScheme is MicrocompanyUser {
+contract DefaultMoneyflowScheme is DaoClient {
 	WeiTopDownSplitter root;
 
 	WeiUnsortedSplitter spends; 
@@ -39,7 +39,7 @@ contract DefaultMoneyflowScheme is MicrocompanyUser {
 /////
 	function DefaultMoneyflowScheme(IDaoBase _mc, address _fundOutput, 
 											  uint _percentsReserve, uint _dividendsReserve) public 
-		MicrocompanyUser(_mc)											  
+		DaoClient(_mc)											  
 	{
 		require(0x0!=_fundOutput);
 

@@ -1,6 +1,6 @@
 pragma solidity ^0.4.15;
 
-import "./IMicrocompany.sol";
+import "./IDaoBase.sol";
 
 import "./governance/Voting.sol";
 import "./moneyflow/WeiExpense.sol";
@@ -47,11 +47,11 @@ contract GenericProposal is IProposal, Ownable {
 
 // This is a wrapper that help us to do action that CAN require votings
 // WARNING: should be permitted to add new proposal by the current Microcompany!!!
-contract GenericCaller is MicrocompanyUser {
+contract GenericCaller is DaoClient {
 	function GenericCaller(IDaoBase _mc)public
-		// MicrocompanyUser (for example) helps us to handle Microcompany upgrades
+		// DaoClient (for example) helps us to handle Microcompany upgrades
 		// and will automatically update the 'mc' to the new instance
-		MicrocompanyUser(_mc)	
+		DaoClient(_mc)	
 	{
 	}
 

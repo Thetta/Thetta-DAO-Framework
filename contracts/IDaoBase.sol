@@ -2,12 +2,12 @@ pragma solidity ^0.4.15;
 
 import './governance/IProposal.sol';
 
-interface IMicrocompanyObserver {
+interface IDaoObserver {
 	function onUpgrade(address _newAddress) public;
 }
 
 interface IDaoBase {
-	function addObserver(IMicrocompanyObserver _observer)public;
+	function addObserver(IDaoObserver _observer)public;
 
 	function upgradeMicrocompanyContract(IDaoBase _new)public;
 
@@ -36,7 +36,7 @@ interface IDaoBase {
 }
 
 // Just an easy-to-use wrapper
-contract MicrocompanyUser is IMicrocompanyObserver {
+contract DaoClient is IDaoObserver {
 	IDaoBase mc;
 
    modifier isCanDo(string _what){
@@ -44,7 +44,7 @@ contract MicrocompanyUser is IMicrocompanyObserver {
 		_; 
 	}
 
-	function MicrocompanyUser(IDaoBase _mc)public{
+	function DaoClient(IDaoBase _mc)public{
 		mc = _mc;
 		mc.addObserver(this);
 	}
