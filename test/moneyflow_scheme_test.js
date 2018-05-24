@@ -43,7 +43,7 @@ global.contract('Moneyflow', (accounts) => {
 			await store.allowActionByVoting("manageGroups", token.address);
 			await store.allowActionByVoting("addNewTask", token.address);
 			await store.allowActionByVoting("issueTokens", token.address);
-			await store.allowActionByVoting("upgradeMicrocompany", token.address);
+			await store.allowActionByVoting("upgradeDao", token.address);
 
 			// for moneyscheme!
 			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");

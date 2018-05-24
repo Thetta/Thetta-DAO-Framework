@@ -1,7 +1,7 @@
 var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
-var AutoMicrocompanyActionCaller = artifacts.require("./AutoMicrocompanyActionCaller");
+var AutoDaoBaseActionCaller = artifacts.require("./AutoDaoBaseActionCaller");
 var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 
 // to check how upgrade works with IMicrocompany clients
@@ -46,7 +46,7 @@ global.contract('DaoBase', (accounts) => {
 			await store.allowActionByVoting("manageGroups", token.address);
 			await store.allowActionByVoting("addNewTask", token.address);
 			await store.allowActionByVoting("issueTokens", token.address);
-			await store.allowActionByVoting("upgradeMicrocompany", token.address);
+			await store.allowActionByVoting("upgradeDao", token.address);
 		}
 
 		// do not forget to transfer ownership
@@ -152,7 +152,7 @@ global.contract('DaoBase', (accounts) => {
 		await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
 		await store.allowActionByAnyMemberOfGroup("manageGroups","Employees");
 		await store.allowActionByAnyMemberOfGroup("issueTokens","Employees");
-		await store.allowActionByAnyMemberOfGroup("upgradeMicrocompany","Employees");
+		await store.allowActionByAnyMemberOfGroup("upgradeDao","Employees");
 
 		// THIS permission IS VERY DANGEROUS!!!
 		// allow creator to get donations from the Moneyflow 
@@ -164,7 +164,7 @@ global.contract('DaoBase', (accounts) => {
 
 		// UPGRADE!
 		let mcInstanceNew = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		await mcInstance.upgradeMicrocompanyContract(mcInstanceNew.address, {gas: 10000000, from: creator});
+		await mcInstance.upgradeDaoContract(mcInstanceNew.address, {gas: 10000000, from: creator});
 
 		await mcInstanceNew.issueTokens(employee1,1000,{from: creator});
 

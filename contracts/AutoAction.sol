@@ -104,8 +104,8 @@ contract GenericCaller is DaoClient {
 }
 
 // This contract is a helper that will create new Proposal (i.e. voting) if the action is not allowed directly
-contract AutoMicrocompanyActionCaller is GenericCaller {
-	function AutoMicrocompanyActionCaller(IDaoBase _mc)public
+contract AutoDaoBaseActionCaller is GenericCaller {
+	function AutoDaoBaseActionCaller(IDaoBase _mc)public
 		GenericCaller(_mc)
 	{
 	}
@@ -131,11 +131,11 @@ contract AutoMicrocompanyActionCaller is GenericCaller {
 	   return doAction("issueTokens", mc, msg.sender,"issueTokensGeneric(bytes32[])",params);
 	}
 
-	function upgradeMicrocompanyContractAuto(address _newMc) public returns(address proposalOut){
+	function upgradeDaoContractAuto(address _newMc) public returns(address proposalOut){
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(_newMc);
 
-		return doAction("upgradeMicrocompanyContract", mc, msg.sender,"upgradeMicrocompanyContractGeneric(bytes32[])",params);
+		return doAction("upgradeDaoContract", mc, msg.sender,"upgradeDaoContractGeneric(bytes32[])",params);
 	}
 }
 

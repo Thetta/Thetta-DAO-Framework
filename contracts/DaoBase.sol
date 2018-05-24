@@ -15,7 +15,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 // addNewProposal
 // manageGroups
 // issueTokens
-// upgradeMicrocompany
+// upgradeDao
 //
 // Tasks:
 //		startTask
@@ -249,7 +249,7 @@ contract Microcompany is IDaoBase, Ownable {
 		return false;
 	}
 
-	function upgradeMicrocompanyContract(IDaoBase _new) public isCanDo("upgradeMicrocompany") {
+	function upgradeDaoContract(IDaoBase _new) public isCanDo("upgradeDao") {
 		// call observers.onUpgrade() for all observers
 		for(uint i=0; i<store.getObserverCount(); ++i){
 			IDaoObserver(store.getObserverAtIndex(i)).onUpgrade(_new);
@@ -299,9 +299,9 @@ contract DaoBaseWithUnpackers is Microcompany {
 	{
 	}
 
-	function upgradeMicrocompanyContractGeneric(bytes32[] _params) public {
+	function upgradeDaoContractGeneric(bytes32[] _params) public {
 		IDaoBase _b = IDaoBase(address(_params[0]));
-		upgradeMicrocompanyContract(_b);
+		upgradeDaoContract(_b);
 	}
 
 	function addGroupMemberGeneric(bytes32[] _params) public {

@@ -5,7 +5,7 @@ var WeiFund = artifacts.require("./WeiFund");
 var MoneyFlow = artifacts.require("./MoneyFlow");
 var IWeiReceiver = artifacts.require("./IWeiReceiver");
 
-var AutoMicrocompanyActionCaller = artifacts.require("./AutoMicrocompanyActionCaller");
+var AutoDaoBaseActionCaller = artifacts.require("./AutoDaoBaseActionCaller");
 var AutoMoneyflowActionCaller = artifacts.require("./AutoMoneyflowActionCaller");
 var DefaultMoneyflowSchemeWithUnpackers = artifacts.require("./DefaultMoneyflowSchemeWithUnpackers");
 var DefaultMoneyflowScheme = artifacts.require("./DefaultMoneyflowScheme");
@@ -35,7 +35,7 @@ global.contract('GenericCaller', (accounts) => {
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
 		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let aacInstance = await AutoMicrocompanyActionCaller.new(mcInstance.address, {from: creator});
+		let aacInstance = await AutoDaoBaseActionCaller.new(mcInstance.address, {from: creator});
 
 		{
 			// add creator as first employee	
@@ -80,7 +80,7 @@ global.contract('GenericCaller', (accounts) => {
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
 		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let aacInstance = await AutoMicrocompanyActionCaller.new(mcInstance.address, {from: creator});
+		let aacInstance = await AutoDaoBaseActionCaller.new(mcInstance.address, {from: creator});
 
 		{
 			await store.addGroup("Employees");
@@ -102,7 +102,7 @@ global.contract('GenericCaller', (accounts) => {
 			// these actions required if AAC will call this actions DIRECTLY (without voting)
 			await store.allowActionByAddress("manageGroups", aacInstance.address);
 			await store.allowActionByAddress("issueTokens", aacInstance.address);
-			await store.allowActionByAddress("upgradeMicrocompanyContract", aacInstance.address);
+			await store.allowActionByAddress("upgradeDaoContract", aacInstance.address);
 		}
 
 		// do not forget to transfer ownership
@@ -171,7 +171,7 @@ global.contract('GenericCaller', (accounts) => {
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
 		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let aacInstance = await AutoMicrocompanyActionCaller.new(mcInstance.address, {from: creator});
+		let aacInstance = await AutoDaoBaseActionCaller.new(mcInstance.address, {from: creator});
 
 		{
 			await store.addGroup("Employees");
@@ -189,7 +189,7 @@ global.contract('GenericCaller', (accounts) => {
 			// these actions required if AAC will call this actions DIRECTLY (without voting)
 			await store.allowActionByAddress("manageGroups", aacInstance.address);
 			await store.allowActionByAddress("issueTokens", aacInstance.address);
-			await store.allowActionByAddress("upgradeMicrocompanyContract", aacInstance.address);
+			await store.allowActionByAddress("upgradeDaoContract", aacInstance.address);
 		}
 
 		// do not forget to transfer ownership
@@ -260,7 +260,7 @@ global.contract('GenericCaller', (accounts) => {
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
 		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let aacInstance = await AutoMicrocompanyActionCaller.new(mcInstance.address, {from: creator});
+		let aacInstance = await AutoDaoBaseActionCaller.new(mcInstance.address, {from: creator});
 
 		{
 			await store.addGroup("Employees");
@@ -270,7 +270,7 @@ global.contract('GenericCaller', (accounts) => {
 
 			//await store.allowActionByAnyMemberOfGroup("manageGroups","Employees");
 
-			await store.allowActionByVoting("upgradeMicrocompany", token.address);
+			await store.allowActionByVoting("upgradeDao", token.address);
 
 			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
 			await store.allowActionByAddress("addNewProposal", aacInstance.address);
@@ -278,7 +278,7 @@ global.contract('GenericCaller', (accounts) => {
 			await store.allowActionByAddress("manageGroups", aacInstance.address);
 			await store.allowActionByAddress("addNewTask", aacInstance.address);
 			await store.allowActionByAddress("issueTokens", aacInstance.address);
-			await store.allowActionByAddress("upgradeMicrocompanyContract", aacInstance.address);
+			await store.allowActionByAddress("upgradeDaoContract", aacInstance.address);
 		}
 
 		// do not forget to transfer ownership
@@ -287,7 +287,7 @@ global.contract('GenericCaller', (accounts) => {
 
 		// should be able to upgrde microcompany directly without voting (creator is in majority!)
 		let mcInstanceNew = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		await aacInstance.upgradeMicrocompanyContractAuto(mcInstanceNew.address,{from: employee1});
+		await aacInstance.upgradeDaoContractAuto(mcInstanceNew.address,{from: employee1});
 
 		const pa = await mcInstance.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);

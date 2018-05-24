@@ -9,7 +9,7 @@ interface IDaoObserver {
 interface IDaoBase {
 	function addObserver(IDaoObserver _observer)public;
 
-	function upgradeMicrocompanyContract(IDaoBase _new)public;
+	function upgradeDaoContract(IDaoBase _new)public;
 
 // Groups
 	function addGroup(string _groupName) public;
