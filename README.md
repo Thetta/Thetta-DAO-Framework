@@ -1,4 +1,7 @@
-# Thetta DAO 
+# Thetta DAO Framework 
+
+Thetta DAO Framework is a DAO Framework that will help you to create your own DAO on top of it.
+Code is modular, so you can use different subsystems almost independently.
 
 Please [submit issues here](https://github.com/Thetta/SmartContracts/projects/1?).
 
