@@ -8,7 +8,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 //////////////////////////////////////////////////////
 // ISplitter has multiple outputs (allows to send money only to THESE addresses)
 // 
-contract WeiSplitterBase is ISplitter, Ownable {
+contract SplitterBase is ISplitter, Ownable {
 	using SafeMath for uint;
 
 	mapping (uint=>address) children;
@@ -16,7 +16,7 @@ contract WeiSplitterBase is ISplitter, Ownable {
 
 	string public name = "";
 
-	function WeiSplitterBase(string _name) public {
+	function SplitterBase(string _name) public {
 		name = _name;
 	}
 
@@ -33,8 +33,8 @@ contract WeiSplitterBase is ISplitter, Ownable {
 	}
 }
 
-contract WeiTopDownSplitter is WeiSplitterBase, IWeiReceiver {
-	function WeiTopDownSplitter(string _name) WeiSplitterBase(_name) public {
+contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
+	function WeiTopDownSplitter(string _name) SplitterBase(_name) public {
 	}
 
 // IWeiReceiver:
@@ -132,10 +132,8 @@ contract WeiTopDownSplitter is WeiSplitterBase, IWeiReceiver {
 	}
 }
 
-
-// 
-contract WeiUnsortedSplitter is WeiSplitterBase, IWeiReceiver {
-	function WeiUnsortedSplitter(string _name) WeiSplitterBase(_name) public {
+contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
+	function WeiUnsortedSplitter(string _name) SplitterBase(_name) public {
 	}
 
 // IWeiReceiver:

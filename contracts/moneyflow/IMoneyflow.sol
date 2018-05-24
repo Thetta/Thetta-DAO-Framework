@@ -44,22 +44,6 @@ contract IWeiReceiver {
 	function()public;
 }
 
-// Easy-to-use wrapper to convert fallback -> processFunds()
-// fallback -> processFunds
-contract FallbackToWeiReceiver {
-	address output = 0x0;
-
-	// _output should be IWeiReceiver
-	function FallbackToWeiReceiver(address _output) public {
-		output = _output;
-	}
-
-	function()public payable{
-		IWeiReceiver iwr = IWeiReceiver(output);
-		iwr.processFunds.value(msg.value)(msg.value);		
-	}
-}
-
 contract IMoneyflow {
 	// send Ether using 'sendFunds' method here
 	function getRevenueEndpoint()public constant returns(IWeiReceiver);

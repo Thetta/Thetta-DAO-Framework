@@ -6,6 +6,22 @@ import "../IDaoBase.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+// Easy-to-use wrapper to convert fallback -> processFunds()
+// fallback -> processFunds
+contract FallbackToWeiReceiver {
+	address output = 0x0;
+
+	// _output should be IWeiReceiver
+	function FallbackToWeiReceiver(address _output) public {
+		output = _output;
+	}
+
+	function()public payable{
+		IWeiReceiver iwr = IWeiReceiver(output);
+		iwr.processFunds.value(msg.value)(msg.value);		
+	}
+}
+
 contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	WeiFund donationEndpoint;
 	// by default - this is 0x0, please use setWeiReceiver method
