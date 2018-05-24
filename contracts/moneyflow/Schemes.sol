@@ -5,7 +5,7 @@ import "./WeiExpense.sol";
 import "./WeiFund.sol";
 
 import "../governance/Voting.sol";
-import "../AutoAction.sol";
+//import "./AutoMoneyflowActionCaller.sol";
 
 import "../IDaoBase.sol";
 import "./IMoneyflow.sol";
