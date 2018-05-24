@@ -30,7 +30,7 @@ interface IDaoBase {
 	function getProposalsCount()public constant returns(uint);
 
 // Tokens
-	// TODO: curently Microcompany has only 1 type of tokens
+	// TODO: curently DaoBase has only 1 type of tokens
 	// that gives full governance rights - "DefaultToken"
 	function issueTokens(address _to, uint amount)public;
 }

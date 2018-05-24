@@ -1,4 +1,4 @@
-var Microcompany = artifacts.require("./Microcompany");
+var DaoBase = artifacts.require("./DaoBase");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 
@@ -10,7 +10,7 @@ var DefaultMoneyflowSchemeWithUnpackers = artifacts.require("./DefaultMoneyflowS
 global.contract('Moneyflow', (accounts) => {
 	let token;
 	let store;
-	let mcInstance;
+	let daoBase;
 	let moneyflowInstance;
 	let moneyflowScheme;
 
@@ -27,10 +27,10 @@ global.contract('Moneyflow', (accounts) => {
 		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 		store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
-		mcInstance = await Microcompany.new(store.address,{gas: 10000000, from: creator});
+		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
 
 		// 50/50 between reserve fund and dividends 
-		moneyflowScheme = await DefaultMoneyflowSchemeWithUnpackers.new(mcInstance.address, output, 5000, 5000, {from: creator});
+		moneyflowScheme = await DefaultMoneyflowSchemeWithUnpackers.new(daoBase.address, output, 5000, 5000, {from: creator});
 
 		{
 			await store.addGroup("Employees");
@@ -50,11 +50,11 @@ global.contract('Moneyflow', (accounts) => {
 			await store.allowActionByVoting("withdrawDonations", token.address);
 		}
 
-		moneyflowInstance = await MoneyFlow.new(mcInstance.address,{from: creator});
+		moneyflowInstance = await MoneyFlow.new(daoBase.address,{from: creator});
 
 		// do not forget to transfer ownership
-		await token.transferOwnership(mcInstance.address);
-		await store.transferOwnership(mcInstance.address);
+		await token.transferOwnership(daoBase.address);
+		await store.transferOwnership(daoBase.address);
 
 		const root = await moneyflowScheme.getRootReceiver();
 		await moneyflowInstance.setRootWeiReceiver(root, {from: creator});

@@ -1,4 +1,4 @@
-var Microcompany = artifacts.require("./Microcompany");
+var DaoBase = artifacts.require("./DaoBase");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 
@@ -188,7 +188,7 @@ async function splitterBalancesAsserts(i, money, allOutpultsBalance, spendsBalan
 global.contract('Moneyflow', (accounts) => {
 	let token;
 	let store;
-	let mcInstance;
+	let daoBase;
 	let moneyflowInstance;
 
 	let money = web3.toWei(0.001, "ether");
@@ -202,7 +202,7 @@ global.contract('Moneyflow', (accounts) => {
 		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 		store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
-		mcInstance = await Microcompany.new(store.address,{gas: 10000000, from: creator});
+		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
 
 		{
 			await store.addGroup("Employees");
@@ -218,7 +218,7 @@ global.contract('Moneyflow', (accounts) => {
 			await store.allowActionByVoting("issueTokens", token.address);
 		}
 
-		moneyflowInstance = await MoneyFlow.new(mcInstance.address,{from: creator});
+		moneyflowInstance = await MoneyFlow.new(daoBase.address,{from: creator});
 
 		// THIS permission IS VERY DANGEROUS!!!
 		// allow creator to get donations from the Moneyflow 
@@ -228,8 +228,8 @@ global.contract('Moneyflow', (accounts) => {
 		//await store.allowActionByAddress("addNewProposal", moneyflowInstance.address);
 
 		// do not forget to transfer ownership
-		await token.transferOwnership(mcInstance.address);
-		await store.transferOwnership(mcInstance.address);
+		await token.transferOwnership(daoBase.address);
+		await store.transferOwnership(daoBase.address);
 	});
 
 	global.it('should allow to send revenue',async() => {

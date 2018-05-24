@@ -163,12 +163,12 @@ contract DaoStorage is Ownable {
 	}
 }
 
-contract Microcompany is IDaoBase, Ownable {
+contract DaoBase is IDaoBase, Ownable {
 	DaoStorage public store;
 
 //////////////////////
 	// Constructor
-	function Microcompany(DaoStorage _store) public {
+	function DaoBase(DaoStorage _store) public {
 		// the ownership should be transferred to microcompany
 		store = _store;
 	}
@@ -178,7 +178,7 @@ contract Microcompany is IDaoBase, Ownable {
 		_; 
 	}
 
-// IMicrocompany:
+// IDaoBase:
 	function addObserver(IDaoObserver _observer) public {
 		store.addObserver(_observer);	
 	}
@@ -288,14 +288,14 @@ contract Microcompany is IDaoBase, Ownable {
 	}
 
 	function issueTokensInternal(address _to, uint _amount) internal {
-		// token ownership should be transferred to the current Microcompany
+		// token ownership should be transferred to the current DaoBase
 		store.stdToken().mint(_to, _amount);
 	}
 }
 
-contract DaoBaseWithUnpackers is Microcompany {
+contract DaoBaseWithUnpackers is DaoBase {
 	function DaoBaseWithUnpackers(DaoStorage _store) public 
-		Microcompany(_store)	
+		DaoBase(_store)	
 	{
 	}
 

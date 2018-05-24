@@ -46,10 +46,10 @@ contract GenericProposal is IProposal, Ownable {
 }
 
 // This is a wrapper that help us to do action that CAN require votings
-// WARNING: should be permitted to add new proposal by the current Microcompany!!!
+// WARNING: should be permitted to add new proposal by the current DaoBase!!!
 contract GenericCaller is DaoClient {
 	function GenericCaller(IDaoBase _mc)public
-		// DaoClient (for example) helps us to handle Microcompany upgrades
+		// DaoClient (for example) helps us to handle DaoBase upgrades
 		// and will automatically update the 'mc' to the new instance
 		DaoClient(_mc)	
 	{

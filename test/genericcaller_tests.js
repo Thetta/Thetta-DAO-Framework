@@ -34,8 +34,8 @@ global.contract('GenericCaller', (accounts) => {
 		await token.mint(creator, 1000);
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
-		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let aacInstance = await AutoDaoBaseActionCaller.new(mcInstance.address, {from: creator});
+		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
 
 		{
 			// add creator as first employee	
@@ -54,15 +54,15 @@ global.contract('GenericCaller', (accounts) => {
 		}
 
 		// do not forget to transfer ownership
-		await token.transferOwnership(mcInstance.address);
-		await store.transferOwnership(mcInstance.address);
+		await token.transferOwnership(daoBase.address);
+		await store.transferOwnership(daoBase.address);
 
-		const proposalsCount1 = await mcInstance.getProposalsCount();
+		const proposalsCount1 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount1,0,'No proposals should be added');
 
 		// add new employee1
-		await mcInstance.addGroupMember("Employees",employee1,{from: creator});
-		const isEmployeeAdded = await mcInstance.isGroupMember("Employees", employee1);
+		await daoBase.addGroupMember("Employees",employee1,{from: creator});
+		const isEmployeeAdded = await daoBase.isGroupMember("Employees", employee1);
 		global.assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
 
 		// new proposal should NOT be added 
@@ -70,7 +70,7 @@ global.contract('GenericCaller', (accounts) => {
 			[employee1,1000,{ from: employee1}],
 			'Should not be able to issue tokens AND add new proposal');
 
-		const proposalsCount2 = await mcInstance.getProposalsCount();
+		const proposalsCount2 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount2,0,'No new proposal should be added because'); 
 	});
 
@@ -79,8 +79,8 @@ global.contract('GenericCaller', (accounts) => {
 		await token.mint(creator, 1000);
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
-		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let aacInstance = await AutoDaoBaseActionCaller.new(mcInstance.address, {from: creator});
+		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
 
 		{
 			await store.addGroup("Employees");
@@ -106,35 +106,35 @@ global.contract('GenericCaller', (accounts) => {
 		}
 
 		// do not forget to transfer ownership
-		await token.transferOwnership(mcInstance.address);
-		await store.transferOwnership(mcInstance.address);
+		await token.transferOwnership(daoBase.address);
+		await store.transferOwnership(daoBase.address);
 
 		// even creator cant issue token directly!
-		await CheckExceptions.checkContractThrows(mcInstance.issueTokens.sendTransaction,
+		await CheckExceptions.checkContractThrows(daoBase.issueTokens.sendTransaction,
 			[employee1, 1500 ,{ from: creator}],
 			'Even creator cant issue tokens');
 
-		const proposalsCount1 = await mcInstance.getProposalsCount();
+		const proposalsCount1 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount1,0,'No proposals should be added');
 
 		// add new employee1
-		await mcInstance.addGroupMember("Employees",employee1,{from: creator});
-		const isEmployeeAdded = await mcInstance.isGroupMember("Employees",employee1);
+		await daoBase.addGroupMember("Employees",employee1,{from: creator});
+		const isEmployeeAdded = await daoBase.isGroupMember("Employees",employee1);
 		global.assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
 
 		// employee1 is NOT in the majority
-		const isCanDo1 = await mcInstance.isCanDoAction(employee1,"issueTokens");
+		const isCanDo1 = await daoBase.isCanDoAction(employee1,"issueTokens");
 		global.assert.strictEqual(isCanDo1,false,'employee1 is NOT in the majority, so can issue token only with voting');
-		const isCanDo2 = await mcInstance.isCanDoAction(employee1,"addNewProposal");
+		const isCanDo2 = await daoBase.isCanDoAction(employee1,"addNewProposal");
 		global.assert.strictEqual(isCanDo2,true,'employee1 can add new vote');
 
 		// new proposal should be added 
 		await aacInstance.issueTokensAuto(employee1,1000,{from: employee1});
-		const proposalsCount2 = await mcInstance.getProposalsCount();
+		const proposalsCount2 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount2,1,'New proposal should be added'); 
 
 		// check the voting data
-		const pa = await mcInstance.getProposalAtIndex(0);
+		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting.at(votingAddress);
@@ -170,8 +170,8 @@ global.contract('GenericCaller', (accounts) => {
 		await token.mint(creator, 1000);
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
-		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let aacInstance = await AutoDaoBaseActionCaller.new(mcInstance.address, {from: creator});
+		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
 
 		{
 			await store.addGroup("Employees");
@@ -193,30 +193,30 @@ global.contract('GenericCaller', (accounts) => {
 		}
 
 		// do not forget to transfer ownership
-		await token.transferOwnership(mcInstance.address);
-		await store.transferOwnership(mcInstance.address);
+		await token.transferOwnership(daoBase.address);
+		await store.transferOwnership(daoBase.address);
 
-		const proposalsCount1 = await mcInstance.getProposalsCount();
+		const proposalsCount1 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount1,0,'No proposals should be added');
 
 		// add new employee1
-		await mcInstance.addGroupMember("Employees",employee1,{from: creator});
-		const isEmployeeAdded = await mcInstance.isGroupMember("Employees",employee1);
+		await daoBase.addGroupMember("Employees",employee1,{from: creator});
+		const isEmployeeAdded = await daoBase.isGroupMember("Employees",employee1);
 		global.assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
 
 		// employee1 is NOT in the majority
-		const isCanDo1 = await mcInstance.isCanDoAction(employee1,"issueTokens");
+		const isCanDo1 = await daoBase.isCanDoAction(employee1,"issueTokens");
 		global.assert.strictEqual(isCanDo1,false,'employee1 is NOT in the majority, so can issue token only with voting');
-		const isCanDo2 = await mcInstance.isCanDoAction(employee1,"addNewProposal");
+		const isCanDo2 = await daoBase.isCanDoAction(employee1,"addNewProposal");
 		global.assert.strictEqual(isCanDo2,true,'employee1 can add new vote');
 
 		// new proposal should be added 
 		await aacInstance.issueTokensAuto(employee1,1000,{from: employee1});
-		const proposalsCount2 = await mcInstance.getProposalsCount();
+		const proposalsCount2 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount2,1,'New proposal should be added'); 
 
 		// check the voting data
-		const pa = await mcInstance.getProposalAtIndex(0);
+		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting.at(votingAddress);
@@ -259,8 +259,8 @@ global.contract('GenericCaller', (accounts) => {
 		await token.mint(employee2, 500);
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
-		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let aacInstance = await AutoDaoBaseActionCaller.new(mcInstance.address, {from: creator});
+		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
 
 		{
 			await store.addGroup("Employees");
@@ -282,14 +282,14 @@ global.contract('GenericCaller', (accounts) => {
 		}
 
 		// do not forget to transfer ownership
-		await token.transferOwnership(mcInstance.address);
-		await store.transferOwnership(mcInstance.address);
+		await token.transferOwnership(daoBase.address);
+		await store.transferOwnership(daoBase.address);
 
 		// should be able to upgrde microcompany directly without voting (creator is in majority!)
-		let mcInstanceNew = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		await aacInstance.upgradeDaoContractAuto(mcInstanceNew.address,{from: employee1});
+		let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		await aacInstance.upgradeDaoContractAuto(daoBaseNew.address,{from: employee1});
 
-		const pa = await mcInstance.getProposalAtIndex(0);
+		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting.at(votingAddress);
@@ -313,10 +313,10 @@ global.contract('GenericCaller', (accounts) => {
 		await token.mint(creator, 1000);
 
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
-		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let moneyflowInstance = await MoneyFlow.new(mcInstance.address, {from: creator});
+		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 
-		let aacInstance = await AutoMoneyflowActionCaller.new(mcInstance.address, moneyflowInstance.address, {from: creator, gas: 10000000});
+		let aacInstance = await AutoMoneyflowActionCaller.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
 
 		{
 			await store.addGroup("Employees");
@@ -340,11 +340,11 @@ global.contract('GenericCaller', (accounts) => {
 		}
 
 		// do not forget to transfer ownership
-		await token.transferOwnership(mcInstance.address);
-		await store.transferOwnership(mcInstance.address);
+		await token.transferOwnership(daoBase.address);
+		await store.transferOwnership(daoBase.address);
 
 		// check permissions
-		const isCanWithdraw = await mcInstance.isCanDoAction(creator,"withdrawDonations");
+		const isCanWithdraw = await daoBase.isCanDoAction(creator,"withdrawDonations");
 		global.assert.equal(isCanWithdraw, true, 'Creator should be able to withdrawDonations directly without voting');
 
 		// send some money
@@ -360,7 +360,7 @@ global.contract('GenericCaller', (accounts) => {
 		let pointBalance = await web3.eth.getBalance(output);
 		// this will call the action directly!
 		await aacInstance.withdrawDonationsToAuto(output, {from:creator, gas:100000});
-		const proposalsCount1 = await mcInstance.getProposalsCount();
+		const proposalsCount1 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount1,0,'No proposals should be added');
 
 		let pointBalance2 = await web3.eth.getBalance(output);
@@ -374,10 +374,10 @@ global.contract('GenericCaller', (accounts) => {
 		await token.mint(creator, 1000);
 
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
-		let mcInstance = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let moneyflowInstance = await MoneyFlow.new(mcInstance.address, {from: creator});
+		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 
-		let aacInstance = await AutoMoneyflowActionCaller.new(mcInstance.address, moneyflowInstance.address, {from: creator, gas: 10000000});
+		let aacInstance = await AutoMoneyflowActionCaller.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
 
 		{
 			await store.addGroup("Employees");
@@ -401,8 +401,8 @@ global.contract('GenericCaller', (accounts) => {
 		}
 
 		// do not forget to transfer ownership
-		await token.transferOwnership(mcInstance.address);
-		await store.transferOwnership(mcInstance.address);
+		await token.transferOwnership(daoBase.address);
+		await store.transferOwnership(daoBase.address);
 
 		// TODO: implement test 
 	});

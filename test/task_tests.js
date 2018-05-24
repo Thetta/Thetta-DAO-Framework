@@ -1,6 +1,6 @@
 var WeiTask = artifacts.require("./WeiTask");
 var WeiBounty = artifacts.require("./WeiBounty");
-var Microcompany = artifacts.require("./Microcompany");
+var DaoBase = artifacts.require("./DaoBase");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 
@@ -9,7 +9,7 @@ var CheckExceptions = require('./utils/checkexceptions');
 let token;
 let store;
 let task;
-let mcInstance;
+let daoBase;
 
 async function setup(creator){
 	token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
@@ -17,7 +17,7 @@ async function setup(creator){
 	store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
 	// issue 1000 tokens
-	mcInstance = await Microcompany.new(store.address,{gas: 10000000, from: creator});
+	daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
 
 	{
 		await store.addGroup("Employees");
@@ -34,8 +34,8 @@ async function setup(creator){
 	}
 
 	// do not forget to transfer ownership
-	await token.transferOwnership(mcInstance.address);
-	await store.transferOwnership(mcInstance.address);
+	await token.transferOwnership(daoBase.address);
+	await store.transferOwnership(daoBase.address);
 
 	//moneyflowInstance = await MoneyFlow.new({from: creator});
 }
@@ -62,18 +62,18 @@ global.contract('0.Tasks: prepaid positive scenario. Task created by creator', (
 
 	global.it('N1. should not create weiTask (prepaid + donation)',async() => {
 		th = await CheckExceptions.checkContractThrows(WeiTask.new, 
-			[mcInstance.address, 'Task Caption', 'Task description', false, true, ETH, {gas: 10000000, from: creator}]
+			[daoBase.address, 'Task Caption', 'Task description', false, true, ETH, {gas: 10000000, from: creator}]
 		);
 	});
 
 	global.it('N2. should not create weiTask (prepaid + 0 Wei)',async() => {
 		th = await CheckExceptions.checkContractThrows(WeiTask.new, 
-			[mcInstance.address, 'Task Caption', 'Task description', false, false, 0, {gas: 10000000, from: creator}]
+			[daoBase.address, 'Task Caption', 'Task description', false, false, 0, {gas: 10000000, from: creator}]
 		);
 	});
 
 	global.it('T0.1. should create weiTask',async() => {
-		firstContractBalance = await web3.eth.getBalance(mcInstance.address)
+		firstContractBalance = await web3.eth.getBalance(daoBase.address)
 		global.assert.strictEqual(firstContractBalance.toNumber(),0)
 
 		firstEmployeeBalance = await web3.eth.getBalance(employee1)
@@ -82,7 +82,7 @@ global.contract('0.Tasks: prepaid positive scenario. Task created by creator', (
 		firstCreatorBalance = await web3.eth.getBalance(creator)
 
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			mcInstance.address, 
+			daoBase.address, 
 			'Task Caption', 
 			'Task description',
 			false,
@@ -195,7 +195,7 @@ global.contract('0.Tasks: prepaid positive scenario. Task created by creator', (
 		let status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 7);
 
-		secondContractBalance = await web3.eth.getBalance(mcInstance.address)
+		secondContractBalance = await web3.eth.getBalance(daoBase.address)
 		global.assert.strictEqual(secondContractBalance.toNumber(),0)
 
 		secondEmployeeBalance = await web3.eth.getBalance(employee1)
@@ -219,7 +219,7 @@ global.contract('1.Tasks: postpaid positive scenario with UNKNOWN price. Task cr
 	});
 
 	global.it('T1.1. should create weiTask',async() => {
-		firstContractBalance = await web3.eth.getBalance(mcInstance.address)
+		firstContractBalance = await web3.eth.getBalance(daoBase.address)
 		global.assert.strictEqual(firstContractBalance.toNumber(),0)
 
 		firstEmployeeBalance = await web3.eth.getBalance(employee1)
@@ -228,7 +228,7 @@ global.contract('1.Tasks: postpaid positive scenario with UNKNOWN price. Task cr
 		firstCreatorBalance = await web3.eth.getBalance(creator)
 
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			mcInstance.address, 
+			daoBase.address, 
 			'Task Caption', 
 			'Task description',
 			true,
@@ -311,7 +311,7 @@ global.contract('1.Tasks: postpaid positive scenario with UNKNOWN price. Task cr
 		let status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 7)		
 
-		secondContractBalance = await web3.eth.getBalance(mcInstance.address)
+		secondContractBalance = await web3.eth.getBalance(daoBase.address)
 		global.assert.strictEqual(secondContractBalance.toNumber(),0)
 
 		secondEmployeeBalance = await web3.eth.getBalance(employee1)
@@ -337,7 +337,7 @@ global.contract('2.Tasks: postpaid positive scenario with KNOWN price. Task crea
 
 	global.it('T2.1. should create weiTask',async() => {
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			mcInstance.address, 
+			daoBase.address, 
 			'Task Caption', 
 			'Task description',
 			true,
@@ -408,7 +408,7 @@ global.contract('2.Tasks: postpaid positive scenario with KNOWN price. Task crea
 		let status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 7);
 
-		secondContractBalance = await web3.eth.getBalance(mcInstance.address)
+		secondContractBalance = await web3.eth.getBalance(daoBase.address)
 		global.assert.strictEqual(secondContractBalance.toNumber(),0)
 
 		secondEmployeeBalance = await web3.eth.getBalance(employee1)
@@ -434,7 +434,7 @@ global.contract('3.Tasks: donation positive scenario. Task created by creator', 
 
 	global.it('T3.1. should create weiTask',async() => {
 
-		firstContractBalance = await web3.eth.getBalance(mcInstance.address)
+		firstContractBalance = await web3.eth.getBalance(daoBase.address)
 		global.assert.strictEqual(firstContractBalance.toNumber(),0)
 
 		firstEmployeeBalance = await web3.eth.getBalance(employee1)
@@ -443,7 +443,7 @@ global.contract('3.Tasks: donation positive scenario. Task created by creator', 
 		firstCreatorBalance = await web3.eth.getBalance(creator)
 
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			mcInstance.address, 
+			daoBase.address, 
 			'Task Caption', 
 			'Task description',
 			true,
@@ -515,7 +515,7 @@ global.contract('3.Tasks: donation positive scenario. Task created by creator', 
 		let status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 7);
 		
-		secondContractBalance = await web3.eth.getBalance(mcInstance.address)
+		secondContractBalance = await web3.eth.getBalance(daoBase.address)
 		global.assert.strictEqual(secondContractBalance.toNumber(),0)
 
 		secondEmployeeBalance = await web3.eth.getBalance(employee1)
@@ -541,7 +541,7 @@ global.contract('4.Tasks: cancel on init state.', (accounts) => {
 
 	global.it('T4.1. should create weiTask',async() => {
 
-		firstContractBalance = await web3.eth.getBalance(mcInstance.address)
+		firstContractBalance = await web3.eth.getBalance(daoBase.address)
 		global.assert.strictEqual(firstContractBalance.toNumber(),0)
 
 		firstEmployeeBalance = await web3.eth.getBalance(employee1)
@@ -550,7 +550,7 @@ global.contract('4.Tasks: cancel on init state.', (accounts) => {
 		firstCreatorBalance = await web3.eth.getBalance(creator)
 
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			mcInstance.address, 
+			daoBase.address, 
 			'Task Caption', 
 			'Task description',
 			false,
@@ -583,7 +583,7 @@ global.contract('5.Tasks: cancel on prepaid state.', (accounts) => {
 	});
 
 	global.it('T5.1. should create weiTask',async() => {
-		firstContractBalance = await web3.eth.getBalance(mcInstance.address)
+		firstContractBalance = await web3.eth.getBalance(daoBase.address)
 		global.assert.strictEqual(firstContractBalance.toNumber(),0)
 
 		firstEmployeeBalance = await web3.eth.getBalance(employee1)
@@ -592,7 +592,7 @@ global.contract('5.Tasks: cancel on prepaid state.', (accounts) => {
 		firstCreatorBalance = await web3.eth.getBalance(creator)		
 
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			mcInstance.address, 
+			daoBase.address, 
 			'Task Caption', 
 			'Task description',
 			false,
