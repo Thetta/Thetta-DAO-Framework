@@ -1,6 +1,6 @@
 var Microcompany = artifacts.require("./Microcompany");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
-var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
+var DaoStorage = artifacts.require("./DaoStorage");
 
 var MoneyFlow = artifacts.require("./MoneyFlow");
 var WeiFund = artifacts.require("./WeiFund");
@@ -201,7 +201,7 @@ global.contract('Moneyflow', (accounts) => {
 	global.beforeEach(async() => {
 		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
-		store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
+		store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 		mcInstance = await Microcompany.new(store.address,{gas: 10000000, from: creator});
 
 		{

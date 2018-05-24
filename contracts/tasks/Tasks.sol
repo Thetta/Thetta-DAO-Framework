@@ -20,7 +20,7 @@ import '../IMicrocompany.sol';
 //		has 'setNeededWei(uint _neededWei)' 
 // 
 contract GenericTask is WeiAbsoluteExpense {
-	IMicrocompanyBase mc;
+	IDaoBase mc;
 	address employee = 0x0;		// who should complete this task and report on completion
 										// this will be set later
 	address output = 0x0;		// where to send money (can be split later)
@@ -71,7 +71,7 @@ contract GenericTask is WeiAbsoluteExpense {
 	}
 
 	// if _neededWei==0 -> this is an 'Unknown cost' situation. use 'setNeededWei' method of WeiAbsoluteExpense
-	function GenericTask(IMicrocompanyBase _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
+	function GenericTask(IDaoBase _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
 		WeiAbsoluteExpense(_neededWei) 
 	{
 		// Donation should be postpaid 
@@ -191,7 +191,7 @@ contract GenericTask is WeiAbsoluteExpense {
 }
 
 contract WeiTask is GenericTask {
-	function WeiTask(IMicrocompanyBase _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
+	function WeiTask(IDaoBase _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public 
 		GenericTask(_mc, _caption, _desc, _isPostpaid, _isDonation, _neededWei) 
 	{
 	}
@@ -212,7 +212,7 @@ contract WeiTask is GenericTask {
 
 // Bounty is always prepaid 
 contract WeiBounty is GenericTask {
-	function WeiBounty(IMicrocompanyBase _mc, string _caption, string _desc, uint _neededWei) public 
+	function WeiBounty(IDaoBase _mc, string _caption, string _desc, uint _neededWei) public 
 		GenericTask(_mc, _caption, _desc, false, false, _neededWei) 
 	{
 	}

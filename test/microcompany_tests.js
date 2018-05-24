@@ -1,6 +1,6 @@
 var MicrocompanyWithUnpackers = artifacts.require("./MicrocompanyWithUnpackers");
 var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
-var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
+var DaoStorage = artifacts.require("./DaoStorage");
 var AutoMicrocompanyActionCaller = artifacts.require("./AutoMicrocompanyActionCaller");
 var MicrocompanyWithUnpackers = artifacts.require("./MicrocompanyWithUnpackers");
 
@@ -27,7 +27,7 @@ global.contract('Microcompany', (accounts) => {
 	
 		token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
-		store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
+		store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
 		mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 
@@ -139,7 +139,7 @@ global.contract('Microcompany', (accounts) => {
 	global.it('should be able to upgrade',async() => {
 		let token = await StdMicrocompanyToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
-		let store = await MicrocompanyStorage.new(token.address,{gas: 10000000, from: creator});
+		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
 		let mcInstance = await MicrocompanyWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 

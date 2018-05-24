@@ -34,7 +34,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 //			a. caller is in the majority -> allow
 //			b. caller is voting and it is succeeded -> allow
 //		4. deny
-contract MicrocompanyStorage is Ownable {
+contract DaoStorage is Ownable {
 	StdMicrocompanyToken public stdToken;
 
 	mapping (uint=>IProposal) proposals;
@@ -57,7 +57,7 @@ contract MicrocompanyStorage is Ownable {
 
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
-	function MicrocompanyStorage(StdMicrocompanyToken _stdToken) public {
+	function DaoStorage(StdMicrocompanyToken _stdToken) public {
 		stdToken = _stdToken;
 	}
 
@@ -163,12 +163,12 @@ contract MicrocompanyStorage is Ownable {
 	}
 }
 
-contract Microcompany is IMicrocompanyBase, Ownable {
-	MicrocompanyStorage public store;
+contract Microcompany is IDaoBase, Ownable {
+	DaoStorage public store;
 
 //////////////////////
 	// Constructor
-	function Microcompany(MicrocompanyStorage _store) public {
+	function Microcompany(DaoStorage _store) public {
 		// the ownership should be transferred to microcompany
 		store = _store;
 	}
@@ -249,7 +249,7 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 		return false;
 	}
 
-	function upgradeMicrocompanyContract(IMicrocompanyBase _new) public isCanDo("upgradeMicrocompany") {
+	function upgradeMicrocompanyContract(IDaoBase _new) public isCanDo("upgradeMicrocompany") {
 		// call observers.onUpgrade() for all observers
 		for(uint i=0; i<store.getObserverCount(); ++i){
 			IMicrocompanyObserver(store.getObserverAtIndex(i)).onUpgrade(_new);
@@ -294,13 +294,13 @@ contract Microcompany is IMicrocompanyBase, Ownable {
 }
 
 contract MicrocompanyWithUnpackers is Microcompany {
-	function MicrocompanyWithUnpackers(MicrocompanyStorage _store) public 
+	function MicrocompanyWithUnpackers(DaoStorage _store) public 
 		Microcompany(_store)	
 	{
 	}
 
 	function upgradeMicrocompanyContractGeneric(bytes32[] _params) public {
-		IMicrocompanyBase _b = IMicrocompanyBase(address(_params[0]));
+		IDaoBase _b = IDaoBase(address(_params[0]));
 		upgradeMicrocompanyContract(_b);
 	}
 

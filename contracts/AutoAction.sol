@@ -22,7 +22,7 @@ contract GenericProposal is IProposal, Ownable {
 	}
 
 // IVoting implementation
-	function action(IMicrocompanyBase _mc, IVoting _voting) public {
+	function action(IDaoBase _mc, IVoting _voting) public {
 		require(address(voting)!=0x0);
 		require(msg.sender==address(voting));
 
@@ -48,7 +48,7 @@ contract GenericProposal is IProposal, Ownable {
 // This is a wrapper that help us to do action that CAN require votings
 // WARNING: should be permitted to add new proposal by the current Microcompany!!!
 contract GenericCaller is MicrocompanyUser {
-	function GenericCaller(IMicrocompanyBase _mc)public
+	function GenericCaller(IDaoBase _mc)public
 		// MicrocompanyUser (for example) helps us to handle Microcompany upgrades
 		// and will automatically update the 'mc' to the new instance
 		MicrocompanyUser(_mc)	
@@ -105,7 +105,7 @@ contract GenericCaller is MicrocompanyUser {
 
 // This contract is a helper that will create new Proposal (i.e. voting) if the action is not allowed directly
 contract AutoMicrocompanyActionCaller is GenericCaller {
-	function AutoMicrocompanyActionCaller(IMicrocompanyBase _mc)public
+	function AutoMicrocompanyActionCaller(IDaoBase _mc)public
 		GenericCaller(_mc)
 	{
 	}
@@ -143,7 +143,7 @@ contract AutoMicrocompanyActionCaller is GenericCaller {
 contract AutoMoneyflowActionCaller is GenericCaller {
 	IMoneyflow mf;
 
-	function AutoMoneyflowActionCaller(IMicrocompanyBase _mc, IMoneyflow _mf)public 
+	function AutoMoneyflowActionCaller(IDaoBase _mc, IMoneyflow _mf)public 
 		GenericCaller(_mc)	
 	{
 		mf = _mf;

@@ -15,7 +15,7 @@ contract MoneyFlow is IMoneyflow, MicrocompanyUser, Ownable {
 	FallbackToWeiReceiver donationF2WR;
 	FallbackToWeiReceiver revenueF2WR;
 
-	function MoneyFlow(IMicrocompanyBase _mc) public
+	function MoneyFlow(IDaoBase _mc) public
 		MicrocompanyUser(_mc)
 	{
 		// do not set output!

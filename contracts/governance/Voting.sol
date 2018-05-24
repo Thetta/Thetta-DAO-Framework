@@ -22,7 +22,7 @@ contract Voting is IVoting, Ownable {
 		QuadraticTokenVote
 	}
 
-	IMicrocompanyBase mc;
+	IDaoBase mc;
 	IProposal proposal; 
 
 	VoteType public voteType;
@@ -37,7 +37,7 @@ contract Voting is IVoting, Ownable {
 
 ////////
 	// we can use _origin instead of tx.origin
-	function Voting(IMicrocompanyBase _mc, IProposal _proposal, address _origin, 
+	function Voting(IDaoBase _mc, IProposal _proposal, address _origin, 
 						VoteType _voteType, uint _minutesToVote, address _tokenAddress){
 		mc = _mc;
 		proposal = _proposal; 

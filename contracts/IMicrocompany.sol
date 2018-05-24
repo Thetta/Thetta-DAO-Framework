@@ -6,10 +6,10 @@ interface IMicrocompanyObserver {
 	function onUpgrade(address _newAddress) public;
 }
 
-interface IMicrocompanyBase {
+interface IDaoBase {
 	function addObserver(IMicrocompanyObserver _observer)public;
 
-	function upgradeMicrocompanyContract(IMicrocompanyBase _new)public;
+	function upgradeMicrocompanyContract(IDaoBase _new)public;
 
 // Groups
 	function addGroup(string _groupName) public;
@@ -37,14 +37,14 @@ interface IMicrocompanyBase {
 
 // Just an easy-to-use wrapper
 contract MicrocompanyUser is IMicrocompanyObserver {
-	IMicrocompanyBase mc;
+	IDaoBase mc;
 
    modifier isCanDo(string _what){
 		require(mc.isCanDoAction(msg.sender, _what)); 
 		_; 
 	}
 
-	function MicrocompanyUser(IMicrocompanyBase _mc)public{
+	function MicrocompanyUser(IDaoBase _mc)public{
 		mc = _mc;
 		mc.addObserver(this);
 	}
@@ -54,7 +54,7 @@ contract MicrocompanyUser is IMicrocompanyObserver {
 	function onUpgrade(address _newAddress) public {
 		require(msg.sender==address(mc));	
 
-		mc = IMicrocompanyBase(_newAddress);
+		mc = IDaoBase(_newAddress);
 
 		// this is not needed because we are already in the list of observers (in the store) 
 		// and the controller is upgraded only

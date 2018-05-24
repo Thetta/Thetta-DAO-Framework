@@ -37,7 +37,7 @@ contract DefaultMoneyflowScheme is MicrocompanyUser {
 	WeiFund dividendsFund;
 
 /////
-	function DefaultMoneyflowScheme(IMicrocompanyBase _mc, address _fundOutput, 
+	function DefaultMoneyflowScheme(IDaoBase _mc, address _fundOutput, 
 											  uint _percentsReserve, uint _dividendsReserve) public 
 		MicrocompanyUser(_mc)											  
 	{
@@ -117,7 +117,7 @@ contract DefaultMoneyflowScheme is MicrocompanyUser {
 
 contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
 	function DefaultMoneyflowSchemeWithUnpackers(
-			IMicrocompanyBase _mc, 
+			IDaoBase _mc, 
 			address _fundOutput, 
 			uint _percentsReserve, 
 			uint _dividendsReserve) public 
