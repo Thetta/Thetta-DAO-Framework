@@ -14,19 +14,7 @@ contract ISplitter {
 	function addChild(address _newChild) public;
 }
 
-// IWeiReceiver does not store funds!
-//
-// There are 2 types of Outputs:
-// "Absolute": fixed amount of Wei
-// "Relative": percents of input 
-contract IWeiReceiver {
-	// Will calculate only absolute outputs, but not take into account the Percents
-	function getMinWeiNeeded()constant public returns(uint);
-
-	// In case we have absolute output -> will return fixed amount that is equal to 'getMinWeiNeeded'
-	// In case we have relative output -> will calculate percents of _inputWei 
-	function getTotalWeiNeeded(uint _inputWei)constant public returns(uint);
-	
+contract IReceiver {
 	// In case we have absolute output -> will return 0
 	// in 1/100th percents of input. Examples:
 	// 12 is 0.12% of input; 
@@ -37,11 +25,39 @@ contract IWeiReceiver {
 	// If this output does not need more funds -> will return false 
 	function isNeedsMoney()constant public returns(bool);
 
-	// WeiReceiver should process all Wei here (hold it or send it somewhere else)
+	// WeiReceiver should process all tokens here (hold it or send it somewhere else)
 	function processFunds(uint _currentFlow) public payable;
 
 	// non payable!
 	function()public;
+}
+
+// IWeiReceiver does not store funds!
+//
+// There are 2 types of Outputs:
+// "Absolute": fixed amount of Wei
+// "Relative": percents of input 
+contract IWeiReceiver is IReceiver {
+	// Will calculate only absolute outputs, but not take into account the Percents
+	function getMinWeiNeeded()constant public returns(uint);
+
+	// In case we have absolute output -> will return fixed amount that is equal to 'getMinWeiNeeded'
+	// In case we have relative output -> will calculate percents of _inputWei 
+	function getTotalWeiNeeded(uint _inputWei)constant public returns(uint);
+}
+
+// IErc20Receiver does not store funds!
+//
+// There are 2 types of Outputs:
+// "Absolute": fixed amount of Wei
+// "Relative": percents of input 
+contract IErc20Receiver is IReceiver {
+	// Will calculate only absolute outputs, but not take into account the Percents
+	function getMinTokensNeeded()constant public returns(uint);
+
+	// In case we have absolute output -> will return fixed amount that is equal to 'getMinTokensNeeded'
+	// In case we have relative output -> will calculate percents of _inputWei 
+	function getTotalTokensNeeded(uint _inputTokens)constant public returns(uint);
 }
 
 contract IMoneyflow {

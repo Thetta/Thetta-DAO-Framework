@@ -1,5 +1,9 @@
 pragma solidity ^0.4.15;
 
+import "./IMoneyflow.sol";
+
+import "./ether/WeiExpense.sol";
+
 import "../GenericCaller.sol";
 
 // TODO: add tests!

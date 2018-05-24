@@ -1,6 +1,7 @@
 pragma solidity ^0.4.15;
 import "./IMoneyflow.sol";
-import "./WeiFund.sol";
+
+import "./ether/WeiFund.sol";
 
 import "../IDaoBase.sol";
 

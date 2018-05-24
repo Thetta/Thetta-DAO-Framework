@@ -1,14 +1,14 @@
 pragma solidity ^0.4.15;
 
-import "./WeiSplitter.sol";
-import "./WeiExpense.sol";
-import "./WeiFund.sol";
+import "./IMoneyflow.sol";
+
+import "./ether/WeiSplitter.sol";
+import "./ether/WeiExpense.sol";
+import "./ether/WeiFund.sol";
 
 import "../governance/Voting.sol";
 
 import "../IDaoBase.sol";
-import "./IMoneyflow.sol";
-
 
 // This contract should be used to automatically instantiate Default scheme for a microcompany.
 // Use it as example. You can setup your own moneyflow.  

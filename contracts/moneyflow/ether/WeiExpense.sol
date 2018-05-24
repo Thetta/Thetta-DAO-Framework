@@ -1,12 +1,12 @@
 pragma solidity ^0.4.15;
 
-import "./IMoneyflow.sol";
+import "../IMoneyflow.sol";
 
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 //////////////////////////////////////////////////////
-contract Expense is IWeiReceiver, IDestination, Ownable {
+contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	bool isMoneyReceived = false;
 	uint percentsMul100 = 0;
 	uint periodHours = 0;
@@ -14,7 +14,7 @@ contract Expense is IWeiReceiver, IDestination, Ownable {
 	uint neededWei = 0;
 	address moneySource = 0x0;
 
-	function Expense(uint _neededWei, uint _percentsMul100, uint _periodHours) public {
+	function WeiExpense(uint _neededWei, uint _percentsMul100, uint _periodHours) public {
 		percentsMul100 = _percentsMul100;
 		periodHours = _periodHours;
 		neededWei = _neededWei;
@@ -103,26 +103,26 @@ contract Expense is IWeiReceiver, IDestination, Ownable {
 	}
 }
 
-contract WeiAbsoluteExpense is Expense {
+contract WeiAbsoluteExpense is WeiExpense {
 	function WeiAbsoluteExpense(uint _neededWei) public 
-		Expense(_neededWei, 0, 0)
+		WeiExpense(_neededWei, 0, 0)
 	{}
 }
 
-contract WeiRelativeExpense is Expense {
+contract WeiRelativeExpense is WeiExpense {
 	function WeiRelativeExpense(uint _percentsMul100)public 
-		Expense(0, _percentsMul100, 0)
+		WeiExpense(0, _percentsMul100, 0)
 	{}
 }
 
-contract WeiAbsoluteExpenseWithPeriod is Expense { 
+contract WeiAbsoluteExpenseWithPeriod is WeiExpense { 
 	function WeiAbsoluteExpenseWithPeriod(uint _neededWei, uint _periodHours) public
-		Expense(_neededWei, 0, _periodHours)
+		WeiExpense(_neededWei, 0, _periodHours)
 	{}
 }
 
-contract WeiRelativeExpenseWithPeriod is Expense {
+contract WeiRelativeExpenseWithPeriod is WeiExpense {
 	function WeiRelativeExpenseWithPeriod(uint _percentsMul100, uint _periodHours) public 
-		Expense(0, _percentsMul100, _periodHours)
+		WeiExpense(0, _percentsMul100, _periodHours)
 	{}
 }
