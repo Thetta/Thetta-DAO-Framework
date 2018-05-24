@@ -9,7 +9,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	WeiFund donationEndpoint;
 	// by default - this is 0x0, please use setWeiReceiver method
-	// this can be a WeiSplitter (top-down or unsorted)
+	// this can be a ISplitter (top-down or unsorted)
 	IWeiReceiver rootReceiver;
 
 	FallbackToWeiReceiver donationF2WR;

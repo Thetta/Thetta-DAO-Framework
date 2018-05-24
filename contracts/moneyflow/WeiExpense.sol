@@ -6,7 +6,7 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 //////////////////////////////////////////////////////
-contract Expense is IWeiReceiver, IWeiDestination, Ownable {
+contract Expense is IWeiReceiver, IDestination, Ownable {
 	bool isMoneyReceived = false;
 	uint percentsMul100 = 0;
 	uint periodHours = 0;

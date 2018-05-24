@@ -1,19 +1,20 @@
 pragma solidity ^0.4.15;
 
 // this contract should keep all money until flush is called
-contract IWeiDestination {
+contract IDestination {
 	// pull model
 	function flush() public;
 	function flushTo(address _to) public;
 }
 
-contract IWeiSplitter {
+// ISplitter does not store funds!
+contract ISplitter {
 	function getChildrenCount() public constant returns(uint);
 	function getChild(uint _index) public constant returns(address);
 	function addChild(address _newChild) public;
 }
 
-// WeiReceiver does not store funds!
+// IWeiReceiver does not store funds!
 //
 // There are 2 types of Outputs:
 // "Absolute": fixed amount of Wei
@@ -36,11 +37,11 @@ contract IWeiReceiver {
 	// If this output does not need more funds -> will return false 
 	function isNeedsMoney()constant public returns(bool);
 
-	// non payable!
-	function()public;
-
 	// WeiReceiver should process all Wei here (hold it or send it somewhere else)
 	function processFunds(uint _currentFlow) public payable;
+
+	// non payable!
+	function()public;
 }
 
 // Easy-to-use wrapper to convert fallback -> processFunds()

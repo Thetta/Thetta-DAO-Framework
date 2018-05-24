@@ -6,9 +6,9 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 //////////////////////////////////////////////////////
-// WeiSplitter has multiple outputs (allows to send money only to THESE addresses)
+// ISplitter has multiple outputs (allows to send money only to THESE addresses)
 // 
-contract WeiSplitterBase is IWeiSplitter, Ownable {
+contract WeiSplitterBase is ISplitter, Ownable {
 	using SafeMath for uint;
 
 	mapping (uint=>address) children;
@@ -20,7 +20,7 @@ contract WeiSplitterBase is IWeiSplitter, Ownable {
 		name = _name;
 	}
 
-// IWeiSplitter:
+// ISplitter:
 	function getChildrenCount() public constant returns(uint){
 		return childrenCount;
 	}

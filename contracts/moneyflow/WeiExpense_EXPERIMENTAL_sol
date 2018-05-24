@@ -1,14 +1,14 @@
 pragma solidity ^0.4.15;
 
 import "./IWeiReceiver.sol";
-import "./IWeiSplitter.sol";
-import "./IWeiDestination.sol";
+import "./ISplitter.sol";
+import "./IDestination.sol";
 
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 //////////////////////////////////////////////////////
-contract Expense is IWeiReceiver, IWeiDestination, Ownable {
+contract Expense is IWeiReceiver, IDestination, Ownable {
 	bool isMoneyReceived = false;
 	uint periodHours = 0;
 	uint64 momentReceived = 0;

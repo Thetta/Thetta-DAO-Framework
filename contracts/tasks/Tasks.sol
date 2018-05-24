@@ -170,7 +170,7 @@ contract GenericTask is WeiAbsoluteExpense {
 		state = State.CanGetFunds;
 	}
 
-// IWeiDestination overrides:
+// IDestination overrides:
 	// pull model
 	function flush() public {
 		require(getCurrentState()==State.CanGetFunds);
