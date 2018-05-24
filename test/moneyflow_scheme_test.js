@@ -3,6 +3,8 @@ var StdMicrocompanyToken = artifacts.require("./StdMicrocompanyToken");
 var MicrocompanyStorage = artifacts.require("./MicrocompanyStorage");
 
 var MoneyFlow = artifacts.require("./MoneyFlow");
+var WeiFund = artifacts.require("./WeiFund");
+
 var DefaultMoneyflowSchemeWithUnpackers = artifacts.require("./DefaultMoneyflowSchemeWithUnpackers"); 
 
 global.contract('Moneyflow', (accounts) => {
@@ -30,12 +32,6 @@ global.contract('Moneyflow', (accounts) => {
 		// 50/50 between reserve fund and dividends 
 		moneyflowScheme = await DefaultMoneyflowSchemeWithUnpackers.new(mcInstance.address, output, 5000, 5000, {from: creator});
 
-		moneyflowInstance = await MoneyFlow.new(mcInstance.address,{from: creator});
-
-		// TODO: this not working...
-		/*
-		await moneyflowInstance.setRootWeiReceiver(moneyflowScheme.address, {from: creator});
-
 		{
 			await store.addGroup("Employees");
 			await store.addGroupMember("Employees", creator);
@@ -52,19 +48,18 @@ global.contract('Moneyflow', (accounts) => {
 			// for moneyscheme!
 			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 			await store.allowActionByVoting("withdrawDonations", token.address);
-
-			// THIS IS REQUIRED because issueTokensAuto() will add new proposal
-			await store.allowActionByAddress("addNewProposal", aacInstance.address);
-			// THIS IS REQUIRED because MoneyflowScheme will add new proposal
-			await store.allowActionByAddress("addNewProposal", moneyflowScheme.address);
 		}
+
+		moneyflowInstance = await MoneyFlow.new(mcInstance.address,{from: creator});
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(mcInstance.address);
 		await store.transferOwnership(mcInstance.address);
 
+		const root = await moneyflowScheme.getRootReceiver();
+		await moneyflowInstance.setRootWeiReceiver(root, {from: creator});
+
 		// TODO: test DefaultMoneyflowScheme
-		*/
 	});
 
 });

@@ -73,6 +73,10 @@ contract DefaultMoneyflowScheme is MicrocompanyUser {
 		rest.addChild(dividendsFund);
 	}
 
+	function getRootReceiver()public constant returns(IWeiReceiver){
+		return root;
+	}
+
 	// use AutoMoneyflowActionCaller to add new task with voting! 
 	function addNewTask(WeiAbsoluteExpense wt) public isCanDo("addNewTask") {
 		// 1 - add new task immediately
