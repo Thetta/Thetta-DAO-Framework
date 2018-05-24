@@ -77,10 +77,3 @@ contract IMoneyflow {
 	function setRootWeiReceiver(IWeiReceiver _receiver) public;
 }
 
-contract IMoneyflowScheme {
-	function addNewTask(IWeiReceiver _wt) public;
-	function setSalaryForEmployee(address _employee, uint _weiPerMonth) public;
-	function setBonusForEmployee(address _employee, uint _bonusPercentsPerMonth) public;
-	function setOtherSpend(string _name, uint _weiPerMonth) public;
-}
-

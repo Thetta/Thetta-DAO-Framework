@@ -5,13 +5,16 @@ import "./WeiExpense.sol";
 import "./WeiFund.sol";
 
 import "../governance/Voting.sol";
-//import "./AutoMoneyflowActionCaller.sol";
 
 import "../IDaoBase.sol";
 import "./IMoneyflow.sol";
 
 
-// this contract should be used to automatically instantiate Default scheme for a microcompany:
+// This contract should be used to automatically instantiate Default scheme for a microcompany.
+// Use it as example. You can setup your own moneyflow.  
+// THIS IS A WORKING example!
+//
+// Layout:
 //
 // Root - top-down splitter 
 //		Spends - unsorted splitter
@@ -113,6 +116,15 @@ contract DefaultMoneyflowScheme is DaoClient {
 
 		// TODO: implement
 	}
+
+	function flushReseveFundTo(address _to) public isCanDo("flushReserveFundTo"){
+		// TODO:
+	}
+
+	// TODO: Currently dividens fund is just another type of Reserve fund (because DividendFund is not implemented yet) 
+	function flushDividendsFundTo(address _to) public isCanDo("flushDividendsFundTo"){
+		// TODO:
+	}
 }
 
 contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
@@ -130,4 +142,6 @@ contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
 		IWeiReceiver _iwr = IWeiReceiver(address(_params[0]));
 		addNewTask(_iwr);
 	}
+
+	// TODO: add unpackers for all methods of the Scheme
 }
