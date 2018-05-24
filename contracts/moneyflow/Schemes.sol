@@ -22,7 +22,9 @@ import "./IMoneyflow.sol";
 //		Rest - unsorted splitter
 //			ReserveFund - fund 
 //			DividendsFund - fund
-contract DefaultMoneyflowScheme is IMoneyflowScheme, MicrocompanyUser, WeiTopDownSplitter {
+contract DefaultMoneyflowScheme is MicrocompanyUser {
+	WeiTopDownSplitter root;
+
 	WeiUnsortedSplitter spends; 
 	WeiUnsortedSplitter bonuses; 
 	WeiUnsortedSplitter rest; 
@@ -40,6 +42,8 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, MicrocompanyUser, WeiTopDow
 		MicrocompanyUser(_mc)											  
 	{
 		require(0x0!=_fundOutput);
+
+		root = new WeiTopDownSplitter("root");
 
 		spends = new WeiUnsortedSplitter("spends");
 		bonuses = new WeiUnsortedSplitter("bonuses");
@@ -61,9 +65,9 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, MicrocompanyUser, WeiTopDow
 
 		// This contract is itself a top down (Root) splitter
 		// just call a 'processFunds(uint _currentFlow)' method and it will
-		this.addChild(spends);
-		this.addChild(bonuses);
-		this.addChild(rest);
+		root.addChild(spends);
+		root.addChild(bonuses);
+		root.addChild(rest);
 
 		rest.addChild(reserveFund);
 		rest.addChild(dividendsFund);
@@ -72,7 +76,7 @@ contract DefaultMoneyflowScheme is IMoneyflowScheme, MicrocompanyUser, WeiTopDow
 	// use AutoMoneyflowActionCaller to add new task with voting! 
 	function addNewTask(WeiAbsoluteExpense wt) public isCanDo("addNewTask") {
 		// 1 - add new task immediately
-		tasks.addChild(wt);
+		//tasks.addChild(wt);
 	}
 
 	// if _employee is not in the flow -> will add new WeiAbsoluteExpense

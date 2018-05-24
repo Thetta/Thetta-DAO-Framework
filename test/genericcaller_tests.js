@@ -25,7 +25,6 @@ global.contract('GenericCaller', (accounts) => {
 
 	let money = web3.toWei(0.001, "ether");
 
-
 	global.beforeEach(async() => {
 
 	});
