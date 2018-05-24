@@ -1,6 +1,5 @@
 pragma solidity ^0.4.15;
 import "./IMoneyflow.sol";
-import "./IWeiReceiver.sol";
 import "./WeiFund.sol";
 
 import "../IMicrocompany.sol";
@@ -63,9 +62,7 @@ contract MoneyFlow is IMoneyflow, MicrocompanyUser, Ownable {
 	// receiver can be a splitter, fund or event task
 	// _receiver can be 0x0!
 	function setRootWeiReceiver(IWeiReceiver _receiver) public isCanDo("modifyMoneyscheme") {
-		// TODO: add voting
 		rootReceiver = _receiver;
-
 		revenueF2WR = new FallbackToWeiReceiver(address(rootReceiver));
 	}
 

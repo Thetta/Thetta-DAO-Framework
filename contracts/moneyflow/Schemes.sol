@@ -77,10 +77,11 @@ contract DefaultMoneyflowScheme is MicrocompanyUser {
 		return root;
 	}
 
+////////////////////////////////////////////////////////////////
 	// use AutoMoneyflowActionCaller to add new task with voting! 
-	function addNewTask(WeiAbsoluteExpense wt) public isCanDo("addNewTask") {
+	function addNewTask(IWeiReceiver _wr) public isCanDo("addNewTask") {
 		// 1 - add new task immediately
-		//tasks.addChild(wt);
+		//tasks.addChild(_wr);
 	}
 
 	// if _employee is not in the flow -> will add new WeiAbsoluteExpense
@@ -126,7 +127,7 @@ contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
 	}
 
 	function addNewTaskGeneric(bytes32[] _params) public {
-		WeiAbsoluteExpense _wae = WeiAbsoluteExpense(address(_params[0]));
-		addNewTask(_wae);
+		IWeiReceiver _iwr = IWeiReceiver(address(_params[0]));
+		addNewTask(_iwr);
 	}
 }
