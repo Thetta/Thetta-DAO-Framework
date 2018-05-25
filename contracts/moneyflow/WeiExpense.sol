@@ -8,16 +8,18 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 //////////////////////////////////////////////////////
 contract Expense is IWeiReceiver, IWeiDestination, Ownable {
 	bool isMoneyReceived = false;
+	bool isCalculateDebt = false;
 	uint percentsMul100 = 0;
 	uint periodHours = 0;
-	uint64 momentReceived = 0;
+	uint momentReceived = 0;
 	uint neededWei = 0;
 	address moneySource = 0x0;
 
-	function Expense(uint _neededWei, uint _percentsMul100, uint _periodHours) public {
+	function Expense(uint _neededWei, uint _percentsMul100, uint _periodHours, bool _isCalculateDebt) public {
 		percentsMul100 = _percentsMul100;
 		periodHours = _periodHours;
 		neededWei = _neededWei;
+		isCalculateDebt = _isCalculateDebt;
 	}
 
 	function processFunds(uint _currentFlow) public payable{
@@ -26,7 +28,7 @@ contract Expense is IWeiReceiver, IWeiDestination, Ownable {
 		require(msg.value==getTotalWeiNeeded(_currentFlow));
 
 		if(0!=periodHours){ // TODO: why not works without if
-			momentReceived = uint64(now);
+			momentReceived = uint(now);
 		}
 
 		isMoneyReceived = true;
@@ -47,7 +49,7 @@ contract Expense is IWeiReceiver, IWeiDestination, Ownable {
 		}
 
 		if(0!=percentsMul100){
-			return (percentsMul100 * _inputWei) / 10000;
+			return (getMultifactor()*(percentsMul100 * _inputWei)) / 10000;
 		}else{
 			return getMinWeiNeeded();
 		}
@@ -57,7 +59,19 @@ contract Expense is IWeiReceiver, IWeiDestination, Ownable {
 		if(!isNeedsMoney() || (0!=percentsMul100)){
 			return 0;
 		}
-		return neededWei;
+		return getMultifactor()*neededWei;
+	}
+
+	function getMomentReceived() constant public returns(uint){
+		return momentReceived;
+	}
+		
+	function getMultifactor() constant public returns(uint){
+		if((isCalculateDebt)&&(0!=momentReceived)){
+			return ((now - momentReceived) / (periodHours * 3600 * 1000));	
+		} else{
+			return 1;
+		}
 	}
 
 	function isNeedsMoney()constant public returns(bool){	
@@ -105,24 +119,24 @@ contract Expense is IWeiReceiver, IWeiDestination, Ownable {
 
 contract WeiAbsoluteExpense is Expense {
 	function WeiAbsoluteExpense(uint _neededWei) public 
-		Expense(_neededWei, 0, 0)
+		Expense(_neededWei, 0, 0, false)
 	{}
 }
 
 contract WeiRelativeExpense is Expense {
 	function WeiRelativeExpense(uint _percentsMul100)public 
-		Expense(0, _percentsMul100, 0)
+		Expense(0, _percentsMul100, 0, false)
 	{}
 }
 
 contract WeiAbsoluteExpenseWithPeriod is Expense { 
-	function WeiAbsoluteExpenseWithPeriod(uint _neededWei, uint _periodHours) public
-		Expense(_neededWei, 0, _periodHours)
+	function WeiAbsoluteExpenseWithPeriod(uint _neededWei, uint _periodHours, bool _isCalculateDebt) public
+		Expense(_neededWei, 0, _periodHours, _isCalculateDebt)
 	{}
 }
 
 contract WeiRelativeExpenseWithPeriod is Expense {
-	function WeiRelativeExpenseWithPeriod(uint _percentsMul100, uint _periodHours) public 
-		Expense(0, _percentsMul100, _periodHours)
+	function WeiRelativeExpenseWithPeriod(uint _percentsMul100, uint _periodHours, bool _isCalculateDebt) public 
+		Expense(0, _percentsMul100, _periodHours, _isCalculateDebt)
 	{}
 }
