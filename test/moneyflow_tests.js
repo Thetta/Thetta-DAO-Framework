@@ -6,8 +6,7 @@ var MoneyFlow = artifacts.require("./MoneyFlow");
 var WeiFund = artifacts.require("./WeiFund");
 var IWeiReceiver = artifacts.require("./IWeiReceiver");
 
-var OwnersGate = artifacts.require("./OwnersGate");
-var PeriodicGate = artifacts.require("./PeriodicGate");
+var Gate = artifacts.require("./Gate");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
@@ -17,8 +16,6 @@ var WeiAbsoluteExpense = artifacts.require("./WeiAbsoluteExpense");
 var WeiRelativeExpense = artifacts.require("./WeiRelativeExpense");
 var WeiAbsoluteExpenseWithPeriod = artifacts.require("./WeiAbsoluteExpenseWithPeriod");
 var WeiRelativeExpenseWithPeriod = artifacts.require("./WeiRelativeExpenseWithPeriod");
-
-
 
 async function createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends){
 	let callParams = {from:creator, gasPrice:0}	
@@ -214,6 +211,9 @@ global.contract('Moneyflow', (accounts) => {
 			// manually setup the Default organization 
 			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
 			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
+
+			await store.allowActionByAnyMemberOfGroup("openGate","Employees");
+			await store.allowActionByAnyMemberOfGroup("closeGate","Employees");
 
 			// this is a list of actions that require voting
 			await store.allowActionByVoting("manageGroups", token.address);
@@ -697,71 +697,26 @@ global.contract('Moneyflow', (accounts) => {
 		let struct = {};
 		let balance0 = await web3.eth.getBalance(creator);
 
-		let Tax = await WeiRelativeExpenseWithPeriod.new(1000, 0, false, callParams);
-		let Gate1 = await OwnersGate.new(callParams);
-		await Gate1.setChildren(Tax.address);
-
-		let need1 = await Gate1.isNeedsMoney({from:creator});
-		let totalNeed1 = await Gate1.getTotalWeiNeeded(1000*money);
+		let tax = await WeiRelativeExpenseWithPeriod.new(1000, 0, false, callParams);
+		let gate1 = await Gate.new(daoBase.address, tax.address, callParams);
+		
+		let need1 = await gate1.isNeedsMoney({from:creator});
+		let totalNeed1 = await gate1.getTotalWeiNeeded(1000*money);
 		global.assert.equal(need1, true, 'should need money');
 		global.assert.equal(totalNeed1.toNumber(), 100*money, 'should be 10% of 1000 money');
 
-		await Gate1.processFunds(100*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0});
+		await gate1.processFunds(100*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0});
 
-		let need2 = await Gate1.isNeedsMoney({from:creator});
-		let totalNeed2 = await Gate1.getTotalWeiNeeded(1000*money);
+		let need2 = await gate1.isNeedsMoney({from:creator});
+		let totalNeed2 = await gate1.getTotalWeiNeeded(1000*money);
 		global.assert.equal(need2, true, 'should need money');
 		global.assert.equal(totalNeed2.toNumber(), 100*money, 'should be 10% of 1000 money');
 
-		await Gate1.closeIt(callParams);
+		await gate1.closeIt(callParams);
 
-		let need3 = await Gate1.isNeedsMoney({from:creator});
-		let totalNeed3 = await Gate1.getTotalWeiNeeded(1000*money);
+		let need3 = await gate1.isNeedsMoney({from:creator});
+		let totalNeed3 = await gate1.getTotalWeiNeeded(1000*money);
 		global.assert.equal(need3, false, 'should not need money');
 		global.assert.equal(totalNeed3.toNumber(), 0, 'should be 0 money');
 	});
-
-	global.it('gates should access money, then processFunds, then not access, then 25 hours, then access',async() => {
-		let timePeriod = 25;
-		let callParams = {from:creator, gasPrice:0}	
-		let struct = {};
-		let balance0 = await web3.eth.getBalance(creator);
-
-		let Tax = await WeiAbsoluteExpenseWithPeriod.new(1000*money, 0, false, callParams);
-		let Gate1 = await PeriodicGate.new(24, callParams);
-		await Gate1.setChildren(Tax.address);
-
-		let need1 = await Gate1.isNeedsMoney({from:creator});
-		let totalNeed1 = await Gate1.getTotalWeiNeeded(1000*money);
-		global.assert.equal(need1, true, 'should need money');
-		global.assert.equal(totalNeed1.toNumber(), 1000*money, 'should be 1000 money');
-
-		await Gate1.processFunds(1000*money, {value:1000*money, from:creator, gas:1000000, gasPrice:0});
-		await Tax.flush({from:creator, gasPrice:0});
-
-		let need2 = await Gate1.isNeedsMoney({from:creator});
-		let totalNeed2 = await Gate1.getTotalWeiNeeded(1000*money);
-		global.assert.equal(need2, false, 'should not need money');
-		global.assert.equal(totalNeed2.toNumber(), 0, 'should be 0 money');
-
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
-			method: 'evm_increaseTime',
-			params: [3600 * 25 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
-
-		let need3 = await Gate1.isNeedsMoney({from:creator});
-		let totalNeed3 = await Gate1.getTotalWeiNeeded(1000*money);
-		global.assert.equal(need3, true, 'should need money');
-		global.assert.equal(totalNeed3.toNumber(), 1000*money, 'should be 1000 money');
-
-		await Gate1.processFunds(1000*money, {value:1000*money, from:creator, gas:1000000, gasPrice:0});
-		await Tax.flush({from:creator, gasPrice:0});
-
-		let need4 = await Gate1.isNeedsMoney({from:creator});
-		let totalNeed4 = await Gate1.getTotalWeiNeeded(1000*money);
-		global.assert.equal(need4, false, 'should need money');
-		global.assert.equal(totalNeed4.toNumber(), 0, 'should be 0 money');
-	});	
 });
