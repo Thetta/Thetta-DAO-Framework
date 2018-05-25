@@ -7,7 +7,7 @@ var WeiFund = artifacts.require("./WeiFund");
 
 var DefaultMoneyflowSchemeWithUnpackers = artifacts.require("./DefaultMoneyflowSchemeWithUnpackers"); 
 
-global.contract('Moneyflow', (accounts) => {
+global.contract('Scheme', (accounts) => {
 	let token;
 	let store;
 	let daoBase;

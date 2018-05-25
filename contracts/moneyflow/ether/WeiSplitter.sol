@@ -1,14 +1,14 @@
 pragma solidity ^0.4.15;
 
-import "./IMoneyflow.sol";
+import "../IMoneyflow.sol";
 
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 //////////////////////////////////////////////////////
-// WeiSplitter has multiple outputs (allows to send money only to THESE addresses)
+// ISplitter has multiple outputs (allows to send money only to THESE addresses)
 // 
-contract WeiSplitterBase is IWeiSplitter, Ownable {
+contract SplitterBase is ISplitter, Ownable {
 	using SafeMath for uint;
 
 	mapping (uint=>address) children;
@@ -16,11 +16,11 @@ contract WeiSplitterBase is IWeiSplitter, Ownable {
 
 	string public name = "";
 
-	function WeiSplitterBase(string _name) public {
+	function SplitterBase(string _name) public {
 		name = _name;
 	}
 
-// IWeiSplitter:
+// ISplitter:
 	function getChildrenCount() public constant returns(uint){
 		return childrenCount;
 	}
@@ -33,8 +33,8 @@ contract WeiSplitterBase is IWeiSplitter, Ownable {
 	}
 }
 
-contract WeiTopDownSplitter is WeiSplitterBase, IWeiReceiver {
-	function WeiTopDownSplitter(string _name) WeiSplitterBase(_name) public {
+contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
+	function WeiTopDownSplitter(string _name) SplitterBase(_name) public {
 	}
 
 // IWeiReceiver:
@@ -132,10 +132,8 @@ contract WeiTopDownSplitter is WeiSplitterBase, IWeiReceiver {
 	}
 }
 
-
-// 
-contract WeiUnsortedSplitter is WeiSplitterBase, IWeiReceiver {
-	function WeiUnsortedSplitter(string _name) WeiSplitterBase(_name) public {
+contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
+	function WeiUnsortedSplitter(string _name) SplitterBase(_name) public {
 	}
 
 // IWeiReceiver:

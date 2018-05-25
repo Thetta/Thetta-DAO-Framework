@@ -1,5 +1,4 @@
 var WeiTask = artifacts.require("./WeiTask");
-var WeiBounty = artifacts.require("./WeiBounty");
 var DaoBase = artifacts.require("./DaoBase");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
@@ -88,6 +87,7 @@ global.contract('0.Tasks: prepaid positive scenario. Task created by creator', (
 			false,
 			false,
 			ETH,
+			0,
 			{gas: 10000000, from: creator}
 		);
 	});
@@ -234,6 +234,7 @@ global.contract('1.Tasks: postpaid positive scenario with UNKNOWN price. Task cr
 			true,
 			false,
 			0,
+			0,
 			{gas: 10000000, from: creator}
 		);
 	});
@@ -343,6 +344,7 @@ global.contract('2.Tasks: postpaid positive scenario with KNOWN price. Task crea
 			true,
 			false,
 			ETH,
+			0,
 			{gas: 10000000, from: creator}
 		);
 	});
@@ -448,6 +450,7 @@ global.contract('3.Tasks: donation positive scenario. Task created by creator', 
 			'Task description',
 			true,
 			true,
+			0,
 			0,
 			{gas: 10000000, from: creator}
 		);
@@ -556,6 +559,7 @@ global.contract('4.Tasks: cancel on init state.', (accounts) => {
 			false,
 			false,
 			ETH,
+			0,
 			{gas: 10000000, from: creator}
 		);
 	});
@@ -598,6 +602,7 @@ global.contract('5.Tasks: cancel on prepaid state.', (accounts) => {
 			false,
 			false,
 			ETH,
+			0,
 			{gas: 10000000, from: creator}
 		);
 	});

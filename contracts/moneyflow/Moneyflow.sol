@@ -1,15 +1,32 @@
 pragma solidity ^0.4.15;
 import "./IMoneyflow.sol";
-import "./WeiFund.sol";
+
+import "./ether/WeiFund.sol";
 
 import "../IDaoBase.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+// Easy-to-use wrapper to convert fallback -> processFunds()
+// fallback -> processFunds
+contract FallbackToWeiReceiver {
+	address output = 0x0;
+
+	// _output should be IWeiReceiver
+	function FallbackToWeiReceiver(address _output) public {
+		output = _output;
+	}
+
+	function()public payable{
+		IWeiReceiver iwr = IWeiReceiver(output);
+		iwr.processFunds.value(msg.value)(msg.value);		
+	}
+}
+
 contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	WeiFund donationEndpoint;
 	// by default - this is 0x0, please use setWeiReceiver method
-	// this can be a WeiSplitter (top-down or unsorted)
+	// this can be a ISplitter (top-down or unsorted)
 	IWeiReceiver rootReceiver;
 
 	FallbackToWeiReceiver donationF2WR;
