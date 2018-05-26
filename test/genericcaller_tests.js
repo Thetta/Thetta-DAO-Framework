@@ -141,9 +141,6 @@ global.contract('GenericCaller', (accounts) => {
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		// should not vote! because ACTION will throw 
-		// i.e. 'issueTokens' action is disabled!
-		//
 		await voting.vote(true,0,{from:employee1});
 
 		// TODO: uncomment! this condition should be met 
@@ -158,11 +155,11 @@ global.contract('GenericCaller', (accounts) => {
 		global.assert.equal(r2[2],2,'total');
 
 		// get voting results again
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
+		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
+		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 		
 		const balance2 = await token.balanceOf(employee1);
-		global.assert.notEqual(balance2.toNumber(),1000,'employee1 balance should NOT be updated');
+		global.assert.notEqual(balance2.toNumber(),1000,'employee1 balance is updated');
 	});
 
 	global.it('should automatically create proposal and voting to issue more tokens',async() => {
