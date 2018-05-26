@@ -51,7 +51,7 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 		}
 
 		if(0!=percentsMul100){
-			return (getMultifactor()*(percentsMul100 * _inputWei)) / 10000;
+			return (getDebtMultiplier()*(percentsMul100 * _inputWei)) / 10000;
 		}else{
 			return getMinWeiNeeded();
 		}
@@ -61,14 +61,14 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 		if(!isNeedsMoney() || (0!=percentsMul100)){
 			return 0;
 		}
-		return getMultifactor()*neededWei;
+		return getDebtMultiplier()*neededWei;
 	}
 
 	function getMomentReceived() constant public returns(uint){
 		return momentReceived;
 	}
 		
-	function getMultifactor() constant public returns(uint){
+	function getDebtMultiplier() constant public returns(uint){
 		if((isCalculateDebt)&&(0!=momentReceived)){
 			return ((now - momentReceived) / (periodHours * 3600 * 1000));	
 		} else{

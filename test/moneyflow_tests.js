@@ -718,5 +718,7 @@ global.contract('Moneyflow', (accounts) => {
 		let totalNeed3 = await gate1.getTotalWeiNeeded(1000*money);
 		global.assert.equal(need3, false, 'should not need money');
 		global.assert.equal(totalNeed3.toNumber(), 0, 'should be 0 money');
+
+		await CheckExceptions.checkContractThrows(gate1.processFunds, [100*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0}])
 	});
 });
