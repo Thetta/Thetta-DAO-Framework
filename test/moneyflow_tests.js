@@ -693,7 +693,7 @@ global.contract('Moneyflow', (accounts) => {
 	});	
 
 	global.it('gates should access money then close then not accept',async() => {
-		let callParams = {from:creator, gasPrice:0}	
+		let callParams = {from:creator, gasPrice:0};
 		let struct = {};
 		let balance0 = await web3.eth.getBalance(creator);
 
@@ -704,8 +704,6 @@ global.contract('Moneyflow', (accounts) => {
 		let totalNeed1 = await gate1.getTotalWeiNeeded(1000*money);
 		global.assert.equal(need1, true, 'should need money');
 		global.assert.equal(totalNeed1.toNumber(), 100*money, 'should be 10% of 1000 money');
-
-		await gate1.processFunds(100*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0});
 
 		let need2 = await gate1.isNeedsMoney({from:creator});
 		let totalNeed2 = await gate1.getTotalWeiNeeded(1000*money);
@@ -719,6 +717,14 @@ global.contract('Moneyflow', (accounts) => {
 		global.assert.equal(need3, false, 'should not need money');
 		global.assert.equal(totalNeed3.toNumber(), 0, 'should be 0 money');
 
+		// should not process funds if gate is closed
 		await CheckExceptions.checkContractThrows(gate1.processFunds, [100*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0}])
+
+		await gate1.open(callParams);
+		
+		// should process funds if gate is open
+		await gate1.processFunds(100*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0});
+
+		// TODO: check balances
 	});
 });
