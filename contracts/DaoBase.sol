@@ -42,15 +42,16 @@ contract DaoStorage is Ownable {
 
 	address[] public observers;
 
-	// permission -> flag
-	mapping (bytes32=>bool) byShareholder;
-	mapping (bytes32=>bool) byVoting;
+	// token -> permission -> flag
+	mapping (address=>mapping(bytes32=>bool)) byShareholder;
+	// token -> permission -> flag
+	mapping (address=>mapping(bytes32=>bool)) byVoting;
+	// address -> permission -> flag
 	mapping (address=>mapping(bytes32=>bool)) byAddress;
 
-	// name -> members
-	mapping (bytes32=>address[]) groupMembers;
-
-	// name -> permission -> flag
+	// member -> group names
+	mapping (address=>bytes32[]) groupMembers;
+	// group name -> permission -> flag
 	mapping (bytes32=>mapping(bytes32=>bool)) isAllowedActionByGroupMember;
 
 ////////////////////////////////////////////////////////////////////////
@@ -79,8 +80,7 @@ contract DaoStorage is Ownable {
 	function addGroupMember(bytes32 _groupName, address _newMember) public onlyOwner{
 		// check if already added 
 		require(!isGroupMember(_groupName, _newMember));
-
-		groupMembers[_groupName].push(_newMember);
+		groupMembers[_newMember].push(_groupName);
 	}
 
 	function removeGroupMember(bytes32 _groupName, address _member)public onlyOwner {
@@ -88,10 +88,10 @@ contract DaoStorage is Ownable {
 	}
 
 	function isGroupMember(bytes32 _groupName, address _a) public constant returns(bool){
-		uint len = groupMembers[_groupName].length;
+		uint len = groupMembers[_a].length;
 
 		for(uint i=0; i<len; ++i){
-			if(groupMembers[_groupName][i]==_a){
+			if(groupMembers[_a][i]==_groupName){
 				return true;
 			}
 		}
@@ -102,35 +102,38 @@ contract DaoStorage is Ownable {
 		isAllowedActionByGroupMember[_groupName][_what] = true;
 	}
 
-	function isCanDoByGroupMember(bytes32 _what, bytes32 _groupName) public constant returns(bool){
-		return isAllowedActionByGroupMember[_groupName][_what];
+	function isCanDoByGroupMember(bytes32 _what, address _a /*, bytes32 _groupName*/) public constant returns(bool){
+		uint len = groupMembers[_a].length;
+
+		// enumerate all groups that _a belongs to
+		for(uint i=0; i<len; ++i){
+			bytes32 groupName = groupMembers[_a][i];
+			if(isAllowedActionByGroupMember[groupName][_what]){
+				return true;
+			}
+		}
+		return false; 
 	}
 
 	//////
-	// TODO: use _tokenAddress
 	function allowActionByShareholder(bytes32 _what, address _tokenAddress) public onlyOwner {
-		byShareholder[_what] = true;
+		byShareholder[_tokenAddress][_what] = true;
 	}
 
-	// TODO: use _tokenAddress
 	function allowActionByVoting(bytes32 _what, address _tokenAddress) public onlyOwner {
-		byVoting[_what] = true;
+		byVoting[_tokenAddress][_what] = true;
 	}
 
 	function allowActionByAddress(bytes32 _what, address _a) public onlyOwner {
 		byAddress[_a][_what] = true;
 	}
 
-	function isCanDoByShareholder(bytes32 _permissionName) public constant returns(bool){
-		// TODO: use _tokenAddress 
-		// see <addActionBySha> method
-		return byShareholder[_permissionName];
+	function isCanDoByShareholder(bytes32 _permissionName, address _tokenAddress) public constant returns(bool){
+		return byShareholder[_tokenAddress][_permissionName];
 	}
 
-	function isCanDoByVoting(bytes32 _permissionName) public constant returns(bool,address){
-		// TODO: return _tokenAddress instead of 0x0!!!
-		// see <allowActionByVoting> method
-		return (byVoting[_permissionName], 0x0);
+	function isCanDoByVoting(bytes32 _permissionName, address _tokenAddress) public constant returns(bool){
+		return byVoting[_tokenAddress][_permissionName];
 	}
 
 	function isCanDoByAddress(bytes32 _permissionName, address _a) public constant returns(bool){
@@ -158,10 +161,6 @@ contract DaoStorage is Ownable {
 		}
 
 		return (false,false);
-	}
-
-	function isShareholder(address _a, address _token) public constant returns(bool){
-		return (ERC20(_token).balanceOf(_a)!=0);
 	}
 }
 
@@ -218,25 +217,21 @@ contract DaoBase is IDaoBase, Ownable {
 		}
 
 		// 1 - check if employees can do that without voting?
-		// TODO: generalize for ALL groups!
-		if(store.isCanDoByGroupMember(keccak256(_permissionName), keccak256("Employees")) 
-			&& store.isGroupMember(keccak256("Employees"), _a))
-		{
+	   if(store.isCanDoByGroupMember(keccak256(_permissionName), _a)){
 			return true;
 		}
 
 		// 2 - check if shareholder can do that without voting?
-		// TODO: implement this
-		// TODO: pass token address
-		address someToken = 0x0;
-		if(store.isCanDoByShareholder(keccak256(_permissionName)) 
-			&& isShareholder(_a, someToken))
+		// TODO: generalize for ALL tokens!
+		if(store.isCanDoByShareholder(keccak256(_permissionName), address(store.stdToken()))
+			&& isShareholder(_a, address(store.stdToken())))
 		{
 			return true;
 		}
 
 		// 2 - can do action only by starting new vote first?
-		var (isCan, tokenAddressForVoting) = store.isCanDoByVoting(keccak256(_permissionName));
+		// TODO: generalize for ALL tokens!
+		bool isCan = store.isCanDoByVoting(keccak256(_permissionName), address(store.stdToken()));
 		if(isCan){
 			var (isVotingFound, votingResult) = store.getProposalVotingResults(msg.sender);
 			if(isVotingFound){
@@ -248,7 +243,8 @@ contract DaoBase is IDaoBase, Ownable {
 			
 			// 3 - only token holders with > 51% of gov.tokens can add new task immediately 
 			// otherwise -> start voting
-			if(isInMajority(_a, tokenAddressForVoting)){
+			// TODO: generalize for ALL tokens!
+			if(isInMajority(_a, address(store.stdToken()))){
 				return true;
 			}
 
@@ -286,14 +282,12 @@ contract DaoBase is IDaoBase, Ownable {
 
 // Public (for tests)
 	function isShareholder(address _a, address _token) public constant returns(bool){
-		// TODO: use _tokenAddress
-		return store.isShareholder(_a, _token);
+		return (ERC20(_token).balanceOf(_a)!=0);
 	}
 
 	// only token holders with > 51% of gov.tokens can add new task immediately 
 	function isInMajority(address _a, address _tokenAddress) public constant returns(bool){
-		// TODO: use _tokenAddress
-		return(store.stdToken().balanceOf(_a)>=store.stdToken().totalSupply()/2);
+		return (ERC20(_tokenAddress).balanceOf(_a))>=(ERC20(_tokenAddress).totalSupply()/2);
 	}
 
 	function issueTokensInternal(address _to, uint _amount) internal {

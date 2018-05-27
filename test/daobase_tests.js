@@ -67,7 +67,7 @@ global.contract('DaoBase', (accounts) => {
 		const isMajority2 = await daoBase.isInMajority(employee1, token.address);
 		global.assert.strictEqual(isMajority2,false,'Employee should not be in majority');
 
-		const isCan = await store.isCanDoByGroupMember(KECCAK256("addNewProposal"), KECCAK256("Employees"));
+		const isCan = await store.isCanDoByGroupMember(KECCAK256("addNewProposal"), creator);
 		global.assert.equal(isCan,true,'Any employee should be able to add new proposal');
 		
 		const isCan2 = await daoBase.isCanDoAction(creator, "addNewProposal");
