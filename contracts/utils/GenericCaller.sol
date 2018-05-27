@@ -95,9 +95,16 @@ contract GenericCaller is DaoClient {
 		}
 	}
 
-	function createVoting(string _permissionsId, IProposal _prop, address _origin)internal returns(IVoting){
-		// TODO: make Voting factory. I.e., vote type should depend on what is the _permissionsId
-		return new Voting(mc, _prop, _origin, Voting.VoteType.EmployeesVote, 24 *60, 0x0);
+	function setVotingType(string _permissionsId, string _votingType, bytes32 _param1, bytes32 _param2) public {
+		// TODO
+	}	
+
+	function createVoting(string _permissionsId, IProposal _proposal, address _origin)internal returns(IVoting){
+		// TODO
+
+		//return new Voting(mc, _proposal, _origin, Voting.VoteType.EmployeesVote, 24 *60, 0x0);
+
+		return new Voting_1p1v(mc, _proposal, _origin, 24 *60, "Employees");
 	}
 }
 

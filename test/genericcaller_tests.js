@@ -7,6 +7,7 @@ var IWeiReceiver = artifacts.require("./IWeiReceiver");
 
 var AutoDaoBaseActionCaller = artifacts.require("./AutoDaoBaseActionCaller");
 var AutoMoneyflowActionCaller = artifacts.require("./AutoMoneyflowActionCaller");
+
 var DefaultMoneyflowSchemeWithUnpackers = artifacts.require("./DefaultMoneyflowSchemeWithUnpackers");
 var DefaultMoneyflowScheme = artifacts.require("./DefaultMoneyflowScheme");
 
@@ -71,7 +72,7 @@ global.contract('GenericCaller', (accounts) => {
 			'Should not be able to issue tokens AND add new proposal');
 
 		const proposalsCount2 = await daoBase.getProposalsCount();
-		global.assert.equal(proposalsCount2,0,'No new proposal should be added because'); 
+		global.assert.equal(proposalsCount2,0,'No new proposal should be added'); 
 	});
 
 	global.it('should not issue tokens automatically because issueTokens cant be called even with voting',async() => {
@@ -128,8 +129,11 @@ global.contract('GenericCaller', (accounts) => {
 		const isCanDo2 = await daoBase.isCanDoAction(employee1,"addNewProposal");
 		global.assert.strictEqual(isCanDo2,true,'employee1 can add new vote');
 
+		const balance1 = await token.balanceOf(employee1);
+		global.assert.notEqual(balance1.toNumber(),1000,'employee1 balance is 1000');
+
 		// new proposal should be added 
-		await aacInstance.issueTokensAuto(employee1,1000,{from: employee1});
+		await aacInstance.issueTokensAuto(employee1,1200,{from: employee1});
 		const proposalsCount2 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount2,1,'New proposal should be added'); 
 
@@ -159,10 +163,10 @@ global.contract('GenericCaller', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 		
 		const balance2 = await token.balanceOf(employee1);
-		global.assert.notEqual(balance2.toNumber(),1000,'employee1 balance is updated');
+		global.assert.notEqual(balance2.toNumber(),1000,'employee1 balance should not be updated');
 	});
 
-	global.it('should automatically create proposal and voting to issue more tokens',async() => {
+	global.it('should automatically create proposal and 1P1V voting to issue more tokens',async() => {
 		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
@@ -402,6 +406,98 @@ global.contract('GenericCaller', (accounts) => {
 		await store.transferOwnership(daoBase.address);
 
 		// TODO: implement test 
+	});
+
+	global.it('should create SimpleTokenVote to issue more tokens',async() => {
+		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
+		await token.mint(creator, 1000);
+		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
+
+		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
+
+		{
+			await store.addGroup("Employees");
+			await store.addGroupMember("Employees", creator);
+
+			// manually setup the Default organization 
+			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+
+			// this is a list of actions that require voting
+			await store.allowActionByVoting("manageGroups", token.address);
+			await store.allowActionByVoting("issueTokens", token.address);
+
+			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
+			await store.allowActionByAddress("addNewProposal", aacInstance.address);
+			// these actions required if AAC will call this actions DIRECTLY (without voting)
+			await store.allowActionByAddress("manageGroups", aacInstance.address);
+			await store.allowActionByAddress("issueTokens", aacInstance.address);
+			await store.allowActionByAddress("upgradeDaoContract", aacInstance.address);
+
+			// set voting types:
+			//await aacInstance.setVotingType("issueTokens", "1p1v", "Employees", 0x0);
+		}
+
+		// do not forget to transfer ownership
+		await token.transferOwnership(daoBase.address);
+		await store.transferOwnership(daoBase.address);
+
+		const proposalsCount1 = await daoBase.getProposalsCount();
+		global.assert.equal(proposalsCount1,0,'No proposals should be added');
+
+		// add new employee1
+		await daoBase.addGroupMember("Employees",employee1,{from: creator});
+		const isEmployeeAdded = await daoBase.isGroupMember("Employees",employee1);
+		global.assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
+
+		// employee1 is NOT in the majority
+		const isCanDo1 = await daoBase.isCanDoAction(employee1,"issueTokens");
+		global.assert.strictEqual(isCanDo1,false,'employee1 is NOT in the majority, so can issue token only with voting');
+		const isCanDo2 = await daoBase.isCanDoAction(employee1,"addNewProposal");
+		global.assert.strictEqual(isCanDo2,true,'employee1 can add new vote');
+
+		// new proposal should be added 
+		await aacInstance.issueTokensAuto(employee1,1000,{from: employee1});
+		const proposalsCount2 = await daoBase.getProposalsCount();
+		global.assert.equal(proposalsCount2,1,'New proposal should be added'); 
+
+		// check the voting data
+		const pa = await daoBase.getProposalAtIndex(0);
+		const proposal = await IProposal.at(pa);
+		const votingAddress = await proposal.getVoting();
+		const voting = await Voting.at(votingAddress);
+		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+
+		/*
+		const r = await voting.getFinalResults();
+		global.assert.equal(r[0],1,'yes');			// 1 already voted (who started the voting)
+		global.assert.equal(r[1],0,'no');
+		global.assert.equal(r[2],1,'total');
+
+		const balance1 = await token.balanceOf(employee1);
+		global.assert.strictEqual(balance1.toNumber(),0,'initial employee1 balance');
+
+		// vote again
+		// should execute the action (issue tokens)!
+		await voting.vote(true,0,{from:employee1});
+		const r2 = await voting.getFinalResults();
+		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
+		global.assert.equal(r2[1],0,'no');
+		global.assert.equal(r2[2],2,'total');
+
+		// get voting results again
+		global.assert.strictEqual(await voting.isFinished(),true,'Voting is finished now');
+		global.assert.strictEqual(await voting.isYes(),true,'Voting result is yes!');
+
+		const balance2 = await token.balanceOf(employee1);
+		global.assert.strictEqual(balance2.toNumber(),1000,'employee1 balance should be updated');
+
+		// should not call vote again 
+		await CheckExceptions.checkContractThrows(voting.vote.sendTransaction,
+			[true,{ from: creator}],
+			'Should not call action again');
+		*/
 	});
 });
 
