@@ -10,16 +10,11 @@ contract AutoDaoBaseActionCaller is GenericCaller {
 	}
 
 	function addGroupMemberAuto(string _group, address _a) public returns(address proposalOut){
-		// TODO: implement 
-		assert(false);
-
-		/*
 		bytes32[] memory params = new bytes32[](2);
-		params[0] = bytes32(_group);
+		params[0] = bytes32(keccak256(_group));
 		params[1] = bytes32(_a);
 
 	   return doAction("manageGroups", mc, msg.sender,"addGroupMemberGeneric(bytes32[])",params);
-	   */
 	}
 
 	function issueTokensAuto(address _to, uint _amount) public returns(address proposalOut){

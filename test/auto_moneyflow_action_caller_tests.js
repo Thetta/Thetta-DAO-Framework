@@ -13,6 +13,10 @@ var IProposal = artifacts.require("./IProposal");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
+function KECCAK256 (x){
+	return web3.sha3(x);
+}
+
 global.contract('AutoMoneyflowActionCaller', (accounts) => {
 	const creator = accounts[0];
 	const employee1 = accounts[1];
@@ -21,47 +25,49 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 	const outsider = accounts[4];
 	const output = accounts[5]; 
 
+	let token;
+	let daoBase;
+	let moneyflowInstance;
+	let aacInstance;
+
 	let money = web3.toWei(0.001, "ether");
 
 	global.beforeEach(async() => {
-
-	});
-
-	global.it('should allow to get donations using AAC (direct call)',async() => {
-		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
+		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
-		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
+		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 
-		let aacInstance = await AutoMoneyflowActionCaller.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
+		aacInstance = await AutoMoneyflowActionCaller.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
 
-		{
-			await store.addGroup("Employees");
-			await store.addGroupMember("Employees", creator);
-			await store.addGroupMember("Employees", employee1);
-			await store.addGroupMember("Employees", employee2);
-
-			await store.allowActionByAddress("manageGroups", creator);
-
-			await store.allowActionByAnyMemberOfGroup("addNewEmployee","Employees");
-			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
-
-			await store.allowActionByVoting("withdrawDonations", token.address);
-
-			// AAC requires special permissions
-			await store.allowActionByAddress("addNewProposal", aacInstance.address);
-			// these actions required if AAC will call this actions DIRECTLY (without voting)
-			await store.allowActionByAddress("withdrawDonations", aacInstance.address);
-			await store.allowActionByAddress("addNewTask", aacInstance.address);
-			await store.allowActionByAddress("setRootWeiReceiver", aacInstance.address);
-		}
+		// add creator as first employee	
+		await store.addGroup(KECCAK256("Employees"));
+		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
 
+		await daoBase.addGroupMember("Employees", employee1);
+		await daoBase.addGroupMember("Employees", employee2);
+
+		await daoBase.allowActionByAnyMemberOfGroup("addNewEmployee","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
+		
+		await daoBase.allowActionByVoting("withdrawDonations", token.address);
+
+		// AAC requires special permissions
+		await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
+		// these actions required if AAC will call this actions DIRECTLY (without voting)
+		await daoBase.allowActionByAddress("withdrawDonations", aacInstance.address);
+		await daoBase.allowActionByAddress("addNewTask", aacInstance.address);
+		await daoBase.allowActionByAddress("setRootWeiReceiver", aacInstance.address);
+	});
+
+	global.it('should allow to get donations using AAC (direct call)',async() => {
 		// check permissions
 		const isCanWithdraw = await daoBase.isCanDoAction(creator,"withdrawDonations");
 		global.assert.equal(isCanWithdraw, true, 'Creator should be able to withdrawDonations directly without voting');
@@ -89,40 +95,6 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 	});
 
 	global.it('should allow to get donations using AAC (with voting)',async() => {
-		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
-		await token.mint(creator, 1000);
-
-		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
-		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
-
-		let aacInstance = await AutoMoneyflowActionCaller.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
-
-		{
-			await store.addGroup("Employees");
-			await store.addGroupMember("Employees", creator);
-			await store.addGroupMember("Employees", employee1);
-			await store.addGroupMember("Employees", employee2);
-
-			await store.allowActionByAddress("manageGroups", creator);
-
-			await store.allowActionByAnyMemberOfGroup("addNewEmployee","Employees");
-			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
-
-			await store.allowActionByVoting("withdrawDonations", token.address);
-
-			// AAC requires special permissions
-			await store.allowActionByAddress("addNewProposal", aacInstance.address);
-			// these actions required if AAC will call this actions DIRECTLY (without voting)
-			await store.allowActionByAddress("withdrawDonations", aacInstance.address);
-			await store.allowActionByAddress("addNewTask", aacInstance.address);
-			await store.allowActionByAddress("setRootWeiReceiver", aacInstance.address);
-		}
-
-		// do not forget to transfer ownership
-		await token.transferOwnership(daoBase.address);
-		await store.transferOwnership(daoBase.address);
-
 		// TODO: implement test 
 	});
 

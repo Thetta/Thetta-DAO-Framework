@@ -9,6 +9,10 @@ var IProposal = artifacts.require("./IProposal");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
+function KECCAK256 (x){
+	return web3.sha3(x);
+}
+
 global.contract('AutoDaoBaseActionCaller', (accounts) => {
 	const creator = accounts[0];
 	const employee1 = accounts[1];
@@ -31,26 +35,27 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
 
-		{
-			// add creator as first employee	
-			await store.addGroup("Employees");
-			await store.addGroupMember("Employees", creator);
-
-			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-
-			await store.allowActionByVoting("manageGroups", token.address);
-			await store.allowActionByVoting("issueTokens", token.address);
-
-			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
-			// because of this AAC can't add new proposal!
-			// 
-			//await store.allowActionByAddress("addNewProposal", aacInstance.address);
-		}
+		// add creator as first employee	
+		await store.addGroup(KECCAK256("Employees"));
+		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
 
+		// Set permissions:
+		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+
+		await daoBase.allowActionByVoting("manageGroups", token.address);
+		await daoBase.allowActionByVoting("issueTokens", token.address);
+
+		// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
+		// because of this AAC can't add new proposal!
+		// 
+		//await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
+
+		//////
 		const proposalsCount1 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount1,0,'No proposals should be added');
 
@@ -76,32 +81,29 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
 
-		{
-			await store.addGroup("Employees");
-			await store.addGroupMember("Employees", creator);
-
-			// manually setup the Default organization 
-			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-
-			// this is a list of actions that require voting
-			await store.allowActionByVoting("manageGroups", token.address);
-
-			// SEE this -> this permissions is commented! So even if AAC has rights to add proposal, 
-			// the proposal will never be finished 
-			// 
-			//await store.allowActionByVoting("issueTokens", token.address);
-
-			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
-			await store.allowActionByAddress("addNewProposal", aacInstance.address);
-			// these actions required if AAC will call this actions DIRECTLY (without voting)
-			await store.allowActionByAddress("manageGroups", aacInstance.address);
-			await store.allowActionByAddress("issueTokens", aacInstance.address);
-			await store.allowActionByAddress("upgradeDaoContract", aacInstance.address);
-		}
+		// add creator as first employee	
+		await store.addGroup(KECCAK256("Employees"));
+		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
+
+		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+		await daoBase.allowActionByVoting("manageGroups", token.address);
+
+		// SEE this -> this permissions is commented! So even if AAC has rights to add proposal, 
+		// the proposal will never be finished 
+		// 
+		//await daoBase.allowActionByVoting("issueTokens", token.address);
+
+		// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
+		await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
+		// these actions required if AAC will call this actions DIRECTLY (without voting)
+		await daoBase.allowActionByAddress("manageGroups", aacInstance.address);
+		await daoBase.allowActionByAddress("issueTokens", aacInstance.address);
+		await daoBase.allowActionByAddress("upgradeDaoContract", aacInstance.address);
 
 		// even creator cant issue token directly!
 		await CheckExceptions.checkContractThrows(daoBase.issueTokens.sendTransaction,
@@ -167,28 +169,26 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
 
-		{
-			await store.addGroup("Employees");
-			await store.addGroupMember("Employees", creator);
-
-			// manually setup the Default organization 
-			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-
-			// this is a list of actions that require voting
-			await store.allowActionByVoting("manageGroups", token.address);
-			await store.allowActionByVoting("issueTokens", token.address);
-
-			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
-			await store.allowActionByAddress("addNewProposal", aacInstance.address);
-			// these actions required if AAC will call this actions DIRECTLY (without voting)
-			await store.allowActionByAddress("manageGroups", aacInstance.address);
-			await store.allowActionByAddress("issueTokens", aacInstance.address);
-			await store.allowActionByAddress("upgradeDaoContract", aacInstance.address);
-		}
+		// add creator as first employee	
+		await store.addGroup(KECCAK256("Employees"));
+		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
+
+		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+
+		await daoBase.allowActionByVoting("manageGroups", token.address);
+		await daoBase.allowActionByVoting("issueTokens", token.address);
+
+		// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
+		await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
+		// these actions required if AAC will call this actions DIRECTLY (without voting)
+		await daoBase.allowActionByAddress("manageGroups", aacInstance.address);
+		await daoBase.allowActionByAddress("issueTokens", aacInstance.address);
+		await daoBase.allowActionByAddress("upgradeDaoContract", aacInstance.address);
 
 		const proposalsCount1 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount1,0,'No proposals should be added');
@@ -256,28 +256,27 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
 
-		{
-			await store.addGroup("Employees");
-			await store.addGroupMember("Employees", creator);
-			await store.addGroupMember("Employees", employee1);
-			await store.addGroupMember("Employees", employee2);
-
-			//await store.allowActionByAnyMemberOfGroup("manageGroups","Employees");
-
-			await store.allowActionByVoting("upgradeDao", token.address);
-
-			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
-			await store.allowActionByAddress("addNewProposal", aacInstance.address);
-			// these actions required if AAC will call this actions DIRECTLY (without voting)
-			await store.allowActionByAddress("manageGroups", aacInstance.address);
-			await store.allowActionByAddress("addNewTask", aacInstance.address);
-			await store.allowActionByAddress("issueTokens", aacInstance.address);
-			await store.allowActionByAddress("upgradeDaoContract", aacInstance.address);
-		}
+		// add creator as first employee	
+		await store.addGroup(KECCAK256("Employees"));
+		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
+
+		await daoBase.addGroupMember("Employees", employee1);
+		await daoBase.addGroupMember("Employees", employee2);
+
+		await daoBase.allowActionByVoting("upgradeDao", token.address);
+
+		// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
+		await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
+		// these actions required if AAC will call this actions DIRECTLY (without voting)
+		await daoBase.allowActionByAddress("manageGroups", aacInstance.address);
+		await daoBase.allowActionByAddress("addNewTask", aacInstance.address);
+		await daoBase.allowActionByAddress("issueTokens", aacInstance.address);
+		await daoBase.allowActionByAddress("upgradeDaoContract", aacInstance.address);
 
 		// should be able to upgrde microcompany directly without voting (creator is in majority!)
 		let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
@@ -310,31 +309,29 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
 
-		{
-			await store.addGroup("Employees");
-			await store.addGroupMember("Employees", creator);
-
-			// manually setup the Default organization 
-			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-
-			// this is a list of actions that require voting
-			await store.allowActionByVoting("manageGroups", token.address);
-			await store.allowActionByVoting("issueTokens", token.address);
-
-			// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
-			await store.allowActionByAddress("addNewProposal", aacInstance.address);
-			// these actions required if AAC will call this actions DIRECTLY (without voting)
-			await store.allowActionByAddress("manageGroups", aacInstance.address);
-			await store.allowActionByAddress("issueTokens", aacInstance.address);
-			await store.allowActionByAddress("upgradeDaoContract", aacInstance.address);
-
-			// set voting types:
-			//await aacInstance.setVotingType("issueTokens", "1p1v", "Employees", 0x0);
-		}
+		// add creator as first employee	
+		await store.addGroup(KECCAK256("Employees"));
+		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
+
+		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+		await daoBase.allowActionByVoting("manageGroups", token.address);
+		await daoBase.allowActionByVoting("issueTokens", token.address);
+
+		// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
+		await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
+		// these actions required if AAC will call this actions DIRECTLY (without voting)
+		await daoBase.allowActionByAddress("manageGroups", aacInstance.address);
+		await daoBase.allowActionByAddress("issueTokens", aacInstance.address);
+		await daoBase.allowActionByAddress("upgradeDaoContract", aacInstance.address);
+
+		// TODO:
+		// set voting types:
+		//await aacInstance.setVotingType("issueTokens", "1p1v", "Employees", 0x0);
 
 		const proposalsCount1 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount1,0,'No proposals should be added');

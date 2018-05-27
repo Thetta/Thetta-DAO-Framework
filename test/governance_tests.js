@@ -7,6 +7,10 @@ var IProposal = artifacts.require("./IProposal");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
+function KECCAK256 (x){
+	return web3.sha3(x);
+}
+
 global.contract('Voting_1p1v', (accounts) => {
 	const creator = accounts[0];
 	const employee1 = accounts[1];
@@ -23,20 +27,19 @@ global.contract('Voting_1p1v', (accounts) => {
 
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 
-		{
-			// add creator as first employee	
-			await store.addGroup("Employees");
-			await store.addGroupMember("Employees", creator);
-
-			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-
-			await store.allowActionByVoting("manageGroups", token.address);
-			await store.allowActionByVoting("issueTokens", token.address);
-		}
+		// add creator as first employee	
+		await store.addGroup(KECCAK256("Employees"));
+		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
+
+		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+
+		await daoBase.allowActionByVoting("manageGroups", token.address);
+		await daoBase.allowActionByVoting("issueTokens", token.address);
 	});
 	
 	global.it('should create and use 1p1v voting',async() => {
@@ -78,20 +81,19 @@ global.contract('Voting_SimpleToken', (accounts) => {
 
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 
-		{
-			// add creator as first employee	
-			await store.addGroup("Employees");
-			await store.addGroupMember("Employees", creator);
-
-			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-
-			await store.allowActionByVoting("manageGroups", token.address);
-			await store.allowActionByVoting("issueTokens", token.address);
-		}
+		// add creator as first employee	
+		await store.addGroup(KECCAK256("Employees"));
+		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
+
+		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+
+		await daoBase.allowActionByVoting("manageGroups", token.address);
+		await daoBase.allowActionByVoting("issueTokens", token.address);
 	});
 	
 	global.it('should create and use simple token voting',async() => {

@@ -21,6 +21,7 @@ interface IDaoBase {
 	function allowActionByShareholder(string _what, address _tokenAddress) public;
 	function allowActionByVoting(string _what, address _tokenAddress) public;
 	function allowActionByAddress(string _what, address _a) public;
+	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public;
 
 	function isCanDoAction(address _a, string _permissionName)public constant returns(bool);
 
