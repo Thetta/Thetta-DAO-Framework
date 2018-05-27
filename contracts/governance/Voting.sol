@@ -122,6 +122,7 @@ contract Voting_1p1v is Voting, Ownable {
 	}
 }
 
+// TODO: disable token transfers?
 contract Voting_SimpleToken is Voting, Ownable {
 	address public tokenAddress;
 
@@ -143,9 +144,6 @@ contract Voting_SimpleToken is Voting, Ownable {
 
 	function vote(bool _yes, uint _tokenAmount) public {
 		require(!isFinished());
-
-		// TODO: WARNING!!!!!!!! Hard-coded type
-		require(mc.isGroupMember("Employees", msg.sender));
 
 		internalVote(msg.sender, _yes, _tokenAmount);
 	}
