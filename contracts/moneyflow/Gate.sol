@@ -8,31 +8,30 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../IDaoBase.sol";
 
 //////////////////////////////////////////////////////
-contract Gate{
+contract Gate is Ownable, IWeiReceiver{
 	// Simple Gate is open permanenlty; open/close implementation is for child;
 	bool opened = true;
-	address children = 0x0;
+	IWeiReceiver child;
 	IDaoBase mc;
 
-	function Gate(IDaoBase _mc, address _children) public{
-		children = _children;
+	function Gate(IDaoBase _mc, address _child) public{
+		child = IWeiReceiver(_child);
 		mc = _mc;
 	}
 
-	modifier isCanDo(string _what){
-		require(mc.isCanDoAction(msg.sender,_what)); 
-		_; 
+	function getPercentsMul100()constant public returns(uint){
+		revert();
 	}
 
-	function getChildren() public constant returns(address){
-		return children;
+	function getChild() public constant returns(IWeiReceiver){
+		return child;
 	}
 
-	function open() public isCanDo("openGate"){
+	function open() public onlyOwner{
 		opened = true;
 	}
 
-	function closeIt() public isCanDo("closeGate"){
+	function close() public onlyOwner{
 		opened = false;
 	}
 
@@ -40,29 +39,29 @@ contract Gate{
 		return opened;
 	}
 
-	function isNeedsMoney() public constant returns(bool){
+	function isNeedsMoney() constant public returns(bool){
 		if(!isOpen()){
 			return false;
 		}else{
-			IWeiReceiver c = IWeiReceiver(children);
+			IWeiReceiver c = IWeiReceiver(child);
 			return c.isNeedsMoney();
 		}
 	}
 
-	function getTotalWeiNeeded(uint _currentFlow) public constant returns(uint){
+	function getTotalWeiNeeded(uint _currentFlow) constant public returns(uint){
 		if(!isOpen()){
 			return 0;
 		}else{
-			IWeiReceiver c = IWeiReceiver(children);
+			IWeiReceiver c = IWeiReceiver(child);
 			return c.getTotalWeiNeeded(_currentFlow);
 		}
 	}
 
-	function getMinWeiNeeded() public constant returns(uint){
+	function getMinWeiNeeded() constant public returns(uint){
 		if(!isOpen()){
 			return 0;
 		}else{
-			IWeiReceiver c = IWeiReceiver(children);
+			IWeiReceiver c = IWeiReceiver(child);
 			return c.getMinWeiNeeded();
 		}
 	}
@@ -71,7 +70,7 @@ contract Gate{
 		require(isOpen());
 
 		uint amount = _currentFlow;
-		IWeiReceiver c = IWeiReceiver(children);
+		IWeiReceiver c = IWeiReceiver(child);
 		uint needed = c.getTotalWeiNeeded(amount);
 		c.processFunds.value(needed)(amount);
 	}

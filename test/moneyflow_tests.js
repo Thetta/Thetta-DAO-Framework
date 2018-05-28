@@ -705,14 +705,17 @@ global.contract('Moneyflow', (accounts) => {
 		global.assert.equal(need1, true, 'should need money');
 		global.assert.equal(totalNeed1.toNumber(), 100*money, 'should be 10% of 1000 money');
 
-		await gate1.processFunds(100*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0});
+		await gate1.processFunds(1000*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0});
+
+		let taxBalance = await web3.eth.getBalance(tax.address);
+		global.assert.equal(taxBalance.toNumber(), 100*money, 'Tax receiver should get 100 money');
 
 		let need2 = await gate1.isNeedsMoney({from:creator});
 		let totalNeed2 = await gate1.getTotalWeiNeeded(1000*money);
 		global.assert.equal(need2, true, 'should need money');
 		global.assert.equal(totalNeed2.toNumber(), 100*money, 'should be 10% of 1000 money');
 
-		await gate1.closeIt(callParams);
+		await gate1.close(callParams);
 
 		let need3 = await gate1.isNeedsMoney({from:creator});
 		let totalNeed3 = await gate1.getTotalWeiNeeded(1000*money);
