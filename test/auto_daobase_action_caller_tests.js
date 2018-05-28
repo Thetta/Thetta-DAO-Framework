@@ -24,17 +24,24 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 
 	let money = web3.toWei(0.001, "ether");
 
+	let token;
+	let daoBase;
+	let store;
+	let aacInstance;
+
 	global.beforeEach(async() => {
-
-	});
-	
-	global.it('should not automatically create proposal because AAC has no rights',async() => {
-		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
+		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
-		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
+		store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
-		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
+		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
+
+		///////////////////////////////////////////////////
+		// SEE THIS? set voting type for the action!
+		const VOTING_TYPE_1P1V = 1;
+		const VOTING_TYPE_SIMPLE_TOKEN = 2;
+		await aacInstance.setVotingParams("issueTokens", VOTING_TYPE_1P1V, (24 * 60), KECCAK256("Employees"), 0);
 
 		// add creator as first employee	
 		await store.addGroup(KECCAK256("Employees"));
@@ -44,7 +51,9 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
-
+	});
+	
+	global.it('should not automatically create proposal because AAC has no rights',async() => {
 		// Set permissions:
 		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
 
@@ -75,22 +84,6 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 	});
 
 	global.it('should not issue tokens automatically because issueTokens cant be called even with voting',async() => {
-		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
-		await token.mint(creator, 1000);
-		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
-
-		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
-
-		// add creator as first employee	
-		await store.addGroup(KECCAK256("Employees"));
-		await store.addGroupMember(KECCAK256("Employees"), creator);
-		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
-
-		// do not forget to transfer ownership
-		await token.transferOwnership(daoBase.address);
-		await store.transferOwnership(daoBase.address);
-
 		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
 		await daoBase.allowActionByVoting("manageGroups", token.address);
 
@@ -163,22 +156,6 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 	});
 
 	global.it('should automatically create proposal and 1P1V voting to issue more tokens',async() => {
-		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
-		await token.mint(creator, 1000);
-		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
-
-		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
-
-		// add creator as first employee	
-		await store.addGroup(KECCAK256("Employees"));
-		await store.addGroupMember(KECCAK256("Employees"), creator);
-		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
-
-		// do not forget to transfer ownership
-		await token.transferOwnership(daoBase.address);
-		await store.transferOwnership(daoBase.address);
-
 		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
 
 		await daoBase.allowActionByVoting("manageGroups", token.address);
@@ -248,23 +225,9 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 	});
 
 	global.it('should be able to upgrade with AAC',async() => {
-		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
-		await token.mint(creator, 500);
-		await token.mint(employee1, 500);
-		await token.mint(employee2, 500);
-		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
-
-		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
-
-		// add creator as first employee	
-		await store.addGroup(KECCAK256("Employees"));
-		await store.addGroupMember(KECCAK256("Employees"), creator);
-		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
-
-		// do not forget to transfer ownership
-		await token.transferOwnership(daoBase.address);
-		await store.transferOwnership(daoBase.address);
+		await daoBase.allowActionByAddress("issueTokens", creator);
+		await daoBase.issueTokens(employee1, 1000);
+		await daoBase.issueTokens(employee2, 1000);
 
 		await daoBase.addGroupMember("Employees", employee1);
 		await daoBase.addGroupMember("Employees", employee2);
@@ -303,22 +266,6 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 	});
 
 	global.it('should create SimpleTokenVoting to issue more tokens',async() => {
-		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
-		await token.mint(creator, 1000);
-		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
-
-		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
-
-		// add creator as first employee	
-		await store.addGroup(KECCAK256("Employees"));
-		await store.addGroupMember(KECCAK256("Employees"), creator);
-		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
-
-		// do not forget to transfer ownership
-		await token.transferOwnership(daoBase.address);
-		await store.transferOwnership(daoBase.address);
-
 		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
 		await daoBase.allowActionByVoting("manageGroups", token.address);
 		await daoBase.allowActionByVoting("issueTokens", token.address);
@@ -329,19 +276,6 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		await daoBase.allowActionByAddress("manageGroups", aacInstance.address);
 		await daoBase.allowActionByAddress("issueTokens", aacInstance.address);
 		await daoBase.allowActionByAddress("upgradeDaoContract", aacInstance.address);
-
-		///////////////////////////////////////////////////
-		// SEE THIS? set voting type for the action!
-		const VOTING_TYPE_1P1V = 1;
-		const VOTING_TYPE_SIMPLE_TOKEN = 2;
-		await aacInstance.setVotingParams(
-			"issueTokens", 
-			VOTING_TYPE_1P1V, 
-			(24 * 60), 
-			KECCAK256("Employees"), 
-			0
-		);
-		///////////////////////////////////////////////////
 
 		const proposalsCount1 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount1,0,'No proposals should be added');
@@ -361,44 +295,6 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		await aacInstance.issueTokensAuto(employee1,1000,{from: employee1});
 		const proposalsCount2 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount2,1,'New proposal should be added'); 
-
-		// check the voting data
-		const pa = await daoBase.getProposalAtIndex(0);
-		const proposal = await IProposal.at(pa);
-		const votingAddress = await proposal.getVoting();
-		const voting = await Voting.at(votingAddress);
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
-
-		/*
-		const r = await voting.getFinalResults();
-		global.assert.equal(r[0],1,'yes');			// 1 already voted (who started the voting)
-		global.assert.equal(r[1],0,'no');
-		global.assert.equal(r[2],1,'total');
-
-		const balance1 = await token.balanceOf(employee1);
-		global.assert.strictEqual(balance1.toNumber(),0,'initial employee1 balance');
-
-		// vote again
-		// should execute the action (issue tokens)!
-		await voting.vote(true,0,{from:employee1});
-		const r2 = await voting.getFinalResults();
-		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
-		global.assert.equal(r2[1],0,'no');
-		global.assert.equal(r2[2],2,'total');
-
-		// get voting results again
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting is finished now');
-		global.assert.strictEqual(await voting.isYes(),true,'Voting result is yes!');
-
-		const balance2 = await token.balanceOf(employee1);
-		global.assert.strictEqual(balance2.toNumber(),1000,'employee1 balance should be updated');
-
-		// should not call vote again 
-		await CheckExceptions.checkContractThrows(voting.vote.sendTransaction,
-			[true,{ from: creator}],
-			'Should not call action again');
-		*/
 	});
 });
 
