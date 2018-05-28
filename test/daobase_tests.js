@@ -51,7 +51,7 @@ global.contract('DaoBase', (accounts) => {
 		await daoBase.allowActionByVoting("manageGroups", token.address);
 		await daoBase.allowActionByVoting("addNewTask", token.address);
 		await daoBase.allowActionByVoting("issueTokens", token.address);
-		await daoBase.allowActionByVoting("upgradeDao", token.address);
+		await daoBase.allowActionByVoting("upgradeDaoContract", token.address);
 	});
 
 	global.it('should set everything correctly',async() => {
@@ -142,7 +142,7 @@ global.contract('DaoBase', (accounts) => {
 		// one client of the IDaoBase (to test how upgrade works with it)
 		let moneyflowInstance = await MoneyFlow.new(daoBase.address,{from: creator});
 
-		await daoBase.allowActionByAnyMemberOfGroup("upgradeDao","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("upgradeDaoContract","Employees");
 		await daoBase.allowActionByAddress("withdrawDonations", creator);
 
 		// UPGRADE!

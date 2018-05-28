@@ -2,7 +2,6 @@ var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 
-var GenericCaller = artifacts.require("./GenericCaller");
 var AutoDaoBaseActionCaller = artifacts.require("./AutoDaoBaseActionCaller");
 
 var Voting = artifacts.require("./Voting");
@@ -233,7 +232,7 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		await daoBase.addGroupMember("Employees", employee1);
 		await daoBase.addGroupMember("Employees", employee2);
 
-		await daoBase.allowActionByVoting("upgradeDao", token.address);
+		await daoBase.allowActionByVoting("upgradeDaoContract", token.address);
 
 		// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
 		await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
