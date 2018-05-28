@@ -197,6 +197,9 @@ contract DaoBase is IDaoBase, Ownable {
 	function isGroupMember(string _groupName,address _a)public constant returns(bool) {
 		return store.isGroupMember(keccak256(_groupName), _a);
 	}
+	function isGroupMemberByHash(bytes32 _groupNameHash,address _a)public constant returns(bool){
+		return store.isGroupMember(_groupNameHash, _a);
+	}
 
 	function allowActionByShareholder(string _what, address _tokenAddress) public isCanDo("manageGroups"){
 		store.allowActionByShareholder(keccak256(_what), _tokenAddress);
@@ -212,19 +215,23 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 	function isCanDoAction(address _a, string _permissionName) public constant returns(bool){
+		return isCanDoActionByHash(_a, keccak256(_permissionName));
+	}
+
+	function isCanDoActionByHash(address _a, bytes32 _permissionNameHash)public constant returns(bool){
 		// 0 - is can do by address?
-		if(store.isCanDoByAddress(keccak256(_permissionName), _a)){
+		if(store.isCanDoByAddress(_permissionNameHash, _a)){
 			return true;
 		}
 
 		// 1 - check if employees can do that without voting?
-	   if(store.isCanDoByGroupMember(keccak256(_permissionName), _a)){
+	   if(store.isCanDoByGroupMember(_permissionNameHash, _a)){
 			return true;
 		}
 
 		// 2 - check if shareholder can do that without voting?
 		// TODO: generalize for ALL tokens!
-		if(store.isCanDoByShareholder(keccak256(_permissionName), address(store.stdToken()))
+		if(store.isCanDoByShareholder(_permissionNameHash, address(store.stdToken()))
 			&& isShareholder(_a, address(store.stdToken())))
 		{
 			return true;
@@ -232,7 +239,7 @@ contract DaoBase is IDaoBase, Ownable {
 
 		// 2 - can do action only by starting new vote first?
 		// TODO: generalize for ALL tokens!
-		bool isCan = store.isCanDoByVoting(keccak256(_permissionName), address(store.stdToken()));
+		bool isCan = store.isCanDoByVoting(_permissionNameHash, address(store.stdToken()));
 		if(isCan){
 			var (isVotingFound, votingResult) = store.getProposalVotingResults(msg.sender);
 			if(isVotingFound){

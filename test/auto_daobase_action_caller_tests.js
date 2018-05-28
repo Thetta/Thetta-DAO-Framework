@@ -332,13 +332,23 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 
 		///////////////////////////////////////////////////
 		// SEE THIS? set voting type for the action!
-		await aacInstance.setVotingParams("issueTokens", 1, 0, 0, {from: creator});
-		//await aacInstance.setVotingParams("issueTokens", AutoDaoBaseActionCaller.Voting1p1v, 0, 0);
+		const VOTING_TYPE_1P1V = 1;
+		const VOTING_TYPE_SIMPLE_TOKEN = 2;
+		await aacInstance.setVotingParams(
+			"issueTokens", 
+			VOTING_TYPE_1P1V, 
+			(24 * 60), 
+			KECCAK256("Employees"), 
+			0
+		);
 
 		let params = await aacInstance.getVotingParams("issueTokens");
-		global.assert.equal(params[0].toNumber(10),1,'Voting type is simpletoken');
-		global.assert.equal(params[1],0,'Voting param1 is 0');
-		global.assert.equal(params[2],0,'Voting param2 is 0');
+
+		global.assert.equal(params[0].toNumber(),1,'Voting type is 1p1v');
+		global.assert.equal(params[1].toNumber(),(24 * 60),'Voting param1 is not 0');
+		global.assert.equal(params[2].toNumber(),KECCAK256("Employees"),'Voting param2 is not 0');
+		global.assert.equal(params[3].toNumber(),0,'Voting param2 is 0');
+
 		///////////////////////////////////////////////////
 
 		const proposalsCount1 = await daoBase.getProposalsCount();
@@ -360,7 +370,6 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		const proposalsCount2 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount2,1,'New proposal should be added'); 
 
-		/*
 		// check the voting data
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
@@ -369,8 +378,6 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		// TODO:
-		
 		/*
 		const r = await voting.getFinalResults();
 		global.assert.equal(r[0],1,'yes');			// 1 already voted (who started the voting)

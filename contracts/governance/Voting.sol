@@ -57,7 +57,7 @@ contract Voting is IVoting {
 // 1 person - 1 vote
 contract Voting_1p1v is Voting, Ownable {
 ////////
-	string group;
+	uint groupHash;
 
 	mapping (uint=>address) employeesVoted;
 	uint employeesVotedCount = 0;
@@ -66,12 +66,13 @@ contract Voting_1p1v is Voting, Ownable {
 ////////
 	// we can use _origin instead of tx.origin
 	function Voting_1p1v(IDaoBase _mc, IProposal _proposal, 
-								address _origin, uint _minutesToVote, string _group)
+								address _origin, 
+								uint _minutesToVote, uint _groupHash, uint _emptyParam)
 								public Voting(_mc, _proposal, _minutesToVote){
-		group = _group;
+		groupHash = _groupHash;
 
 		// the caller must be a member of the group!
-		require(mc.isGroupMember(group,_origin));
+		require(mc.isGroupMemberByHash(bytes32(groupHash),_origin));
 
 		internalVote(_origin, true);
 	}
@@ -79,7 +80,7 @@ contract Voting_1p1v is Voting, Ownable {
 	function vote(bool _yes, uint _tokenAmount) public {
 		require(!isFinished());
 
-		require(mc.isGroupMember(group,msg.sender));
+		require(mc.isGroupMemberByHash(bytes32(groupHash),msg.sender));
 
 		internalVote(msg.sender, _yes);
 	}
@@ -109,7 +110,7 @@ contract Voting_1p1v is Voting, Ownable {
 		for(uint i=0; i<employeesVotedCount; ++i){
 			address e = employeesVoted[i];
 
-			if(mc.isGroupMember(group,e)){
+			if(mc.isGroupMemberByHash(bytes32(groupHash),e)){
 				// count this vote
 				if(votes[e]){
 					yesResults++;

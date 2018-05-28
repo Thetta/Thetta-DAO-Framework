@@ -45,7 +45,7 @@ contract GenericProposal is IProposal, Ownable {
 
 // This is a wrapper that help us to do action that CAN require votings
 // WARNING: should be permitted to add new proposal by the current DaoBase!!!
-contract GenericCaller is DaoClient {
+contract GenericCaller is DaoClient, Ownable {
 	function GenericCaller(IDaoBase _mc)public
 		// DaoClient (for example) helps us to handle DaoBase upgrades
 		// and will automatically update the 'mc' to the new instance
@@ -95,45 +95,58 @@ contract GenericCaller is DaoClient {
 		}
 	}
 
-	/*
 	enum VotingType {
+		NoVoting,
+
 		Voting1p1v,
 		VotingSimpleToken,
 		VotingQuadratic
 	}
-   */
 
 	struct VotingParams {
-		uint votingType;
-		bytes32 param1;
-		bytes32 param2;
+		VotingType votingType;
+		uint param1;
+		uint param2;
+		uint param3;
 	}
 
-	mapping (string=>VotingParams) votingParams;
+	mapping (bytes32=>VotingParams) votingParams;
 
-	// TODO: close!
-	function setVotingParams(string _permissionsId, uint _votingType, bytes32 _param1, bytes32 _param2) public {
+	function setVotingParams(string _permissionsId, uint _votingType, uint _param1, uint _param2, uint _param3) public onlyOwner {
 		VotingParams memory params;
-		params.votingType = _votingType;
+		params.votingType = VotingType(_votingType);
 		params.param1 = _param1;
 		params.param2 = _param2;
+		params.param3 = _param3;
 
-		votingParams[_permissionsId] = params;
+		votingParams[keccak256(_permissionsId)] = params;
 	}
 
-	function getVotingParams(string _permissionsId) public constant returns(uint, bytes32, bytes32){
-		VotingParams memory p = votingParams[_permissionsId];
-		return (p.votingType, p.param1, p.param2);
-
-		//return (0,0,0);
+	function getVotingParams(string _permissionsId) public constant returns(uint, uint, uint, uint){
+		VotingParams memory p = votingParams[keccak256(_permissionsId)];
+		return (uint(p.votingType), p.param1, p.param2, p.param3);
 	}	
 
 	function createVoting(string _permissionsId, IProposal _proposal, address _origin)internal returns(IVoting){
-		// TODO
+		VotingParams memory vp = votingParams[keccak256(_permissionsId)];
 
-		//return new Voting(mc, _proposal, _origin, Voting.VoteType.EmployeesVote, 24 *60, 0x0);
+		if(VotingType.NoVoting==vp.votingType){
+			return new Voting_1p1v(mc, _proposal, _origin, 24 *60, uint(keccak256("Employees")), 0);
+		}
 
-		return new Voting_1p1v(mc, _proposal, _origin, 24 *60, "Employees");
+		if(VotingType.Voting1p1v==vp.votingType){
+			// pass params!
+			return new Voting_1p1v(mc, _proposal, _origin, vp.param1, vp.param2, vp.param3);
+		}
+
+		if(VotingType.VotingSimpleToken==vp.votingType){
+			// TODO: 
+			return IVoting(0x0);
+		}
+
+		// no implementation for this type!
+		assert(false==true);
+		return IVoting(0x0);
 	}
 }
 
