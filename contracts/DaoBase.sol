@@ -2,7 +2,7 @@ pragma solidity ^0.4.15;
 
 import "./IDaoBase.sol";
 
-import "./token/StdDaoToken.sol";
+import "./tokens/StdDaoToken.sol";
 import "./governance/Voting.sol";
 
 import "./tasks/Tasks.sol";
