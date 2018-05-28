@@ -660,6 +660,9 @@ global.contract('Moneyflow', (accounts) => {
 
 		Employee1 = await WeiAbsoluteExpenseWithPeriod.new(1000*money, timePeriod, true, callParams);
 
+		let multi1 = await Employee1.getDebtMultiplier();
+		global.assert.equal(multi1.toNumber(), 1, '0 hours => x1');
+		
 		await Employee1.processFunds(1000*money, {value:1000*money, from:outsider, gas:1000000, gasPrice:0});
 		await CheckExceptions.checkContractThrows(Employee1.flush, [{from:outsider}])
 		await Employee1.flush({from:creator, gasPrice:0});
@@ -680,12 +683,17 @@ global.contract('Moneyflow', (accounts) => {
 		// let periodHours = await Employee1.periodHours();
 		// let MomentReceived2 = await Employee1.momentReceived();
 		let NOW2 = await Employee1.getNow();
-
-		// global.assert.equal ( Math.round((NOW2.toNumber() - MomentReceived2.toNumber())/(3600*1000)), 25 )
+		
+		let multi2 = await Employee1.getDebtMultiplier();
+		global.assert.equal(multi2.toNumber(), 3, '75 hours => x3');
 		
 		let needsEmployee2 = await Employee1.isNeedsMoney({from:creator});
 		global.assert.equal(needsEmployee2, true, 'Need money, because 24 hours passed');
 	
+
+		await CheckExceptions.checkContractThrows(Employee1.processFunds, [4000*money, {value:4000*money, from:outsider, gas:1000000, gasPrice:0}])
+		await CheckExceptions.checkContractThrows(Employee1.processFunds, [2000*money, {value:2000*money, from:outsider, gas:1000000, gasPrice:0}])
+
 		await Employee1.processFunds(3000*money, {value:3000*money, from:outsider, gas:1000000, gasPrice:0});
 		await Employee1.flush({from:creator, gasPrice:0});
 
@@ -693,11 +701,11 @@ global.contract('Moneyflow', (accounts) => {
 		global.assert.equal(balance2.toNumber() - balance0.toNumber(), 4000*money, 'Should get money');
 
 		let needsEmployee3 = await Employee1.isNeedsMoney({from:creator});
-		global.assert.equal(needsEmployee3, false, 'Dont need money, because he got it');
+		global.assert.equal(needsEmployee3, false, 'Dont need money, because he got it');	
 	});	
 
 	global.it('gates should access money then close then not accept',async() => {
-		let callParams = {from:creator, gasPrice:0};
+		let callParams = {from:creator, gasPrice:0}	
 		let struct = {};
 		let balance0 = await web3.eth.getBalance(creator);
 
@@ -709,26 +717,23 @@ global.contract('Moneyflow', (accounts) => {
 		global.assert.equal(need1, true, 'should need money');
 		global.assert.equal(totalNeed1.toNumber(), 100*money, 'should be 10% of 1000 money');
 
+		await gate1.processFunds(1000*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0});
+
+		let taxBalance = await web3.eth.getBalance(tax.address);
+		global.assert.equal(taxBalance.toNumber(), 100*money, 'Tax receiver should get 100 money');
+
 		let need2 = await gate1.isNeedsMoney({from:creator});
 		let totalNeed2 = await gate1.getTotalWeiNeeded(1000*money);
 		global.assert.equal(need2, true, 'should need money');
 		global.assert.equal(totalNeed2.toNumber(), 100*money, 'should be 10% of 1000 money');
 
-		await gate1.closeIt(callParams);
+		await gate1.close(callParams);
 
 		let need3 = await gate1.isNeedsMoney({from:creator});
 		let totalNeed3 = await gate1.getTotalWeiNeeded(1000*money);
 		global.assert.equal(need3, false, 'should not need money');
 		global.assert.equal(totalNeed3.toNumber(), 0, 'should be 0 money');
 
-		// should not process funds if gate is closed
 		await CheckExceptions.checkContractThrows(gate1.processFunds, [100*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0}])
-
-		await gate1.open(callParams);
-		
-		// should process funds if gate is open
-		await gate1.processFunds(100*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0});
-
-		// TODO: check balances
 	});
 });
