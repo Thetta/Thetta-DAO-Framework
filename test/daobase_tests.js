@@ -1,7 +1,6 @@
 var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
-var AutoDaoBaseActionCaller = artifacts.require("./AutoDaoBaseActionCaller");
 var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 
 // to check how upgrade works with IDaoBase clients
@@ -12,6 +11,10 @@ var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
 
 var CheckExceptions = require('./utils/checkexceptions');
+
+function KECCAK256 (x){
+	return web3.sha3(x);
+}
 
 global.contract('DaoBase', (accounts) => {
 	let token;
@@ -24,52 +27,51 @@ global.contract('DaoBase', (accounts) => {
 	const outsider = accounts[3];
 
 	global.beforeEach(async() => {
-	
 		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 		store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 
-		{
-			// add creator as first employee	
-			await store.addGroup("Employees");
-			await store.addGroupMember("Employees", creator);
-
-			// manually setup the Default organization permissions
-			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-			await store.allowActionByAnyMemberOfGroup("startTask","Employees");
-			await store.allowActionByAnyMemberOfGroup("startBounty","Employees");
-			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
-
-			// this is a list of actions that require voting
-			await store.allowActionByVoting("manageGroups", token.address);
-			await store.allowActionByVoting("addNewTask", token.address);
-			await store.allowActionByVoting("issueTokens", token.address);
-			await store.allowActionByVoting("upgradeDao", token.address);
-		}
+		// add creator as first employee	
+		await store.addGroup(KECCAK256("Employees"));
+		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
+
+		// Set permissions:
+		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("startTask","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("startBounty","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
+
+		await daoBase.allowActionByVoting("manageGroups", token.address);
+		await daoBase.allowActionByVoting("addNewTask", token.address);
+		await daoBase.allowActionByVoting("issueTokens", token.address);
+		await daoBase.allowActionByVoting("upgradeDao", token.address);
 	});
 
 	global.it('should set everything correctly',async() => {
-		const isMember = await store.isGroupMember("Employees", creator);
+		const isMember = await daoBase.isGroupMember("Employees", creator);
 		global.assert.equal(isMember,true,'Permission should be set correctly');
 
-		const isMember2 = await store.isGroupMember("Employees", employee1);
+		const isMember2 = await daoBase.isGroupMember("Employees", employee1);
 		global.assert.equal(isMember2,false,'Permission should be set correctly');
-
-		///
-		const isCan = await store.isCanDoByGroupMember("addNewProposal", "Employees");
-		global.assert.equal(isCan,true,'Permission should be set correctly');
 
 		const isMajority = await daoBase.isInMajority(creator, token.address);
 		global.assert.strictEqual(isMajority,true,'Creator should be in majority');
 
 		const isMajority2 = await daoBase.isInMajority(employee1, token.address);
 		global.assert.strictEqual(isMajority2,false,'Employee should not be in majority');
+
+		const isCan = await store.isCanDoByGroupMember(KECCAK256("addNewProposal"), creator);
+		global.assert.equal(isCan,true,'Any employee should be able to add new proposal');
+		
+		const isCan2 = await daoBase.isCanDoAction(creator, "addNewProposal");
+		global.assert.equal(isCan2,true,'Creator should be able to call addNewProposal directly');
 	});
 
 	global.it('should return correct permissions for an outsider',async() => {
@@ -137,30 +139,11 @@ global.contract('DaoBase', (accounts) => {
 	});
 
 	global.it('should be able to upgrade',async() => {
-		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
-		await token.mint(creator, 1000);
-		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
-
-		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-
 		// one client of the IDaoBase (to test how upgrade works with it)
 		let moneyflowInstance = await MoneyFlow.new(daoBase.address,{from: creator});
 
-		await store.addGroup("Employees");
-		await store.addGroupMember("Employees", creator);
-
-		await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-		await store.allowActionByAnyMemberOfGroup("manageGroups","Employees");
-		await store.allowActionByAnyMemberOfGroup("issueTokens","Employees");
-		await store.allowActionByAnyMemberOfGroup("upgradeDao","Employees");
-
-		// THIS permission IS VERY DANGEROUS!!!
-		// allow creator to get donations from the Moneyflow 
-		await store.allowActionByAddress("withdrawDonations", creator);
-
-		// do not forget to transfer ownership
-		await token.transferOwnership(daoBase.address);
-		await store.transferOwnership(daoBase.address);
+		await daoBase.allowActionByAnyMemberOfGroup("upgradeDao","Employees");
+		await daoBase.allowActionByAddress("withdrawDonations", creator);
 
 		// UPGRADE!
 		let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});

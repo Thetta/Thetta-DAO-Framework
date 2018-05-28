@@ -40,20 +40,19 @@ contract DaoStorage is Ownable {
 	mapping (uint=>IProposal) proposals;
 	uint public proposalsCount = 0;
 
-	mapping (uint=>address) employees;
-	uint public employeesCount = 0;
-
 	address[] public observers;
 
-	mapping (string=>bool) byEmployee;
-	mapping (string=>bool) byShareholder;
-	mapping (string=>bool) byVoting;
-	mapping (address=>mapping(string=>bool)) byAddress;
+	// token -> permission -> flag
+	mapping (address=>mapping(bytes32=>bool)) byShareholder;
+	// token -> permission -> flag
+	mapping (address=>mapping(bytes32=>bool)) byVoting;
+	// address -> permission -> flag
+	mapping (address=>mapping(bytes32=>bool)) byAddress;
 
-	// name -> members
-	mapping (string=>address[]) groups;
-	// name -> permission -> flag
-	mapping (string=>mapping(string=>bool)) groupPermissions;
+	// member -> group names
+	mapping (address=>bytes32[]) groupMembers;
+	// group name -> permission -> flag
+	mapping (bytes32=>mapping(bytes32=>bool)) isAllowedActionByGroupMember;
 
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -74,64 +73,70 @@ contract DaoStorage is Ownable {
 	}
 
 // Permissions:
-	function addGroup(string _groupName) public onlyOwner{
+	function addGroup(bytes32 _groupName) public onlyOwner{
 		// do nothing
 	}
 
-	function addGroupMember(string _groupName, address _newMember) public onlyOwner{
-		// TODO: check if already added 
-		groups[_groupName].push(_newMember);
+	function addGroupMember(bytes32 _groupName, address _newMember) public onlyOwner{
+		// check if already added 
+		require(!isGroupMember(_groupName, _newMember));
+		groupMembers[_newMember].push(_groupName);
 	}
 
-	function removeGroupMember(string _groupName, address _member)public onlyOwner {
+	function removeGroupMember(bytes32 _groupName, address _member)public onlyOwner {
 		// TODO:
 	}
 
-	function isGroupMember(string _groupName, address _a) public constant returns(bool){
-		for(uint i=0; i<groups[_groupName].length; ++i){
-			if(groups[_groupName][i]==_a){
+	function isGroupMember(bytes32 _groupName, address _a) public constant returns(bool){
+		uint len = groupMembers[_a].length;
+
+		for(uint i=0; i<len; ++i){
+			if(groupMembers[_a][i]==_groupName){
 				return true;
 			}
 		}
 		return false; 
 	}
 
-	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public onlyOwner {
-		groupPermissions[_groupName][_what] = true;
+	function allowActionByAnyMemberOfGroup(bytes32 _what, bytes32 _groupName) public onlyOwner {
+		isAllowedActionByGroupMember[_groupName][_what] = true;
 	}
 
-	function isCanDoByGroupMember(string _what, string _groupName) public constant returns(bool){
-		return groupPermissions[_groupName][_what];
+	function isCanDoByGroupMember(bytes32 _what, address _a /*, bytes32 _groupName*/) public constant returns(bool){
+		uint len = groupMembers[_a].length;
+
+		// enumerate all groups that _a belongs to
+		for(uint i=0; i<len; ++i){
+			bytes32 groupName = groupMembers[_a][i];
+			if(isAllowedActionByGroupMember[groupName][_what]){
+				return true;
+			}
+		}
+		return false; 
 	}
 
 	//////
-	// TODO: use _tokenAddress
-	function allowActionByShareholder(string _what, address _tokenAddress) public onlyOwner {
-		byShareholder[_what] = true;
+	function allowActionByShareholder(bytes32 _what, address _tokenAddress) public onlyOwner {
+		byShareholder[_tokenAddress][_what] = true;
 	}
 
-	// TODO: use _tokenAddress
-	function allowActionByVoting(string _what, address _tokenAddress) public onlyOwner {
-		byVoting[_what] = true;
+	function allowActionByVoting(bytes32 _what, address _tokenAddress) public onlyOwner {
+		byVoting[_tokenAddress][_what] = true;
 	}
 
-	function allowActionByAddress(string _what, address _a) public onlyOwner {
+	function allowActionByAddress(bytes32 _what, address _a) public onlyOwner {
 		byAddress[_a][_what] = true;
 	}
 
-	function isCanDoByShareholder(string _permissionName) public constant returns(bool){
-		// TODO: use _tokenAddress 
-		// see <addActionBySha> method
-		return byShareholder[_permissionName];
+	function isCanDoByShareholder(bytes32 _permissionName, address _tokenAddress) public constant returns(bool){
+		return byShareholder[_tokenAddress][_permissionName];
 	}
 
-	function isCanDoByVoting(string _permissionName) public constant returns(bool,address){
-		// TODO: return _tokenAddress instead of 0x0!!!
-		// see <allowActionByVoting> method
-		return (byVoting[_permissionName], 0x0);
+	function isCanDoByVoting(bytes32 _permissionName, address _tokenAddress) public constant returns(bool){
+		return byVoting[_tokenAddress][_permissionName];
 	}
 
-	function isCanDoByAddress(string _permissionName, address _a) public constant returns(bool){
+	function isCanDoByAddress(bytes32 _permissionName, address _a) public constant returns(bool){
 		return byAddress[_a][_permissionName];
 	}
 
@@ -157,10 +162,6 @@ contract DaoStorage is Ownable {
 
 		return (false,false);
 	}
-
-	function isShareholder(address _a, address _token) public constant returns(bool){
-		return (ERC20(_token).balanceOf(_a)!=0);
-	}
 }
 
 contract DaoBase is IDaoBase, Ownable {
@@ -184,50 +185,53 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 	function addGroup(string _groupName) public isCanDo("manageGroups"){
-		store.addGroup(_groupName);	
+		store.addGroup(keccak256(_groupName));	
 	}
 	function addGroupMember(string _groupName, address _a) public isCanDo("manageGroups") {
-		store.addGroupMember(_groupName, _a);
+		store.addGroupMember(keccak256(_groupName), _a);
 	}
 	function removeGroupMember(string _groupName, address _a) public isCanDo("manageGroups"){
-		store.removeGroupMember(_groupName, _a);
+		store.removeGroupMember(keccak256(_groupName), _a);
 	}
 	function isGroupMember(string _groupName,address _a)public constant returns(bool) {
-		return store.isGroupMember(_groupName, _a);
+		return store.isGroupMember(keccak256(_groupName), _a);
 	}
 
 	function allowActionByShareholder(string _what, address _tokenAddress) public isCanDo("manageGroups"){
-		store.allowActionByShareholder(_what, _tokenAddress);
+		store.allowActionByShareholder(keccak256(_what), _tokenAddress);
 	}
 	function allowActionByVoting(string _what, address _tokenAddress) public isCanDo("manageGroups"){
-		store.allowActionByVoting(_what,_tokenAddress);
+		store.allowActionByVoting(keccak256(_what),_tokenAddress);
 	}
 	function allowActionByAddress(string _what, address _a) public isCanDo("manageGroups"){
-		store.allowActionByAddress(_what,_a);
+		store.allowActionByAddress(keccak256(_what),_a);
+	}
+	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public isCanDo("manageGroups"){
+		store.allowActionByAnyMemberOfGroup(keccak256(_what), keccak256(_groupName));
 	}
 
 	function isCanDoAction(address _a, string _permissionName) public constant returns(bool){
 		// 0 - is can do by address?
-		if(store.isCanDoByAddress(_permissionName, _a)){
+		if(store.isCanDoByAddress(keccak256(_permissionName), _a)){
 			return true;
 		}
 
 		// 1 - check if employees can do that without voting?
-		// TODO: generalize for ALL groups!
-		if(store.isCanDoByGroupMember(_permissionName, "Employees") && store.isGroupMember("Employees", _a)){
+	   if(store.isCanDoByGroupMember(keccak256(_permissionName), _a)){
 			return true;
 		}
 
 		// 2 - check if shareholder can do that without voting?
-		// TODO: implement this
-		// TODO: pass token address
-		address someToken = 0x0;
-		if(store.isCanDoByShareholder(_permissionName) && isShareholder(_a, someToken)){
+		// TODO: generalize for ALL tokens!
+		if(store.isCanDoByShareholder(keccak256(_permissionName), address(store.stdToken()))
+			&& isShareholder(_a, address(store.stdToken())))
+		{
 			return true;
 		}
 
 		// 2 - can do action only by starting new vote first?
-		var (isCan, tokenAddressForVoting) = store.isCanDoByVoting(_permissionName);
+		// TODO: generalize for ALL tokens!
+		bool isCan = store.isCanDoByVoting(keccak256(_permissionName), address(store.stdToken()));
 		if(isCan){
 			var (isVotingFound, votingResult) = store.getProposalVotingResults(msg.sender);
 			if(isVotingFound){
@@ -239,7 +243,8 @@ contract DaoBase is IDaoBase, Ownable {
 			
 			// 3 - only token holders with > 51% of gov.tokens can add new task immediately 
 			// otherwise -> start voting
-			if(isInMajority(_a, tokenAddressForVoting)){
+			// TODO: generalize for ALL tokens!
+			if(isInMajority(_a, address(store.stdToken()))){
 				return true;
 			}
 
@@ -277,14 +282,12 @@ contract DaoBase is IDaoBase, Ownable {
 
 // Public (for tests)
 	function isShareholder(address _a, address _token) public constant returns(bool){
-		// TODO: use _tokenAddress
-		return store.isShareholder(_a, _token);
+		return (ERC20(_token).balanceOf(_a)!=0);
 	}
 
 	// only token holders with > 51% of gov.tokens can add new task immediately 
 	function isInMajority(address _a, address _tokenAddress) public constant returns(bool){
-		// TODO: use _tokenAddress
-		return(store.stdToken().balanceOf(_a)>=store.stdToken().totalSupply()/2);
+		return (ERC20(_tokenAddress).balanceOf(_a))>=(ERC20(_tokenAddress).totalSupply()/2);
 	}
 
 	function issueTokensInternal(address _to, uint _amount) internal {
@@ -305,15 +308,11 @@ contract DaoBaseWithUnpackers is DaoBase {
 	}
 
 	function addGroupMemberGeneric(bytes32[] _params) public {
-		// TODO: implement
-		assert(false);
+		bytes32 group = bytes32(_params[0]);
+		address a = address(_params[1]);
 
-		/*
-		bytes32 _group = bytes32(_params[0]);
-		address _emp = address(_params[1]);
-
-		addGroupMember(_group, _emp);
-	   */
+		// direct call to storage here, instead of calling DaoBase.addGroupMember(string, address);
+		store.addGroupMember(keccak256(group), a);
 	}
 
 	function issueTokensGeneric(bytes32[] _params) public {
