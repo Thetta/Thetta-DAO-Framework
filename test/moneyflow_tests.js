@@ -17,6 +17,10 @@ var WeiRelativeExpense = artifacts.require("./WeiRelativeExpense");
 var WeiAbsoluteExpenseWithPeriod = artifacts.require("./WeiAbsoluteExpenseWithPeriod");
 var WeiRelativeExpenseWithPeriod = artifacts.require("./WeiRelativeExpenseWithPeriod");
 
+function KECCAK256 (x){
+	return web3.sha3(x);
+}
+
 async function createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends){
 	let callParams = {from:creator, gasPrice:0}	
 	let o = {};
@@ -204,35 +208,35 @@ global.contract('Moneyflow', (accounts) => {
 		store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
 
-		{
-			await store.addGroup("Employees");
-			await store.addGroupMember("Employees", creator);
-
-			// manually setup the Default organization 
-			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
-
-			await store.allowActionByAnyMemberOfGroup("openGate","Employees");
-			await store.allowActionByAnyMemberOfGroup("closeGate","Employees");
-
-			// this is a list of actions that require voting
-			await store.allowActionByVoting("manageGroups", token.address);
-			await store.allowActionByVoting("addNewTask", token.address);
-			await store.allowActionByVoting("issueTokens", token.address);
-		}
-
-		moneyflowInstance = await MoneyFlow.new(daoBase.address,{from: creator});
-
-		// THIS permission IS VERY DANGEROUS!!!
-		// allow creator to get donations from the Moneyflow 
-		await store.allowActionByAddress("withdrawDonations", creator);
-
-		// moneyflow will not create Proposals in this case 
-		//await store.allowActionByAddress("addNewProposal", moneyflowInstance.address);
+		// add creator as first employee	
+		await store.addGroup(KECCAK256("Employees"));
+		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
+
+		// manually setup the Default organization 
+		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
+
+		await daoBase.allowActionByAnyMemberOfGroup("openGate","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("closeGate","Employees");
+
+		// this is a list of actions that require voting
+		await daoBase.allowActionByVoting("manageGroups", token.address);
+		await daoBase.allowActionByVoting("addNewTask", token.address);
+		await daoBase.allowActionByVoting("issueTokens", token.address);
+
+		// THIS permission IS VERY DANGEROUS!!!
+		// allow creator to get donations from the Moneyflow 
+		await daoBase.allowActionByAddress("withdrawDonations", creator);
+
+		moneyflowInstance = await MoneyFlow.new(daoBase.address,{from: creator});
+
+		// moneyflow will not create Proposals in this case 
+		//await daoBase.allowActionByAddress("addNewProposal", moneyflowInstance.address);
 	});
 
 	global.it('should allow to send revenue',async() => {
