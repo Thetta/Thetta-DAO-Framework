@@ -46,6 +46,23 @@ contract GenericProposal is IProposal, Ownable {
 // This is a wrapper that help us to do action that CAN require votings
 // WARNING: should be permitted to add new proposal by the current DaoBase!!!
 contract GenericCaller is DaoClient, Ownable {
+	enum VotingType {
+		NoVoting,
+
+		Voting1p1v,
+		VotingSimpleToken,
+		VotingQuadratic
+	}
+
+	struct VotingParams {
+		VotingType votingType;
+		bytes32 param1;
+		bytes32 param2;
+		bytes32 param3;
+	}
+
+	mapping (bytes32=>VotingParams) votingParams;
+
 	function GenericCaller(IDaoBase _mc)public
 		// DaoClient (for example) helps us to handle DaoBase upgrades
 		// and will automatically update the 'mc' to the new instance
@@ -95,24 +112,8 @@ contract GenericCaller is DaoClient, Ownable {
 		}
 	}
 
-	enum VotingType {
-		NoVoting,
-
-		Voting1p1v,
-		VotingSimpleToken,
-		VotingQuadratic
-	}
-
-	struct VotingParams {
-		VotingType votingType;
-		uint param1;
-		uint param2;
-		uint param3;
-	}
-
-	mapping (bytes32=>VotingParams) votingParams;
-
-	function setVotingParams(string _permissionsId, uint _votingType, uint _param1, uint _param2, uint _param3) public onlyOwner {
+	function setVotingParams(string _permissionsId, uint _votingType, 
+									 bytes32 _param1, bytes32 _param2, bytes32 _param3) public onlyOwner {
 		VotingParams memory params;
 		params.votingType = VotingType(_votingType);
 		params.param1 = _param1;
@@ -122,28 +123,23 @@ contract GenericCaller is DaoClient, Ownable {
 		votingParams[keccak256(_permissionsId)] = params;
 	}
 
-	function getVotingParams(string _permissionsId) public constant returns(uint, uint, uint, uint){
-		VotingParams memory p = votingParams[keccak256(_permissionsId)];
-		return (uint(p.votingType), p.param1, p.param2, p.param3);
-	}	
-
 	function createVoting(string _permissionsId, IProposal _proposal, address _origin)internal returns(IVoting){
 		VotingParams memory vp = votingParams[keccak256(_permissionsId)];
 
 		if(VotingType.NoVoting==vp.votingType){
-			return new Voting_1p1v(mc, _proposal, _origin, 24 *60, uint(keccak256("Employees")), 0);
+			return new Voting_1p1v(mc, _proposal, _origin, 24 *60, keccak256("Employees"), 0);
 		}
 
 		if(VotingType.Voting1p1v==vp.votingType){
-			// pass params!
-			return new Voting_1p1v(mc, _proposal, _origin, vp.param1, vp.param2, vp.param3);
+			return new Voting_1p1v(mc, _proposal, _origin, uint(vp.param1), vp.param2, vp.param3);
 		}
 
 		if(VotingType.VotingSimpleToken==vp.votingType){
-			// TODO: 
-			return IVoting(0x0);
+			// TODO: test
+			return new Voting_SimpleToken(mc, _proposal, _origin, uint(vp.param1), address(vp.param2), vp.param3);
 		}
 
+		// TODO: add other implementations
 		// no implementation for this type!
 		assert(false==true);
 		return IVoting(0x0);
