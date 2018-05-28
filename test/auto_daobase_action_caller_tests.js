@@ -42,6 +42,7 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		const VOTING_TYPE_1P1V = 1;
 		const VOTING_TYPE_SIMPLE_TOKEN = 2;
 		await aacInstance.setVotingParams("issueTokens", VOTING_TYPE_1P1V, (24 * 60), KECCAK256("Employees"), 0);
+		await aacInstance.setVotingParams("upgradeDaoContract", VOTING_TYPE_1P1V, (24 * 60), KECCAK256("Employees"), 0);
 
 		// add creator as first employee	
 		await store.addGroup(KECCAK256("Employees"));

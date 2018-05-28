@@ -126,12 +126,6 @@ contract GenericCaller is DaoClient, Ownable {
 	function createVoting(string _permissionsId, IProposal _proposal, address _origin)internal returns(IVoting){
 		VotingParams memory vp = votingParams[keccak256(_permissionsId)];
 
-		// By default it is 1P1V with Employees group 
-		// TODO: be careful! 
-		if(VotingType.NoVoting==vp.votingType){
-			return new Voting_1p1v(mc, _proposal, _origin, 24 *60, keccak256("Employees"), 0);
-		}
-
 		if(VotingType.Voting1p1v==vp.votingType){
 			return new Voting_1p1v(mc, _proposal, _origin, uint(vp.param1), vp.param2, vp.param3);
 		}
