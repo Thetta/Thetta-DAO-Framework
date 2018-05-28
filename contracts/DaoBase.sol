@@ -28,8 +28,8 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 //
 // How permissions works now:
 //		1. if caller is in the whitelist -> allow
-//		2. if caller is employee and this action can be done by employee -> allow
-//		3. if caller shareholder and this action can be done by shareholder -> allow
+//		2. if caller is in the group and this action can be done by group members -> allow
+//		3. if caller is shareholder and this action can be done by a shareholder -> allow
 //		4. if this action requires voting 
 //			a. caller is in the majority -> allow
 //			b. caller is voting and it is succeeded -> allow
@@ -84,7 +84,8 @@ contract DaoStorage is Ownable {
 	}
 
 	function removeGroupMember(bytes32 _groupName, address _member)public onlyOwner {
-		// TODO:
+		// TODO: remove from array like this:
+		// delete array[index];
 	}
 
 	function isGroupMember(bytes32 _groupName, address _a) public constant returns(bool){

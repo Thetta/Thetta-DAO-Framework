@@ -2,6 +2,7 @@ var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 
+var GenericCaller = artifacts.require("./GenericCaller");
 var AutoDaoBaseActionCaller = artifacts.require("./AutoDaoBaseActionCaller");
 
 var Voting = artifacts.require("./Voting");
@@ -301,7 +302,7 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
 	});
 
-	global.it('should create SimpleTokenVote to issue more tokens',async() => {
+	global.it('should create SimpleTokenVoting to issue more tokens',async() => {
 		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
@@ -329,9 +330,16 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		await daoBase.allowActionByAddress("issueTokens", aacInstance.address);
 		await daoBase.allowActionByAddress("upgradeDaoContract", aacInstance.address);
 
-		// TODO:
-		// set voting types:
-		//await aacInstance.setVotingType("issueTokens", "1p1v", "Employees", 0x0);
+		///////////////////////////////////////////////////
+		// SEE THIS? set voting type for the action!
+		await aacInstance.setVotingParams("issueTokens", 1, 0, 0, {from: creator});
+		//await aacInstance.setVotingParams("issueTokens", AutoDaoBaseActionCaller.Voting1p1v, 0, 0);
+
+		let params = await aacInstance.getVotingParams("issueTokens");
+		global.assert.equal(params[0].toNumber(10),1,'Voting type is simpletoken');
+		global.assert.equal(params[1],0,'Voting param1 is 0');
+		global.assert.equal(params[2],0,'Voting param2 is 0');
+		///////////////////////////////////////////////////
 
 		const proposalsCount1 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount1,0,'No proposals should be added');
@@ -352,6 +360,7 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		const proposalsCount2 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount2,1,'New proposal should be added'); 
 
+		/*
 		// check the voting data
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);

@@ -95,8 +95,37 @@ contract GenericCaller is DaoClient {
 		}
 	}
 
-	function setVotingType(string _permissionsId, string _votingType, bytes32 _param1, bytes32 _param2) public {
-		// TODO
+	/*
+	enum VotingType {
+		Voting1p1v,
+		VotingSimpleToken,
+		VotingQuadratic
+	}
+   */
+
+	struct VotingParams {
+		uint votingType;
+		uint param1;
+		uint param2;
+	}
+
+	mapping (string=>VotingParams) votingParams;
+
+	// TODO: close!
+	function setVotingParams(string _permissionsId, uint _votingType, uint _param1, uint _param2) public {
+		VotingParams memory params;
+		params.votingType = _votingType;
+		params.param1 = _param1;
+		params.param2 = _param2;
+
+		votingParams[_permissionsId] = params;
+	}
+
+	function getVotingParams(string _permissionsId) public constant returns(uint, uint, uint){
+		VotingParams memory p = votingParams[_permissionsId];
+		return (p.votingType, p.param1, p.param2);
+
+		//return (0,0,0);
 	}	
 
 	function createVoting(string _permissionsId, IProposal _proposal, address _origin)internal returns(IVoting){
