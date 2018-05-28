@@ -690,6 +690,10 @@ global.contract('Moneyflow', (accounts) => {
 		let needsEmployee2 = await Employee1.isNeedsMoney({from:creator});
 		global.assert.equal(needsEmployee2, true, 'Need money, because 24 hours passed');
 	
+
+		await CheckExceptions.checkContractThrows(Employee1.processFunds, [4000*money, {value:4000*money, from:outsider, gas:1000000, gasPrice:0}])
+		await CheckExceptions.checkContractThrows(Employee1.processFunds, [2000*money, {value:2000*money, from:outsider, gas:1000000, gasPrice:0}])
+
 		await Employee1.processFunds(3000*money, {value:3000*money, from:outsider, gas:1000000, gasPrice:0});
 		await Employee1.flush({from:creator, gasPrice:0});
 
@@ -697,7 +701,7 @@ global.contract('Moneyflow', (accounts) => {
 		global.assert.equal(balance2.toNumber() - balance0.toNumber(), 4000*money, 'Should get money');
 
 		let needsEmployee3 = await Employee1.isNeedsMoney({from:creator});
-		global.assert.equal(needsEmployee3, false, 'Dont need money, because he got it');
+		global.assert.equal(needsEmployee3, false, 'Dont need money, because he got it');	
 	});	
 
 	global.it('gates should access money then close then not accept',async() => {
