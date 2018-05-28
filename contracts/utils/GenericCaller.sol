@@ -105,14 +105,14 @@ contract GenericCaller is DaoClient {
 
 	struct VotingParams {
 		uint votingType;
-		uint param1;
-		uint param2;
+		bytes32 param1;
+		bytes32 param2;
 	}
 
 	mapping (string=>VotingParams) votingParams;
 
 	// TODO: close!
-	function setVotingParams(string _permissionsId, uint _votingType, uint _param1, uint _param2) public {
+	function setVotingParams(string _permissionsId, uint _votingType, bytes32 _param1, bytes32 _param2) public {
 		VotingParams memory params;
 		params.votingType = _votingType;
 		params.param1 = _param1;
@@ -121,7 +121,7 @@ contract GenericCaller is DaoClient {
 		votingParams[_permissionsId] = params;
 	}
 
-	function getVotingParams(string _permissionsId) public constant returns(uint, uint, uint){
+	function getVotingParams(string _permissionsId) public constant returns(uint, bytes32, bytes32){
 		VotingParams memory p = votingParams[_permissionsId];
 		return (p.votingType, p.param1, p.param2);
 
