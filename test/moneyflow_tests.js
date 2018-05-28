@@ -660,6 +660,9 @@ global.contract('Moneyflow', (accounts) => {
 
 		Employee1 = await WeiAbsoluteExpenseWithPeriod.new(1000*money, timePeriod, true, callParams);
 
+		let multi1 = await Employee1.getDebtMultiplier();
+		global.assert.equal(multi1.toNumber(), 1, '0 hours => x1');
+		
 		await Employee1.processFunds(1000*money, {value:1000*money, from:outsider, gas:1000000, gasPrice:0});
 		await CheckExceptions.checkContractThrows(Employee1.flush, [{from:outsider}])
 		await Employee1.flush({from:creator, gasPrice:0});
@@ -680,8 +683,9 @@ global.contract('Moneyflow', (accounts) => {
 		// let periodHours = await Employee1.periodHours();
 		// let MomentReceived2 = await Employee1.momentReceived();
 		let NOW2 = await Employee1.getNow();
-
-		// global.assert.equal ( Math.round((NOW2.toNumber() - MomentReceived2.toNumber())/(3600*1000)), 25 )
+		
+		let multi2 = await Employee1.getDebtMultiplier();
+		global.assert.equal(multi2.toNumber(), 3, '75 hours => x3');
 		
 		let needsEmployee2 = await Employee1.isNeedsMoney({from:creator});
 		global.assert.equal(needsEmployee2, true, 'Need money, because 24 hours passed');
