@@ -42,6 +42,12 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 
 		aacInstance = await AutoMoneyflowActionCaller.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
 
+		///////////////////////////////////////////////////
+		// SEE THIS? set voting type for the action!
+		const VOTING_TYPE_1P1V = 1;
+		const VOTING_TYPE_SIMPLE_TOKEN = 2;
+		await aacInstance.setVotingParams("withdrawDonations", VOTING_TYPE_1P1V, (24 * 60), KECCAK256("Employees"), 0);
+
 		// add creator as first employee	
 		await store.addGroup(KECCAK256("Employees"));
 		await store.addGroupMember(KECCAK256("Employees"), creator);
@@ -62,6 +68,7 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 
 		// AAC requires special permissions
 		await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
+
 		// these actions required if AAC will call this actions DIRECTLY (without voting)
 		await daoBase.allowActionByAddress("withdrawDonations", aacInstance.address);
 		await daoBase.allowActionByAddress("addNewTask", aacInstance.address);
@@ -96,8 +103,6 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 	});
 
 	global.it('should allow to get donations using AAC (with voting)',async() => {
-		// check permissions
-	
 		await daoBase.issueTokens(employee1, 600, {from:creator});
 		await daoBase.issueTokens(employee2, 600, {from:creator});
 		const isCanWithdraw = await daoBase.isCanDoAction(creator,"withdrawDonations");
@@ -127,7 +132,6 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(true,0,{from:employee1});
-		
 
 		const r2 = await voting.getFinalResults();
 		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
@@ -145,7 +149,7 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 
 		console.log('receiverDelta:', receiverDelta)
 		console.log('donationBalance:', donationBalance2.toNumber())
-		// // global.assert.equal(receiverDelta, money, 'Donations should be withdrawn');
+		global.assert.equal(receiverDelta, money, 'Donations should be withdrawn');
 	});
 
 	global.it('should allow to set root receiver using AAC (direct call)',async() => {
