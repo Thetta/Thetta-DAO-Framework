@@ -5,6 +5,7 @@ var DaoStorage = artifacts.require("./DaoStorage");
 var WeiFund = artifacts.require("./WeiFund");
 var MoneyFlow = artifacts.require("./MoneyFlow");
 var IWeiReceiver = artifacts.require("./IWeiReceiver");
+var WeiAbsoluteExpense = artifacts.require("./WeiAbsoluteExpense");
 
 var AutoMoneyflowActionCaller = artifacts.require("./AutoMoneyflowActionCaller");
 
