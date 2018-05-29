@@ -8,6 +8,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract InformalProposal is IProposal, Ownable {
 	string proposalText = '';
+	IVoting voting;
 
 	function InformalProposal(string _proposalText) public {
 		proposalText = _proposalText;
