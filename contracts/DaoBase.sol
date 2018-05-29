@@ -37,9 +37,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 contract DaoStorage is Ownable {
 	StdDaoToken public stdToken;
 
-	mapping (uint=>IProposal) proposals;
-	uint public proposalsCount = 0;
-
+	IProposal[] public proposals;
 	address[] public observers;
 
 	// token -> permission -> flag
@@ -143,24 +141,26 @@ contract DaoStorage is Ownable {
 
 // Vote:
 	function addNewProposal(IProposal _proposal) public onlyOwner {
-		proposals[proposalsCount] = _proposal;
-		proposalsCount++;
+		proposals.push(_proposal);
 	}
 
 	function getProposalAtIndex(uint _i)public constant returns(IProposal){
-		require(_i<proposalsCount);
+		require(_i<proposals.length);
 		return proposals[_i];
+	}
+
+	function getProposalsCount()public constant returns(uint){
+		return proposals.length;
 	}
 
 	function getProposalVotingResults(address _p) public constant returns (bool isVotingFound, bool votingResult){
 		// scan all votings and search for the one that is finished
-		for(uint i=0; i<proposalsCount; ++i){
+		for(uint i=0; i<proposals.length; ++i){
 			if(proposals[i]==_p){
 				IVoting voting = proposals[i].getVoting();
 				return (true, 	voting.isFinished() && voting.isYes());
 			}
 		}
-
 		return (false,false);
 	}
 }
@@ -218,6 +218,9 @@ contract DaoBase is IDaoBase, Ownable {
 		return isCanDoActionByHash(_a, keccak256(_permissionName));
 	}
 
+	// TODO: remove 
+	event VotingCheck(bool votingFound, bool votingResult);
+
 	function isCanDoActionByHash(address _a, bytes32 _permissionNameHash)public constant returns(bool){
 		// 0 - is can do by address?
 		if(store.isCanDoByAddress(_permissionNameHash, _a)){
@@ -241,7 +244,10 @@ contract DaoBase is IDaoBase, Ownable {
 		// TODO: generalize for ALL tokens!
 		bool isCan = store.isCanDoByVoting(_permissionNameHash, address(store.stdToken()));
 		if(isCan){
-			var (isVotingFound, votingResult) = store.getProposalVotingResults(msg.sender);
+			var (isVotingFound, votingResult) = store.getProposalVotingResults(_a);
+
+			VotingCheck(isVotingFound,votingResult);
+
 			if(isVotingFound){
 				// if this action can be done by voting, then Proposal can do this action 
 				// from within its context
@@ -281,7 +287,7 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 	function getProposalsCount()public constant returns(uint){
-		return store.proposalsCount();
+		return store.getProposalsCount();
 	}
 
 	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") {

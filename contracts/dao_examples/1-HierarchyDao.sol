@@ -10,8 +10,12 @@ contract HierarchyDaoFactory {
 
 	StdDaoToken token;
 	DaoStorage store;
+	
+	function HierarchyDaoFactory(address _boss, address[] _managers, address[] _employees)public{
+		createDao(_boss, _managers, _employees);
+	}
 
-	function createDao(address _boss, address[] _managers, address[] _employees) public returns(address) {
+	function createDao(address _boss, address[] _managers, address[] _employees) internal returns(address) {
 		// 1 - create
 	   token = new StdDaoToken("StdToken", "STDT", 18);
 		store = new DaoStorage(token);
@@ -59,7 +63,7 @@ contract HierarchyDaoFactory {
 		daoBase.allowActionByVoting("manageGroups", token);
 		daoBase.allowActionByVoting("modifyMoneyscheme", token);
 
-		// 6 - populate groups
+		// 5 - populate groups
 		uint i = 0;
 		for(i=0; i<_managers.length; ++i){
 			daoBase.addGroupMember("Managers", _managers[i]);
@@ -71,18 +75,23 @@ contract HierarchyDaoFactory {
 	}
 }
 
+// this is in different contract just to reduce the gas
 contract AacFactory {
 	AutoDaoBaseActionCaller public aac; 
 
+	function AacFactory(IDaoBase _daoBase) public {
+		setupAac(_daoBase);
+	}
+
 	// set the auto caller
-	function setupAac(IDaoBase daoBase) public {
-		aac = new AutoDaoBaseActionCaller(daoBase);
+	function setupAac(IDaoBase _daoBase) public {
+		aac = new AutoDaoBaseActionCaller(_daoBase);
 
 		aac.setVotingParams("manageGroups", 1, (24 * 60), keccak256("Managers"), 0);
 		aac.setVotingParams("modifyMoneyscheme", 1, (24 * 60), keccak256("Managers"), 0);
 
-		daoBase.allowActionByAddress("addNewProposal", aac);
-		daoBase.allowActionByAddress("manageGroups", aac);
-		daoBase.allowActionByAddress("modifyMoneyscheme", aac);
+		_daoBase.allowActionByAddress("addNewProposal", aac);
+		_daoBase.allowActionByAddress("manageGroups", aac);
+		_daoBase.allowActionByAddress("modifyMoneyscheme", aac);
 	}
 }
