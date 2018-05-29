@@ -31,5 +31,15 @@ contract AutoDaoBaseActionCaller is GenericCaller {
 
 		return doAction("upgradeDaoContract", mc, msg.sender,"upgradeDaoContractGeneric(bytes32[])",params);
 	}
+	
+	// TODO: add other methods:
+	/*
+	function addGroup(string _groupName) public isCanDo("manageGroups")
+	function removeGroupMember(string _groupName, address _a) public isCanDo("manageGroups"){
+	function allowActionByShareholder(string _what, address _tokenAddress) public isCanDo("manageGroups"){
+	function allowActionByVoting(string _what, address _tokenAddress) public isCanDo("manageGroups"){
+	function allowActionByAddress(string _what, address _a) public isCanDo("manageGroups"){
+	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public isCanDo("manageGroups"){
+   */
 }
 

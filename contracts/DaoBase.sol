@@ -28,8 +28,8 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 //
 // How permissions works now:
 //		1. if caller is in the whitelist -> allow
-//		2. if caller is employee and this action can be done by employee -> allow
-//		3. if caller shareholder and this action can be done by shareholder -> allow
+//		2. if caller is in the group and this action can be done by group members -> allow
+//		3. if caller is shareholder and this action can be done by a shareholder -> allow
 //		4. if this action requires voting 
 //			a. caller is in the majority -> allow
 //			b. caller is voting and it is succeeded -> allow
@@ -84,7 +84,8 @@ contract DaoStorage is Ownable {
 	}
 
 	function removeGroupMember(bytes32 _groupName, address _member)public onlyOwner {
-		// TODO:
+		// TODO: remove from array like this:
+		// delete array[index];
 	}
 
 	function isGroupMember(bytes32 _groupName, address _a) public constant returns(bool){
@@ -196,6 +197,9 @@ contract DaoBase is IDaoBase, Ownable {
 	function isGroupMember(string _groupName,address _a)public constant returns(bool) {
 		return store.isGroupMember(keccak256(_groupName), _a);
 	}
+	function isGroupMemberByHash(bytes32 _groupNameHash,address _a)public constant returns(bool){
+		return store.isGroupMember(_groupNameHash, _a);
+	}
 
 	function allowActionByShareholder(string _what, address _tokenAddress) public isCanDo("manageGroups"){
 		store.allowActionByShareholder(keccak256(_what), _tokenAddress);
@@ -211,19 +215,23 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 	function isCanDoAction(address _a, string _permissionName) public constant returns(bool){
+		return isCanDoActionByHash(_a, keccak256(_permissionName));
+	}
+
+	function isCanDoActionByHash(address _a, bytes32 _permissionNameHash)public constant returns(bool){
 		// 0 - is can do by address?
-		if(store.isCanDoByAddress(keccak256(_permissionName), _a)){
+		if(store.isCanDoByAddress(_permissionNameHash, _a)){
 			return true;
 		}
 
 		// 1 - check if employees can do that without voting?
-	   if(store.isCanDoByGroupMember(keccak256(_permissionName), _a)){
+	   if(store.isCanDoByGroupMember(_permissionNameHash, _a)){
 			return true;
 		}
 
 		// 2 - check if shareholder can do that without voting?
 		// TODO: generalize for ALL tokens!
-		if(store.isCanDoByShareholder(keccak256(_permissionName), address(store.stdToken()))
+		if(store.isCanDoByShareholder(_permissionNameHash, address(store.stdToken()))
 			&& isShareholder(_a, address(store.stdToken())))
 		{
 			return true;
@@ -231,7 +239,7 @@ contract DaoBase is IDaoBase, Ownable {
 
 		// 2 - can do action only by starting new vote first?
 		// TODO: generalize for ALL tokens!
-		bool isCan = store.isCanDoByVoting(keccak256(_permissionName), address(store.stdToken()));
+		bool isCan = store.isCanDoByVoting(_permissionNameHash, address(store.stdToken()));
 		if(isCan){
 			var (isVotingFound, votingResult) = store.getProposalVotingResults(msg.sender);
 			if(isVotingFound){
@@ -320,4 +328,14 @@ contract DaoBaseWithUnpackers is DaoBase {
 		uint _amount = uint(_params[1]);
 		issueTokens(_to, _amount);
 	}
+
+	// TODO: add other methods:
+	/*
+	function addGroup(string _groupName) public isCanDo("manageGroups")
+	function removeGroupMember(string _groupName, address _a) public isCanDo("manageGroups"){
+	function allowActionByShareholder(string _what, address _tokenAddress) public isCanDo("manageGroups"){
+	function allowActionByVoting(string _what, address _tokenAddress) public isCanDo("manageGroups"){
+	function allowActionByAddress(string _what, address _a) public isCanDo("manageGroups"){
+	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public isCanDo("manageGroups"){
+   */
 }

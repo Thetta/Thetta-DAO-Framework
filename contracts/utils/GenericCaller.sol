@@ -45,7 +45,24 @@ contract GenericProposal is IProposal, Ownable {
 
 // This is a wrapper that help us to do action that CAN require votings
 // WARNING: should be permitted to add new proposal by the current DaoBase!!!
-contract GenericCaller is DaoClient {
+contract GenericCaller is DaoClient, Ownable {
+	enum VotingType {
+		NoVoting,
+
+		Voting1p1v,
+		VotingSimpleToken,
+		VotingQuadratic
+	}
+
+	struct VotingParams {
+		VotingType votingType;
+		bytes32 param1;
+		bytes32 param2;
+		bytes32 param3;
+	}
+
+	mapping (bytes32=>VotingParams) votingParams;
+
 	function GenericCaller(IDaoBase _mc)public
 		// DaoClient (for example) helps us to handle DaoBase upgrades
 		// and will automatically update the 'mc' to the new instance
@@ -95,16 +112,33 @@ contract GenericCaller is DaoClient {
 		}
 	}
 
-	function setVotingType(string _permissionsId, string _votingType, bytes32 _param1, bytes32 _param2) public {
-		// TODO
-	}	
+	function setVotingParams(string _permissionsId, uint _votingType, 
+									 bytes32 _param1, bytes32 _param2, bytes32 _param3) public onlyOwner {
+		VotingParams memory params;
+		params.votingType = VotingType(_votingType);
+		params.param1 = _param1;
+		params.param2 = _param2;
+		params.param3 = _param3;
+
+		votingParams[keccak256(_permissionsId)] = params;
+	}
 
 	function createVoting(string _permissionsId, IProposal _proposal, address _origin)internal returns(IVoting){
-		// TODO
+		VotingParams memory vp = votingParams[keccak256(_permissionsId)];
 
-		//return new Voting(mc, _proposal, _origin, Voting.VoteType.EmployeesVote, 24 *60, 0x0);
+		if(VotingType.Voting1p1v==vp.votingType){
+			return new Voting_1p1v(mc, _proposal, _origin, uint(vp.param1), vp.param2, vp.param3);
+		}
 
-		return new Voting_1p1v(mc, _proposal, _origin, 24 *60, "Employees");
+		if(VotingType.VotingSimpleToken==vp.votingType){
+			// TODO: test
+			return new Voting_SimpleToken(mc, _proposal, _origin, uint(vp.param1), address(vp.param2), vp.param3);
+		}
+
+		// TODO: add other implementations
+		// no implementation for this type!
+		assert(false==true);
+		return IVoting(0x0);
 	}
 }
 
