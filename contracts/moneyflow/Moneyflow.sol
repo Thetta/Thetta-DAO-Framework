@@ -46,10 +46,6 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	// will withdraw donations
 	function withdrawDonationsTo(address _out) public isCanDo("withdrawDonations"){
 		emit WithdrawDonations(msg.sender, _out, donationEndpoint.balance);
-
-		//bool isCan = mc.isCanDoAction(msg.sender, "WithdrawDonations");
-		//emit WithdrawDonationsCheck(isCan);
-
 		donationEndpoint.flushTo(_out);
 	}
 

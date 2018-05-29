@@ -4,6 +4,7 @@ import '../DaoBase.sol';
 import '../tokens/StdDaoToken.sol';
 
 import '../DaoBaseAuto.sol';
+import '../moneyflow/MoneyflowAuto.sol';
 
 contract HierarchyDaoFactory {
 	DaoBaseWithUnpackers public daoBase;
@@ -41,6 +42,7 @@ contract HierarchyDaoFactory {
 		// 1 - grant all permissions to the _boss (i.e. "the monarch")
 		daoBase.addGroupMember("Managers", _boss);
 		daoBase.addGroupMember("Employees", _boss);
+
 		daoBase.allowActionByAddress("modifyMoneyscheme",_boss);
 		daoBase.allowActionByAddress("issueTokens", _boss);
 		daoBase.allowActionByAddress("upgradeDaoContract", _boss);
@@ -73,25 +75,37 @@ contract HierarchyDaoFactory {
 			daoBase.addGroupMember("Employees", _employees[i]);
 		}
 	}
-}
 
-// this is in different contract just to reduce the gas
-contract AacFactory {
-	AutoDaoBaseActionCaller public aac; 
+	// WARNING:
+	// Unfortunately creating AutoDaoBaseActionCaller here caused some weird bug 
+	// with OutOfGas...That's why i moved AutoDaoBaseActionCaller creation outside of this contract
+	function setupAac(AutoDaoBaseActionCaller _aac) public {
+		uint VOTING_TYPE_1P1V = 1;
+		_aac.setVotingParams("manageGroups", VOTING_TYPE_1P1V, (24 * 60), keccak256("Managers"), 0);
 
-	function AacFactory(IDaoBase _daoBase) public {
-		setupAac(_daoBase);
+		daoBase.allowActionByAddress("addNewProposal", _aac);
+		daoBase.allowActionByAddress("manageGroups", _aac);
+		//daoBase.allowActionByAddress("issueTokens", _aac);
+		//daoBase.allowActionByAddress("upgradeDaoContract", _aac);
+
+		_aac.transferOwnership(msg.sender);
 	}
 
-	// set the auto caller
-	function setupAac(IDaoBase _daoBase) public {
-		aac = new AutoDaoBaseActionCaller(_daoBase);
+	// WARNING:
+	// Unfortunately creating AutoDaoBaseActionCaller here caused some weird bug 
+	// with OutOfGas...That's why i moved AutoDaoBaseActionCaller creation outside of this contract
+	function setupAmac(AutoMoneyflowActionCaller _amac) public {
+		uint VOTING_TYPE_1P1V = 1;
+		_amac.setVotingParams("modifyMoneyscheme", VOTING_TYPE_1P1V, (24 * 60), keccak256("Managers"), 0);
 
-		aac.setVotingParams("manageGroups", 1, (24 * 60), keccak256("Managers"), 0);
-		aac.setVotingParams("modifyMoneyscheme", 1, (24 * 60), keccak256("Managers"), 0);
+		daoBase.allowActionByAddress("addNewProposal", _amac);
+		daoBase.allowActionByAddress("modifyMoneyscheme", _amac);
 
-		_daoBase.allowActionByAddress("addNewProposal", aac);
-		_daoBase.allowActionByAddress("manageGroups", aac);
-		_daoBase.allowActionByAddress("modifyMoneyscheme", aac);
+		daoBase.allowActionByAddress("addNewTask", _amac);
+		daoBase.allowActionByAddress("setRootWeiReceiver", _amac);
+		daoBase.allowActionByAddress("withdrawDonations", _amac);
+
+		_amac.transferOwnership(msg.sender);
 	}
 }
+

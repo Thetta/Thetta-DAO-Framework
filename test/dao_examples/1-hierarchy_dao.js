@@ -3,9 +3,11 @@ var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 
-var IDaoBase = artifacts.require("./IDaoBase");
-var AacFactory = artifacts.require("./AacFactory");
+var DaoBase = artifacts.require("./DaoBase");
 var AutoDaoBaseActionCaller = artifacts.require("./AutoDaoBaseActionCaller");
+
+var MoneyFlow = artifacts.require("./MoneyFlow");
+var AutoMoneyflowActionCaller = artifacts.require("./AutoMoneyflowActionCaller");
 
 // DAO factories
 var HierarchyDaoFactory = artifacts.require("./HierarchyDaoFactory"); 
@@ -109,12 +111,30 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 		let hdf = await HierarchyDaoFactory.new(boss, mgrs, empls, {gas: 10000000, from: creator});
 		
 		const daoAddress = await hdf.daoBase();
-		const daoBase = await IDaoBase.at(daoAddress);
+		const daoBase = await DaoBase.at(daoAddress);
 
-		let af = await AacFactory.new(daoBase.address, {gas: 10000000, from: creator});
+		// Create AAC manually
+		// 
+		// WARNING:
+		// Unfortunately creating AutoDaoBaseActionCaller in the HierarchyDaoFactory caused some weird bug 
+		// with OutOfGas...That's why i moved AutoDaoBaseActionCaller creation here
+		//
+		let aac = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
+		await aac.transferOwnership(hdf.address, {from: creator});
+		await hdf.setupAac(aac.address, {from: creator});
 
-		const aacAddress = await af.aac();
-		const aac = await AutoDaoBaseActionCaller.at(aacAddress);
+		// Create AMAC manually
+		let moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
+		let amac = await AutoMoneyflowActionCaller.new(daoBase.address, moneyflowInstance.address, 
+			{from: creator, gas: 10000000});
+		await amac.transferOwnership(hdf.address, {from: creator});
+
+		hdf.setupAmac(amac.address, {from: creator});
+
+		// test permissions 
+		// 1 - check if AAC has manageGroups perm. 
+		const isCan = await daoBase.isCanDoAction(aac.address, "manageGroups");
+		global.assert.equal(isCan, true, 'AAC should be able to <manageGroups>');
 	});
 });
 
