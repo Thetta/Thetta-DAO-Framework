@@ -1,29 +1,28 @@
 pragma solidity ^0.4.15;
 
 import '../DaoBase.sol';
-import '../DaoBaseAuto.sol';
 import '../tokens/StdDaoToken.sol';
 
+import '../DaoBaseAuto.sol';
+
 contract HierarchyDaoFactory {
+	DaoBaseWithUnpackers public daoBase;
+
 	StdDaoToken token;
 	DaoStorage store;
-	DaoBaseWithUnpackers daoBase;
-
-	//AutoDaoBaseActionCaller aac; 
 
 	function createDao(address _boss, address[] _managers, address[] _employees) public returns(address) {
 		// 1 - create
 	   token = new StdDaoToken("StdToken", "STDT", 18);
 		store = new DaoStorage(token);
 		daoBase = new DaoBaseWithUnpackers(store);
-		//aac = new AutoDaoBaseActionCaller(daoBase);
 
 		store.allowActionByAddress(keccak256("manageGroups"),this);
 
 		token.transferOwnership(daoBase);
 		store.transferOwnership(daoBase);
 
-		// 2 - set perms
+		// 2 - setup
 		setPermissions(_boss, _managers, _employees);
 
 		// 3 - return 
@@ -60,16 +59,6 @@ contract HierarchyDaoFactory {
 		daoBase.allowActionByVoting("manageGroups", token);
 		daoBase.allowActionByVoting("modifyMoneyscheme", token);
 
-		/*
-		// 5 - set the auto caller
-		aac.setVotingParams("manageGroups", 1, (24 * 60), keccak256("Managers"), 0);
-		aac.setVotingParams("modifyMoneyscheme", 1, (24 * 60), keccak256("Managers"), 0);
-
-		daoBase.allowActionByAddress("addNewProposal", aac);
-		daoBase.allowActionByAddress("manageGroups", aac);
-		daoBase.allowActionByAddress("modifyMoneyscheme", aac);
-	   */
-
 		// 6 - populate groups
 		uint i = 0;
 		for(i=0; i<_managers.length; ++i){
@@ -79,5 +68,21 @@ contract HierarchyDaoFactory {
 		for(i=0; i<_employees.length; ++i){
 			daoBase.addGroupMember("Employees", _employees[i]);
 		}
+	}
+}
+
+contract AacFactory {
+	AutoDaoBaseActionCaller public aac; 
+
+	// set the auto caller
+	function setupAac(IDaoBase daoBase) public {
+		aac = new AutoDaoBaseActionCaller(daoBase);
+
+		aac.setVotingParams("manageGroups", 1, (24 * 60), keccak256("Managers"), 0);
+		aac.setVotingParams("modifyMoneyscheme", 1, (24 * 60), keccak256("Managers"), 0);
+
+		daoBase.allowActionByAddress("addNewProposal", aac);
+		daoBase.allowActionByAddress("manageGroups", aac);
+		daoBase.allowActionByAddress("modifyMoneyscheme", aac);
 	}
 }

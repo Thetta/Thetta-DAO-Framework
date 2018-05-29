@@ -3,6 +3,8 @@ var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 
+var IDaoBase = artifacts.require("./IDaoBase");
+var AacFactory = artifacts.require("./AacFactory");
 var AutoDaoBaseActionCaller = artifacts.require("./AutoDaoBaseActionCaller");
 
 // DAO factories
@@ -105,10 +107,29 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 
 		let mgrs = [manager1, manager2];
 		let empls = [employee1, employee2];
-		let out = await hdf.createDao(boss, mgrs, empls);
-	
-		console.log('OUT: ');
-		console.log(out);
+		await hdf.createDao(boss, mgrs, empls, {from: creator});
+		
+		const daoAddress = await hdf.daoBase();
+		const daoBase = await IDaoBase.at(daoAddress);
+
+		let af = await AacFactory.new({gas: 10000000, from: creator});
+		await af.setupAac(daoBase.address, {from: creator});
+
+		const aacAddress = await af.aac();
+		const aac = await AutoDaoBaseActionCaller.at(aacAddress);
+
+		/*
+		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
+
+		// set the auto caller
+		const VOTING_TYPE_1P1V = 1;
+		await aacInstance.setVotingParams("manageGroups", VOTING_TYPE_1P1V, (24 * 60), KECCAK256("Managers"), 0);
+		await aacInstance.setVotingParams("modifyMoneyscheme", VOTING_TYPE_1P1V, (24 * 60), KECCAK256("Managers"), 0);
+
+		await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
+		await daoBase.allowActionByAddress("manageGroups", aacInstance.address);
+		await daoBase.allowActionByAddress("modifyMoneyscheme", aacInstance.address);
+		*/
 	});
 });
 
