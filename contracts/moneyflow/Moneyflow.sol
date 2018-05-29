@@ -40,12 +40,16 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 		donationF2WR = new FallbackToWeiReceiver(donationEndpoint);
 	}
 
-	event WithdrawDonation(address _by, address _to, uint _balance);
+	event WithdrawDonations(address _by, address _to, uint _balance);
 
 // IMoneyflow:
 	// will withdraw donations
-	function withdrawDonationsTo(address _out)public isCanDo("withdrawDonations") {
-		WithdrawDonation(msg.sender, _out, donationEndpoint.balance);
+	function withdrawDonationsTo(address _out) public isCanDo("withdrawDonations"){
+		emit WithdrawDonations(msg.sender, _out, donationEndpoint.balance);
+
+		//bool isCan = mc.isCanDoAction(msg.sender, "WithdrawDonations");
+		//emit WithdrawDonationsCheck(isCan);
+
 		donationEndpoint.flushTo(_out);
 	}
 

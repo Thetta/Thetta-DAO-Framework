@@ -13,6 +13,8 @@ contract Voting is IVoting {
 	bool isCalled = false;
 	uint public minutesToVote;
 
+	event Voting_CallAction();
+
 	function Voting(IDaoBase _mc, IProposal _proposal, uint _minutesToVote){
 		mc = _mc;
 		proposal = _proposal;
@@ -21,6 +23,8 @@ contract Voting is IVoting {
 
 	function callActionIfEnded() public {
 		if(!isCalled && isFinished() && isYes()){
+			emit Voting_CallAction();
+
 			// should not be callable again!!!
 			isCalled = true;
 
@@ -76,7 +80,7 @@ contract Voting_1p1v is Voting, Ownable {
 
 		internalVote(_origin, true);
 	}
-
+	
 	function vote(bool _yes, uint _tokenAmount) public {
 		require(!isFinished());
 
