@@ -82,9 +82,9 @@ contract Voting_1p1v is Voting, Ownable {
 	}
 	
 	function vote(bool _yes, uint _tokenAmount) public {
-		require(!isFinished());
+		// require(!isFinished());
 
-		require(mc.isGroupMemberByHash(groupHash,msg.sender));
+		// require(mc.isGroupMemberByHash(groupHash,msg.sender));
 
 		internalVote(msg.sender, _yes);
 	}

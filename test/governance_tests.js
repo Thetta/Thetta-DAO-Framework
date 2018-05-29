@@ -4,6 +4,7 @@ var DaoStorage = artifacts.require("./DaoStorage");
 
 var Voting_1p1v = artifacts.require("./Voting_1p1v");
 var IProposal = artifacts.require("./IProposal");
+var InformalProposal = artifacts.require("./InformalProposal");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
@@ -44,12 +45,32 @@ global.contract('Voting_1p1v', (accounts) => {
 	
 	global.it('should create and use 1p1v voting',async() => {
 		// add 3 employees 
+		await daoBase.addGroupMember("Employees", employee1);
+		await daoBase.addGroupMember("Employees", employee2);
+		await daoBase.addGroupMember("Employees", employee3);
 
+		let proposal = await InformalProposal.new('Take the money and run', {from:creator, gas:10000000, gasPrice:0});	
+		let voting = await Voting_1p1v.new(daoBase.address, proposal.address, creator, 60*24, KECCAK256("Employees"), 0);
+		
 		// vote by first, check results  (getFinalResults, isFinished, isYes, etc) 
+			
+		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+
+		await voting.vote(true,0,{from:employee1});
+
+		const r2 = await voting.getFinalResults();
+		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
+		global.assert.equal(r2[1].toNumber(),0,'no');
+		global.assert.equal(r2[2].toNumber(),2,'total');
+
+		// // TODO: JUST FOR DEBUGGGGG!!! 
+		// var(yesResults, noResults, totalResults) = getFinalResults();
+		// return (totalResults>1); <------------------ isFinished()
+
+		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
+		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 		
-		// vote by second, check results 
-		
-		// vote by second again, check results 
 	});
 
 	global.it('should create and use 1p1v voting while members change',async() => {
