@@ -154,12 +154,45 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 	
 	global.it('should allow add new task using AAC (direct call)', async() => {
 		// check permissions
-		const isCanDoAction = await daoBase.isCanDoAction(employee1, "addNewTask");
-		global.assert.equal(isCanDoAction, false, 'Employee should not have permissions to add new task');
+		const isCanDoAction1 = await daoBase.isCanDoAction(employee1, "addNewTask");
+		global.assert.equal(isCanDoAction1, false, 'Employee should not have permissions to add new task');
+
+		// THIS IS REQUIRED because employee1 have to be able to run action
+		await daoBase.allowActionByAnyMemberOfGroup("addNewTask", "Employees");
+
+		const isCanDoAction2 = await daoBase.isCanDoAction(employee1, "addNewTask");
+		global.assert.equal(isCanDoAction2, true, 'Employee should have permission to add new task');
+
+		// checking run action direct call
+		const wae = await WeiAbsoluteExpense.new(1000);
+		await CheckExceptions.checkContractThrows(aacInstance.addNewTaskAuto.sendTransaction,
+			[wae, { from: employee1 }],
+			'Should be able to run action without voting');
+
+		// check proposals (must be empty)
+		const proposalsCount1 = await daoBase.getProposalsCount();
+		global.assert.equal(proposalsCount1, 0, 'No proposals should be added');
 	});
 
 	global.it('should allow add new task using AAC (with voting)', async() => {
-		// TODO
+		// check permissions (permissions must be blocked)
+		const isCanDoAction = await daoBase.isCanDoAction(employee1, "addNewTask");
+		global.assert.equal(isCanDoAction, false, 'Employee should not have permission to add new task');
+
+		await daoBase.allowActionByVoting("addNewTask", token.address);
+
+		// check proposals (must be empty)
+		const proposalsCount1 = await daoBase.getProposalsCount();
+		global.assert.equal(proposalsCount1, 0, 'No proposals should be added');
+
+		// checking run action with voting required
+		const wae = await WeiAbsoluteExpense.new(1000);
+		await CheckExceptions.checkContractThrows(aacInstance.addNewTaskAuto.sendTransaction,
+			[wae, { from: employee1 }],
+			'Should be able to add new task with voting');
+
+		const proposalsCount2 = await daoBase.getProposalsCount();
+		global.assert.equal(proposalsCount2, 1, 'One new proposal should be added');
 	});
 
 	global.it('should allow to set root receiver using AAC (direct call)',async() => {
