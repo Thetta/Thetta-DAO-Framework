@@ -153,7 +153,9 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 	});
 	
 	global.it('should allow add new task using AAC (direct call)', async() => {
-		// TODO
+		// check permissions
+		const isCanDoAction = await daoBase.isCanDoAction(employee1, "addNewTask");
+		global.assert.equal(isCanDoAction, false, 'Employee should not have permissions to add new task');
 	});
 
 	global.it('should allow add new task using AAC (with voting)', async() => {
