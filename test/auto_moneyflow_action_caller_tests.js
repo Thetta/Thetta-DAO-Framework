@@ -151,6 +151,14 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 		console.log('donationBalance:', donationBalance2.toNumber())
 		global.assert.equal(receiverDelta, money, 'Donations should be withdrawn');
 	});
+	
+	global.it('should allow add new task using AAC (direct call)', async() => {
+		// TODO
+	});
+
+	global.it('should allow add new task using AAC (with voting)', async() => {
+		// TODO
+	});
 
 	global.it('should allow to set root receiver using AAC (direct call)',async() => {
 
