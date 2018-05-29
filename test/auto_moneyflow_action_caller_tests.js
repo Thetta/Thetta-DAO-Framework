@@ -58,6 +58,7 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 		
 		await daoBase.allowActionByVoting("withdrawDonations", token.address);
+		await daoBase.allowActionByAddress("issueTokens", creator);
 
 		// AAC requires special permissions
 		await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
@@ -95,7 +96,64 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 	});
 
 	global.it('should allow to get donations using AAC (with voting)',async() => {
-		// TODO: implement test 
+		// check permissions
+	
+		await daoBase.issueTokens(employee1, 600, {from:creator});
+		await daoBase.issueTokens(employee2, 600, {from:creator});
+		const isCanWithdraw = await daoBase.isCanDoAction(creator,"withdrawDonations");
+		global.assert.equal(isCanWithdraw, false, 'Creator should be not able to withdrawDonations directly without voting');
+
+		// send some money
+		const dea = await moneyflowInstance.getDonationEndpoint(); 
+		global.assert.notEqual(dea,0x0, 'donation endpoint should be created');
+		const donationEndpoint = await IWeiReceiver.at(dea);
+		await donationEndpoint.processFunds(money, { from: employee1, value: money});
+
+		let donationBalance = await web3.eth.getBalance(donationEndpoint.address);
+		global.assert.equal(donationBalance.toNumber(),money, 'all money at donation point now');
+
+		// get the donations 
+		let pointBalance = await web3.eth.getBalance(output);
+		// this will call the action directly!
+		await aacInstance.withdrawDonationsToAuto(output, {from:creator, gas:100000000});
+		const proposalsCount1 = await daoBase.getProposalsCount();
+		global.assert.equal(proposalsCount1, 1, 'Proposal should be added');
+
+		const pa = await daoBase.getProposalAtIndex(0);
+		const proposal = await IProposal.at(pa);
+		const votingAddress = await proposal.getVoting();
+		const voting = await Voting.at(votingAddress);
+		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+
+		await voting.vote(true,0,{from:employee1});
+		
+
+		const r2 = await voting.getFinalResults();
+		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
+		global.assert.equal(r2[1],0,'no');
+		global.assert.equal(r2[2],2,'total');
+
+		// get voting results again
+		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
+		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		
+		let pointBalance2 = await web3.eth.getBalance(output);
+		const receiverDelta = pointBalance2.toNumber() - pointBalance.toNumber();
+
+		let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);
+
+		console.log('receiverDelta:', receiverDelta)
+		console.log('donationBalance:', donationBalance2.toNumber())
+		// // global.assert.equal(receiverDelta, money, 'Donations should be withdrawn');
+	});
+
+	global.it('should allow to set root receiver using AAC (direct call)',async() => {
+
+	});
+
+	global.it('should allow to set root receiver using AAC (with voting)',async() => {
+
 	});
 
 });
