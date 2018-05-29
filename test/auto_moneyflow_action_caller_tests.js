@@ -46,7 +46,7 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 		// SEE THIS? set voting type for the action!
 		const VOTING_TYPE_1P1V = 1;
 		const VOTING_TYPE_SIMPLE_TOKEN = 2;
-		await aacInstance.setVotingParams("withdrawDonations", VOTING_TYPE_SIMPLE_TOKEN, (24 * 60), KECCAK256("Employees"), 0);
+		await aacInstance.setVotingParams("withdrawDonations", VOTING_TYPE_1P1V, (24 * 60), KECCAK256("Employees"), 0);
 
 		// add creator as first employee	
 		await store.addGroup(KECCAK256("Employees"));
@@ -136,9 +136,9 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 
 		// check voting results again
 		const r2 = await voting.getFinalResults();
-		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
-		global.assert.equal(r2[1],0,'no');
-		global.assert.equal(r2[2],2,'total');
+		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
+		global.assert.equal(r2[1].toNumber(),0,'no');
+		global.assert.equal(r2[2].toNumber(),2,'total');
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 
