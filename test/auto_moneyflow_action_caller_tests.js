@@ -46,7 +46,7 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 		// SEE THIS? set voting type for the action!
 		const VOTING_TYPE_1P1V = 1;
 		const VOTING_TYPE_SIMPLE_TOKEN = 2;
-		await aacInstance.setVotingParams("withdrawDonations", VOTING_TYPE_1P1V, (24 * 60), KECCAK256("Employees"), 0);
+		await aacInstance.setVotingParams("withdrawDonations", VOTING_TYPE_SIMPLE_TOKEN, (24 * 60), KECCAK256("Employees"), 0);
 
 		// add creator as first employee	
 		await store.addGroup(KECCAK256("Employees"));
@@ -99,7 +99,7 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 		let pointBalance2 = await web3.eth.getBalance(output);
 		const receiverDelta = pointBalance2.toNumber() - pointBalance.toNumber();
 
-		global.assert.notEqual(receiverDelta, 0, 'Donations should be withdrawn');
+		global.assert.equal(receiverDelta, money, 'Donations should be withdrawn');
 	});
 
 	global.it('should allow to get donations using AAC (with voting)',async() => {
@@ -143,13 +143,13 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 		
 		let pointBalance2 = await web3.eth.getBalance(output);
-		const receiverDelta = pointBalance2.toNumber() - pointBalance.toNumber();
+		let receiverDelta2 = pointBalance2.toNumber() - pointBalance.toNumber();
 
 		let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);
 
-		console.log('receiverDelta:', receiverDelta)
+		console.log('receiverDelta:', receiverDelta2)
 		console.log('donationBalance:', donationBalance2.toNumber())
-		global.assert.equal(receiverDelta, money, 'Donations should be withdrawn');
+		global.assert.equal(receiverDelta2, money, 'Donations should be withdrawn');
 	});
 
 	global.it('should allow to set root receiver using AAC (direct call)',async() => {
