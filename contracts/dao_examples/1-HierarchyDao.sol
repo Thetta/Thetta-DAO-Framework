@@ -109,19 +109,3 @@ contract HierarchyDaoFactory {
 	}
 }
 
-contract HierarchyDaoFactoryTEST {
-	DaoBaseWithUnpackers public daoBase;
-	AutoDaoBaseActionCaller public aac;
-
-	StdDaoToken token;
-	DaoStorage store;
-	
-	function HierarchyDaoFactoryTEST(address _boss, address[] _managers, address[] _employees)public{
-	   token = new StdDaoToken("StdToken", "STDT", 18);
-		store = new DaoStorage(token);
-		daoBase = new DaoBaseWithUnpackers(store);
-
-		aac = new AutoDaoBaseActionCaller(IDaoBase(daoBase));
-	}
-
-}
