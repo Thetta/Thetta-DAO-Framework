@@ -148,10 +148,7 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 
 		let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);
 
-		console.log('receiverDelta:', receiverDelta2)
-		console.log('donationBalance:', donationBalance2.toNumber())
 		global.assert.equal(receiverDelta2, money, 'Donations should be withdrawn');
-
 	});
 
 	global.it('should allow to set root receiver using AAC (direct call)',async() => {
