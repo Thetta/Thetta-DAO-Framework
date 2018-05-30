@@ -276,7 +276,7 @@ contract DaoBase is IDaoBase, Ownable {
 	function allowActionByVoting(string _what, address _tokenAddress) public isCanDo("manageGroups"){
 		store.allowActionByVoting(keccak256(_what),_tokenAddress);
 	}
-	function allowActionByAddress(string _what, address _a) public isCanDo("manageGroups"){
+	function allowActionByAddress(string _what, address _a) public /*isCanDo("manageGroups")*/{
 		store.allowActionByAddress(keccak256(_what),_a);
 	}
 	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public isCanDo("manageGroups"){
@@ -370,7 +370,7 @@ contract DaoBase is IDaoBase, Ownable {
 
 	// only token holders with > 51% of gov.tokens can add new task immediately 
 	function isInMajority(address _a, address _tokenAddress) public constant returns(bool){
-		return (ERC20(_tokenAddress).balanceOf(_a))>=(ERC20(_tokenAddress).totalSupply()/2);
+		return (ERC20(_tokenAddress).balanceOf(_a))>(ERC20(_tokenAddress).totalSupply()/2);
 	}
 
 	function issueTokensInternal(address _to, uint _amount) internal {

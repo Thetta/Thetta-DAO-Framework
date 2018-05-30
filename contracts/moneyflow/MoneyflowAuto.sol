@@ -16,12 +16,16 @@ contract AutoMoneyflowActionCaller is GenericCaller {
 		mf = _mf;
 	}
 
+	/*
+	// this is moved to Scheme!
+
 	function addNewTaskAuto(WeiAbsoluteExpense _wt) public returns(address voteOut){
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(address(_wt));
 
 		return doAction("addNewTask", mf, msg.sender,"addNewTaskGeneric(bytes32[])",params);
 	}
+   */
 
 	function setRootWeiReceiverAuto(WeiAbsoluteExpense _wt) public returns(address voteOut){
 		bytes32[] memory params = new bytes32[](1);

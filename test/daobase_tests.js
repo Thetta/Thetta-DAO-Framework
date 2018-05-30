@@ -116,8 +116,16 @@ global.contract('DaoBase', (accounts) => {
 	});
 
 	global.it('should issue tokens to employee1 and employee2',async() => {
-		await daoBase.issueTokens(employee1,1000,{from: creator});
-		await daoBase.issueTokens(employee2,1000,{from: creator});
+		// currently creator has 1000 tokens, he is in majority, so this should not fail
+		await daoBase.issueTokens(employee1,2000,{from: creator});
+
+		// but now creator has 1000 and employee1 has 1000, so creator is not in majority
+		// this should fail
+		await CheckExceptions.checkContractThrows(daoBase.issueTokens.sendTransaction,
+			[employee2, 1000, { from: creator}],
+			'Should not issue more tokens because creator is no longer in majority');
+
+		await token.transfer(employee2, 1000, {from: employee1});
 
 		const isMajority1 = await daoBase.isInMajority(creator, token.address);
 		global.assert.strictEqual(isMajority1,false,'Creator should NOT be in majority now');
