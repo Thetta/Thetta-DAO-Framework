@@ -25,6 +25,7 @@ global.contract('DaoBase', (accounts) => {
 	const employee1 = accounts[1];
 	const employee2 = accounts[2];
 	const outsider = accounts[3];
+	const employee3 = accounts[4];
 
 	global.beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
@@ -189,6 +190,24 @@ global.contract('DaoBase', (accounts) => {
 
 		let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);
 		global.assert.equal(donationBalance2.toNumber(),0, 'all donations now on creator`s balance');
+	});
+
+	global.it('should add group members',async() => {
+		await daoBase.addGroupMember("Employees", employee1,{from:creator});
+		await daoBase.addGroupMemberByHash(KECCAK256("Employees"), employee2);
+		await daoBase.addGroupMember("Employees", employee3);
+
+		await CheckExceptions.checkContractThrows(daoBase.addGroupMember, 
+			["Employees", employee3]); //Shouldnt add again
+
+		global.assert.strictEqual(await daoBase.isGroupMember("Employees", employee1,{from:creator}),
+			true, 'Should be in the group')
+		global.assert.strictEqual(await daoBase.isGroupMember("Employees", employee2,{from:creator}),
+			true, 'Should be in the group')
+		global.assert.strictEqual(await daoBase.isGroupMember("Employees", employee3,{from:creator}),
+			true, 'Should be in the group')
+
+		global.assert.equal(4, await daoBase.getMembersCount("Employees"), '3 employees + creator');
 	});
 });
 

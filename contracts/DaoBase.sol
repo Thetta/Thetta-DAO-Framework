@@ -49,6 +49,7 @@ contract DaoStorage is Ownable {
 
 	// member -> group names
 	mapping (address=>bytes32[]) groupMembers;
+	mapping (bytes32=>address[]) groupParticipants;
 	// group name -> permission -> flag
 	mapping (bytes32=>mapping(bytes32=>bool)) isAllowedActionByGroupMember;
 
@@ -75,10 +76,15 @@ contract DaoStorage is Ownable {
 		// do nothing
 	}
 
-	function addGroupMember(bytes32 _groupName, address _newMember) public onlyOwner{
+	function addGroupMember(bytes32 _groupHash, address _newMember) public onlyOwner{
 		// check if already added 
-		require(!isGroupMember(_groupName, _newMember));
-		groupMembers[_newMember].push(_groupName);
+		require(!isGroupMember(_groupHash, _newMember));
+		groupMembers[_newMember].push(_groupHash);
+		groupParticipants[_groupHash].push(_newMember);
+	}
+
+	function getMembersCount(bytes32 _groupHash) public constant returns(uint){
+		return groupParticipants[_groupHash].length;
 	}
 
 	function removeGroupMember(bytes32 _groupName, address _member)public onlyOwner {
@@ -185,12 +191,23 @@ contract DaoBase is IDaoBase, Ownable {
 		store.addObserver(_observer);	
 	}
 
+	function getMembersCount(string _groupName) public constant returns(uint){
+		return store.getMembersCount(keccak256(_groupName));
+	}
+	function getMembersCountByHash(bytes32 _groupHash) public constant returns(uint){
+		return store.getMembersCount(_groupHash);
+	}
+
 	function addGroup(string _groupName) public isCanDo("manageGroups"){
 		store.addGroup(keccak256(_groupName));	
 	}
 	function addGroupMember(string _groupName, address _a) public isCanDo("manageGroups") {
 		store.addGroupMember(keccak256(_groupName), _a);
 	}
+	function addGroupMemberByHash(bytes32 _groupHash, address _a) public isCanDo("manageGroups") {
+		store.addGroupMember(_groupHash, _a);
+	}
+
 	function removeGroupMember(string _groupName, address _a) public isCanDo("manageGroups"){
 		store.removeGroupMember(keccak256(_groupName), _a);
 	}
