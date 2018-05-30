@@ -18,9 +18,8 @@ function KECCAK256(x) {
 	return web3.sha3(x);
 }
 
-function CheckVoting() {
-	const pa = await daoBase.getProposalAtIndex(0);
-	const proposal = await IProposal.at(pa);
+function CheckVotingWithSpecificProposal(proposal) {
+	
 	const votingAddress = await proposal.getVoting();
 	const voting = await Voting.at(votingAddress);
 	global.assert.strictEqual(await voting.isFinished(), false, 'Voting is still not finished');
@@ -147,21 +146,7 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
-		const votingAddress = await proposal.getVoting();
-		const voting = await Voting.at(votingAddress);
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
-
-		await voting.vote(true,0,{from:employee1});
-
-		const r2 = await voting.getFinalResults();
-		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
-		global.assert.equal(r2[1],0,'no');
-		global.assert.equal(r2[2],2,'total');
-
-		// get voting results again
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		CheckVotingWithSpecificProposal(proposal);
 		
 		let pointBalance2 = await web3.eth.getBalance(output);
 		const receiverDelta = pointBalance2.toNumber() - pointBalance.toNumber();
@@ -212,8 +197,10 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 
 		const proposalsCount2 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount2, 1, 'One new proposal should be added');
-		
-		CheckVoting();
+				
+		const pa = await daoBase.getProposalAtIndex(0);
+		const proposal = await IProposal.at(pa);
+		CheckVotingWithSpecificProposal(proposal);
 	});
 
 });
