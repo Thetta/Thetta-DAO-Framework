@@ -104,7 +104,7 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 	});
 	*/
 
-	global.it('should create Boss -> Managers -> Employees hierarchy',async() => {
+	global.it('should create Boss -> Managers -> Employees hierarchy using HierarchyDaoFactory',async() => {
 		let mgrs = [manager1, manager2];
 		let empls = [employee1, employee2];
 
@@ -121,13 +121,14 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 		//
 		let aac = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
 		await aac.transferOwnership(hdf.address, {from: creator});
-		await hdf.setupAac(aac.address, {from: creator});
 
 		// Create AMAC manually
 		let moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 		let amac = await AutoMoneyflowActionCaller.new(daoBase.address, moneyflowInstance.address, 
 			{from: creator, gas: 10000000});
 		await amac.transferOwnership(hdf.address, {from: creator});
+
+		await hdf.setupAac(aac.address, {from: creator});
 		await hdf.setupAmac(amac.address, {from: creator});
 
 		// test permissions 
