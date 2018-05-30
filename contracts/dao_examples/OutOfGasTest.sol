@@ -74,20 +74,24 @@ contract Voting_1p1vTEST is IVoting, Ownable {
 	
 ////////////////
 	function vote(bool _yes, uint _tokenAmount) public {
+		/*
 		require(!isFinished());
 
 		require(mc.isGroupMemberByHash(groupHash,msg.sender));
 
 		internalVote(msg.sender, _yes);
+	  */
 	}
 
 	function internalVote(address _who, bool _yes) internal {
+		/*
 		employeesVoted[employeesVotedCount] = _who;
 		employeesVotedCount++;
 
 		votes[_who] = _yes;
 
 		callActionIfEnded();
+	   */
 	}
 
 	function cancelVoting() public onlyOwner {
