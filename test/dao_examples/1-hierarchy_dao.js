@@ -128,8 +128,7 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 		let amac = await AutoMoneyflowActionCaller.new(daoBase.address, moneyflowInstance.address, 
 			{from: creator, gas: 10000000});
 		await amac.transferOwnership(hdf.address, {from: creator});
-
-		hdf.setupAmac(amac.address, {from: creator});
+		await hdf.setupAmac(amac.address, {from: creator});
 
 		// test permissions 
 		// 1 - check if AAC has manageGroups perm. 

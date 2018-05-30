@@ -36,8 +36,8 @@ contract HierarchyDaoFactory {
 	}
 
 	function setPermissions(address _boss, address[] _managers, address[] _employees) internal {
-		daoBase.addGroup("Employees");
 		daoBase.addGroup("Managers");
+		daoBase.addGroup("Employees");
 
 		// 1 - grant all permissions to the _boss (i.e. "the monarch")
 		daoBase.addGroupMember("Managers", _boss);
@@ -92,7 +92,7 @@ contract HierarchyDaoFactory {
 	}
 
 	// WARNING:
-	// Unfortunately creating AutoDaoBaseActionCaller here caused some weird bug 
+	// Unfortunately creating AutoMoneyflowActionCaller here caused some weird bug 
 	// with OutOfGas...That's why i moved AutoDaoBaseActionCaller creation outside of this contract
 	function setupAmac(AutoMoneyflowActionCaller _amac) public {
 		uint VOTING_TYPE_1P1V = 1;
