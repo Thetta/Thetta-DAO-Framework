@@ -48,8 +48,8 @@ contract DaoStorage is Ownable {
 	mapping (address=>mapping(bytes32=>bool)) byAddress;
 
 	// member -> group names
-	mapping (address=>bytes32[]) groupMembers;
-	mapping (bytes32=>address[]) groupParticipants;
+	mapping (address=>bytes32[]) memberGroups;
+	mapping (bytes32=>address[]) participantsOfGroup;
 	// group name -> permission -> flag
 	mapping (bytes32=>mapping(bytes32=>bool)) isAllowedActionByGroupMember;
 
@@ -79,24 +79,72 @@ contract DaoStorage is Ownable {
 	function addGroupMember(bytes32 _groupHash, address _newMember) public onlyOwner{
 		// check if already added 
 		require(!isGroupMember(_groupHash, _newMember));
-		groupMembers[_newMember].push(_groupHash);
-		groupParticipants[_groupHash].push(_newMember);
+		memberGroups[_newMember].push(_groupHash);
+		participantsOfGroup[_groupHash].push(_newMember);
 	}
 
 	function getMembersCount(bytes32 _groupHash) public constant returns(uint){
-		return groupParticipants[_groupHash].length;
+		return participantsOfGroup[_groupHash].length;
 	}
 
-	function removeGroupMember(bytes32 _groupName, address _member)public onlyOwner {
-		// TODO: remove from array like this:
-		// delete array[index];
+	function getGroupMembers(bytes32 _groupHash) public constant returns(address[]){
+		return participantsOfGroup[_groupHash];
+	}
+
+	function removeGroupMember(bytes32 _groupHash, address _member)public onlyOwner {
+		require(isGroupMember(_groupHash, _member));
+	
+		bool MGFound = false;
+		bool PGFound = false;
+
+		address[] PG = participantsOfGroup[_groupHash];
+
+		if (PG[PG.length - 1] == _member){
+			PGFound = true;
+		}
+
+		for(uint i=0; i<PG.length-1; i++){
+			if((!PGFound)&&(PG[i]==_member)){
+				PGFound = true;
+			}
+
+			if(true==PGFound){
+				PG[i] = PG[i+1];
+			}
+		}
+
+		if(true==PGFound){
+			delete PG[PG.length-1];
+			PG.length--;
+		}
+		
+		bytes32[] MG = memberGroups[_member];
+	
+		if (MG[MG.length - 1] == _groupHash){
+			MGFound = true;
+		}
+
+		for(uint j=0; j<MG.length-1; j++){
+			if(MG[j]==_groupHash){
+				MGFound = true;
+			}
+
+			if(true==MGFound){
+				MG[j] = MG[j+1];
+			}			
+		}
+
+		if(true==MGFound){
+			delete MG[MG.length-1];
+			MG.length--;
+		}		
 	}
 
 	function isGroupMember(bytes32 _groupName, address _a) public constant returns(bool){
-		uint len = groupMembers[_a].length;
+		uint len = memberGroups[_a].length;
 
 		for(uint i=0; i<len; ++i){
-			if(groupMembers[_a][i]==_groupName){
+			if(memberGroups[_a][i]==_groupName){
 				return true;
 			}
 		}
@@ -108,11 +156,11 @@ contract DaoStorage is Ownable {
 	}
 
 	function isCanDoByGroupMember(bytes32 _what, address _a /*, bytes32 _groupName*/) public constant returns(bool){
-		uint len = groupMembers[_a].length;
+		uint len = memberGroups[_a].length;
 
 		// enumerate all groups that _a belongs to
 		for(uint i=0; i<len; ++i){
-			bytes32 groupName = groupMembers[_a][i];
+			bytes32 groupName = memberGroups[_a][i];
 			if(isAllowedActionByGroupMember[groupName][_what]){
 				return true;
 			}
@@ -206,6 +254,10 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 	function addGroupMemberByHash(bytes32 _groupHash, address _a) public isCanDo("manageGroups") {
 		store.addGroupMember(_groupHash, _a);
+	}
+
+	function getGroupMembers(string _groupName) public constant returns(address[]){
+		return store.getGroupMembers(keccak256(_groupName));
 	}
 
 	function removeGroupMember(string _groupName, address _a) public isCanDo("manageGroups"){

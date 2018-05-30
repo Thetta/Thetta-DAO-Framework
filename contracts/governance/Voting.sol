@@ -10,8 +10,9 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 contract Voting is IVoting {
 	IDaoBase mc;
 	IProposal proposal; 
-	bool isCalled = false;
 	uint public minutesToVote;
+	bool finishedWithYes = false;
+	uint genesis;
 
 	event Voting_CallAction();
 
@@ -19,14 +20,14 @@ contract Voting is IVoting {
 		mc = _mc;
 		proposal = _proposal;
 		minutesToVote = _minutesToVote;
+		uint genesis = now;
 	}
 
 	function callActionIfEnded() public {
-		if(!isCalled && isFinished() && isYes()){
+		if(!finishedWithYes && isFinished() && isYes()){
 			emit Voting_CallAction();
-
+			finishedWithYes = true;
 			// should not be callable again!!!
-			isCalled = true;
 
 			// can throw!
 			proposal.action(mc, this);
@@ -34,28 +35,17 @@ contract Voting is IVoting {
 	}
 
 	function isYes()public constant returns(bool){
-		// WARNING: this line is commented, so will not check if voting is finished!
-		//if(!isFinished(){return false;}
 		var(yesResults, noResults, totalResults) = getFinalResults();
-
-		// TODO: calculate results
 		// TODO: JUST FOR DEBUGGGGG!!!
 		return (yesResults > totalResults/2) && (totalResults>1);
 	}
 
-	// TODO: out of GAS!!!
 	function isFinished() public constant returns(bool){
-		// 1 - if minutes elapsed
-
-		// 2 - if voted enough participants
-		//if((mc.getEmployeesCount()/2) < employeesVotedCount){
-	   //		return true;
-		//}
-
 		// TODO: JUST FOR DEBUGGGGG!!!
 		var(yesResults, noResults, totalResults) = getFinalResults();
 		return (totalResults>1);
 	}
+	
 }
 
 // 1 person - 1 vote
@@ -102,16 +92,21 @@ contract Voting_1p1v is Voting, Ownable {
 		// TODO:
 	}
 
-
 	function isFinished() public constant returns(bool){
 		// 1 - if minutes elapsed
-
+		if(now - genesis >= minutesToVote * 3600 * 1000){
+			return true;
+		}
 		// 2 - if voted enough participants
-
 		uint employeesCount = mc.getMembersCountByHash(groupHash);
-
 		var(yesResults, noResults, totalResults) = getFinalResults();
-		return (employeesCount < totalResults*2);
+		return (totalResults*2 > employeesCount);
+	}
+
+	function isYes()public constant returns(bool){
+		uint employeesCount = mc.getMembersCountByHash(groupHash);
+		var(yesResults, noResults, totalResults) = getFinalResults();
+		return isFinished()&&(yesResults*2 > totalResults);
 	}
 
 	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults){

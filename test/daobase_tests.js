@@ -54,7 +54,7 @@ global.contract('DaoBase', (accounts) => {
 		await daoBase.allowActionByVoting("issueTokens", token.address);
 		await daoBase.allowActionByVoting("upgradeDaoContract", token.address);
 	});
-
+/*
 	global.it('should set everything correctly',async() => {
 		const isMember = await daoBase.isGroupMember("Employees", creator);
 		global.assert.equal(isMember,true,'Permission should be set correctly');
@@ -190,7 +190,7 @@ global.contract('DaoBase', (accounts) => {
 
 		let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);
 		global.assert.equal(donationBalance2.toNumber(),0, 'all donations now on creator`s balance');
-	});
+	});*/
 
 	global.it('should add group members',async() => {
 		await daoBase.addGroupMember("Employees", employee1,{from:creator});
@@ -208,6 +208,17 @@ global.contract('DaoBase', (accounts) => {
 			true, 'Should be in the group')
 
 		global.assert.equal(4, await daoBase.getMembersCount("Employees"), '3 employees + creator');
+
+		await daoBase.removeGroupMember("Employees", employee3, {from:creator});
+	
+		global.assert.strictEqual(await daoBase.isGroupMember("Employees", employee3,{from:creator}),
+			false, 'Should not be in the group')
+
+		let GP = await daoBase.getMembersCount("Employees");
+		console.log('GP:', GP)
+		// await daoBase.getGroupParticipants
+		global.assert.equal(3, (await daoBase.getMembersCount("Employees")).toNumber(), '2 employees + creator');
+
 	});
 });
 
