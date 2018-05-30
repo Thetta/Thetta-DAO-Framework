@@ -22,7 +22,7 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 	});
 
 	global.it('should create Boss -> Managers -> Employees hierarchy using HierarchyDaoFactory',async() => {
-		let ogt = OutOfGasTEST.new({gas: 10000000, from: creator});
+		let ogt = OutOfGasTEST.new({gas: 12000000, from: creator});
 	});
 });
 
