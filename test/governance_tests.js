@@ -125,12 +125,23 @@ global.contract('Voting_1p1v', (accounts) => {
 
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished: 4/6 voted');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished: 4/6 voted, all said yes');					
-	
 		await daoBase.removeGroupMember("Employees", employee3);
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished: 4/6 voted');
-		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished: 4/6 voted, all said yes');					
+		// WARNING:
+		// if voting is finished -> even if we remove some employees from the group 
+		// the voting results should not be changed!!!
+		// 
+		// BUT the 'getFinalResults()' will return different results
+		var emps = await daoBase.getMembersCount("Employees");
+		global.assert.equal(4, emps, '4 employees');
 
+		var res = await voting.getFinalResults();
+		global.assert.strictEqual(res[0].toNumber(),2,'');
+		global.assert.strictEqual(res[1].toNumber(),0,'');
+		global.assert.strictEqual(res[2].toNumber(),2,'');
+
+		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished: 4/6 voted');
+		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished: 4/6 voted, all said yes');	
 	});
 });
 
