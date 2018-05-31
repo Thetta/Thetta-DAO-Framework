@@ -34,7 +34,6 @@ contract Voting is IVoting {
 	}
 
 	function isYes()public constant returns(bool){
-		/*
 		// WARNING: this line is commented, so will not check if voting is finished!
 		//if(!isFinished(){return false;}
 		var(yesResults, noResults, totalResults) = getFinalResults();
@@ -42,8 +41,6 @@ contract Voting is IVoting {
 		// TODO: calculate results
 		// TODO: JUST FOR DEBUGGGGG!!!
 		return (yesResults > totalResults/2) && (totalResults>1);
-	  */
-		 return false;
 	}
 
 	// TODO: out of GAS!!!
@@ -55,11 +52,9 @@ contract Voting is IVoting {
 	   //		return true;
 		//}
 
-		/*
 		// TODO: JUST FOR DEBUGGGGG!!!
 		var(yesResults, noResults, totalResults) = getFinalResults();
 		return (totalResults>1);
-	  */
 		return false;
 	}
 }
@@ -73,9 +68,8 @@ contract Voting_1p1v is IVoting, Ownable {
 ////////
 	bytes32 groupHash;
 
-	mapping (uint=>address) employeesVoted;
-	uint employeesVotedCount = 0;
-	mapping (address=>bool) votes;
+	address[] employeesVotedYes;
+	address[] employeesVotedNo;
 
 ////////
 	// we can use _origin instead of tx.origin
@@ -83,25 +77,28 @@ contract Voting_1p1v is IVoting, Ownable {
 								address _origin, 
 								uint _minutesToVote, bytes32 _groupHash, bytes32 _emptyParam) public 
 	{
-		/*
 		mc = _mc;
 		proposal = _proposal;
 		minutesToVote = _minutesToVote;
 
 		groupHash = _groupHash;
 
-		// the caller must be a member of the group!
-		// TODO: THIS IS COMMENTED TO STOP the errors!!!
-		//internalVote(_origin, true);
-	   */
+		internalVote(_origin, true);
 	}
 
 	function isYes()public constant returns(bool){
-		return false;	
+		var(yesResults, noResults, totalResults) = getFinalResults();
+
+		// TODO: calculate results
+		// TODO: JUST FOR DEBUGGGGG!!!
+		return (yesResults > totalResults/2) && (totalResults>1);
 	}
 
 	function isFinished()public constant returns(bool){
-		return false;
+		// TODO: calculate results
+		// TODO: JUST FOR DEBUGGGGG!!!
+		var(yesResults, noResults, totalResults) = getFinalResults();
+		return (totalResults>1);
 	}
 
 	function cancelVoting() public onlyOwner {
@@ -109,28 +106,24 @@ contract Voting_1p1v is IVoting, Ownable {
 	}
 	
 	function vote(bool _yes, uint _tokenAmount) public {
-		/*
 		require(!isFinished());
 
 		internalVote(msg.sender, _yes);
-		*/
 	}
 
 	function internalVote(address _who, bool _yes) internal {
-		/*
 		require(mc.isGroupMemberByHash(groupHash, _who));
 
-		employeesVoted[employeesVotedCount] = _who;
-		employeesVotedCount++;
-
-		votes[_who] = _yes;
+		if(_yes){
+			employeesVotedYes.push(_who);
+		}else{
+			employeesVotedNo.push(_who);
+		}
 
 		callActionIfEnded();
-		*/
 	}
 
 	function callActionIfEnded() public {
-		/*
 		if(!isCalled && isFinished() && isYes()){
 			// should not be callable again!!!
 			isCalled = true;
@@ -138,106 +131,18 @@ contract Voting_1p1v is IVoting, Ownable {
 			// can throw!
 			proposal.action(mc, this);
 		}
-		*/
 	}
 
-	/*
 	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults){
-		yesResults = 0;
-		noResults = 0;
-		totalResults = 0;
-
 		// employees could be fired or added IN THE MIDDLE of the voting 
 		//
 		// so here we should iterate again over all microcompany employees and check if they voted yes or no 
 		// each employee has 1 vote 
-		for(uint i=0; i<employeesVotedCount; ++i){
-			address e = employeesVoted[i];
-
-			if(mc.isGroupMemberByHash(groupHash,e)){
-				// count this vote
-				if(votes[e]){
-					yesResults++;
-				}else{
-					noResults++;
-				}
-				totalResults++;
-			}
-		}
-	}
-  */
-}
-
-/*
-// 1 person - 1 vote
-contract Voting_1p1v is IVoting, Ownable {
-////////
-	bytes32 groupHash;
-
-	mapping (uint=>address) employeesVoted;
-	uint employeesVotedCount = 0;
-	mapping (address=>bool) votes;
-
-////////
-	// we can use _origin instead of tx.origin
-	function Voting_1p1v(IDaoBase _mc, IProposal _proposal, 
-								address _origin, 
-								uint _minutesToVote, bytes32 _groupHash, bytes32 _emptyParam)
-								public Voting(_mc, _proposal, _minutesToVote){
-		groupHash = _groupHash;
-
-		// the caller must be a member of the group!
-		//require(mc.isGroupMemberByHash(groupHash,_origin));
-
-		//internalVote(_origin, true);
-	}
-	
-	function vote(bool _yes, uint _tokenAmount) public {
-		require(!isFinished());
-
-		internalVote(msg.sender, _yes);
-	}
-
-	function internalVote(address _who, bool _yes) internal {
-		require(mc.isGroupMemberByHash(groupHash, _who));
-
-		employeesVoted[employeesVotedCount] = _who;
-		employeesVotedCount++;
-
-		votes[_who] = _yes;
-
-		callActionIfEnded();
-	}
-
-	function cancelVoting() public onlyOwner {
-		// TODO:
-	}
-
-	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults){
-		yesResults = 0;
-		noResults = 0;
-		totalResults = 0;
-
-		// employees could be fired or added IN THE MIDDLE of the voting 
-		//
-		// so here we should iterate again over all microcompany employees and check if they voted yes or no 
-		// each employee has 1 vote 
-		for(uint i=0; i<employeesVotedCount; ++i){
-			address e = employeesVoted[i];
-
-			if(mc.isGroupMemberByHash(groupHash,e)){
-				// count this vote
-				if(votes[e]){
-					yesResults++;
-				}else{
-					noResults++;
-				}
-				totalResults++;
-			}
-		}
+		yesResults = employeesVotedYes.length;
+		noResults = employeesVotedNo.length;
+		totalResults = yesResults + noResults;
 	}
 }
-*/
 
 // TODO: disable token transfers?
 contract Voting_SimpleToken is Voting, Ownable {
