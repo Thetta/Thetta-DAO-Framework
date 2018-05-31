@@ -100,7 +100,7 @@ contract Voting_1p1v is Voting, Ownable {
 
 	function isFinished() public constant returns(bool){
 		// 1 - if minutes elapsed
-		if(now - genesis >= minutesToVote * 3600 * 1000){
+		if(now - genesis >= minutesToVote * 60 * 1000){
 			return true;
 		}
 
