@@ -60,9 +60,8 @@ contract Voting_1p1v is IVoting, Ownable {
 			return true;
 		}
 
-		uint employeesCount = mc.getMembersCountByHash(groupHash);
 		var(yesResults, noResults, totalResults) = getFinalResults();
-		return isFinished()&&(yesResults*2 > totalResults);
+		return isFinished() && (yesResults * 2 > (yesResults + noResults));
 	}
 
 	function cancelVoting() public onlyOwner {
@@ -91,7 +90,7 @@ contract Voting_1p1v is IVoting, Ownable {
 	}
 
 	function callActionIfEnded() public {
-		if(!finishedWithYes && isFinished() && isYes()){
+		if(!finishedWithYes && isFinished() && isYes()){ 
 			// should not be callable again!!!
 			finishedWithYes = true;
 
@@ -100,33 +99,34 @@ contract Voting_1p1v is IVoting, Ownable {
 		}
 	}
 
-	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults){
-		yesResults = 0;
-		noResults = 0;
-		totalResults = 0;
+	function getYes() internal constant returns(uint){
+		uint yesResults = 0;
 
-		// employees could be fired or added IN THE MIDDLE of the voting
-		//
-		// so here we should iterate again over all microcompany employees and check if they voted yes or no
-		// each employee has 1 vote
 		for(uint i=0; i<employeesVotedYes.length; ++i){
-			address e = employeesVotedYes[i];
-
-			if(mc.isGroupMemberByHash(groupHash,e)){
+			if(mc.isGroupMemberByHash(groupHash,employeesVotedYes[i])){
 				// count this vote
 				yesResults++;
-				totalResults++;
 			}
 		}
+		return yesResults;
+	}
+
+	function getNo() internal constant returns(uint){
+		uint noResults = 0;
 
 		for(uint j=0; j<employeesVotedNo.length; ++j){
-			address e2 = employeesVotedNo[j];
-
-			if(mc.isGroupMemberByHash(groupHash,e2)){
+			if(mc.isGroupMemberByHash(groupHash,employeesVotedNo[j])){
 				// count this vote
 				noResults++;
-				totalResults++;
 			}
 		}
+		return noResults;
+	}
+
+	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults){
+		yesResults = getYes();
+		noResults = getNo();
+		totalResults = yesResults + noResults;
+		return;
 	}
 }
