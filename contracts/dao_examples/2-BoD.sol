@@ -6,6 +6,7 @@ import '../tokens/StdDaoToken.sol';
 import '../DaoBaseAuto.sol';
 
 // 
+/*
 contract DaoWithBoD_Factory {
 	DaoBaseWithUnpackers public daoBase;
 
@@ -92,4 +93,5 @@ contract DaoWithBoD_Factory {
 		_aac.transferOwnership(msg.sender);
 	}
 }
+*/
 
