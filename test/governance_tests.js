@@ -47,8 +47,8 @@ global.contract('Voting_1p1v', (accounts) => {
 	
 	global.it('should create and use 1p1v voting',async() => {
 		// add 3 employees
-		await daoBase.addGroupMember("Employees", employee1,{from:creator});
-		await daoBase.addGroupMemberByHash(KECCAK256("Employees"), employee2);
+		await daoBase.addGroupMember("Employees", employee1);
+		await daoBase.addGroupMember("Employees", employee2);
 		await daoBase.addGroupMember("Employees", employee3);
 
 		let proposal = await InformalProposal.new('Take the money and run', {from:creator, gas:10000000, gasPrice:0});	

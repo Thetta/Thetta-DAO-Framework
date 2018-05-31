@@ -93,52 +93,66 @@ contract DaoStorage is Ownable {
 
 	function removeGroupMember(bytes32 _groupHash, address _member)public onlyOwner {
 		require(isGroupMember(_groupHash, _member));
-	
-		bool MGFound = false;
-		bool PGFound = false;
 
-		address[] PG = participantsOfGroup[_groupHash];
-
-		if (PG[PG.length - 1] == _member){
-			PGFound = true;
-		}
-
-		for(uint i=0; i<PG.length-1; i++){
-			if((!PGFound)&&(PG[i]==_member)){
-				PGFound = true;
-			}
-
-			if(true==PGFound){
-				PG[i] = PG[i+1];
-			}
-		}
-
-		if(true==PGFound){
-			delete PG[PG.length-1];
-			PG.length--;
-		}
-		
-		bytes32[] MG = memberGroups[_member];
-	
-		if (MG[MG.length - 1] == _groupHash){
-			MGFound = true;
-		}
-
-		for(uint j=0; j<MG.length-1; j++){
-			if(MG[j]==_groupHash){
-				MGFound = true;
-			}
-
-			if(true==MGFound){
-				MG[j] = MG[j+1];
-			}			
-		}
-
-		if(true==MGFound){
-			delete MG[MG.length-1];
-			MG.length--;
-		}		
+		removeParticipantFromGroup(_groupHash, _member);
+		removeGroupFromMemberGroups(_groupHash, _member);
 	}
+
+	function getIndexOfAddress(address _item, address[] array) internal returns(uint){
+		uint out = array.length;
+		for(uint j=0; j<array.length; j++){
+			if(array[j]==_item){
+				out = j;
+			}
+		}
+		return out;
+	}
+
+	function removeParticipantFromGroup(bytes32 _groupHash, address _member) internal { 
+		address[] parts = participantsOfGroup[_groupHash];
+		uint index = getIndexOfAddress(_member, parts);		
+
+		// if member is not found -> exception
+		require(index<parts.length); 
+
+		if(index!=(parts.length - 1)){ 
+			parts[index] = parts[parts.length-1];
+		}
+
+		// delete last element
+		delete parts[parts.length-1]; 
+		parts.length--;
+		participantsOfGroup[_groupHash] = parts;
+	}
+
+
+	function getIndexOfBytes32(bytes32 _item, bytes32[] array) internal returns(uint){
+		uint out = array.length;
+		for(uint j=0; j<array.length; j++){
+			if(array[j]==_item){
+				out = j;
+			}
+		}
+		return out;
+	}
+
+	function removeGroupFromMemberGroups(bytes32 _groupHash, address _member) internal { 
+		bytes32[] parts = memberGroups[_member];
+		uint index = getIndexOfBytes32(_groupHash, parts);		
+
+		// if member is not found -> exception
+		require(index<parts.length); 
+
+		// move last element to the index
+		if(index!=(parts.length - 1)){ 
+			parts[index] = parts[parts.length-1];
+		}
+
+		// delete last element
+		delete parts[parts.length-1]; 
+		parts.length--;
+		memberGroups[_member] = parts;
+	}	
 
 	function isGroupMember(bytes32 _groupName, address _a) public constant returns(bool){
 		uint len = memberGroups[_a].length;
@@ -251,9 +265,6 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 	function addGroupMember(string _groupName, address _a) public isCanDo("manageGroups") {
 		store.addGroupMember(keccak256(_groupName), _a);
-	}
-	function addGroupMemberByHash(bytes32 _groupHash, address _a) public isCanDo("manageGroups") {
-		store.addGroupMember(_groupHash, _a);
 	}
 
 	function getGroupMembers(string _groupName) public constant returns(address[]){

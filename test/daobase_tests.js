@@ -201,8 +201,8 @@ global.contract('DaoBase', (accounts) => {
 	});
 
 	global.it('should add group members',async() => {
-		await daoBase.addGroupMember("Employees", employee1,{from:creator});
-		await daoBase.addGroupMemberByHash(KECCAK256("Employees"), employee2);
+		await daoBase.addGroupMember("Employees", employee1);
+		await daoBase.addGroupMember("Employees", employee2);
 		await daoBase.addGroupMember("Employees", employee3);
 
 		await CheckExceptions.checkContractThrows(daoBase.addGroupMember, 

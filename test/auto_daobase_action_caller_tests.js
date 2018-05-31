@@ -31,9 +31,9 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 	global.beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
-		await token.mint(employee1, 600);
-		await token.mint(employee2, 600);
-		await token.mint(employee3, 600);
+		await token.mint(employee1, 900);
+		await token.mint(employee2, 900);
+		await token.mint(employee3, 200);
 
 		store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
@@ -140,32 +140,32 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		global.assert.equal(proposalsCount2,1,'New proposal should be added'); 
 
 		// // check the voting data
-		// const pa = await daoBase.getProposalAtIndex(0);
-		// const proposal = await IProposal.at(pa);
-		// const votingAddress = await proposal.getVoting();
-		// const voting = await Voting.at(votingAddress);
-		// global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		// global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		const pa = await daoBase.getProposalAtIndex(0);
+		const proposal = await IProposal.at(pa);
+		const votingAddress = await proposal.getVoting();
+		const voting = await Voting.at(votingAddress);
+		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		// await voting.vote(true,0,{from:employee1});
+		await voting.vote(true,0,{from:employee1});
 
-		// // TODO: uncomment! this condition should be met 
+		// TODO: uncomment! this condition should be met 
 		
-		// // await CheckExceptions.checkContractThrows(voting.vote.sendTransaction,
-		// // 	[true,{ from: employee1}],
-		// // 	'issueTokens is not allowed!');
+		// await CheckExceptions.checkContractThrows(voting.vote.sendTransaction,
+		// 	[true,{ from: employee1}],
+		// 	'issueTokens is not allowed!');
 
-		// const r2 = await voting.getFinalResults();
-		// global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
-		// global.assert.equal(r2[1],0,'no');
-		// global.assert.equal(r2[2],2,'total');
+		const r2 = await voting.getFinalResults();
+		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
+		global.assert.equal(r2[1],0,'no');
+		global.assert.equal(r2[2],2,'total');
 
-		// // get voting results again
-		// global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		// global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		// get voting results again
+		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
+		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 		
-		// const balance2 = await token.balanceOf(employee1);
-		// global.assert.notEqual(balance2.toNumber(),1000,'employee1 balance should not be updated');
+		const balance2 = await token.balanceOf(employee1);
+		global.assert.notEqual(balance2.toNumber(),1000,'employee1 balance should not be updated');
 	});
 
 	/*global.it('should automatically create proposal and 1P1V voting to issue more tokens',async() => {
