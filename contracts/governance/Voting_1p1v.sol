@@ -14,7 +14,7 @@ contract Voting_1p1v is IVoting, Ownable {
 	IProposal proposal; 
 	uint public minutesToVote;
 	bool finishedWithYes = false;
-	uint genesis;
+	uint64 genesis;
 
 ////////
 	bytes32 groupHash;
@@ -34,25 +34,34 @@ contract Voting_1p1v is IVoting, Ownable {
 		minutesToVote = _minutesToVote;
 
 		groupHash = _groupHash;
-		genesis = now;
+		genesis = uint64(now);
 
 		internalVote(_origin, true);
 	}
 
+	event Voting1p1v_IsFinished(uint _members, uint _totalResults);
+
 	function isFinished()public constant returns(bool){
 		// 1 - if minutes elapsed
-		if(now - genesis >= minutesToVote * 3600 * 1000){
+
+		// TODO: does not work! always TRUE!!!
+		/*
+		if((uint64(now) - genesis) >= (minutesToVote * 3600 * 1000)){
+			return true;
+		}
+	   */
+
+		if(finishedWithYes){
 			return true;
 		}
 
-		if(true==finishedWithYes){
-			return true;
-		}
+		uint members = mc.getMembersCountByHash(groupHash);
+		var (yesResults, noResults, totalResults) = getFinalResults();
 
-		//  if voted enough participants
-		uint employeesCount = mc.getMembersCountByHash(groupHash);
-		var(yesResults, noResults, totalResults) = getFinalResults();
-		return (totalResults*2 > employeesCount);
+		emit Voting1p1v_IsFinished(members, totalResults);
+
+		// if enough participants voted
+		return ((totalResults * 2) > members);
 	}
 
 	function isYes()public constant returns(bool){
@@ -86,6 +95,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		}
 
 		addressVotedAlready[_who] = true;
+
 		callActionIfEnded();
 	}
 
@@ -99,33 +109,21 @@ contract Voting_1p1v is IVoting, Ownable {
 		}
 	}
 
-	function getYes() internal constant returns(uint){
-		uint yesResults = 0;
+	function filterResults(address[] _members) internal constant returns(uint){
+		uint votedCount = 0;
 
-		for(uint i=0; i<employeesVotedYes.length; ++i){
-			if(mc.isGroupMemberByHash(groupHash,employeesVotedYes[i])){
+		for(uint i=0; i<_members.length; ++i){
+			if(mc.isGroupMemberByHash(groupHash,_members[i])){
 				// count this vote
-				yesResults++;
+				votedCount++;
 			}
 		}
-		return yesResults;
-	}
-
-	function getNo() internal constant returns(uint){
-		uint noResults = 0;
-
-		for(uint j=0; j<employeesVotedNo.length; ++j){
-			if(mc.isGroupMemberByHash(groupHash,employeesVotedNo[j])){
-				// count this vote
-				noResults++;
-			}
-		}
-		return noResults;
+		return votedCount;
 	}
 
 	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults){
-		yesResults = getYes();
-		noResults = getNo();
+		yesResults = filterResults(employeesVotedYes);
+		noResults = filterResults(employeesVotedNo);
 		totalResults = yesResults + noResults;
 		return;
 	}

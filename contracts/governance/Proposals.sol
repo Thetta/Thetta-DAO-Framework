@@ -21,10 +21,16 @@ contract GenericProposal is IProposal, Ownable {
 		methodSig = _methodSig;
 	}
 
+	event GenericProposal_Action(IVoting _voting);
+
 // IVoting implementation
 	function action(IDaoBase _mc, IVoting _voting) public {
-		require(address(voting)!=0x0);
-		require(msg.sender==address(voting));
+		emit GenericProposal_Action(voting);
+
+		// in some cases voting is still not set
+		if(0x0!=address(voting)){
+			require(msg.sender==address(voting));
+		}
 
 		// cool! voting is over and the majority said YES -> so let's go!
 		// as long as we call this method from WITHIN the vote contract 
