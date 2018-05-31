@@ -52,6 +52,10 @@ contract InformalProposal is IProposal, Ownable {
 	string proposalText = '';
 	IVoting voting;
 
+	function action(IDaoBase _mc, IVoting _voting)public{
+		return;
+	}
+
 	function InformalProposal(string _proposalText) public {
 		proposalText = _proposalText;
 	}
