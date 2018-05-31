@@ -54,7 +54,7 @@ global.contract('DaoBase', (accounts) => {
 		await daoBase.allowActionByVoting("issueTokens", token.address);
 		await daoBase.allowActionByVoting("upgradeDaoContract", token.address);
 	});
-/*
+
 	global.it('should set everything correctly',async() => {
 		const isMember = await daoBase.isGroupMember("Employees", creator);
 		global.assert.equal(isMember,true,'Permission should be set correctly');
@@ -198,7 +198,7 @@ global.contract('DaoBase', (accounts) => {
 
 		let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);
 		global.assert.equal(donationBalance2.toNumber(),0, 'all donations now on creator`s balance');
-	});*/
+	});
 
 	global.it('should add group members',async() => {
 		await daoBase.addGroupMember("Employees", employee1,{from:creator});

@@ -45,7 +45,7 @@ contract Voting is IVoting {
 		var(yesResults, noResults, totalResults) = getFinalResults();
 		return (totalResults>1);
 	}
-	
+
 }
 
 // 1 person - 1 vote
@@ -80,6 +80,12 @@ contract Voting_1p1v is Voting, Ownable {
 	}
 
 	function internalVote(address _who, bool _yes) internal {
+		for(uint i=0; i<employeesVotedCount; ++i){
+			if(_who==employeesVoted[i]){
+				revert();
+			}
+		}
+
 		employeesVoted[employeesVotedCount] = _who;
 		employeesVotedCount++;
 
@@ -97,6 +103,11 @@ contract Voting_1p1v is Voting, Ownable {
 		if(now - genesis >= minutesToVote * 3600 * 1000){
 			return true;
 		}
+
+		if(true==finishedWithYes){
+			return true;
+		}
+
 		// 2 - if voted enough participants
 		uint employeesCount = mc.getMembersCountByHash(groupHash);
 		var(yesResults, noResults, totalResults) = getFinalResults();
@@ -104,6 +115,9 @@ contract Voting_1p1v is Voting, Ownable {
 	}
 
 	function isYes()public constant returns(bool){
+		if(true==finishedWithYes){
+			return true;
+		}
 		uint employeesCount = mc.getMembersCountByHash(groupHash);
 		var(yesResults, noResults, totalResults) = getFinalResults();
 		return isFinished()&&(yesResults*2 > totalResults);
