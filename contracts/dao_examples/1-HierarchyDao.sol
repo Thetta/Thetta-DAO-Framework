@@ -7,13 +7,16 @@ import '../DaoBaseAuto.sol';
 import '../moneyflow/MoneyflowAuto.sol';
 
 contract HierarchyDaoFactory {
-	DaoBaseWithUnpackers public daoBase;
-
 	StdDaoToken token;
 	DaoStorage store;
+
+	DaoBaseWithUnpackers public daoBase;
+	AutoDaoBaseActionCaller public aac;
 	
 	function HierarchyDaoFactory(address _boss, address[] _managers, address[] _employees)public{
 		createDao(_boss, _managers, _employees);
+
+		setupAac();
 	}
 
 	function createDao(address _boss, address[] _managers, address[] _employees) internal returns(address) {
@@ -79,16 +82,18 @@ contract HierarchyDaoFactory {
 	// WARNING:
 	// Unfortunately creating AutoDaoBaseActionCaller here caused some weird bug 
 	// with OutOfGas...That's why i moved AutoDaoBaseActionCaller creation outside of this contract
-	function setupAac(AutoDaoBaseActionCaller _aac) public {
+	function setupAac() internal {
+		aac = new AutoDaoBaseActionCaller(IDaoBase(daoBase));
+
 		uint VOTING_TYPE_1P1V = 1;
-		_aac.setVotingParams("manageGroups", VOTING_TYPE_1P1V, (24 * 60), keccak256("Managers"), 0);
+		aac.setVotingParams("manageGroups", VOTING_TYPE_1P1V, (24 * 60), keccak256("Managers"), 0);
 
-		daoBase.allowActionByAddress("addNewProposal", _aac);
-		daoBase.allowActionByAddress("manageGroups", _aac);
-		//daoBase.allowActionByAddress("issueTokens", _aac);
-		//daoBase.allowActionByAddress("upgradeDaoContract", _aac);
+		daoBase.allowActionByAddress("addNewProposal", aac);
+		daoBase.allowActionByAddress("manageGroups", aac);
+		//daoBase.allowActionByAddress("issueTokens", aac);
+		//daoBase.allowActionByAddress("upgradeDaoContract", aac);
 
-		_aac.transferOwnership(msg.sender);
+		aac.transferOwnership(msg.sender);
 	}
 
 	// WARNING:
