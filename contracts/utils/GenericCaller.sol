@@ -21,7 +21,7 @@ contract GenericCaller is DaoClient, Ownable {
 	struct VotingParams {
 		VotingType votingType;
 		bytes32 param1;
-		bytes32 param2;
+		string param2;
 		bytes32 param3;
 	}
 
@@ -84,7 +84,7 @@ contract GenericCaller is DaoClient, Ownable {
 	}
 
 	function setVotingParams(string _permissionId, uint _votingType, 
-									 bytes32 _param1, bytes32 _param2, bytes32 _param3) public onlyOwner {
+									 bytes32 _param1, string _param2, bytes32 _param3) public onlyOwner {
 		VotingParams memory params;
 		params.votingType = VotingType(_votingType);
 		params.param1 = _param1;

@@ -86,7 +86,7 @@ contract HierarchyDaoFactory {
 		aac = new AutoDaoBaseActionCaller(IDaoBase(daoBase));
 
 		uint VOTING_TYPE_1P1V = 1;
-		aac.setVotingParams("manageGroups", VOTING_TYPE_1P1V, (24 * 60), keccak256("Managers"), 0);
+		aac.setVotingParams("manageGroups", VOTING_TYPE_1P1V, (24 * 60), "Managers", 0);
 
 		daoBase.allowActionByAddress("addNewProposal", aac);
 		daoBase.allowActionByAddress("manageGroups", aac);
@@ -101,7 +101,7 @@ contract HierarchyDaoFactory {
 	// with OutOfGas...That's why i moved AutoDaoBaseActionCaller creation outside of this contract
 	function setupAmac(AutoMoneyflowActionCaller _amac) public {
 		uint VOTING_TYPE_1P1V = 1;
-		_amac.setVotingParams("modifyMoneyscheme", VOTING_TYPE_1P1V, (24 * 60), keccak256("Managers"), 0);
+		_amac.setVotingParams("modifyMoneyscheme", VOTING_TYPE_1P1V, (24 * 60), "Managers", 0);
 
 		daoBase.allowActionByAddress("addNewProposal", _amac);
 		daoBase.allowActionByAddress("modifyMoneyscheme", _amac);

@@ -46,7 +46,7 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 		// SEE THIS? set voting type for the action!
 		const VOTING_TYPE_1P1V = 1;
 		const VOTING_TYPE_SIMPLE_TOKEN = 2;
-		await aacInstance.setVotingParams("withdrawDonations", VOTING_TYPE_1P1V, (24 * 60), KECCAK256("Employees"), 0);
+		await aacInstance.setVotingParams("withdrawDonations", VOTING_TYPE_1P1V, (24 * 60), "Employees", 0);
 
 		// add creator as first employee	
 		await store.addGroup(KECCAK256("Employees"));

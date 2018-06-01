@@ -44,8 +44,8 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		// SEE THIS? set voting type for the action!
 		const VOTING_TYPE_1P1V = 1;
 		const VOTING_TYPE_SIMPLE_TOKEN = 2;
-		await aacInstance.setVotingParams("issueTokens", VOTING_TYPE_1P1V, (24 * 60), KECCAK256("Employees"), 0);
-		await aacInstance.setVotingParams("upgradeDaoContract", VOTING_TYPE_1P1V, (24 * 60), KECCAK256("Employees"), 0);
+		await aacInstance.setVotingParams("issueTokens", VOTING_TYPE_1P1V, (24 * 60), "Employees", 0);
+		await aacInstance.setVotingParams("upgradeDaoContract", VOTING_TYPE_1P1V, (24 * 60), "Employees", 0);
 
 		// add creator as first employee	
 		await store.addGroup(KECCAK256("Employees"));
@@ -228,7 +228,6 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		global.assert.equal(r[1],0,'no');
 		global.assert.equal(r[2],1,'total');
 		
-
 		const balance1 = await token.balanceOf(employee1);
 		global.assert.strictEqual(balance1.toNumber(),600,'initial employee1 balance');
 

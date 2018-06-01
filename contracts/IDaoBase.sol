@@ -29,7 +29,6 @@ interface IDaoBase {
 	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public;
 
 	function isCanDoAction(address _a, string _permissionName)public constant returns(bool);
-	function isCanDoActionByHash(address _a, bytes32 _permissionNameHash)public constant returns(bool);
 
 // Governance/Proposals
 	function addNewProposal(IProposal _proposal) public;

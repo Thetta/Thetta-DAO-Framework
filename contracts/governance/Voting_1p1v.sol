@@ -17,7 +17,7 @@ contract Voting_1p1v is IVoting, Ownable {
 	uint64 genesis;
 
 ////////
-	bytes32 groupHash;
+	string groupName;
 
 	mapping (address=>bool) addressVotedAlready;
 	address[] employeesVotedYes;
@@ -27,13 +27,12 @@ contract Voting_1p1v is IVoting, Ownable {
 	// we can use _origin instead of tx.origin
 	function Voting_1p1v(IDaoBase _mc, IProposal _proposal, 
 								address _origin, 
-								uint _minutesToVote, bytes32 _groupHash, bytes32 _emptyParam) public 
+								uint _minutesToVote, string _groupName, bytes32 _emptyParam) public 
 	{
 		mc = _mc;
 		proposal = _proposal;
 		minutesToVote = _minutesToVote;
-
-		groupHash = _groupHash;
+		groupName = _groupName;
 		genesis = uint64(now);
 
 		internalVote(_origin, true);
@@ -52,7 +51,7 @@ contract Voting_1p1v is IVoting, Ownable {
 			return true;
 		}
 
-		uint members = mc.getMembersCountByHash(groupHash);
+		uint members = mc.getMembersCount(groupName);
 		var (yesResults, noResults, totalResults) = getFinalResults();
 
 		emit Voting1p1v_IsFinished(members, totalResults);
@@ -81,7 +80,7 @@ contract Voting_1p1v is IVoting, Ownable {
 	}
 
 	function internalVote(address _who, bool _yes) internal {
-		require(mc.isGroupMemberByHash(groupHash, _who));
+		require(mc.isGroupMember(groupName, _who));
 
 		require(!addressVotedAlready[_who]);
 
@@ -110,7 +109,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		uint votedCount = 0;
 
 		for(uint i=0; i<_members.length; ++i){
-			if(mc.isGroupMemberByHash(groupHash,_members[i])){
+			if(mc.isGroupMember(groupName,_members[i])){
 				// count this vote
 				votedCount++;
 			}
