@@ -38,7 +38,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		internalVote(_origin, true);
 	}
 
-	event Voting1p1v_IsFinished(uint _members, uint votesSum);
+	event Voting1p1v_IsFinished(uint _votersTotal, uint votesSum);
 
 	function isFinished()public constant returns(bool){
 		// 1 - if minutes elapsed
@@ -51,13 +51,13 @@ contract Voting_1p1v is IVoting, Ownable {
 			return true;
 		}
 
-		uint members = mc.getMembersCount(groupName);
+		uint votersTotal = mc.getMembersCount(groupName);
 		var (yesResults, noResults, votesSum) = getFinalResults();
 
-		emit Voting1p1v_IsFinished(members, votesSum);
+		emit Voting1p1v_IsFinished(votersTotal, votesSum);
 
 		// if enough participants voted
-		return ((votesSum * 2) > members);
+		return ((votesSum * 2) > votersTotal);
 	}
 
 	function isYes()public constant returns(bool){
@@ -105,11 +105,11 @@ contract Voting_1p1v is IVoting, Ownable {
 		}
 	}
 
-	function filterResults(address[] _members) internal constant returns(uint){
+	function filterResults(address[] _votersTotal) internal constant returns(uint){
 		uint votedCount = 0;
 
-		for(uint i=0; i<_members.length; ++i){
-			if(mc.isGroupMember(groupName,_members[i])){
+		for(uint i=0; i<_votersTotal.length; ++i){
+			if(mc.isGroupMember(groupName,_votersTotal[i])){
 				// count this vote
 				votedCount++;
 			}
