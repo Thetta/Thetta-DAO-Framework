@@ -38,7 +38,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		internalVote(_origin, true);
 	}
 
-	event Voting1p1v_IsFinished(uint _members, uint _totalResults);
+	event Voting1p1v_IsFinished(uint _members, uint votesSum);
 
 	function isFinished()public constant returns(bool){
 		// 1 - if minutes elapsed
@@ -52,12 +52,12 @@ contract Voting_1p1v is IVoting, Ownable {
 		}
 
 		uint members = mc.getMembersCount(groupName);
-		var (yesResults, noResults, totalResults) = getFinalResults();
+		var (yesResults, noResults, votesSum) = getFinalResults();
 
-		emit Voting1p1v_IsFinished(members, totalResults);
+		emit Voting1p1v_IsFinished(members, votesSum);
 
 		// if enough participants voted
-		return ((totalResults * 2) > members);
+		return ((votesSum * 2) > members);
 	}
 
 	function isYes()public constant returns(bool){
@@ -65,7 +65,7 @@ contract Voting_1p1v is IVoting, Ownable {
 			return true;
 		}
 
-		var(yesResults, noResults, totalResults) = getFinalResults();
+		var(yesResults, noResults, votesSum) = getFinalResults();
 		return isFinished() && (yesResults * 2 > (yesResults + noResults));
 	}
 
@@ -117,10 +117,10 @@ contract Voting_1p1v is IVoting, Ownable {
 		return votedCount;
 	}
 
-	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults){
+	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint votesSum){
 		yesResults = filterResults(employeesVotedYes);
 		noResults = filterResults(employeesVotedNo);
-		totalResults = yesResults + noResults;
+		votesSum = yesResults + noResults;
 		return;
 	}
 }

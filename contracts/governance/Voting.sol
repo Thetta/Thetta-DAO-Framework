@@ -35,15 +35,15 @@ contract Voting is IVoting {
 	}
 
 	function isYes()public constant returns(bool){
-		var(yesResults, noResults, totalResults) = getFinalResults();
+		var(yesResults, noResults, votesSum) = getFinalResults();
 		// TODO: JUST FOR DEBUGGGGG!!!
-		return (yesResults > totalResults/2) && (totalResults>1);
+		return (yesResults > votesSum/2) && (votesSum>1);
 	}
 
 	function isFinished() public constant returns(bool){
 		// TODO: JUST FOR DEBUGGGGG!!!
-		var(yesResults, noResults, totalResults) = getFinalResults();
-		return (totalResults>1);
+		var(yesResults, noResults, votesSum) = getFinalResults();
+		return (votesSum>1);
 		return false;
 	}
 }
@@ -87,10 +87,10 @@ contract Voting_SimpleToken is Voting, Ownable {
 		// TODO:
 	}
 
-	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults){
+	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint votesSum){
 		yesResults = 0;
 		noResults = 0;
-		totalResults = 0;
+		votesSum = 0;
 
 		// TODO: 
 	}
