@@ -223,15 +223,11 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		// TODO: uncomment. should pass
-		/*
 		const r = await voting.getFinalResults();
-		console.log('R: ');
-		console.log(r);
 		global.assert.equal(r[0],1,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r[1],0,'no');
-		global.assert.equal(r[2],3,'total');
-		*/
+		global.assert.equal(r[2],1,'total');
+		
 
 		const balance1 = await token.balanceOf(employee1);
 		global.assert.strictEqual(balance1.toNumber(),600,'initial employee1 balance');
@@ -239,14 +235,11 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		// should execute the action (issue tokens)!
 		await voting.vote(true,0,{from:employee2});
 
-		// TODO: uncomment. should pass
-		/*
 		const r2 = await voting.getFinalResults();
 		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1],0,'no');
-		global.assert.equal(r2[2],3,'total');
-		*/
-
+		global.assert.equal(r2[2],2,'total');
+		
 		// get voting results again
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting is finished now');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting result is yes!');
