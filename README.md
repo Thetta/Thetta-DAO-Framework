@@ -3,14 +3,17 @@
 Thetta DAO Framework is a DAO Framework that will help you to create your own DAO on top of it.
 Code is modular, so you can use different subsystems almost independently.
 
-Please [submit issues here](https://github.com/Thetta/SmartContracts/projects/1?).
+Please [submit issues here](https://github.com/Thetta/Thetta-DAO-Framework/projects/1).
+
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 [ ![Codeship Status for Thetta/SmartContracts](https://app.codeship.com/projects/f1b38150-b26e-0135-0584-462fcae7d1c8/status?branch=master)](https://app.codeship.com/projects/258076)
 
 ## Branches 
-**master** is for releases only
-**dev** is for testing 
-**dev2** is for development
+
+1. **master** is for releases only
+1. **dev** is for testing 
+1. **dev2** is for development
 
 ## Testing  
 
