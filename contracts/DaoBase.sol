@@ -33,7 +33,7 @@ contract DaoBase is IDaoBase, Ownable {
 		}
 
 		store.transferOwnership(_new);
-		store.stdToken().transferOwnership(_new);
+		store.govrToken().transferOwnership(_new);
 	}
 
 // Groups:
@@ -90,15 +90,15 @@ contract DaoBase is IDaoBase, Ownable {
 
 		// 2 - check if shareholder can do that without voting?
 		// TODO: generalize for ALL tokens!
-		if(store.isCanDoByShareholder(_permissionNameHash, address(store.stdToken()))
-			&& (ERC20(store.stdToken()).balanceOf(_a)!=0))
+		if(store.isCanDoByShareholder(_permissionNameHash, address(store.govrToken()))
+			&& (ERC20(store.govrToken()).balanceOf(_a)!=0))
 		{
 			return true;
 		}
 
 		// 2 - can do action only by starting new vote first?
 		// TODO: generalize for ALL tokens!
-		bool isCan = store.isCanDoByVoting(_permissionNameHash, address(store.stdToken()));
+		bool isCan = store.isCanDoByVoting(_permissionNameHash, address(store.govrToken()));
 		if(isCan){
 			var (isVotingFound, votingResult) = store.getProposalVotingResults(_a);
 
@@ -112,7 +112,7 @@ contract DaoBase is IDaoBase, Ownable {
 			// 3 - only token holders with > 51% of gov.tokens can add new task immediately 
 			// otherwise -> start voting
 			// TODO: generalize for ALL tokens!
-			bool isInMajority = (ERC20(store.stdToken()).balanceOf(_a))>(ERC20(store.stdToken()).totalSupply()/2);
+			bool isInMajority = (ERC20(store.govrToken()).balanceOf(_a))>(ERC20(store.govrToken()).totalSupply()/2);
 			if(isInMajority){
 				return true;
 			}
@@ -139,7 +139,7 @@ contract DaoBase is IDaoBase, Ownable {
 // Tokens:
 	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") {
 		// token ownership should be transferred to the current DaoBase
-		store.stdToken().mint(_to, _amount);
+		store.govrToken().mint(_to, _amount);
 	}
 }
 

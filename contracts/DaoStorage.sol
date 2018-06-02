@@ -128,7 +128,8 @@ contract DaoStorageGroups is Ownable {
 //			b. caller is voting and it is succeeded -> allow
 //		4. deny
 contract DaoStorage is DaoStorageGroups {
-	StdDaoToken public stdToken;
+	// all other tokens are in TokenManager
+	StdDaoToken public govrToken;
 
 	IProposal[] public proposals;
 	address[] public observers;
@@ -142,8 +143,8 @@ contract DaoStorage is DaoStorageGroups {
 
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
-	function DaoStorage(StdDaoToken _stdToken) public {
-		stdToken = _stdToken;
+	function DaoStorage(StdDaoToken _govrToken) public {
+		govrToken = _govrToken;
 	}
 
 	function addObserver(IDaoObserver _observer) public {
