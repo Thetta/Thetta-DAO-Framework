@@ -17,9 +17,9 @@ Please [submit issues here](https://github.com/Thetta/Thetta-DAO-Framework/proje
 
 Our thanks go to these people:
 
-[@AnthonyAkentiev](https://github.com/AnthonyAkentiev) - Smart Contracts development
-[@Kirill Guzenko](https://github.com/enkogu) - Smart Contracts development
-[@Max](https://github.com/mosg) - Smart Contracts development 
+1. [@AnthonyAkentiev](https://github.com/AnthonyAkentiev) - Smart Contracts development
+1. [@Kirill Guzenko](https://github.com/enkogu) - Smart Contracts development
+1. [@Max](https://github.com/mosg) - Smart Contracts development 
 
 ## Documentation
 
