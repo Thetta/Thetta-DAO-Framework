@@ -1,7 +1,8 @@
 pragma solidity ^0.4.15;
 
-import "./tokens/StdDaoToken.sol";
 import "./governance/IProposal.sol";
+
+import "./tokens/StdDaoToken.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -128,9 +129,8 @@ contract DaoStorageGroups is Ownable {
 //			b. caller is voting and it is succeeded -> allow
 //		4. deny
 contract DaoStorage is DaoStorageGroups {
-	// all other tokens are in TokenManager
-	StdDaoToken public govrToken;
-
+	// ownersip of tokens will be the Dao (DaoBase)
+	StdDaoToken[] public tokens;
 	IProposal[] public proposals;
 	address[] public observers;
 
@@ -144,7 +144,7 @@ contract DaoStorage is DaoStorageGroups {
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 	function DaoStorage(StdDaoToken _govrToken) public {
-		govrToken = _govrToken;
+		tokens.push(_govrToken);
 	}
 
 	function addObserver(IDaoObserver _observer) public {
@@ -226,4 +226,8 @@ contract DaoStorage is DaoStorageGroups {
 		}
 		return (false,false);
 	}
+
+	function getAllTokenAddresses() public returns (StdDaoToken[]){
+		return tokens;
+	}	
 }

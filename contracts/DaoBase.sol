@@ -2,18 +2,24 @@ pragma solidity ^0.4.15;
 
 import "./DaoStorage.sol";
 
+import "./tokens/StdDaoToken.sol";
+
 import "./IDaoBase.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+// This contract will own the 'store' and all 'tokens' inside the store!
 contract DaoBase is IDaoBase, Ownable {
 	DaoStorage public store;
 
 //////////////////////
 	// Constructor
 	function DaoBase(DaoStorage _store) public {
-		// the ownership should be transferred to microcompany
 		store = _store;
+
+		// the ownership should be transferred to microcompany
+		// from msg.sender -> Dao
+		//store.transferOwnership(this);
 	}
 
 	modifier isCanDo(string _what){
@@ -33,7 +39,11 @@ contract DaoBase is IDaoBase, Ownable {
 		}
 
 		store.transferOwnership(_new);
-		store.govrToken().transferOwnership(_new);
+
+		// transfer ownership of all tokens
+		for(i=0; i<store.getAllTokenAddresses().length; ++i){
+			store.getAllTokenAddresses()[i].transferOwnership(_new);
+		}
 	}
 
 // Groups:
@@ -88,36 +98,33 @@ contract DaoBase is IDaoBase, Ownable {
 			return true;
 		}
 
-		// 2 - check if shareholder can do that without voting?
-		// TODO: generalize for ALL tokens!
-		if(store.isCanDoByShareholder(_permissionNameHash, address(store.govrToken()))
-			&& (ERC20(store.govrToken()).balanceOf(_a)!=0))
-		{
-			return true;
-		}
+		for(uint i=0; i<store.getAllTokenAddresses().length; ++i){
+			StdDaoToken t = store.getAllTokenAddresses()[i];
 
-		// 2 - can do action only by starting new vote first?
-		// TODO: generalize for ALL tokens!
-		bool isCan = store.isCanDoByVoting(_permissionNameHash, address(store.govrToken()));
-		if(isCan){
-			var (isVotingFound, votingResult) = store.getProposalVotingResults(_a);
-
-			if(isVotingFound){
-				// if this action can be done by voting, then Proposal can do this action 
-				// from within its context
-				// in this case msg.sender is a Voting!
-				return votingResult;
-			}
-			
-			// 3 - only token holders with > 51% of gov.tokens can add new task immediately 
-			// otherwise -> start voting
-			// TODO: generalize for ALL tokens!
-			bool isInMajority = (ERC20(store.govrToken()).balanceOf(_a))>(ERC20(store.govrToken()).totalSupply()/2);
-			if(isInMajority){
+			// 2 - check if shareholder can do that without voting?
+			if(store.isCanDoByShareholder(_permissionNameHash, t) && (t.balanceOf(_a)!=0)){
 				return true;
 			}
 
-			return false;
+			// 3 - can do action only by starting new vote first?
+			bool isCan = store.isCanDoByVoting(_permissionNameHash, t);
+			if(isCan){
+				var (isVotingFound, votingResult) = store.getProposalVotingResults(_a);
+
+				if(isVotingFound){
+					// if this action can be done by voting, then Proposal can do this action 
+					// from within its context
+					// in this case msg.sender is a Voting!
+					return votingResult;
+				}
+				
+				// 4 - only token holders with > 51% of gov.tokens can add new task immediately 
+				// otherwise -> start voting
+				bool isInMajority = (t.balanceOf(_a))>(t.totalSupply()/2);
+				if(isInMajority){
+					return true;
+				}
+			}
 		}
 
 		return false;
@@ -138,8 +145,8 @@ contract DaoBase is IDaoBase, Ownable {
 
 // Tokens:
 	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") {
-		// token ownership should be transferred to the current DaoBase
-		store.govrToken().mint(_to, _amount);
+		// token ownership should be transferred to the current DaoBase to do that!!!
+		store.getAllTokenAddresses()[0].mint(_to, _amount);
 	}
 }
 

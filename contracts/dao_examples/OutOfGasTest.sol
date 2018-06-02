@@ -13,6 +13,7 @@ import "../governance/Voting.sol";
 
 import "../governance/Proposals.sol";
 
+/*
 contract OutOfGasTEST {
 	StdDaoToken public token;
 	DaoStorage public store;
@@ -30,5 +31,5 @@ contract OutOfGasTEST {
 
 		aac = new DaoBaseAuto(IDaoBase(daoBase));
 	}
-
 }
+*/
