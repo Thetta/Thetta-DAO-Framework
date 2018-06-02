@@ -42,10 +42,11 @@ contract DaoBaseImpersonated is ImpersonationCaller {
 	}
 
 	function issueTokensImp(bytes32 _hash, bytes _sig, 
-									 address _to, uint _amount) public {
-		bytes32[] memory params = new bytes32[](2);
-		params[0] = bytes32(_to);
-		params[1] = bytes32(_amount);
+									 address _token, address _to, uint _amount) public {
+		bytes32[] memory params = new bytes32[](3);
+		params[0] = bytes32(_token);
+		params[1] = bytes32(_to);
+		params[2] = bytes32(_amount);
 
 	   return doActionOnBehalfOf(_hash, _sig, "issueTokens", "issueTokensGeneric(bytes32[])", params);
 	}

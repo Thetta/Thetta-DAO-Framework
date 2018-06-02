@@ -9,8 +9,8 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 contract DaoStorageGroups is Ownable {
 	// member -> group names
 	mapping (address=>bytes32[]) addressToGroups;
+	// group name -> members
 	mapping (bytes32=>address[]) groupToAddresses;
-
 	// group name -> permission -> flag
 	mapping (bytes32=>mapping(bytes32=>bool)) isAllowedActionByGroupMember;
 
@@ -129,7 +129,8 @@ contract DaoStorageGroups is Ownable {
 //			b. caller is voting and it is succeeded -> allow
 //		4. deny
 contract DaoStorage is DaoStorageGroups {
-	// ownersip of tokens will be the Dao (DaoBase)
+	// owner of DaoStorage will be the Dao (DaoBase)
+	// owner of tokens will be the Dao (DaoBase)
 	StdDaoToken[] public tokens;
 	IProposal[] public proposals;
 	address[] public observers;
@@ -144,7 +145,6 @@ contract DaoStorage is DaoStorageGroups {
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 	function DaoStorage(address[] _tokens) public {
-		//tokens.push(_govrToken);
 		for(uint i=0; i<_tokens.length; ++i){
 			tokens.push(StdDaoToken(_tokens[i]));
 		}			
@@ -155,14 +155,6 @@ contract DaoStorage is DaoStorageGroups {
 		//
 		// token.transferOwnership(daoBase);
 	}
-
-	/*
-	function addTokens(StdDaoToken[] _tokens) public onlyOwner {
-		for(uint i=0; i<_tokens.length; ++i){
-			tokens.push(_tokens[i]);
-		}			
-	}
-   */
 
 	function addObserver(IDaoObserver _observer) public {
 		observers.push(_observer);

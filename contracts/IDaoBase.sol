@@ -30,7 +30,7 @@ interface IDaoBase {
 	function isCanDoAction(address _a, string _permissionName)public constant returns(bool);
 
 // Tokens
-	function issueTokens(address _to, uint amount)public;
+	function issueTokens(address _tokenAddress, address _to, uint amount)public;
 
 // Governance/Proposals
 	function addNewProposal(IProposal _proposal) public;

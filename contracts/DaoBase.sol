@@ -8,7 +8,12 @@ import "./IDaoBase.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-// This contract will be the owner of the 'store' and all 'tokens' inside the store!
+// READ THIS:
+// 1. This contract will be the owner of the 'store' and all 'tokens' inside the store!
+// It will transfer ownership only during upgrade
+//
+// 2. Currently DaoBase works only with StdDaoToken. It does not support working with 
+// plain ERC20 tokens because we need some extra features like mint(), burn() and transferOwnership()
 contract DaoBase is IDaoBase, Ownable {
 	DaoStorage public store;
 
@@ -22,6 +27,12 @@ contract DaoBase is IDaoBase, Ownable {
 		// Like this:
 		// 
 		// store.transferOwnership(daoBase);
+
+		// WARNING: please! do not forget to transfer all tokens'
+		// ownership to the Dao (i.e. DaoBase or any derived contract)
+		// Like this:
+		//
+		// token.transferOwnership(daoBase);
 	}
 
 	modifier isCanDo(string _what){
@@ -40,9 +51,10 @@ contract DaoBase is IDaoBase, Ownable {
 			IDaoObserver(store.getObserverAtIndex(i)).onUpgrade(_new);
 		}
 
+		// transfer ownership of the store (this -> _new)
 		store.transferOwnership(_new);
 
-		// transfer ownership of all tokens
+		// transfer ownership of all tokens (this -> _new)
 		for(i=0; i<store.getAllTokenAddresses().length; ++i){
 			store.getAllTokenAddresses()[i].transferOwnership(_new);
 		}
@@ -146,9 +158,18 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 // Tokens:
-	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") {
-		// token ownership should be transferred to the current DaoBase to do that!!!
-		store.getAllTokenAddresses()[0].mint(_to, _amount);
+	function issueTokens(address _tokenAddress, address _to, uint _amount)public isCanDo("issueTokens") {
+		for(uint i=0; i<store.getAllTokenAddresses().length; ++i){
+			if(store.getAllTokenAddresses()[i]==_tokenAddress){
+				// WARNING:
+				// token ownership should be transferred to the current DaoBase to do that!!!
+				store.getAllTokenAddresses()[i].mint(_to, _amount);
+				return;
+			}
+		}
+
+		// if not found!
+		revert();
 	}
 }
 
@@ -172,9 +193,11 @@ contract DaoBaseWithUnpackers is DaoBase {
 	}
 
 	function issueTokensGeneric(bytes32[] _params) public {
-		address _to = address(_params[0]);
-		uint _amount = uint(_params[1]);
-		issueTokens(_to, _amount);
+		address _tokenAddress = address(_params[0]);
+		address _to = address(_params[1]);
+		uint _amount = uint(_params[2]);
+
+		issueTokens(_tokenAddress, _to, _amount);
 	}
 
 	// TODO: add other methods:

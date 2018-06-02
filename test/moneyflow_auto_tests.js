@@ -101,8 +101,8 @@ global.contract('MoneyflowAuto', (accounts) => {
 	});
 
 	global.it('should allow to get donations using AAC (with voting)',async() => {
-		await daoBase.issueTokens(employee1, 600, {from:creator});
-		await daoBase.issueTokens(employee2, 600, {from:creator});
+		await daoBase.issueTokens(token.address, employee1, 600, {from:creator});
+		await daoBase.issueTokens(token.address, employee2, 600, {from:creator});
 
 		const isCanWithdraw = await daoBase.isCanDoAction(creator,"withdrawDonations");
 		global.assert.equal(isCanWithdraw, false, 'Creator should be not able to withdrawDonations directly without voting');

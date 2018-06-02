@@ -110,12 +110,12 @@ global.contract('DaoBase', (accounts) => {
 
 	global.it('should issue tokens to employee1 and employee2',async() => {
 		// currently creator has 1000 tokens, he is in majority, so this should not fail
-		await daoBase.issueTokens(employee1,2000,{from: creator});
+		await daoBase.issueTokens(token.address,employee1,2000,{from: creator});
 
 		// but now creator has 1000 and employee1 has 1000, so creator is not in majority
 		// this should fail
 		await CheckExceptions.checkContractThrows(daoBase.issueTokens.sendTransaction,
-			[employee2, 1000, { from: creator}],
+			[token.address, employee2, 1000, { from: creator}],
 			'Should not issue more tokens because creator is no longer in majority');
 
 		await token.transfer(employee2, 1000, {from: employee1});
@@ -142,7 +142,7 @@ global.contract('DaoBase', (accounts) => {
 		let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		await daoBase.upgradeDaoContract(daoBaseNew.address, {gas: 10000000, from: creator});
 
-		await daoBaseNew.issueTokens(employee1,1000,{from: creator});
+		await daoBaseNew.issueTokens(token.addresss, employee1,1000,{from: creator});
 
 		// check employee1 balance
 		const balance1 = await token.balanceOf(employee1);
@@ -157,7 +157,7 @@ global.contract('DaoBase', (accounts) => {
 			'Should not add new employee to old MC');
 
 		await CheckExceptions.checkContractThrows(daoBase.issueTokens,
-			[employee2, { from: creator}],
+			[token.address, employee2, 100, { from: creator}],
 			'Should not issue tokens through MC');
 
 		// now try to withdraw donations with new mc

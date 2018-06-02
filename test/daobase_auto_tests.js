@@ -79,7 +79,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 
 		// new proposal should NOT be added 
 		await CheckExceptions.checkContractThrows(aacInstance.issueTokensAuto.sendTransaction,
-			[employee1,1000,{ from: employee1}],
+			[token.address,employee1,1000,{ from: employee1}],
 			'Should not be able to issue tokens AND add new proposal');
 
 		const proposalsCount2 = await daoBase.getProposalsCount();
@@ -133,7 +133,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		global.assert.strictEqual(isCanDo4,true,'aacInstance can addNewProposal');
 
 		// new proposal should be added 
-		await aacInstance.issueTokensAuto(employee1,1200,{from: employee1, gas:10000000, gasPrice:0});
+		await aacInstance.issueTokensAuto(token.address,employee1,1200,{from: employee1, gas:10000000, gasPrice:0});
 
 		// STOP!!!
 		//global.assert.equal(0,1,'STOP'); 
@@ -209,7 +209,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		global.assert.strictEqual(isCanDo2,true,'employee1 can add new vote');
 
 		// new proposal should be added 
-		await aacInstance.issueTokensAuto(employee1,1000,{from: employee1});
+		await aacInstance.issueTokensAuto(token.address,employee1,1000,{from: employee1});
 		const proposalsCount2 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount2,1,'New proposal should be added'); 
 
@@ -252,8 +252,8 @@ global.contract('DaoBaseAuto', (accounts) => {
 
 	global.it('should be able to upgrade with AAC',async() => {
 		await daoBase.allowActionByAddress("issueTokens", creator);
-		await daoBase.issueTokens(employee1, 1000);
-		await daoBase.issueTokens(employee2, 1000);
+		await daoBase.issueTokens(token.address,employee1, 1000);
+		await daoBase.issueTokens(token.address,employee2, 1000);
 
 		await daoBase.addGroupMember("Employees", employee1);
 		await daoBase.addGroupMember("Employees", employee2);
@@ -318,7 +318,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		global.assert.strictEqual(isCanDo2,true,'employee1 can add new vote');
 
 		// new proposal should be added 
-		await aacInstance.issueTokensAuto(employee1,1000,{from: employee1});
+		await aacInstance.issueTokensAuto(token.address,employee1,1000,{from: employee1});
 		const proposalsCount2 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount2,1,'New proposal should be added'); 
 	});
