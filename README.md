@@ -9,9 +9,9 @@ Please [submit issues here](https://github.com/Thetta/Thetta-DAO-Framework/proje
 
 [ ![Codeship Status for Thetta/SmartContracts](https://app.codeship.com/projects/f1b38150-b26e-0135-0584-462fcae7d1c8/status?branch=master)](https://app.codeship.com/projects/258076)
 
-## For Developers 
+## Building and Testing  
 
-[More info for developers is available here](DEVELOPMENT.md)
+[Build and Test](DEVELOPMENT.md)
 
 ## The Community
 
