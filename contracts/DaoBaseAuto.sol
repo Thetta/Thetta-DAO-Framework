@@ -2,6 +2,7 @@ pragma solidity ^0.4.15;
 
 import "./utils/GenericCaller.sol";
 
+// TODO: convert to library?
 // This contract is a helper that will create new Proposal (i.e. voting) if the action is not allowed directly
 contract DaoBaseAuto is GenericCaller {
 	function DaoBaseAuto(IDaoBase _mc)public
