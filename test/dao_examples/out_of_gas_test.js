@@ -10,7 +10,7 @@ function KECCAK256 (x){
 	return web3.sha3(x);
 }
 
-global.contract('HierarchyDaoFactory', (accounts) => {
+global.contract('OutOfGasTEST', (accounts) => {
 	let token;
 	let store;
 	let daoBase;
@@ -21,7 +21,7 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 
 	});
 
-	global.it('should create Boss -> Managers -> Employees hierarchy using HierarchyDaoFactory',async() => {
+	global.it('should create Boss -> Managers -> Employees hierarchy using HierarchyDaoFactory and do not throw out-of-gas error',async() => {
 		let ogt = OutOfGasTEST.new({gas: 15000000, from: creator});
 	});
 });
