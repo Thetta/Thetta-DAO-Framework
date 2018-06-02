@@ -14,10 +14,6 @@ contract DaoStorageGroups is Ownable {
 	mapping (bytes32=>mapping(bytes32=>bool)) isAllowedActionByGroupMember;
 
 //////////////////
-	function addGroup(bytes32 _groupName) public onlyOwner{
-		// do nothing
-	}
-
 	function isGroupMember(bytes32 _groupName, address _a) public constant returns(bool){
 		uint len = addressToGroups[_a].length;
 

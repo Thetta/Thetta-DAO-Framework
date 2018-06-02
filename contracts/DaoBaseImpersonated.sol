@@ -6,7 +6,7 @@ import "zeppelin-solidity/contracts/ECRecovery.sol";
 
 // TODO: convert to library?
 contract ImpersonationCaller is DaoClient {
-	function ImpersonationCaller(IDaoBase _base) public DaoClient(_base) {
+	function ImpersonationCaller(IDaoBase _db) public DaoClient(_db) {
 
 	}
 
@@ -63,4 +63,5 @@ contract DaoBaseImpersonated is ImpersonationCaller {
    ...
    */
 }
+
 

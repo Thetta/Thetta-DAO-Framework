@@ -39,9 +39,6 @@ contract HierarchyDaoFactory {
 	}
 
 	function setPermissions(address _boss, address[] _managers, address[] _employees) internal {
-		daoBase.addGroup("Managers");
-		daoBase.addGroup("Employees");
-
 		// 1 - grant all permissions to the _boss (i.e. "the monarch")
 		daoBase.addGroupMember("Managers", _boss);
 		daoBase.addGroupMember("Employees", _boss);

@@ -33,7 +33,6 @@ global.contract('Scheme', (accounts) => {
 		moneyflowScheme = await DefaultMoneyflowSchemeWithUnpackers.new(daoBase.address, output, 5000, 5000, {from: creator});
 
 		// add creator as first employee	
-		await store.addGroup(KECCAK256("Employees"));
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 

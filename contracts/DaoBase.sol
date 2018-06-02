@@ -43,9 +43,6 @@ contract DaoBase is IDaoBase, Ownable {
 	function getMembersCountByHash(bytes32 _groupHash) public constant returns(uint){
 		return store.getMembersCount(_groupHash);
 	}
-	function addGroup(string _groupName) public isCanDo("manageGroups"){
-		store.addGroup(keccak256(_groupName));	
-	}
 	function addGroupMember(string _groupName, address _a) public isCanDo("manageGroups") {
 		store.addGroupMember(keccak256(_groupName), _a);
 	}
@@ -173,7 +170,6 @@ contract DaoBaseWithUnpackers is DaoBase {
 
 	// TODO: add other methods:
 	/*
-	function addGroup(string _groupName) public isCanDo("manageGroups")
 	function removeGroupMember(string _groupName, address _a) public isCanDo("manageGroups"){
 	function allowActionByShareholder(string _what, address _tokenAddress) public isCanDo("manageGroups"){
 	function allowActionByVoting(string _what, address _tokenAddress) public isCanDo("manageGroups"){

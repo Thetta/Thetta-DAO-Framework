@@ -12,7 +12,6 @@ interface IDaoBase {
 	function upgradeDaoContract(IDaoBase _new)public;
 
 // Groups
-	function addGroup(string _groupName) public;
 	function addGroupMember(string _groupName, address _a) public;
 	function removeGroupMember(string _groupName, address _a) public;
 	

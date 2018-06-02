@@ -48,7 +48,6 @@ global.contract('DaoBaseAuto', (accounts) => {
 		await aacInstance.setVotingParams("upgradeDaoContract", VOTING_TYPE_1P1V, (24 * 60), "Employees", 0);
 
 		// add creator as first employee	
-		await store.addGroup(KECCAK256("Employees"));
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 

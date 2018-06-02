@@ -54,9 +54,6 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 			await token.transferOwnership(daoBase.address);
 			await store.transferOwnership(daoBase.address);
 
-			await daoBase.addGroup("Employees");
-			await daoBase.addGroup("Managers");
-
 			// 1 - grant all permissions to the boss (i.e. "the monarch")
 			await daoBase.addGroupMember("Managers", boss);
 			await daoBase.addGroupMember("Employees", boss);

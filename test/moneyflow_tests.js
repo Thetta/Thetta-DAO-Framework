@@ -209,7 +209,6 @@ global.contract('Moneyflow', (accounts) => {
 		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
 
 		// add creator as first employee	
-		await store.addGroup(KECCAK256("Employees"));
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
