@@ -23,4 +23,5 @@ Our thanks go to these people:
 
 ## Documentation
 
-[Documentations is available here](https://docs.google.com/document/d/1wFuN57WEuK7BxZ24GrPL3Di_YqUoD25ORVitDHKQ7cU/edit?usp=sharing)
+1. [Overview](https://docs.google.com/document/d/1VG0-zY9Jn6FA21IJuVEt2voDQkBQN6B_uyKZWjb9hSM/edit?usp=sharing)
+1. [Documentation for developers](https://docs.google.com/document/d/1wFuN57WEuK7BxZ24GrPL3Di_YqUoD25ORVitDHKQ7cU/edit?usp=sharing)
