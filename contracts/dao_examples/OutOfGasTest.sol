@@ -19,7 +19,7 @@ contract OutOfGasTEST {
 	DaoBase public daoBase;
 	//AutoTEST public aac;
 
-	AutoDaoBaseActionCaller aac;
+	DaoBaseAuto aac;
 	
 	function OutOfGasTEST() public {
 	   token = new StdDaoToken("StdToken", "STDT", 18);
@@ -28,7 +28,7 @@ contract OutOfGasTEST {
 
 		//aac = new AutoTEST(IDaoBase(daoBase));
 
-		aac = new AutoDaoBaseActionCaller(IDaoBase(daoBase));
+		aac = new DaoBaseAuto(IDaoBase(daoBase));
 	}
 
 }
