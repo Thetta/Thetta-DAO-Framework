@@ -9,35 +9,18 @@ Please [submit issues here](https://github.com/Thetta/Thetta-DAO-Framework/proje
 
 [ ![Codeship Status for Thetta/SmartContracts](https://app.codeship.com/projects/f1b38150-b26e-0135-0584-462fcae7d1c8/status?branch=master)](https://app.codeship.com/projects/258076)
 
-## Branches 
+## For Developers 
 
-1. **master** is for releases only
-1. **dev** is for testing 
-1. **dev2** is for development
+[More info for developers is available here](DEVELOPMENT.md)
 
-## Testing  
+## The Community
 
-```
-npm run test
-```
+Our thanks go to these people:
 
-## Testing specific file
+[@AnthonyAkentiev](https://github.com/AnthonyAkentiev) - Smart Contracts development
+[@Kirill Guzenko](https://github.com/enkogu) - Smart Contracts development
+[@Max](https://github.com/mosg) - Smart Contracts development 
 
-```
-npm run test -- test/moneyflow_tests.js
-````
+## Documentation
 
-## CodeShip Continuous Integration script
-``` bash
-# reqs
-npm install -g npm@5.5.1
-nvm install 8.9.3
-npm install -g ethereumjs-testrpc
-
-# solc is 0.4.21
-# zeppelin-solidity is 1.9.0
-npm install -g truffle@4.1.7
-
-# test
-npm run test
-```
+[Documentations is available here](https://docs.google.com/document/d/1wFuN57WEuK7BxZ24GrPL3Di_YqUoD25ORVitDHKQ7cU/edit?usp=sharing)
