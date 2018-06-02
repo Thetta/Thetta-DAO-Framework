@@ -8,7 +8,7 @@ import "./IDaoBase.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-// This contract will own the 'store' and all 'tokens' inside the store!
+// This contract will be the owner of the 'store' and all 'tokens' inside the store!
 contract DaoBase is IDaoBase, Ownable {
 	DaoStorage public store;
 
@@ -17,9 +17,11 @@ contract DaoBase is IDaoBase, Ownable {
 	function DaoBase(DaoStorage _store) public {
 		store = _store;
 
-		// the ownership should be transferred to microcompany
-		// from msg.sender -> Dao
-		//store.transferOwnership(this);
+		// WARNING: please! do not forget to transfer the store
+		// ownership to the Dao (this contract)
+		// Like this:
+		// 
+		// store.transferOwnership(daoBase);
 	}
 
 	modifier isCanDo(string _what){

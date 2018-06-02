@@ -9,9 +9,12 @@ Please [submit issues here](https://github.com/Thetta/Thetta-DAO-Framework/proje
 
 [ ![Codeship Status for Thetta/SmartContracts](https://app.codeship.com/projects/f1b38150-b26e-0135-0584-462fcae7d1c8/status?branch=master)](https://app.codeship.com/projects/258076)
 
-## Building and Testing  
+## Disclaimer 
 
-[Build and Test](DEVELOPMENT.md)
+We are doing our best to keep the code quality at the very high level.
+However: Thetta community and Thetta inc. can not garantee that code has no bugs. As long as any smart contract can involve real cryptocurrency -> please double check that you know what you are doing. 
+
+Thetta DAO Framework CAN LEAD TO the monetary loss. Thetta has no liabilities.
 
 ## The Community
 
@@ -20,6 +23,10 @@ Our thanks go to these people:
 1. [@AnthonyAkentiev](https://github.com/AnthonyAkentiev) - Smart Contracts development
 1. [@Kirill Guzenko](https://github.com/enkogu) - Smart Contracts development
 1. [@Max](https://github.com/mosg) - Smart Contracts development 
+
+## Building and Testing  
+
+[HOW TO Build and Test](DEVELOPMENT.md)
 
 ## Documentation
 

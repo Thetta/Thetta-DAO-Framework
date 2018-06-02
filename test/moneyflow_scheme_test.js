@@ -26,7 +26,7 @@ global.contract('Scheme', (accounts) => {
 	global.beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
-		store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
+		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
 
 		// 50/50 between reserve fund and dividends 

@@ -30,13 +30,13 @@ global.contract('DaoBase', (accounts) => {
 	global.beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
-		store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
-
-		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 
 		// add creator as first employee	
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
+
+		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);

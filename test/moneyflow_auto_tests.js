@@ -36,7 +36,7 @@ global.contract('MoneyflowAuto', (accounts) => {
 		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 
-		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
+		let store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 

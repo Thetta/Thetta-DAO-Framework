@@ -35,8 +35,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		await token.mint(employee2, 600);
 		await token.mint(employee3, 600);
 
-		store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
-
+		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		aacInstance = await DaoBaseAuto.new(daoBase.address, {from: creator});
 

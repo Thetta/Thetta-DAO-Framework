@@ -19,6 +19,8 @@ contract HierarchyDaoFactory {
 	HierarchyDao public dao;
 	DaoBaseAuto public aac;
 	
+	address[] tokens;
+
 	function HierarchyDaoFactory(address _boss, address[] _managers, address[] _employees)public{
 		createDao(_boss, _managers, _employees);
 
@@ -28,7 +30,9 @@ contract HierarchyDaoFactory {
 	function createDao(address _boss, address[] _managers, address[] _employees) internal returns(address) {
 		// 1 - create
 	   token = new StdDaoToken("StdToken", "STDT", 18);
-		store = new DaoStorage(token);
+		tokens.push(address(token));
+
+		store = new DaoStorage(tokens);
 		dao = new HierarchyDao(store);
 
 		store.allowActionByAddress(keccak256("manageGroups"),this);

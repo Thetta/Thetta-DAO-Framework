@@ -143,9 +143,26 @@ contract DaoStorage is DaoStorageGroups {
 
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
-	function DaoStorage(StdDaoToken _govrToken) public {
-		tokens.push(_govrToken);
+	function DaoStorage(address[] _tokens) public {
+		//tokens.push(_govrToken);
+		for(uint i=0; i<_tokens.length; ++i){
+			tokens.push(StdDaoToken(_tokens[i]));
+		}			
+
+		// WARNING: please! do not forget to transfer the token 
+		// ownership to the Dao (i.e. DaoBase or any derived contract)
+		// Like this:
+		//
+		// token.transferOwnership(daoBase);
 	}
+
+	/*
+	function addTokens(StdDaoToken[] _tokens) public onlyOwner {
+		for(uint i=0; i<_tokens.length; ++i){
+			tokens.push(_tokens[i]);
+		}			
+	}
+   */
 
 	function addObserver(IDaoObserver _observer) public {
 		observers.push(_observer);

@@ -26,7 +26,7 @@ global.contract('Voting_1p1v', (accounts) => {
 	global.beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
-		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
+		let store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 
@@ -156,7 +156,7 @@ global.contract('Voting_SimpleToken', (accounts) => {
 	global.beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
-		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
+		let store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 
