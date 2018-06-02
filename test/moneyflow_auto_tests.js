@@ -6,7 +6,7 @@ var WeiFund = artifacts.require("./WeiFund");
 var MoneyFlow = artifacts.require("./MoneyFlow");
 var IWeiReceiver = artifacts.require("./IWeiReceiver");
 
-var AutoMoneyflowActionCaller = artifacts.require("./AutoMoneyflowActionCaller");
+var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 
 var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
@@ -17,7 +17,7 @@ function KECCAK256 (x){
 	return web3.sha3(x);
 }
 
-global.contract('AutoMoneyflowActionCaller', (accounts) => {
+global.contract('MoneyflowAuto', (accounts) => {
 	const creator = accounts[0];
 	const employee1 = accounts[1];
 	const employee2 = accounts[2];
@@ -40,7 +40,7 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 
-		aacInstance = await AutoMoneyflowActionCaller.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
+		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
 
 		///////////////////////////////////////////////////
 		// SEE THIS? set voting type for the action!

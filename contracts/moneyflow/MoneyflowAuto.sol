@@ -7,10 +7,10 @@ import "./ether/WeiExpense.sol";
 import "../utils/GenericCaller.sol";
 
 // TODO: add tests!
-contract AutoMoneyflowActionCaller is GenericCaller {
+contract MoneyflowAuto is GenericCaller {
 	IMoneyflow mf;
 
-	function AutoMoneyflowActionCaller(IDaoBase _mc, IMoneyflow _mf)public 
+	function MoneyflowAuto(IDaoBase _mc, IMoneyflow _mf)public 
 		GenericCaller(_mc)	
 	{
 		mf = _mf;

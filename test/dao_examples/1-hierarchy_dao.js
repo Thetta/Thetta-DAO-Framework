@@ -4,10 +4,10 @@ var DaoStorage = artifacts.require("./DaoStorage");
 var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 
 var DaoBase = artifacts.require("./DaoBase");
-var AutoDaoBaseActionCaller = artifacts.require("./AutoDaoBaseActionCaller");
+var DaoBaseAuto = artifacts.require("./DaoBaseAuto");
 
 var MoneyFlow = artifacts.require("./MoneyFlow");
-var AutoMoneyflowActionCaller = artifacts.require("./AutoMoneyflowActionCaller");
+var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 
 // DAO factories
 var HierarchyDaoFactory = artifacts.require("./HierarchyDaoFactory"); 
@@ -44,7 +44,7 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 		//await token.mint(creator, 1000);
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
+		let aacInstance = await DaoBaseAuto.new(daoBase.address, {from: creator});
 
 		{
 			// add creator as first employee	
@@ -117,15 +117,15 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 		// Create AAC manually
 		// 
 		// WARNING:
-		// Unfortunately creating AutoDaoBaseActionCaller in the HierarchyDaoFactory caused some weird bug 
-		// with OutOfGas...That's why i moved AutoDaoBaseActionCaller creation here
+		// Unfortunately creating DaoBaseAuto in the HierarchyDaoFactory caused some weird bug 
+		// with OutOfGas...That's why i moved DaoBaseAuto creation here
 		//
-		let aac = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
+		let aac = await DaoBaseAuto.new(daoBase.address, {from: creator});
 		await aac.transferOwnership(hdf.address, {from: creator});
 
 		// Create AMAC manually
 		let moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
-		let amac = await AutoMoneyflowActionCaller.new(daoBase.address, moneyflowInstance.address, 
+		let amac = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, 
 			{from: creator, gas: 10000000});
 		await amac.transferOwnership(hdf.address, {from: creator});
 

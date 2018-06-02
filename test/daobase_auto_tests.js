@@ -2,7 +2,7 @@ var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 
-var AutoDaoBaseActionCaller = artifacts.require("./AutoDaoBaseActionCaller");
+var DaoBaseAuto = artifacts.require("./DaoBaseAuto");
 
 var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
@@ -13,7 +13,7 @@ function KECCAK256 (x){
 	return web3.sha3(x);
 }
 
-global.contract('AutoDaoBaseActionCaller', (accounts) => {
+global.contract('DaoBaseAuto', (accounts) => {
 	const creator = accounts[0];
 	const employee1 = accounts[1];
 	const employee2 = accounts[2];
@@ -38,7 +38,7 @@ global.contract('AutoDaoBaseActionCaller', (accounts) => {
 		store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
+		aacInstance = await DaoBaseAuto.new(daoBase.address, {from: creator});
 
 		///////////////////////////////////////////////////
 		// SEE THIS? set voting type for the action!
