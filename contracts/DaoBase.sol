@@ -26,24 +26,32 @@ contract DaoBase is IDaoBase, Ownable {
 		store.addObserver(_observer);	
 	}
 
+	function upgradeDaoContract(IDaoBase _new) public isCanDo("upgradeDaoContract") {
+		// call observers.onUpgrade() for all observers
+		for(uint i=0; i<store.getObserverCount(); ++i){
+			IDaoObserver(store.getObserverAtIndex(i)).onUpgrade(_new);
+		}
+
+		store.transferOwnership(_new);
+		store.stdToken().transferOwnership(_new);
+	}
+
+// Groups:
 	function getMembersCount(string _groupName) public constant returns(uint){
 		return store.getMembersCount(keccak256(_groupName));
 	}
 	function getMembersCountByHash(bytes32 _groupHash) public constant returns(uint){
 		return store.getMembersCount(_groupHash);
 	}
-
 	function addGroup(string _groupName) public isCanDo("manageGroups"){
 		store.addGroup(keccak256(_groupName));	
 	}
 	function addGroupMember(string _groupName, address _a) public isCanDo("manageGroups") {
 		store.addGroupMember(keccak256(_groupName), _a);
 	}
-
 	function getGroupMembers(string _groupName) public constant returns(address[]){
 		return store.getGroupMembers(keccak256(_groupName));
 	}
-
 	function removeGroupMember(string _groupName, address _a) public isCanDo("manageGroups"){
 		store.removeGroupMember(keccak256(_groupName), _a);
 	}
@@ -54,6 +62,7 @@ contract DaoBase is IDaoBase, Ownable {
 		return store.isGroupMember(_groupNameHash, _a);
 	}
 
+// Actions:
 	function allowActionByShareholder(string _what, address _tokenAddress) public isCanDo("manageGroups"){
 		store.allowActionByShareholder(keccak256(_what), _tokenAddress);
 	}
@@ -85,7 +94,7 @@ contract DaoBase is IDaoBase, Ownable {
 		// 2 - check if shareholder can do that without voting?
 		// TODO: generalize for ALL tokens!
 		if(store.isCanDoByShareholder(_permissionNameHash, address(store.stdToken()))
-			&& isShareholder(_a, address(store.stdToken())))
+			&& (ERC20(store.stdToken()).balanceOf(_a)!=0))
 		{
 			return true;
 		}
@@ -106,7 +115,8 @@ contract DaoBase is IDaoBase, Ownable {
 			// 3 - only token holders with > 51% of gov.tokens can add new task immediately 
 			// otherwise -> start voting
 			// TODO: generalize for ALL tokens!
-			if(isInMajority(_a, address(store.stdToken()))){
+			bool isInMajority = (ERC20(store.stdToken()).balanceOf(_a))>(ERC20(store.stdToken()).totalSupply()/2);
+			if(isInMajority){
 				return true;
 			}
 
@@ -116,16 +126,7 @@ contract DaoBase is IDaoBase, Ownable {
 		return false;
 	}
 
-	function upgradeDaoContract(IDaoBase _new) public isCanDo("upgradeDaoContract") {
-		// call observers.onUpgrade() for all observers
-		for(uint i=0; i<store.getObserverCount(); ++i){
-			IDaoObserver(store.getObserverAtIndex(i)).onUpgrade(_new);
-		}
-
-		store.transferOwnership(_new);
-		store.stdToken().transferOwnership(_new);
-	}
-
+// Proposals:
 	function addNewProposal(IProposal _proposal) public isCanDo("addNewProposal") { 
 		store.addNewProposal(_proposal);
 	}
@@ -138,21 +139,8 @@ contract DaoBase is IDaoBase, Ownable {
 		return store.getProposalsCount();
 	}
 
+// Tokens:
 	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") {
-		issueTokensInternal(_to, _amount);
-	}
-
-// Public (for tests)
-	function isShareholder(address _a, address _token) public constant returns(bool){
-		return (ERC20(_token).balanceOf(_a)!=0);
-	}
-
-	// only token holders with > 51% of gov.tokens can add new task immediately 
-	function isInMajority(address _a, address _tokenAddress) public constant returns(bool){
-		return (ERC20(_tokenAddress).balanceOf(_a))>(ERC20(_tokenAddress).totalSupply()/2);
-	}
-
-	function issueTokensInternal(address _to, uint _amount) internal {
 		// token ownership should be transferred to the current DaoBase
 		store.stdToken().mint(_to, _amount);
 	}

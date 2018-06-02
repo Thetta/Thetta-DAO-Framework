@@ -62,12 +62,6 @@ global.contract('DaoBase', (accounts) => {
 		const isMember2 = await daoBase.isGroupMember("Employees", employee1);
 		global.assert.equal(isMember2,false,'Permission should be set correctly');
 
-		const isMajority = await daoBase.isInMajority(creator, token.address);
-		global.assert.strictEqual(isMajority,true,'Creator should be in majority');
-
-		const isMajority2 = await daoBase.isInMajority(employee1, token.address);
-		global.assert.strictEqual(isMajority2,false,'Employee should not be in majority');
-
 		const isCan = await store.isCanDoByGroupMember(KECCAK256("addNewProposal"), creator);
 		global.assert.equal(isCan,true,'Any employee should be able to add new proposal');
 		
@@ -126,15 +120,6 @@ global.contract('DaoBase', (accounts) => {
 			'Should not issue more tokens because creator is no longer in majority');
 
 		await token.transfer(employee2, 1000, {from: employee1});
-
-		const isMajority1 = await daoBase.isInMajority(creator, token.address);
-		global.assert.strictEqual(isMajority1,false,'Creator should NOT be in majority now');
-
-		const isMajority2 = await daoBase.isInMajority(employee1, token.address);
-		global.assert.strictEqual(isMajority2,false,'employee1 is now in majority');
-
-		const isMajority3 = await daoBase.isInMajority(employee2, token.address);
-		global.assert.strictEqual(isMajority3,false,'employee1 is now in majority');
 
 		// CHECK this .at syntax!!!
 		const balance1 = await token.balanceOf(creator);
