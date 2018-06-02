@@ -29,15 +29,13 @@ interface IDaoBase {
 
 	function isCanDoAction(address _a, string _permissionName)public constant returns(bool);
 
+// Tokens
+	function issueTokens(address _to, uint amount)public;
+
 // Governance/Proposals
 	function addNewProposal(IProposal _proposal) public;
 	function getProposalAtIndex(uint _i)public constant returns(IProposal);
 	function getProposalsCount()public constant returns(uint);
-
-// Tokens
-	// TODO: curently DaoBase has only 1 type of tokens
-	// that gives full governance rights - "DefaultToken"
-	function issueTokens(address _to, uint amount)public;
 }
 
 // Just an easy-to-use wrapper
