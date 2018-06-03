@@ -59,7 +59,7 @@ contract DaoStorageGroups is Ownable {
 	}
 
 	function removeParticipantFromGroup(bytes32 _groupHash, address _member) internal { 
-		address[] parts = groupToAddresses[_groupHash];
+		address[] storage parts = groupToAddresses[_groupHash];
 		uint index = getIndexOfAddress(_member, parts);		
 
 		// if member is not found -> exception
@@ -85,7 +85,7 @@ contract DaoStorageGroups is Ownable {
 	}
 
 	function removeGroupFromMemberGroups(bytes32 _groupHash, address _member) internal { 
-		bytes32[] parts = addressToGroups[_member];
+		bytes32[] storage parts = addressToGroups[_member];
 		uint index = getIndexOfBytes32(_groupHash, addressToGroups[_member]);		
 
 		// if member is not found -> exception
@@ -144,7 +144,7 @@ contract DaoStorage is DaoStorageGroups {
 
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
-	function DaoStorage(address[] _tokens) public {
+	constructor(address[] _tokens) public {
 		for(uint i=0; i<_tokens.length; ++i){
 			tokens.push(StdDaoToken(_tokens[i]));
 		}			

@@ -16,11 +16,11 @@ contract Voting is IVoting {
 
 	event Voting_CallAction();
 
-	function Voting(IDaoBase _mc, IProposal _proposal, uint _minutesToVote){
+	constructor(IDaoBase _mc, IProposal _proposal, uint _minutesToVote){
 		mc = _mc;
 		proposal = _proposal;
 		minutesToVote = _minutesToVote;
-		uint genesis = now;
+		genesis = now;
 	}
 
 	function callActionIfEnded() public {
@@ -35,14 +35,20 @@ contract Voting is IVoting {
 	}
 
 	function isYes()public constant returns(bool){
-		var(yesResults, noResults, votesSum) = getFinalResults();
+		uint yesResults = 0;
+		uint noResults = 0;
+		uint votesSum = 0;
+		(yesResults, noResults, votesSum) = getFinalResults();
 		// TODO: JUST FOR DEBUGGGGG!!!
 		return (yesResults > votesSum/2) && (votesSum>1);
 	}
 
 	function isFinished() public constant returns(bool){
 		// TODO: JUST FOR DEBUGGGGG!!!
-		var(yesResults, noResults, votesSum) = getFinalResults();
+		uint yesResults = 0;
+		uint noResults = 0;
+		uint votesSum = 0;
+		(yesResults, noResults, votesSum) = getFinalResults();
 		return (votesSum>1);
 		return false;
 	}
@@ -57,9 +63,9 @@ contract Voting_SimpleToken is Voting, Ownable {
 
 ////////
 	// we can use _origin instead of tx.origin
-	function Voting_SimpleToken(IDaoBase _mc, IProposal _proposal, address _origin, 
-						uint _minutesToVote, address _tokenAddress, bytes32 _emptyParam)
-						public Voting(_mc, _proposal, _minutesToVote)
+	constructor(IDaoBase _mc, IProposal _proposal, address _origin, 
+					uint _minutesToVote, address _tokenAddress, bytes32 _emptyParam)
+					public Voting(_mc, _proposal, _minutesToVote)
 	{
 		tokenAddress = address(_tokenAddress);
 

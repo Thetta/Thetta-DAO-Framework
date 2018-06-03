@@ -10,7 +10,7 @@ import "../utils/GenericCaller.sol";
 contract MoneyflowAuto is GenericCaller {
 	IMoneyflow mf;
 
-	function MoneyflowAuto(IDaoBase _mc, IMoneyflow _mf)public 
+	constructor(IDaoBase _mc, IMoneyflow _mf)public 
 		GenericCaller(_mc)	
 	{
 		mf = _mf;

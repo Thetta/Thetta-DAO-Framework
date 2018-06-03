@@ -31,7 +31,7 @@ contract GenericCaller is DaoClient, Ownable {
 	event GenericCaller_CreateNewProposal(string permission);
 
 /////
-	function GenericCaller(IDaoBase _mc)public
+	constructor(IDaoBase _mc)public
 		// DaoClient (for example) helps us to handle DaoBase upgrades
 		// and will automatically update the 'mc' to the new instance
 		DaoClient(_mc)	

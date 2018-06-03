@@ -25,7 +25,7 @@ contract Voting_1p1v is IVoting, Ownable {
 
 ////////
 	// we can use _origin instead of tx.origin
-	function Voting_1p1v(IDaoBase _mc, IProposal _proposal, 
+	constructor(IDaoBase _mc, IProposal _proposal, 
 								address _origin, 
 								uint _minutesToVote, string _groupName, bytes32 _emptyParam) public 
 	{
@@ -52,7 +52,11 @@ contract Voting_1p1v is IVoting, Ownable {
 		}
 
 		uint votersTotal = mc.getMembersCount(groupName);
-		var (yesResults, noResults, votesSum) = getFinalResults();
+
+		uint yesResults = 0;
+		uint noResults = 0;
+		uint votesSum = 0;
+		(yesResults, noResults, votesSum) = getFinalResults();
 
 		emit Voting1p1v_IsFinished(votersTotal, votesSum);
 
@@ -65,7 +69,10 @@ contract Voting_1p1v is IVoting, Ownable {
 			return true;
 		}
 
-		var(yesResults, noResults, votesSum) = getFinalResults();
+		uint yesResults = 0;
+		uint noResults = 0;
+		uint votesSum = 0;
+		(yesResults, noResults, votesSum) = getFinalResults();
 		return isFinished() && (yesResults * 2 > (yesResults + noResults));
 	}
 

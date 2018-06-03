@@ -7,7 +7,7 @@ import '../DaoBaseAuto.sol';
 import '../moneyflow/MoneyflowAuto.sol';
 
 contract HierarchyDao is DaoBaseWithUnpackers {
-	function HierarchyDao(DaoStorage _store)public DaoBaseWithUnpackers(_store){
+	constructor(DaoStorage _store)public DaoBaseWithUnpackers(_store){
 
 	}
 }
@@ -21,7 +21,7 @@ contract HierarchyDaoFactory {
 	
 	address[] tokens;
 
-	function HierarchyDaoFactory(address _boss, address[] _managers, address[] _employees)public{
+	constructor(address _boss, address[] _managers, address[] _employees)public{
 		createDao(_boss, _managers, _employees);
 
 		setupAac();
@@ -86,9 +86,6 @@ contract HierarchyDaoFactory {
 		}
 	}
 
-	// WARNING:
-	// Unfortunately creating DaoBaseAuto here caused some weird bug 
-	// with OutOfGas...That's why i moved DaoBaseAuto creation outside of this contract
 	function setupAac() internal {
 		aac = new DaoBaseAuto(IDaoBase(dao));
 

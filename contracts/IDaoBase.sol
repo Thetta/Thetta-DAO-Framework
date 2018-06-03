@@ -30,6 +30,8 @@ interface IDaoBase {
 	function isCanDoAction(address _a, string _permissionName)public constant returns(bool);
 
 // Tokens
+	// ???? TODO: needed
+	//function addTokenAddressToList();
 	function issueTokens(address _tokenAddress, address _to, uint amount)public;
 	function burnTokens(address _tokenAddress, address _who, uint amount)public;
 
@@ -48,7 +50,7 @@ contract DaoClient is IDaoObserver {
 		_; 
 	}
 
-	function DaoClient(IDaoBase _mc)public{
+	constructor(IDaoBase _mc) public {
 		mc = _mc;
 		mc.addObserver(this);
 	}

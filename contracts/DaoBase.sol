@@ -17,9 +17,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 contract DaoBase is IDaoBase, Ownable {
 	DaoStorage public store;
 
-//////////////////////
-	// Constructor
-	function DaoBase(DaoStorage _store) public {
+	constructor(DaoStorage _store) public {
 		store = _store;
 
 		// WARNING: please! do not forget to transfer the store
@@ -123,7 +121,9 @@ contract DaoBase is IDaoBase, Ownable {
 			// 3 - can do action only by starting new vote first?
 			bool isCan = store.isCanDoByVoting(_permissionNameHash, t);
 			if(isCan){
-				var (isVotingFound, votingResult) = store.getProposalVotingResults(_a);
+				bool isVotingFound = false;
+				bool votingResult = false;
+				(isVotingFound, votingResult) = store.getProposalVotingResults(_a);
 
 				if(isVotingFound){
 					// if this action can be done by voting, then Proposal can do this action 
@@ -178,7 +178,7 @@ contract DaoBase is IDaoBase, Ownable {
 }
 
 contract DaoBaseWithUnpackers is DaoBase {
-	function DaoBaseWithUnpackers(DaoStorage _store) public 
+	constructor(DaoStorage _store) public 
 		DaoBase(_store)	
 	{
 	}

@@ -15,7 +15,7 @@ contract GenericProposal is IProposal, Ownable {
 	string methodSig;
 	bytes32[] params;
 
-	function GenericProposal(address _target, address _origin, string _methodSig, bytes32[] _params) public {
+	constructor(address _target, address _origin, string _methodSig, bytes32[] _params) public {
 		target = _target;
 		params = _params;
 		methodSig = _methodSig;
@@ -58,11 +58,7 @@ contract InformalProposal is IProposal, Ownable {
 	string proposalText = '';
 	IVoting voting;
 
-	function action(IDaoBase _mc, IVoting _voting)public{
-		return;
-	}
-
-	function InformalProposal(string _proposalText) public {
+	constructor(string _proposalText) public {
 		proposalText = _proposalText;
 	}
 
@@ -71,12 +67,15 @@ contract InformalProposal is IProposal, Ownable {
 	}
 
 // IVoting implementation
-
 	function setVoting(IVoting _voting) public onlyOwner{
 		voting = _voting;
 	}
 
 	function getVoting()public constant returns(IVoting){
 		return voting;
+	}
+
+	function action(IDaoBase _mc, IVoting _voting)public{
+		return;
 	}
 }

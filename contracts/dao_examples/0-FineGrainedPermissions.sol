@@ -17,15 +17,14 @@ import "../IDaoBase.sol";
 // 
 // This contract shows how to do that:
 contract ExampleOfFineGrainedPerms is DaoClient {
-	// all other tokens are in TokenManager
 	StdDaoToken public tokenGovernance;
 	// Generic reputation
 	StdDaoToken public tokenReputation;
-	// Reputations for Devs
+	// Reputation for Devs
 	StdDaoToken public tokenReputationDev;
 
 ////
-	function ExampleOfFineGrainedPerms(IDaoBase _db) public DaoClient(_db){
+	constructor(IDaoBase _db) public DaoClient(_db){
 		// 1 - create tokens 
 		tokenGovernance = new StdDaoToken("YourDaoGovToken","GOV",18);
 		tokenReputation = new StdDaoToken("YourDaoRepToken","REP",18);
