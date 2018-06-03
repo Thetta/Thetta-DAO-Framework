@@ -138,11 +138,17 @@ global.contract('DaoBase', (accounts) => {
 		await daoBase.allowActionByAnyMemberOfGroup("upgradeDaoContract","Employees");
 		await daoBase.allowActionByAddress("withdrawDonations", creator);
 
+		let a1 = await token.owner();
+		global.assert.equal(a1,daoBase.address,'Ownership should be set');
+
 		// UPGRADE!
 		let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		await daoBase.upgradeDaoContract(daoBaseNew.address, {gas: 10000000, from: creator});
 
-		await daoBaseNew.issueTokens(token.addresss, employee1,1000,{from: creator});
+		let a2 = await token.owner();
+		global.assert.equal(a2,daoBaseNew.address,'Ownership should be transferred');
+
+		await daoBaseNew.issueTokens(token.address, employee1,1000,{from: creator});
 
 		// check employee1 balance
 		const balance1 = await token.balanceOf(employee1);
@@ -206,11 +212,8 @@ global.contract('DaoBase', (accounts) => {
 		global.assert.strictEqual(await daoBase.isGroupMember("Employees", employee3,{from:creator}),
 			false, 'Should not be in the group')
 
-		let GP = await daoBase.getMembersCount("Employees");
-		console.log('GP:', GP)
 		// await daoBase.getGroupParticipants
 		global.assert.equal(3, (await daoBase.getMembersCount("Employees")).toNumber(), '2 employees + creator');
-
 	});
 });
 
