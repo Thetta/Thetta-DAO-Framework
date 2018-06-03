@@ -81,7 +81,7 @@ contract DefaultMoneyflowScheme is DaoClient {
 	}
 
 ////////////////////////////////////////////////////////////////
-	// use MoneyflowAuto to add new task with voting! 
+	// use AutoMoneyflowActionCaller to add new task with voting! 
 	function addNewTask(IWeiReceiver _wr) public isCanDo("addNewTask") {
 		// 1 - add new task immediately
 		//tasks.addChild(_wr);
@@ -90,7 +90,7 @@ contract DefaultMoneyflowScheme is DaoClient {
 	// if _employee is not in the flow -> will add new WeiAbsoluteExpense
 	// if _employee is already in the flow -> will update the needed amount, i.e. call setNeededWei()
 	function setSalaryForEmployee(address _employee, uint _weiPerMonth) public isCanDo("modifyMoneyscheme") {
-		// TODO: is voting required? Move voting to MoneyflowAuto!
+		// TODO: is voting required? Move voting to AutoMoneyflowActionCaller!
 
 		// TODO: implement
 
@@ -104,7 +104,7 @@ contract DefaultMoneyflowScheme is DaoClient {
 	}
 
 	function setBonusForEmployee(address _employee, uint _bonusPercentsPerMonth) public isCanDo("modifyMoneyscheme") {
-		// TODO: is voting required? Move voting to MoneyflowAuto!
+		// TODO: is voting required? Move voting to AutoMoneyflowActionCaller!
 
 		// TODO: implement
 	}
@@ -112,7 +112,7 @@ contract DefaultMoneyflowScheme is DaoClient {
 	// to "remove" the spend -> set (_weiPerMonth==0)
 	// this method WILL NOT really remove the item!
 	function setOtherSpend(string _name, uint _weiPerMonth) public isCanDo("modifyMoneyscheme") {
-		// TODO: is voting required? Move voting to MoneyflowAuto!
+		// TODO: is voting required? Move voting to AutoMoneyflowActionCaller!
 
 		// TODO: implement
 	}
