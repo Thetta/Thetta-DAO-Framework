@@ -88,7 +88,7 @@ contract DaoBase is IDaoBase, Ownable {
 	function allowActionByVoting(string _what, address _tokenAddress) public isCanDo("manageGroups"){
 		store.allowActionByVoting(keccak256(_what),_tokenAddress);
 	}
-	function allowActionByAddress(string _what, address _a) public /*isCanDo("manageGroups")*/{
+	function allowActionByAddress(string _what, address _a) public isCanDo("manageGroups") {
 		store.allowActionByAddress(keccak256(_what),_a);
 	}
 	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public isCanDo("manageGroups"){
