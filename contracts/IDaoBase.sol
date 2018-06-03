@@ -12,12 +12,10 @@ interface IDaoBase {
 	function upgradeDaoContract(IDaoBase _new)public;
 
 // Groups
+	function addGroup(string _groupName) public;
 	function addGroupMember(string _groupName, address _a) public;
 	function removeGroupMember(string _groupName, address _a) public;
-	
-	function getMembersCount(string _groupName) public constant returns(uint);
-	function getMembersCountByHash(bytes32 _groupHash) public constant returns(uint);
-	
+
 	function isGroupMember(string _groupName,address _a)public constant returns(bool);
 	function isGroupMemberByHash(bytes32 _groupNameHash,address _a)public constant returns(bool);
 
@@ -28,17 +26,17 @@ interface IDaoBase {
 	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public;
 
 	function isCanDoAction(address _a, string _permissionName)public constant returns(bool);
-
-// Tokens
-	// ???? TODO: needed
-	//function addTokenAddressToList();
-	function issueTokens(address _tokenAddress, address _to, uint amount)public;
-	function burnTokens(address _tokenAddress, address _who, uint amount)public;
+	function isCanDoActionByHash(address _a, bytes32 _permissionNameHash)public constant returns(bool);
 
 // Governance/Proposals
 	function addNewProposal(IProposal _proposal) public;
 	function getProposalAtIndex(uint _i)public constant returns(IProposal);
 	function getProposalsCount()public constant returns(uint);
+
+// Tokens
+	// TODO: curently DaoBase has only 1 type of tokens
+	// that gives full governance rights - "DefaultToken"
+	function issueTokens(address _to, uint amount)public;
 }
 
 // Just an easy-to-use wrapper
@@ -50,7 +48,7 @@ contract DaoClient is IDaoObserver {
 		_; 
 	}
 
-	constructor(IDaoBase _mc) public {
+	function DaoClient(IDaoBase _mc)public{
 		mc = _mc;
 		mc.addObserver(this);
 	}

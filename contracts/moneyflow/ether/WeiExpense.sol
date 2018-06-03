@@ -16,7 +16,7 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	uint neededWei = 0;
 	address moneySource = 0x0;
 
-	constructor(uint _neededWei, uint _percentsMul100, uint _periodHours, bool _isCalculateDebt, bool _isPeriodic) public {
+	function WeiExpense(uint _neededWei, uint _percentsMul100, uint _periodHours, bool _isCalculateDebt, bool _isPeriodic) public {
 		percentsMul100 = _percentsMul100;
 		periodHours = _periodHours;
 		neededWei = _neededWei;
@@ -121,25 +121,25 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 }
 
 contract WeiAbsoluteExpense is WeiExpense {
-	constructor(uint _neededWei) public 
+	function WeiAbsoluteExpense(uint _neededWei) public 
 		WeiExpense(_neededWei, 0, 0, false, false)
 	{}
 }
 
 contract WeiRelativeExpense is WeiExpense {
-	constructor(uint _percentsMul100)public 
+	function WeiRelativeExpense(uint _percentsMul100)public 
 		WeiExpense(0, _percentsMul100, 0, false, false)
 	{}
 }
 
 contract WeiAbsoluteExpenseWithPeriod is WeiExpense { 
-	constructor(uint _neededWei, uint _periodHours, bool _isCalculateDebt) public
+	function WeiAbsoluteExpenseWithPeriod(uint _neededWei, uint _periodHours, bool _isCalculateDebt) public
 		WeiExpense(_neededWei, 0, _periodHours, _isCalculateDebt, true)
 	{}
 }
 
 contract WeiRelativeExpenseWithPeriod is WeiExpense {
-	constructor(uint _percentsMul100, uint _periodHours, bool _isCalculateDebt) public 
+	function WeiRelativeExpenseWithPeriod(uint _percentsMul100, uint _periodHours, bool _isCalculateDebt) public 
 		WeiExpense(0, _percentsMul100, _periodHours, _isCalculateDebt, true)
 	{}
 }

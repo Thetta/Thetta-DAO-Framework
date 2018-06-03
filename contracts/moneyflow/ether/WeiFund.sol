@@ -14,7 +14,7 @@ contract WeiFund is WeiRelativeExpense {
 	address public output;		// will not be able to change that later!
 	bool public allowFlushTo = true;
 
-	constructor(address _output, bool _allowFlushTo, uint _percentsDiv100Needed) public 
+	function WeiFund(address _output, bool _allowFlushTo, uint _percentsDiv100Needed) public 
 		WeiRelativeExpense(_percentsDiv100Needed)	
 	{
 		output = _output;

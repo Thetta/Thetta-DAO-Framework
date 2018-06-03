@@ -7,17 +7,14 @@ import "./ether/WeiExpense.sol";
 import "../utils/GenericCaller.sol";
 
 // TODO: add tests!
-contract MoneyflowAuto is GenericCaller {
+contract AutoMoneyflowActionCaller is GenericCaller {
 	IMoneyflow mf;
 
-	constructor(IDaoBase _mc, IMoneyflow _mf)public 
+	function AutoMoneyflowActionCaller(IDaoBase _mc, IMoneyflow _mf)public 
 		GenericCaller(_mc)	
 	{
 		mf = _mf;
 	}
-
-	/*
-	// this is moved to Scheme!
 
 	function addNewTaskAuto(WeiAbsoluteExpense _wt) public returns(address voteOut){
 		bytes32[] memory params = new bytes32[](1);
@@ -25,7 +22,6 @@ contract MoneyflowAuto is GenericCaller {
 
 		return doAction("addNewTask", mf, msg.sender,"addNewTaskGeneric(bytes32[])",params);
 	}
-   */
 
 	function setRootWeiReceiverAuto(WeiAbsoluteExpense _wt) public returns(address voteOut){
 		bytes32[] memory params = new bytes32[](1);
