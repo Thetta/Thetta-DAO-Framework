@@ -13,6 +13,7 @@ interface IVoting {
 
 	// This is for statistics
 	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults);
+
 	// Is voting finished?
 	function isFinished()public constant returns(bool);
 	// The result of voting

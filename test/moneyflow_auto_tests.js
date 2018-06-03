@@ -7,7 +7,7 @@ var MoneyFlow = artifacts.require("./MoneyFlow");
 var IWeiReceiver = artifacts.require("./IWeiReceiver");
 var WeiAbsoluteExpense = artifacts.require("./WeiAbsoluteExpense");
 
-var AutoMoneyflowActionCaller = artifacts.require("./AutoMoneyflowActionCaller");
+var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 
 var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
@@ -18,6 +18,7 @@ function KECCAK256(x) {
 	return web3.sha3(x);
 }
 
+<<<<<<< HEAD:test/auto_moneyflow_action_caller_tests.js
 async function CheckVoting() {
 
 	const pa = await daoBase.getProposalAtIndex(0);
@@ -40,6 +41,9 @@ async function CheckVoting() {
 }
 
 global.contract('AutoMoneyflowActionCaller', (accounts) => {
+=======
+global.contract('MoneyflowAuto', (accounts) => {
+>>>>>>> upstream/dev2:test/moneyflow_auto_tests.js
 	const creator = accounts[0];
 	const employee1 = accounts[1];
 	const employee2 = accounts[2];
@@ -58,20 +62,19 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 
-		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
+		let store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 
-		aacInstance = await AutoMoneyflowActionCaller.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
+		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
 
 		///////////////////////////////////////////////////
 		// SEE THIS? set voting type for the action!
 		const VOTING_TYPE_1P1V = 1;
 		const VOTING_TYPE_SIMPLE_TOKEN = 2;
-		await aacInstance.setVotingParams("withdrawDonations", VOTING_TYPE_1P1V, (24 * 60), KECCAK256("Employees"), 0);
+		await aacInstance.setVotingParams("withdrawDonations", VOTING_TYPE_1P1V, (24 * 60), "Employees", 0);
 
 		// add creator as first employee	
-		await store.addGroup(KECCAK256("Employees"));
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
@@ -84,13 +87,12 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 
 		await daoBase.allowActionByAnyMemberOfGroup("addNewEmployee","Employees");
 		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
+		await daoBase.allowActionByAddress("issueTokens", creator);
 		
 		await daoBase.allowActionByVoting("withdrawDonations", token.address);
-		await daoBase.allowActionByAddress("issueTokens", creator);
 
 		// AAC requires special permissions
 		await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
-
 		// these actions required if AAC will call this actions DIRECTLY (without voting)
 		await daoBase.allowActionByAddress("withdrawDonations", aacInstance.address);
 		await daoBase.allowActionByAddress("addNewTask", aacInstance.address);
@@ -121,12 +123,13 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 		let pointBalance2 = await web3.eth.getBalance(output);
 		const receiverDelta = pointBalance2.toNumber() - pointBalance.toNumber();
 
-		global.assert.notEqual(receiverDelta, 0, 'Donations should be withdrawn');
+		global.assert.equal(receiverDelta, money, 'Donations should be withdrawn');
 	});
 
 	global.it('should allow to get donations using AAC (with voting)',async() => {
-		await daoBase.issueTokens(employee1, 600, {from:creator});
-		await daoBase.issueTokens(employee2, 600, {from:creator});
+		await daoBase.issueTokens(token.address, employee1, 600, {from:creator});
+		await daoBase.issueTokens(token.address, employee2, 600, {from:creator});
+
 		const isCanWithdraw = await daoBase.isCanDoAction(creator,"withdrawDonations");
 		global.assert.equal(isCanWithdraw, false, 'Creator should be not able to withdrawDonations directly without voting');
 
@@ -141,21 +144,41 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 
 		// get the donations 
 		let pointBalance = await web3.eth.getBalance(output);
+
 		// this will call the action directly!
 		await aacInstance.withdrawDonationsToAuto(output, {from:creator, gas:100000000});
-		const proposalsCount1 = await daoBase.getProposalsCount();
+		let proposalsCount1 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount1, 1, 'Proposal should be added');
 
+<<<<<<< HEAD:test/auto_moneyflow_action_caller_tests.js
 		CheckVoting();
 		
+=======
+		const pa = await daoBase.getProposalAtIndex(0);
+		const proposal = await IProposal.at(pa);
+		const votingAddress = await proposal.getVoting();
+		const voting = await Voting.at(votingAddress);
+		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+
+		await voting.vote(true,0,{from:employee1});
+
+		// check voting results again
+		const r2 = await voting.getFinalResults();
+		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
+		global.assert.equal(r2[1].toNumber(),0,'no');
+		global.assert.equal(r2[2].toNumber(),2,'total');
+		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
+		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+
+>>>>>>> upstream/dev2:test/moneyflow_auto_tests.js
 		let pointBalance2 = await web3.eth.getBalance(output);
-		const receiverDelta = pointBalance2.toNumber() - pointBalance.toNumber();
+
+		let receiverDelta2 = pointBalance2.toNumber() - pointBalance.toNumber();
 
 		let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);
 
-		console.log('receiverDelta:', receiverDelta)
-		console.log('donationBalance:', donationBalance2.toNumber())
-		global.assert.equal(receiverDelta, money, 'Donations should be withdrawn');
+		global.assert.equal(receiverDelta2, money, 'Donations should be withdrawn');
 	});
 
 	global.it('should allow to set root receiver using AAC (direct call)', async() => {

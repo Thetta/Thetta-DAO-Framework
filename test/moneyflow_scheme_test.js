@@ -26,14 +26,13 @@ global.contract('Scheme', (accounts) => {
 	global.beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
-		store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
+		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
 
 		// 50/50 between reserve fund and dividends 
 		moneyflowScheme = await DefaultMoneyflowSchemeWithUnpackers.new(daoBase.address, output, 5000, 5000, {from: creator});
 
 		// add creator as first employee	
-		await store.addGroup(KECCAK256("Employees"));
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 

@@ -3,9 +3,11 @@ var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 
-var IDaoBase = artifacts.require("./IDaoBase");
-var AacFactory = artifacts.require("./AacFactory");
-var AutoDaoBaseActionCaller = artifacts.require("./AutoDaoBaseActionCaller");
+var DaoBase = artifacts.require("./DaoBase");
+var DaoBaseAuto = artifacts.require("./DaoBaseAuto");
+
+var MoneyFlow = artifacts.require("./MoneyFlow");
+var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 
 // DAO factories
 var HierarchyDaoFactory = artifacts.require("./HierarchyDaoFactory"); 
@@ -42,7 +44,7 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 		//await token.mint(creator, 1000);
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
+		let aacInstance = await DaoBaseAuto.new(daoBase.address, {from: creator});
 
 		{
 			// add creator as first employee	
@@ -51,9 +53,6 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 			// do not forget to transfer ownership
 			await token.transferOwnership(daoBase.address);
 			await store.transferOwnership(daoBase.address);
-
-			await daoBase.addGroup("Employees");
-			await daoBase.addGroup("Managers");
 
 			// 1 - grant all permissions to the boss (i.e. "the monarch")
 			await daoBase.addGroupMember("Managers", boss);
@@ -83,8 +82,8 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 			// 5 - set the auto caller
 			const VOTING_TYPE_1P1V = 1;
 			//const VOTING_TYPE_SIMPLE_TOKEN = 2;
-			await aacInstance.setVotingParams("manageGroups", VOTING_TYPE_1P1V, (24 * 60), KECCAK256("Managers"), 0);
-			await aacInstance.setVotingParams("modifyMoneyscheme", VOTING_TYPE_1P1V, (24 * 60), KECCAK256("Managers"), 0);
+			await aacInstance.setVotingParams("manageGroups", VOTING_TYPE_1P1V, (24 * 60), "Managers", 0);
+			await aacInstance.setVotingParams("modifyMoneyscheme", VOTING_TYPE_1P1V, (24 * 60), "Managers", 0);
 
 			await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
 			await daoBase.allowActionByAddress("manageGroups", aacInstance.address);
@@ -102,33 +101,38 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 	});
 	*/
 
-	global.it('should create Boss -> Managers -> Employees hierarchy',async() => {
-		let hdf = await HierarchyDaoFactory.new({gas: 10000000, from: creator});
-
+	global.it('should create Boss -> Managers -> Employees hierarchy using HierarchyDaoFactory',async() => {
 		let mgrs = [manager1, manager2];
 		let empls = [employee1, employee2];
-		await hdf.createDao(boss, mgrs, empls, {from: creator});
+
+		let hdf = await HierarchyDaoFactory.new(boss, mgrs, empls, {gas: 15500000, from: creator});
 		
-		const daoAddress = await hdf.daoBase();
-		const daoBase = await IDaoBase.at(daoAddress);
-
-		let af = await AacFactory.new({gas: 10000000, from: creator});
-		await af.setupAac(daoBase.address, {from: creator});
-
-		const aacAddress = await af.aac();
-		const aac = await AutoDaoBaseActionCaller.at(aacAddress);
+		const daoAddress = await hdf.dao();
+		const daoBase = await DaoBase.at(daoAddress);
 
 		/*
-		let aacInstance = await AutoDaoBaseActionCaller.new(daoBase.address, {from: creator});
+		// Create AAC manually
+		// 
+		// WARNING:
+		// Unfortunately creating DaoBaseAuto in the HierarchyDaoFactory caused some weird bug 
+		// with OutOfGas...That's why i moved DaoBaseAuto creation here
+		//
+		let aac = await DaoBaseAuto.new(daoBase.address, {from: creator});
+		await aac.transferOwnership(hdf.address, {from: creator});
 
-		// set the auto caller
-		const VOTING_TYPE_1P1V = 1;
-		await aacInstance.setVotingParams("manageGroups", VOTING_TYPE_1P1V, (24 * 60), KECCAK256("Managers"), 0);
-		await aacInstance.setVotingParams("modifyMoneyscheme", VOTING_TYPE_1P1V, (24 * 60), KECCAK256("Managers"), 0);
+		// Create AMAC manually
+		let moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
+		let amac = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, 
+			{from: creator, gas: 10000000});
+		await amac.transferOwnership(hdf.address, {from: creator});
 
-		await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
-		await daoBase.allowActionByAddress("manageGroups", aacInstance.address);
-		await daoBase.allowActionByAddress("modifyMoneyscheme", aacInstance.address);
+		await hdf.setupAac(aac.address, {from: creator});
+		await hdf.setupAmac(amac.address, {from: creator});
+
+		// test permissions 
+		// 1 - check if AAC has manageGroups perm. 
+		const isCan = await daoBase.isCanDoAction(aac.address, "manageGroups");
+		global.assert.equal(isCan, true, 'AAC should be able to <manageGroups>');
 		*/
 	});
 });
