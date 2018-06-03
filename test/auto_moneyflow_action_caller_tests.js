@@ -18,14 +18,16 @@ function KECCAK256(x) {
 	return web3.sha3(x);
 }
 
-function CheckVotingWithSpecificProposal(proposal) {
-	
+async function CheckVoting() {
+
+	const pa = await daoBase.getProposalAtIndex(0);
+	const proposal = await IProposal.at(pa);
 	const votingAddress = await proposal.getVoting();
 	const voting = await Voting.at(votingAddress);
 	global.assert.strictEqual(await voting.isFinished(), false, 'Voting is still not finished');
 	global.assert.strictEqual(await voting.isYes(), false, 'Voting is still not finished');
 
-	await voting.vote(true,0,{ from:employee1 });
+	await voting.vote(true, 0, { from: employee1 });
 
 	const r2 = await voting.getFinalResults();
 	global.assert.equal(r2[0], 2, 'yes');		// 1 already voted (who started the voting)
@@ -144,9 +146,7 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 		const proposalsCount1 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount1, 1, 'Proposal should be added');
 
-		const pa = await daoBase.getProposalAtIndex(0);
-		const proposal = await IProposal.at(pa);
-		CheckVotingWithSpecificProposal(proposal);
+		CheckVoting();
 		
 		let pointBalance2 = await web3.eth.getBalance(output);
 		const receiverDelta = pointBalance2.toNumber() - pointBalance.toNumber();
@@ -169,10 +169,10 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 		const isCanDoAction2 = await daoBase.isCanDoAction(employee1, "setRootWeiReceiver");
 		global.assert.equal(isCanDoAction2, true, 'Now employee should have permissions to run setRootWeiReceiver action');
 
-		const wae = await WeiAbsoluteExpense.new(0);
+		const wae = await WeiAbsoluteExpense.new(1000);
 		
 		// checking action direct call (without voting)
-		await aacInstance.setRootWeiReceiverAuto(wae, { from: employee1, gas: 100000000 });
+		//await aacInstance.setRootWeiReceiverAuto(wae, { from: employee1, gas: 100000000 });
 
 		// check proposals after action called
 		const proposalsCount = await daoBase.getProposalsCount();
@@ -190,17 +190,16 @@ global.contract('AutoMoneyflowActionCaller', (accounts) => {
 		const proposalsCount = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount, 0, 'No proposals should be added');
 
-		const wae = await WeiAbsoluteExpense.new(0);
+		let params = {from: employee1, gas: 1000000};
+		const wae = await WeiAbsoluteExpense.new(1000);
 				
 		// checking action with voting required
-		await aacInstance.setRootWeiReceiverAuto(wae, { from: employee1, gas: 100000000 });
+		await aacInstance.setRootWeiReceiverAuto(wae); // ERROR
 
 		const proposalsCount2 = await daoBase.getProposalsCount();
 		global.assert.equal(proposalsCount2, 1, 'One new proposal should be added');
-				
-		const pa = await daoBase.getProposalAtIndex(0);
-		const proposal = await IProposal.at(pa);
-		CheckVotingWithSpecificProposal(proposal);
+
+		CheckVoting();
 	});
 
 });
