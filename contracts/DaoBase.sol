@@ -171,6 +171,10 @@ contract DaoBase is IDaoBase, Ownable {
 		// if not found!
 		revert();
 	}
+
+	function burnTokens(address _tokenAddress, address _who, uint amount)public {
+		// TODO:
+	}
 }
 
 contract DaoBaseWithUnpackers is DaoBase {

@@ -31,6 +31,7 @@ interface IDaoBase {
 
 // Tokens
 	function issueTokens(address _tokenAddress, address _to, uint amount)public;
+	function burnTokens(address _tokenAddress, address _who, uint amount)public;
 
 // Governance/Proposals
 	function addNewProposal(IProposal _proposal) public;
