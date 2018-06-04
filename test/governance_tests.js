@@ -42,8 +42,17 @@ global.contract('Voting_1p1v', (accounts) => {
 
 		await daoBase.allowActionByVoting("manageGroups", token.address);
 		await daoBase.allowActionByVoting("issueTokens", token.address);
+		await daoBase.allowActionByAnyMemberOfGroup("burnTokens", "Employees");
 	});
 	
+	global.it('should burn tokens',async() => {
+		let balance = await token.balanceOf(creator);
+		await daoBase.burnTokens(token.address, creator, 1000);
+		let balance2 = await token.balanceOf(creator);
+		let balanceDelta = balance.toNumber() - balance2.toNumber();
+		global.assert.equal(balanceDelta, 1000);
+	});	
+
 	global.it('should create and use 1p1v voting',async() => {
 		// add 3 employees
 		await daoBase.addGroupMember("Employees", employee1);
@@ -89,7 +98,7 @@ global.contract('Voting_1p1v', (accounts) => {
 		await daoBase.addGroupMember("Employees", employee5);
 
 		let proposal = await InformalProposal.new('Take the money and run again', {from:creator, gas:10000000, gasPrice:0});	
-		let voting = await Voting_1p1v.new(daoBase.address, proposal.address, creator, 60*24, "Employees", 50, 50, 0);
+		let voting = await Voting_1p1v.new(daoBase.address, proposal.address, creator, 60*24, "Employees", 51, 50, 0);
 	
 		// vote by first, check results  (getFinalResults, isFinished, isYes, etc) 	
 		await voting.vote(true,0,{from:employee1});
@@ -142,6 +151,7 @@ global.contract('Voting_1p1v', (accounts) => {
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished: 4/6 voted');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished: 4/6 voted, all said yes');	
 	});
+
 });
 
 global.contract('Voting_SimpleToken', (accounts) => {
@@ -173,7 +183,7 @@ global.contract('Voting_SimpleToken', (accounts) => {
 		await daoBase.allowActionByVoting("manageGroups", token.address);
 		await daoBase.allowActionByVoting("issueTokens", token.address);
 	});
-	
+
 	global.it('should create and use simple token voting',async() => {
 		// TODO:
 	});

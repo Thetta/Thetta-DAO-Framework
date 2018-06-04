@@ -82,8 +82,8 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 			// 5 - set the auto caller
 			const VOTING_TYPE_1P1V = 1;
 			//const VOTING_TYPE_SIMPLE_TOKEN = 2;
-			await aacInstance.setVotingParams("manageGroups", VOTING_TYPE_1P1V, (24 * 60), "Managers", 50, 50, 0);
-			await aacInstance.setVotingParams("modifyMoneyscheme", VOTING_TYPE_1P1V, (24 * 60), "Managers", 50, 50, 0);
+			await aacInstance.setVotingParams("manageGroups", VOTING_TYPE_1P1V, (24 * 60), "Managers", 51, 50, 0);
+			await aacInstance.setVotingParams("modifyMoneyscheme", VOTING_TYPE_1P1V, (24 * 60), "Managers", 51, 50, 0);
 
 			await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
 			await daoBase.allowActionByAddress("manageGroups", aacInstance.address);
@@ -105,7 +105,7 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 		let mgrs = [manager1, manager2];
 		let empls = [employee1, employee2];
 
-		let hdf = await HierarchyDaoFactory.new(boss, mgrs, empls, {gas: 15500000, from: creator});
+		let hdf = await HierarchyDaoFactory.new(boss, mgrs, empls, {gas: 155000000, from: creator, gasPrice:0});
 		
 		const daoAddress = await hdf.dao();
 		const daoBase = await DaoBase.at(daoAddress);

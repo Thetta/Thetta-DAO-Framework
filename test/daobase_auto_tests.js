@@ -13,6 +13,30 @@ function KECCAK256 (x){
 	return web3.sha3(x);
 }
 
+var utf8 = require('utf8');
+
+function padToBytes32(n) {
+	while (n.length < 64) {
+		n = n + "0";
+	}
+	return "0x" + n;
+}
+
+function fromUtf8(str) {
+	str = utf8.encode(str);
+	var hex = "";
+	for (var i = 0; i < str.length; i++) {
+		var code = str.charCodeAt(i);
+		if (code === 0) {
+			break;
+		}
+		var n = code.toString(16);
+		hex += n.length < 2 ? '0' + n : n;
+	}
+
+	return padToBytes32(hex);
+};
+
 global.contract('DaoBaseAuto', (accounts) => {
 	const creator = accounts[0];
 	const employee1 = accounts[1];
@@ -43,8 +67,10 @@ global.contract('DaoBaseAuto', (accounts) => {
 		// SEE THIS? set voting type for the action!
 		const VOTING_TYPE_1P1V = 1;
 		const VOTING_TYPE_SIMPLE_TOKEN = 2;
-		await aacInstance.setVotingParams("issueTokens", VOTING_TYPE_1P1V, (24 * 60), "Employees", 51, 51, 0);
-		await aacInstance.setVotingParams("upgradeDaoContract", VOTING_TYPE_1P1V, (24 * 60), "Employees", 51, 51, 0);
+
+		await aacInstance.setVotingParams("issueTokens", VOTING_TYPE_1P1V, (24 * 60), fromUtf8("Employees"), 51, 51, 0);
+		await aacInstance.setVotingParams("upgradeDaoContract", VOTING_TYPE_1P1V, (24 * 60), fromUtf8("Employees"), 51, 51, 0);
+
 
 		// add creator as first employee	
 		await store.addGroupMember(KECCAK256("Employees"), creator);
