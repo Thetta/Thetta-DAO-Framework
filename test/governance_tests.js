@@ -51,7 +51,7 @@ global.contract('Voting_1p1v', (accounts) => {
 		await daoBase.addGroupMember("Employees", employee3);
 
 		let proposal = await InformalProposal.new('Take the money and run', {from:creator, gas:10000000, gasPrice:0});	
-		let voting = await Voting_1p1v.new(daoBase.address, proposal.address, creator, 60*24, "Employees", 0);
+		let voting = await Voting_1p1v.new(daoBase.address, proposal.address, creator, 60*24, "Employees", 67, 50, 0);
 		
 		// vote by first, check results  (getFinalResults, isFinished, isYes, etc) 
 			
@@ -89,7 +89,7 @@ global.contract('Voting_1p1v', (accounts) => {
 		await daoBase.addGroupMember("Employees", employee5);
 
 		let proposal = await InformalProposal.new('Take the money and run again', {from:creator, gas:10000000, gasPrice:0});	
-		let voting = await Voting_1p1v.new(daoBase.address, proposal.address, creator, 60*24, "Employees", 0);
+		let voting = await Voting_1p1v.new(daoBase.address, proposal.address, creator, 60*24, "Employees", 50, 50, 0);
 	
 		// vote by first, check results  (getFinalResults, isFinished, isYes, etc) 	
 		await voting.vote(true,0,{from:employee1});

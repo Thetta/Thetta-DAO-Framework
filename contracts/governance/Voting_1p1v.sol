@@ -15,6 +15,8 @@ contract Voting_1p1v is IVoting, Ownable {
 	uint public minutesToVote;
 	bool finishedWithYes = false;
 	uint64 genesis;
+	uint public quorumPercent;
+	uint public consensusPercent;
 
 ////////
 	string groupName;
@@ -26,13 +28,15 @@ contract Voting_1p1v is IVoting, Ownable {
 ////////
 	// we can use _origin instead of tx.origin
 	constructor(IDaoBase _mc, IProposal _proposal, 
-								address _origin, 
-								uint _minutesToVote, string _groupName, bytes32 _emptyParam) public 
+		address _origin, uint _minutesToVote, string _groupName, 
+		uint _quorumPercent, uint _consensusPercent, bytes32 _emptyParam) public 
 	{
 		mc = _mc;
 		proposal = _proposal;
 		minutesToVote = _minutesToVote;
 		groupName = _groupName;
+		quorumPercent = _quorumPercent;
+		consensusPercent = _consensusPercent;
 		genesis = uint64(now);
 
 		internalVote(_origin, true);
@@ -61,7 +65,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		emit Voting1p1v_IsFinished(votersTotal, votesSum);
 
 		// if enough participants voted
-		return ((votesSum * 2) > votersTotal);
+		return ((votesSum * 100) >= votersTotal * quorumPercent);
 	}
 
 	function isYes()public constant returns(bool){
@@ -73,7 +77,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		uint noResults = 0;
 		uint votesSum = 0;
 		(yesResults, noResults, votesSum) = getFinalResults();
-		return isFinished() && (yesResults * 2 > (yesResults + noResults));
+		return isFinished() && (yesResults * 100 > (yesResults + noResults)*consensusPercent);
 	}
 
 	function cancelVoting() public onlyOwner {

@@ -82,8 +82,8 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 			// 5 - set the auto caller
 			const VOTING_TYPE_1P1V = 1;
 			//const VOTING_TYPE_SIMPLE_TOKEN = 2;
-			await aacInstance.setVotingParams("manageGroups", VOTING_TYPE_1P1V, (24 * 60), "Managers", 0);
-			await aacInstance.setVotingParams("modifyMoneyscheme", VOTING_TYPE_1P1V, (24 * 60), "Managers", 0);
+			await aacInstance.setVotingParams("manageGroups", VOTING_TYPE_1P1V, (24 * 60), "Managers", 50, 50, 0);
+			await aacInstance.setVotingParams("modifyMoneyscheme", VOTING_TYPE_1P1V, (24 * 60), "Managers", 50, 50, 0);
 
 			await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
 			await daoBase.allowActionByAddress("manageGroups", aacInstance.address);

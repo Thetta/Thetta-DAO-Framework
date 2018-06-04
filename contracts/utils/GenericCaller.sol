@@ -21,8 +21,10 @@ contract GenericCaller is DaoClient, Ownable {
 	struct VotingParams {
 		VotingType votingType;
 		bytes32 param1;
-		string param2;
+		bytes32 param2;
 		bytes32 param3;
+		bytes32 param4;
+		bytes32 param5;
 	}
 
 	mapping (bytes32=>VotingParams) votingParams;
@@ -84,12 +86,15 @@ contract GenericCaller is DaoClient, Ownable {
 	}
 
 	function setVotingParams(string _permissionId, uint _votingType, 
-									 bytes32 _param1, string _param2, bytes32 _param3) public onlyOwner {
+		bytes32 _param1, bytes32 _param2, 
+		bytes32 _param3, bytes32 _param4, bytes32 _param5) public onlyOwner {
 		VotingParams memory params;
 		params.votingType = VotingType(_votingType);
 		params.param1 = _param1;
 		params.param2 = _param2;
 		params.param3 = _param3;
+		params.param4 = _param4;
+		params.param5 = _param5;
 
 		votingParams[keccak256(_permissionId)] = params;
 	}
@@ -98,7 +103,7 @@ contract GenericCaller is DaoClient, Ownable {
 		VotingParams memory vp = votingParams[keccak256(_permissionId)];
 
 		if(VotingType.Voting1p1v==vp.votingType){
-			return new Voting_1p1v(mc, _proposal, _origin, uint(vp.param1), vp.param2, vp.param3);
+			return new Voting_1p1v(mc, _proposal, _origin, uint(vp.param1), bytes32ToString(vp.param2), uint(vp.param3), uint(vp.param4), vp.param5);
 		}
 
 		/*
@@ -113,5 +118,22 @@ contract GenericCaller is DaoClient, Ownable {
 		assert(false==true);
 		return IVoting(0x0);
 	}
+
+	function bytes32ToString(bytes32 x) constant returns (string) {
+		bytes memory bytesString = new bytes(32);
+		uint charCount = 0;
+		for (uint j = 0; j < 32; j++) {
+			byte char = byte(bytes32(uint(x) * 2 ** (8 * j)));
+			if (char != 0) {
+				bytesString[charCount] = char;
+				charCount++;
+			}
+		}
+		bytes memory bytesStringTrimmed = new bytes(charCount);
+		for (j = 0; j < charCount; j++) {
+			bytesStringTrimmed[j] = bytesString[j];
+		}
+		return string(bytesStringTrimmed);
+	}	
 }
 
