@@ -20,7 +20,7 @@ contract Voting_1p1v is IVoting, Ownable {
 	bytes32 public emptyParam;
 
 ////////
-	string groupName;
+	string public groupName;
 
 	mapping (address=>bool) addressVotedAlready;
 	address[] employeesVotedYes;
@@ -32,8 +32,8 @@ contract Voting_1p1v is IVoting, Ownable {
 		address _origin, uint _minutesToVote, string _groupName, 
 		uint _quorumPercent, uint _consensusPercent, bytes32 _emptyParam) public 
 	{
-		// require((_quorumPercent<=100)&&(_quorumPercent>0));
-		// require((_consensusPercent<=100)&&(_consensusPercent>0));
+		require((_quorumPercent<=100)&&(_quorumPercent>0));
+		require((_consensusPercent<=100)&&(_consensusPercent>0));
 		mc = _mc;
 		proposal = _proposal;
 		minutesToVote = _minutesToVote;
@@ -46,6 +46,8 @@ contract Voting_1p1v is IVoting, Ownable {
 		internalVote(_origin, true);
 	}
 
+
+
 	function bytes32ToUint(bytes32 data) internal pure returns (uint) {
 		return uint(uint16(data[0]) + uint16(data[1]));
 	}	
@@ -55,6 +57,7 @@ contract Voting_1p1v is IVoting, Ownable {
 	function getEPasUint()public constant returns(uint){
 		return bytes32ToUint(emptyParam);
 	}
+
 	function isFinished()public constant returns(bool){
 		// 1 - if minutes elapsed
 
@@ -76,7 +79,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		emit Voting1p1v_IsFinished(votersTotal, votesSum);
 
 		// if enough participants voted
-		return ((votesSum * 100) > votersTotal * 50);
+		return ((votesSum * 100) >= votersTotal * quorumPercent);
 	}
 
 	function isYes()public constant returns(bool){
@@ -88,7 +91,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		uint noResults = 0;
 		uint votesSum = 0;
 		(yesResults, noResults, votesSum) = getFinalResults();
-		return isFinished() && (yesResults * 100 > (yesResults + noResults)*50);
+		return isFinished() && (yesResults * 100 >= (yesResults + noResults)*consensusPercent);
 	}
 
 	function cancelVoting() public onlyOwner {
@@ -102,9 +105,9 @@ contract Voting_1p1v is IVoting, Ownable {
 	}
 
 	function internalVote(address _who, bool _yes) internal {
-		// require(mc.isGroupMember(groupName, _who));
+		require(mc.isGroupMember(groupName, _who));
 
-		// require(!addressVotedAlready[_who]);
+		require(!addressVotedAlready[_who]);
 
 		if(_yes){
 			employeesVotedYes.push(_who);

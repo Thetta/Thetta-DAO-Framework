@@ -91,16 +91,14 @@ function decimalToHexString(number)
 
 		// add creator as first employee	
 		await store.addGroupMember(KECCAK256("Employees"), creator);
-		await store.addGroupMember(KECCAK256("Employees"), employee1);
-		await store.addGroupMember(KECCAK256("Employees"), employee2);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
 
-		// await daoBase.addGroupMember("Employees", employee1);
-		// await daoBase.addGroupMember("Employees", employee2);
+		await daoBase.addGroupMember("Employees", employee1);
+		await daoBase.addGroupMember("Employees", employee2);
 
 		await daoBase.allowActionByAnyMemberOfGroup("addNewEmployee","Employees");
 		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
@@ -117,11 +115,14 @@ function decimalToHexString(number)
 	});
 
 	global.it('should create new voting', async()=>{
+
+		let isGroupMember = await daoBase.isGroupMember('Employees', creator);
+		global.assert.equal(isGroupMember,true, 'Creator is ein the group');
 		let voting = await Voting_1p1v.new(daoBase.address, creator, creator, 60, "Employees", 51, 51, 17);
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
-		let EP = await voting.emptyParam();
-		console.log('quorumPercent:', quorumPercent.toNumber(), 'consensusPercent:', consensusPercent.toNumber(), 'emptyParam:', EP);
+		let groupName = await voting.groupName();
+		console.log('quorumPercent:', quorumPercent.toNumber(), 'consensusPercent:', consensusPercent.toNumber(), 'groupName:', groupName);
 	})
 
 	global.it('should allow to get donations using AAC (direct call)',async() => {
@@ -179,13 +180,13 @@ function decimalToHexString(number)
 
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
-		let EP = await voting.getEPasUint();
-		console.log('quorumPercent:', quorumPercent.toNumber(), 'consensusPercent:', consensusPercent.toNumber(), 'emptyParam:', EP.toNumber());
+		let groupName = await voting.groupName();
+		console.log('quorumPercent:', quorumPercent.toNumber(), 'consensusPercent:', consensusPercent.toNumber(), 'groupName:', groupName);
 
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee1});
+		await voting.vote(true,0,{from:employee2});
 
 		// check voting results again
 		const r2 = await voting.getFinalResults();
