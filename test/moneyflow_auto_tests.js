@@ -102,7 +102,7 @@ function decimalToHexString(number)
 		await daoBase.addGroupMember("Employees", employee2);
 
 		await daoBase.allowActionByAnyMemberOfGroup("addNewEmployee","Employees");
-		// await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 		await daoBase.allowActionByAddress("issueTokens", creator);
 		
 		await daoBase.allowActionByVoting("withdrawDonations", token.address);
@@ -212,6 +212,8 @@ function decimalToHexString(number)
 
 global.it('should allow to set root receiver using AAC (direct call)',async() => {
 		// check permissions (permissions must be blocked)
+		await daoBase.allowActionByAddress("modifyMoneyscheme", aacInstance.address);
+
 		const isCanDoAction = await daoBase.isCanDoAction(employee1, "setRootWeiReceiver");
 		global.assert.equal(isCanDoAction, false, 'Employee should not have permissions to run setRootWeiReceiver action');
 
@@ -273,6 +275,8 @@ global.it('should allow to set root receiver using AAC (direct call)',async() =>
 
 		let RE = await moneyflowInstance.getRevenueEndpoint();
 		global.assert.equal(RE, wae.address, 'RootWeiReceiver should be set');
+		console.log('aacInstance:', aacInstance.address, 'creator:', creator, 'employee1:', employee1)
+		global.assert.equal(true,false)
 	});
 
 
