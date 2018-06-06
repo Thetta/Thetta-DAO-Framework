@@ -90,6 +90,7 @@ global.contract('MoneyflowAuto', (accounts) => {
 		await daoBase.allowActionByAnyMemberOfGroup("addNewEmployee","Employees");
 		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 		await daoBase.allowActionByAddress("issueTokens", creator);
+		await daoBase.allowActionByVoting("withdrawDonations", token.address);
 
 		// AAC requires special permissions
 		await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);

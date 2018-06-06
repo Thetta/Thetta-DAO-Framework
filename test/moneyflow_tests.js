@@ -219,6 +219,7 @@ global.contract('Moneyflow', (accounts) => {
 		// manually setup the Default organization 
 		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
 		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("setRootWeiReceiver","Employees");
 
 		await daoBase.allowActionByAnyMemberOfGroup("openGate","Employees");
 		await daoBase.allowActionByAnyMemberOfGroup("closeGate","Employees");
