@@ -15,8 +15,6 @@ var IProposal = artifacts.require("./IProposal");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
-
-
 function KECCAK256 (x){
 	return web3.sha3(x);
 }
@@ -60,17 +58,6 @@ global.contract('MoneyflowAuto', (accounts) => {
 
 	let money = web3.toWei(0.001, "ether");
 
-
-function decimalToHexString(number)
-{
-    if (number < 0)
-    {
-        number = 0xFFFFFFFF + number + 1;
-    }
-
-    return number.toString(16).toUpperCase();
-}
-
 	global.beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
@@ -89,7 +76,6 @@ function decimalToHexString(number)
 		await aacInstance.setVotingParams("withdrawDonations", VOTING_TYPE_1P1V, (24 * 60), fromUtf8("Employees"), 51, 50, 17);
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, (24 * 60), fromUtf8("Employees"), 51, 50, 17);
 
-
 		// add creator as first employee	
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
@@ -104,8 +90,6 @@ function decimalToHexString(number)
 		await daoBase.allowActionByAnyMemberOfGroup("addNewEmployee","Employees");
 		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 		await daoBase.allowActionByAddress("issueTokens", creator);
-		
-		await daoBase.allowActionByVoting("withdrawDonations", token.address);
 
 		// AAC requires special permissions
 		await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
@@ -114,8 +98,6 @@ function decimalToHexString(number)
 		await daoBase.allowActionByAddress("addNewTask", aacInstance.address);
 		await daoBase.allowActionByAddress("setRootWeiReceiver", aacInstance.address);
 		await daoBase.allowActionByAddress("modifyMoneyscheme", aacInstance.address);
-		await daoBase.allowActionByAddress("modifyMoneyscheme", token.address);
-		
 	});
 
 	global.it('should create new voting', async()=>{
@@ -210,7 +192,7 @@ function decimalToHexString(number)
 		global.assert.equal(receiverDelta2, money, 'Donations should be withdrawn');
 	});
 
-global.it('should allow to set root receiver using AAC (direct call)',async() => {
+	global.it('should allow to set root receiver using AAC (direct call)',async() => {
 		// check permissions (permissions must be blocked)
 		await daoBase.allowActionByAddress("modifyMoneyscheme", aacInstance.address);
 
@@ -275,9 +257,5 @@ global.it('should allow to set root receiver using AAC (direct call)',async() =>
 
 		let RE = await moneyflowInstance.getRevenueEndpoint();
 		global.assert.equal(RE, wae.address, 'RootWeiReceiver should be set');
-		console.log('aacInstance:', aacInstance.address, 'creator:', creator, 'employee1:', employee1)
-		global.assert.equal(true,false)
 	});
-
-
 });

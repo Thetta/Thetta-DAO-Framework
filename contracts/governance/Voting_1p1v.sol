@@ -46,8 +46,6 @@ contract Voting_1p1v is IVoting, Ownable {
 		internalVote(_origin, true);
 	}
 
-
-
 	function bytes32ToUint(bytes32 data) internal pure returns (uint) {
 		return uint(uint16(data[0]) + uint16(data[1]));
 	}	
@@ -60,7 +58,6 @@ contract Voting_1p1v is IVoting, Ownable {
 
 	function isFinished()public constant returns(bool){
 		// 1 - if minutes elapsed
-
 		if((uint64(now) - genesis) >= (minutesToVote * 60 * 1000)){
 			return true;
 		}
