@@ -21,6 +21,14 @@ function KECCAK256 (x){
 
 var utf8 = require('utf8');
 
+function UintToToBytes32(n) {
+	n = Number(n).toString(16);
+	while (n.length < 64) {
+		n = "0" + n;
+	}
+	return "0x" + n;
+}
+
 function padToBytes32(n) {
 	while (n.length < 64) {
 		n = n + "0";
@@ -73,8 +81,8 @@ global.contract('MoneyflowAuto', (accounts) => {
 		const VOTING_TYPE_1P1V = 1;
 		const VOTING_TYPE_SIMPLE_TOKEN = 2;
 
-		await aacInstance.setVotingParams("withdrawDonations", VOTING_TYPE_1P1V, 0, fromUtf8("Employees"), 51, 50, 17);
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, 0, fromUtf8("Employees"), 51, 50, 17);
+		await aacInstance.setVotingParams("withdrawDonations", VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(51), UintToToBytes32(50), 0);
+		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(51), UintToToBytes32(50), 0);
 
 		// add creator as first employee	
 		await store.addGroupMember(KECCAK256("Employees"), creator);

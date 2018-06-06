@@ -46,15 +46,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		internalVote(_origin, true);
 	}
 
-	function bytes32ToUint(bytes32 data) internal pure returns (uint) {
-		return uint(uint16(data[0]) + uint16(data[1]));
-	}	
-
 	event Voting1p1v_IsFinished(uint _votersTotal, uint votesSum);
-
-	function getEPasUint()public constant returns(uint){
-		return bytes32ToUint(emptyParam);
-	}
 
 	function isFinished()public constant returns(bool){
 		// 1 - if minutes elapsed
