@@ -60,12 +60,12 @@ contract Voting_1p1v is IVoting, Ownable {
 			return true;
 		}
 
-		uint votersTotal = mc.getMembersCount(groupName);
-
 		uint yesResults = 0;
 		uint noResults = 0;
-		uint votesSum = 0;
-		(yesResults, noResults, votesSum) = getFinalResults();
+		uint votersTotal = 0;
+
+		(yesResults, noResults, votersTotal) = getFinalResults();
+		uint votesSum = yesResults + noResults;
 
 		emit Voting1p1v_IsFinished(votersTotal, votesSum);
 
@@ -80,8 +80,11 @@ contract Voting_1p1v is IVoting, Ownable {
 
 		uint yesResults = 0;
 		uint noResults = 0;
-		uint votesSum = 0;
-		(yesResults, noResults, votesSum) = getFinalResults();
+		uint votersTotal = 0;
+
+		(yesResults, noResults, votersTotal) = getFinalResults();
+		uint votesSum = yesResults + noResults;
+
 		return isFinished() && (yesResults * 100 >= (yesResults + noResults)*consensusPercent);
 	}
 
@@ -133,10 +136,10 @@ contract Voting_1p1v is IVoting, Ownable {
 		return votedCount;
 	}
 
-	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint votesSum){
+	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint votersTotal){
 		yesResults = filterResults(employeesVotedYes);
 		noResults = filterResults(employeesVotedNo);
-		votesSum = yesResults + noResults;
+		votersTotal = mc.getMembersCount(groupName);
 		return;
 	}
 }

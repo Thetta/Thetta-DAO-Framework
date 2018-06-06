@@ -188,7 +188,7 @@ global.contract('MoneyflowAuto', (accounts) => {
 		const r2 = await voting.getFinalResults();
 		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1].toNumber(),0,'no');
-		global.assert.equal(r2[2].toNumber(),2,'total');
+		
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 
@@ -260,7 +260,7 @@ global.contract('MoneyflowAuto', (accounts) => {
 		const r2 = await voting.getFinalResults();
 		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1].toNumber(),0,'no');
-		global.assert.equal(r2[2].toNumber(),2,'total');
+		
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 

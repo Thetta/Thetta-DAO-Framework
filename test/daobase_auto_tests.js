@@ -184,7 +184,6 @@ global.contract('DaoBaseAuto', (accounts) => {
 		const r1 = await voting.getFinalResults();
 		global.assert.equal(r1[0],1,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r1[1],0,'no');
-		global.assert.equal(r1[2],1,'total');
 
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
@@ -200,7 +199,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		const r2 = await voting.getFinalResults();
 		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1],0,'no');
-		global.assert.equal(r2[2],2,'total');
+		
 
 		// vote by employee 3
 		await voting.vote(true,0,{from:employee3});
@@ -258,7 +257,6 @@ global.contract('DaoBaseAuto', (accounts) => {
 		const r = await voting.getFinalResults();
 		global.assert.equal(r[0],1,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r[1],0,'no');
-		global.assert.equal(r[2],1,'total');
 		
 		const balance1 = await token.balanceOf(employee1);
 		global.assert.strictEqual(balance1.toNumber(),600,'initial employee1 balance');
@@ -269,7 +267,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		const r2 = await voting.getFinalResults();
 		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1],0,'no');
-		global.assert.equal(r2[2],2,'total');
+		
 		
 		// get voting results again
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting is finished now');
@@ -318,7 +316,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		const r2 = await voting.getFinalResults();
 		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1].toNumber(),0,'no');
-		global.assert.equal(r2[2].toNumber(),2,'total');
+		
 
 		// get voting results again
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
