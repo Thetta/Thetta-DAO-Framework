@@ -16,10 +16,8 @@ interface IDaoBase {
 	function removeGroupMember(string _groupName, address _a) public;
 	
 	function getMembersCount(string _groupName) public constant returns(uint);
-	function getMembersCountByHash(bytes32 _groupHash) public constant returns(uint);
 	
 	function isGroupMember(string _groupName,address _a)public constant returns(bool);
-	function isGroupMemberByHash(bytes32 _groupNameHash,address _a)public constant returns(bool);
 
 // Permissions
 	function allowActionByShareholder(string _what, address _tokenAddress) public;

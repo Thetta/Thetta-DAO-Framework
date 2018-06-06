@@ -35,6 +35,7 @@ global.contract('Scheme', (accounts) => {
 		// add creator as first employee	
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
+		await store.allowActionByAddress(KECCAK256("setRootWeiReceiver"),creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);

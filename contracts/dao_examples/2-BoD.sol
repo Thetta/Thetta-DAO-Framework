@@ -77,14 +77,14 @@ contract DaoWithBoD_Factory {
 	// with OutOfGas...That's why i moved AutoDaoBaseActionCaller creation outside of this contract
 	function setupAac(AutoDaoBaseActionCaller _aac) public {
 		uint VOTING_TYPE_1P1V = 1;
-		_aac.setVotingParams("manageGroups", VOTING_TYPE_1P1V, (24 * 60), keccak256("BoD"), 0);
-		_aac.setVotingParams("addNewTask", VOTING_TYPE_1P1V, (24 * 60), keccak256("BoD"), 0);
-		_aac.setVotingParams("modifyMoneyscheme", VOTING_TYPE_1P1V, (24 * 60), keccak256("BoD"), 0);
-		_aac.setVotingParams("issueTokens", VOTING_TYPE_1P1V, (24 * 60), keccak256("BoD"), 0);
-		_aac.setVotingParams("upgradeDaoContract", VOTING_TYPE_1P1V, (24 * 60), keccak256("BoD"), 0);
-		_aac.setVotingParams("withdrawDonations", VOTING_TYPE_1P1V, (24 * 60), keccak256("BoD"), 0);
-		_aac.setVotingParams("flushReserveFundTo", VOTING_TYPE_1P1V, (24 * 60), keccak256("BoD"), 0);
-		_aac.setVotingParams("flushDividendsFundTo", VOTING_TYPE_1P1V, (24 * 60), keccak256("BoD"), 0);
+		_aac.setVotingParams("manageGroups", VOTING_TYPE_1P1V, (24 * 60), "BoD", 50, 50, 0);
+		_aac.setVotingParams("addNewTask", VOTING_TYPE_1P1V, (24 * 60), "BoD", 50, 50, 0);
+		_aac.setVotingParams("modifyMoneyscheme", VOTING_TYPE_1P1V, (24 * 60), "BoD", 50, 50, 0);
+		_aac.setVotingParams("issueTokens", VOTING_TYPE_1P1V, (24 * 60), "BoD", 50, 50, 0);
+		_aac.setVotingParams("upgradeDaoContract", VOTING_TYPE_1P1V, (24 * 60), "BoD", 50, 50, 0);
+		_aac.setVotingParams("withdrawDonations", VOTING_TYPE_1P1V, (24 * 60), "BoD", 50, 50, 0);
+		_aac.setVotingParams("flushReserveFundTo", VOTING_TYPE_1P1V, (24 * 60), "BoD", 50, 50, 0);
+		_aac.setVotingParams("flushDividendsFundTo", VOTING_TYPE_1P1V, (24 * 60), "BoD", 50, 50, 0);
 
 		daoBase.allowActionByAddress("manageGroups", _aac);
 		daoBase.allowActionByAddress("addNewProposal", _aac);

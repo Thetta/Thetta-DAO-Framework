@@ -62,9 +62,6 @@ contract DaoBase is IDaoBase, Ownable {
 	function getMembersCount(string _groupName) public constant returns(uint){
 		return store.getMembersCount(keccak256(_groupName));
 	}
-	function getMembersCountByHash(bytes32 _groupHash) public constant returns(uint){
-		return store.getMembersCount(_groupHash);
-	}
 	function addGroupMember(string _groupName, address _a) public isCanDo("manageGroups") {
 		store.addGroupMember(keccak256(_groupName), _a);
 	}
@@ -76,9 +73,6 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 	function isGroupMember(string _groupName,address _a)public constant returns(bool) {
 		return store.isGroupMember(keccak256(_groupName), _a);
-	}
-	function isGroupMemberByHash(bytes32 _groupNameHash,address _a)public constant returns(bool){
-		return store.isGroupMember(_groupNameHash, _a);
 	}
 
 // Actions:
@@ -96,10 +90,8 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 	function isCanDoAction(address _a, string _permissionName) public constant returns(bool){
-		return isCanDoActionByHash(_a, keccak256(_permissionName));
-	}
+		bytes32 _permissionNameHash = keccak256(_permissionName);
 
-	function isCanDoActionByHash(address _a, bytes32 _permissionNameHash)public constant returns(bool){
 		// 0 - is can do by address?
 		if(store.isCanDoByAddress(_permissionNameHash, _a)){
 			return true;
@@ -172,8 +164,18 @@ contract DaoBase is IDaoBase, Ownable {
 		revert();
 	}
 
-	function burnTokens(address _tokenAddress, address _who, uint amount)public {
-		// TODO:
+	function burnTokens(address _tokenAddress, address _who, uint _amount)public isCanDo("burnTokens"){
+		for(uint i=0; i<store.getAllTokenAddresses().length; ++i){
+			if(store.getAllTokenAddresses()[i]==_tokenAddress){
+				// WARNING:
+				// token ownership should be transferred to the current DaoBase to do that!!!
+				store.getAllTokenAddresses()[i].burn(_who, _amount);
+				return;
+			}
+		}
+
+		// if not found!
+		revert();
 	}
 }
 
