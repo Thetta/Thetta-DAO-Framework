@@ -58,8 +58,8 @@ contract Voting_1p1v is IVoting, Ownable {
 
 	function isFinished()public constant returns(bool){
 		// 1 - if minutes elapsed
-		if((uint64(now) - genesis) >= (minutesToVote * 60 * 1000)){
-			return true;
+		if((uint64(now) - genesis) < (minutesToVote * 60 * 1000)){
+			return false;
 		}
 	   
 		if(finishedWithYes){

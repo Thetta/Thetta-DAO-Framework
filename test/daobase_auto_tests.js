@@ -68,8 +68,8 @@ global.contract('DaoBaseAuto', (accounts) => {
 		const VOTING_TYPE_1P1V = 1;
 		const VOTING_TYPE_SIMPLE_TOKEN = 2;
 
-		await aacInstance.setVotingParams("issueTokens", VOTING_TYPE_1P1V, (24 * 60), fromUtf8("Employees"), 51, 51, 0);
-		await aacInstance.setVotingParams("upgradeDaoContract", VOTING_TYPE_1P1V, (24 * 60), fromUtf8("Employees"), 51, 51, 0);
+		await aacInstance.setVotingParams("issueTokens", VOTING_TYPE_1P1V, 0, fromUtf8("Employees"), 51, 51, 0);
+		await aacInstance.setVotingParams("upgradeDaoContract", VOTING_TYPE_1P1V, 0, fromUtf8("Employees"), 51, 51, 0);
 
 
 		// add creator as first employee	

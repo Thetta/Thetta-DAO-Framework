@@ -73,8 +73,8 @@ global.contract('MoneyflowAuto', (accounts) => {
 		const VOTING_TYPE_1P1V = 1;
 		const VOTING_TYPE_SIMPLE_TOKEN = 2;
 
-		await aacInstance.setVotingParams("withdrawDonations", VOTING_TYPE_1P1V, (24 * 60), fromUtf8("Employees"), 51, 50, 17);
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, (24 * 60), fromUtf8("Employees"), 51, 50, 17);
+		await aacInstance.setVotingParams("withdrawDonations", VOTING_TYPE_1P1V, 0, fromUtf8("Employees"), 51, 50, 17);
+		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, 0, fromUtf8("Employees"), 51, 50, 17);
 
 		// add creator as first employee	
 		await store.addGroupMember(KECCAK256("Employees"), creator);
@@ -104,7 +104,7 @@ global.contract('MoneyflowAuto', (accounts) => {
 	global.it('should create new voting', async()=>{
 		let isGroupMember = await daoBase.isGroupMember('Employees', creator);
 		global.assert.equal(isGroupMember,true, 'Creator is ein the group');
-		let voting = await Voting_1p1v.new(daoBase.address, creator, creator, 60, "Employees", 51, 51, 17);
+		let voting = await Voting_1p1v.new(daoBase.address, creator, creator, 0, "Employees", 51, 51, 17);
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
 		let groupName = await voting.groupName();

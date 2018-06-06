@@ -75,7 +75,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		const VOTING_TYPE_1P1V = 1;
 		const VOTING_TYPE_SIMPLE_TOKEN = 2;
 
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, (24 * 60), fromUtf8("Employees"), 100, 100, 0);
+		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, 0, fromUtf8("Employees"), 100, 100, 0);
 
 		// add creator as first employee	
 		await store.addGroupMember(KECCAK256("Employees"), creator);
@@ -101,12 +101,12 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 	global.it('should create new voting', async()=>{
 		let isGroupMember = await daoBase.isGroupMember('Employees', creator);
 		global.assert.equal(isGroupMember,true, 'Creator is ein the group');
-		let voting = await Voting_1p1v.new(daoBase.address, creator, creator, 60, "Employees", 51, 51, 17);
+		let voting = await Voting_1p1v.new(daoBase.address, creator, creator, 60, "Employees", 51, 71, 0);
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
 		let groupName = await voting.groupName();
 		global.assert.equal(quorumPercent.toNumber(), 51, 'quorumPercent should be 51'); 
-		global.assert.equal(consensusPercent.toNumber(), 51, 'consensusPercent should be 51'); 
+		global.assert.equal(consensusPercent.toNumber(), 71, 'consensusPercent should be 51'); 
 		global.assert.equal(groupName, "Employees", 'groupName should be Employees'); 
 	})
 
@@ -150,8 +150,5 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.equal(r2[2].toNumber(),2,'total');
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
-
-		let RE = await moneyflowInstance.getRevenueEndpoint();
-		global.assert.equal(RE, wae.address, 'RootWeiReceiver should be set');
 	});
 });
