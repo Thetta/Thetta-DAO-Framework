@@ -106,7 +106,7 @@ global.contract('Voting_1p1v', (accounts) => {
 		var r2 = await voting.getFinalResults();
 		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1].toNumber(),0,'no');
-		
+		global.assert.equal(r2[2].toNumber(),6,'creator + 5 employee');
 
 		await daoBase.removeGroupMember("Employees", employee1);
 		// remove 2nd employee from the group 
@@ -114,6 +114,7 @@ global.contract('Voting_1p1v', (accounts) => {
 		var r2 = await voting.getFinalResults();
 		global.assert.equal(r2[0].toNumber(),1,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1].toNumber(),0,'no');
+		global.assert.equal(r2[2].toNumber(),5,'creator + 4 employee');
 		
 		
 		await voting.vote(true,0,{from:employee2});
