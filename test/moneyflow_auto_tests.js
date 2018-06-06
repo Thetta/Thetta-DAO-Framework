@@ -87,6 +87,7 @@ function decimalToHexString(number)
 		const VOTING_TYPE_SIMPLE_TOKEN = 2;
 
 		await aacInstance.setVotingParams("withdrawDonations", VOTING_TYPE_1P1V, (24 * 60), fromUtf8("Employees"), 51, 50, 17);
+		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, (24 * 60), fromUtf8("Employees"), 51, 50, 17);
 
 
 		// add creator as first employee	
@@ -101,7 +102,7 @@ function decimalToHexString(number)
 		await daoBase.addGroupMember("Employees", employee2);
 
 		await daoBase.allowActionByAnyMemberOfGroup("addNewEmployee","Employees");
-		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
+		// await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 		await daoBase.allowActionByAddress("issueTokens", creator);
 		
 		await daoBase.allowActionByVoting("withdrawDonations", token.address);
@@ -113,18 +114,20 @@ function decimalToHexString(number)
 		await daoBase.allowActionByAddress("addNewTask", aacInstance.address);
 		await daoBase.allowActionByAddress("setRootWeiReceiver", aacInstance.address);
 		await daoBase.allowActionByAddress("modifyMoneyscheme", aacInstance.address);
+		await daoBase.allowActionByAddress("modifyMoneyscheme", token.address);
 		
 	});
 
 	global.it('should create new voting', async()=>{
-
 		let isGroupMember = await daoBase.isGroupMember('Employees', creator);
 		global.assert.equal(isGroupMember,true, 'Creator is ein the group');
 		let voting = await Voting_1p1v.new(daoBase.address, creator, creator, 60, "Employees", 51, 51, 17);
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
 		let groupName = await voting.groupName();
-		console.log('quorumPercent:', quorumPercent.toNumber(), 'consensusPercent:', consensusPercent.toNumber(), 'groupName:', groupName);
+		global.assert.equal(quorumPercent.toNumber(), 51, 'quorumPercent should be 51'); 
+		global.assert.equal(consensusPercent.toNumber(), 51, 'consensusPercent should be 51'); 
+		global.assert.equal(groupName, "Employees", 'groupName should be Employees'); 
 	})
 
 	global.it('should allow to get donations using AAC (direct call)',async() => {
@@ -228,7 +231,7 @@ global.it('should allow to set root receiver using AAC (direct call)',async() =>
 		global.assert.equal(proposalsCount, 0, 'No proposals should be added');
 
 		let RE = await moneyflowInstance.getRevenueEndpoint();
-		console.log('RE:', RE, 'wae.address:', wae.address, 'RootWeiReceiver should be set');
+		global.assert.equal(RE, wae.address, 'RootWeiReceiver should be set');
 	});
 
 	global.it('should allow to set root receiver using AAC (with voting)',async() => {
@@ -236,7 +239,7 @@ global.it('should allow to set root receiver using AAC (direct call)',async() =>
 		const isCanDoAction = await daoBase.isCanDoAction(employee1, "setRootWeiReceiver");
 		global.assert.equal(isCanDoAction, false, 'Employee should not have permission to run setRootWeiReceiver action');
 
-		// await daoBase.allowActionByVoting("setRootWeiReceiver", token.address);
+		await daoBase.allowActionByVoting("setRootWeiReceiver", token.address);
 
 		// check proposals (must be empty)
 		const proposalsCount = await daoBase.getProposalsCount();
@@ -247,11 +250,7 @@ global.it('should allow to set root receiver using AAC (direct call)',async() =>
 		// checking action with voting required
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
-		let RE = await moneyflowInstance.getRevenueEndpoint();
-		global.assert.equal(RE, wae.address, 'RootWeiReceiver should be set');
-
 		const proposalsCount2 = await daoBase.getProposalsCount();
-		
 
 		global.assert.equal(proposalsCount2.toNumber(), 1, 'One new proposal should be added');
 
@@ -271,6 +270,10 @@ global.it('should allow to set root receiver using AAC (direct call)',async() =>
 		global.assert.equal(r2[2].toNumber(),2,'total');
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+
+		let RE = await moneyflowInstance.getRevenueEndpoint();
+		global.assert.equal(RE, wae.address, 'RootWeiReceiver should be set');
 	});
+
 
 });
