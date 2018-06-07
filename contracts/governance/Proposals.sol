@@ -23,6 +23,7 @@ contract GenericProposal is IProposal, Ownable {
 		target = _target;
 		params = _params;
 		methodSig = _methodSig;
+		// TODO: _origin - how it uses?
 	}
 
 	event GenericProposal_Action(IVoting _voting);

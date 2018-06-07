@@ -26,7 +26,7 @@ contract WeiFund is WeiRelativeExpense {
 	// Process funds, send it to the Output
 	function flushTo(address _to) public onlyOwner {
 		require(allowFlushTo);		// this operation can be prohibited
-		_to.transfer(this.balance);
+		_to.transfer(address(this).balance);
 	}
 
 	// Process funds, send it to the Output
@@ -35,7 +35,7 @@ contract WeiFund is WeiRelativeExpense {
 
 		// TODO: check for vulnerabilities
 		isMoneyReceived = false;
-		output.transfer(this.balance);
+		output.transfer(address(this).balance);
 	}
 
 	function isNeedsMoney()constant public returns(bool){

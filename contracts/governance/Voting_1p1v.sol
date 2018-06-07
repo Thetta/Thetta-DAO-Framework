@@ -51,9 +51,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		internalVote(_origin, true);
 	}
 
-	event Voting1p1v_IsFinished(uint _votersTotal, uint votesSum);
-
-	function isFinished()public constant returns(bool){
+	function isFinished()public view returns(bool){
 		// 1 - if minutes elapsed
 		if(minutesToVote>0){
 			if((uint64(now) - genesis) < (minutesToVote * 60 * 1000)){
@@ -74,13 +72,13 @@ contract Voting_1p1v is IVoting, Ownable {
 		(yesResults, noResults, votersTotal) = getFinalResults();
 		uint votesSum = yesResults + noResults;
 
-		emit Voting1p1v_IsFinished(votersTotal, votesSum);
+		
 
 		// if enough participants voted
 		return ((votesSum * 100) >= votersTotal * quorumPercent);
 	}
 
-	function isYes()public constant returns(bool){
+	function isYes()public view returns(bool){
 		if(true==finishedWithYes){
 			return true;
 		}
@@ -100,9 +98,22 @@ contract Voting_1p1v is IVoting, Ownable {
 	function cancelVoting() public onlyOwner {
 		// TODO:
 	}
+
+	event Voting1p1v_vote(uint _votersTotal, uint votesSum);
 	
 	function vote(bool _yes, uint _tokenAmount) public {
 		require(!isFinished());
+		// uint _tokenAmount is for interface
+
+		uint yesResults = 0;
+		uint noResults = 0;
+		uint votersTotal = 0;
+
+
+		(yesResults, noResults, votersTotal) = getFinalResults();
+		uint votesSum = yesResults + noResults;
+
+		emit Voting1p1v_vote(votersTotal, votesSum);
 
 		internalVote(msg.sender, _yes);
 	}

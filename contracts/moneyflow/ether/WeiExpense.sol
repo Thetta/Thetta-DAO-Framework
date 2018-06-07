@@ -114,7 +114,7 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	}
 
 	function flush()public onlyOwner{
-		owner.transfer(this.balance);
+		owner.transfer(address(this).balance);
 	}
 
 	function flushTo(address _to) public onlyOwner {

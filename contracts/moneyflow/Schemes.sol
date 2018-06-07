@@ -85,7 +85,7 @@ contract DefaultMoneyflowScheme is DaoClient {
 
 ////////////////////////////////////////////////////////////////
 	// use MoneyflowAuto to add new task with voting! 
-	function addNewTask(IWeiReceiver _wr) public isCanDo("addNewTask") {
+	/*function addNewTask(IWeiReceiver _wr) public isCanDo("addNewTask") {
 		// 1 - add new task immediately
 		//tasks.addChild(_wr);
 	}
@@ -127,12 +127,12 @@ contract DefaultMoneyflowScheme is DaoClient {
 	// TODO: Currently dividens fund is just another type of Reserve fund (because DividendFund is not implemented yet) 
 	function flushDividendsFundTo(address _to) public isCanDo("flushDividendsFundTo"){
 		// TODO:
-	}
+	}*/
 }
 
 // TODO:
 contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
-	function DefaultMoneyflowSchemeWithUnpackers(
+	/*function DefaultMoneyflowSchemeWithUnpackers(
 			IDaoBase _dao, 
 			address _fundOutput, 
 			uint _percentsReserve, 
@@ -145,7 +145,7 @@ contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
 	function addNewTaskGeneric(bytes32[] _params) public {
 		IWeiReceiver _iwr = IWeiReceiver(address(_params[0]));
 		addNewTask(_iwr);
-	}
+	}*/
 
 	// TODO: add unpackers for all methods of the Scheme
 }

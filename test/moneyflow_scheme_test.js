@@ -11,7 +11,7 @@ function KECCAK256 (x){
 	return web3.sha3(x);
 }
 
-global.contract('Scheme', (accounts) => {
+/*global.contract('Scheme', (accounts) => {
 	let token;
 	let store;
 	let daoBase;
@@ -66,3 +66,4 @@ global.contract('Scheme', (accounts) => {
 	});
 
 });
+*/

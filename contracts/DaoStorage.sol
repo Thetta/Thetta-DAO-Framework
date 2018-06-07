@@ -53,7 +53,7 @@ contract DaoStorageGroups is Ownable {
 		removeGroupFromMemberGroups(_groupHash, _member);
 	}
 
-	function getIndexOfAddress(address _item, address[] array) internal returns(uint){
+	function getIndexOfAddress(address _item, address[] array) internal pure returns(uint){
 		for(uint j=0; j<array.length; ++j){
 			if(array[j]==_item){
 				return j;
@@ -79,7 +79,7 @@ contract DaoStorageGroups is Ownable {
 		groupToAddresses[_groupHash] = parts;
 	}
 
-	function getIndexOfBytes32(bytes32 _item, bytes32[] array) internal returns(uint){
+	function getIndexOfBytes32(bytes32 _item, bytes32[] array) internal pure returns(uint){
 		for(uint j=0; j<array.length; ++j){
 			if(array[j]==_item){
 				return j;
@@ -146,11 +146,11 @@ contract DaoStorage is DaoStorageGroups {
 		observers.push(_observer);
 	}
 
-	function getObserverCount() constant returns(uint){
+	function getObserverCount() external view returns(uint){
 		return observers.length;
 	}
 
-	function getObserverAtIndex(uint _index) constant returns(address){
+	function getObserverAtIndex(uint _index) external view returns(address){
 		return observers[_index];
 	}
 
