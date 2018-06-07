@@ -6,8 +6,6 @@ var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 // to check how upgrade works with IDaoBase clients
 var MoneyFlow = artifacts.require("./MoneyFlow");
 var IWeiReceiver = artifacts.require("./IWeiReceiver");
-
-var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
 
 var CheckExceptions = require('./utils/checkexceptions');

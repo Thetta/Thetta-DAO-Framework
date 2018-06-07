@@ -8,8 +8,6 @@ var IWeiReceiver = artifacts.require("./IWeiReceiver");
 var WeiAbsoluteExpense = artifacts.require("./WeiAbsoluteExpense");
 
 var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
-
-var Voting = artifacts.require("./Voting");
 var Voting_1p1v = artifacts.require("./Voting_1p1v");
 var IProposal = artifacts.require("./IProposal");
 

@@ -9,7 +9,7 @@ var WeiAbsoluteExpense = artifacts.require("./WeiAbsoluteExpense");
 
 var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 
-var Voting = artifacts.require("./Voting");
+// var Voting = artifacts.require("./Voting");
 var Voting_1p1v = artifacts.require("./Voting_1p1v");
 var IProposal = artifacts.require("./IProposal");
 
@@ -450,7 +450,6 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is  finished');
-
 	})
 
 	global.it('1.10. T Scenario: no no no yes yes, params(100,20) => isYes==true',async() => {
