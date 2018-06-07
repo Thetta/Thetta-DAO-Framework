@@ -112,7 +112,7 @@ contract Voting_1p1v is IVoting, Ownable {
 	function vote(bool _yes, uint _tokenAmount) external {
 		require(!_isFinished());
 		
-		if(_tokenAmount){
+		if(_tokenAmount!=0){
 			revert();
 		}
 

@@ -214,7 +214,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
  * @dev Can be prepaid or postpaid. 
 */
 contract WeiTask is WeiGenericTask {
-	function WeiTask(IDaoBase _dao, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime) public 
+	constructor(IDaoBase _dao, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime) public 
 		WeiGenericTask(_dao, _caption, _desc, _isPostpaid, _isDonation, _neededWei, _deadlineTime) 
 	{
 	}
