@@ -107,18 +107,6 @@ global.contract('MoneyflowAuto', (accounts) => {
 		await daoBase.allowActionByAddress("modifyMoneyscheme", aacInstance.address);
 	});
 
-	global.it('should create new voting', async()=>{
-		let isGroupMember = await daoBase.isGroupMember('Employees', creator);
-		global.assert.equal(isGroupMember,true, 'Creator is ein the group');
-		let voting = await Voting_1p1v.new(daoBase.address, creator, creator, 0, "Employees", 51, 51, 17);
-		let quorumPercent = await voting.quorumPercent();
-		let consensusPercent = await voting.consensusPercent();
-		let groupName = await voting.groupName();
-		global.assert.equal(quorumPercent.toNumber(), 51, 'quorumPercent should be 51'); 
-		global.assert.equal(consensusPercent.toNumber(), 51, 'consensusPercent should be 51'); 
-		global.assert.equal(groupName, "Employees", 'groupName should be Employees'); 
-	})
-
 	global.it('should allow to get donations using AAC (direct call)',async() => {
 		// check permissions
 		const isCanWithdraw = await daoBase.isCanDoAction(creator,"withdrawDonations");
@@ -248,7 +236,7 @@ global.contract('MoneyflowAuto', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting.at(votingAddress);
+		const voting = await Voting_1p1v.at(votingAddress);
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
