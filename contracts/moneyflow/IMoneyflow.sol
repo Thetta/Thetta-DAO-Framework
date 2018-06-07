@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.22;
 
 // this contract should keep all money until flush is called
 interface IDestination {

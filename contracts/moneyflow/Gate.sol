@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.22;
 
 import "./IMoneyflow.sol";
 
@@ -12,11 +12,11 @@ contract Gate is Ownable, IWeiReceiver{
 	// Simple Gate is open permanenlty; open/close implementation is for child;
 	bool opened = true;
 	IWeiReceiver child;
-	IDaoBase mc;
+	IDaoBase dao;
 
-	function Gate(IDaoBase _mc, address _child) public{
+	function Gate(IDaoBase _dao, address _child) public{
 		child = IWeiReceiver(_child);
-		mc = _mc;
+		dao = _dao;
 	}
 
 	function getPercentsMul100()constant public returns(uint){

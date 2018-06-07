@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.22;
 
 import "./IDaoBase.sol";
 
@@ -6,7 +6,7 @@ import "zeppelin-solidity/contracts/ECRecovery.sol";
 
 // TODO: convert to library?
 contract ImpersonationCaller is DaoClient {
-	constructor(IDaoBase _db) public DaoClient(_db) {
+	constructor(IDaoBase _dao) public DaoClient(_dao) {
 
 	}
 
@@ -22,10 +22,10 @@ contract ImpersonationCaller is DaoClient {
 		address client = ECRecovery.recover(_hash, _sig);
 
 		// 2 - should be allowed to call action by a client
-		require(mc.isCanDoAction(client, _action));
+		require(dao.isCanDoAction(client, _action));
 		
 		// 3 - call 
-		mc.call(
+		dao.call(
 			bytes4(keccak256(_methodSig)),
 			uint256(32),						 // pointer to the length of the array
 			uint256(_params.length),		 // length of the array
@@ -36,8 +36,8 @@ contract ImpersonationCaller is DaoClient {
 
 // TODO: convert to library?
 contract DaoBaseImpersonated is ImpersonationCaller {
-	constructor(IDaoBase _mc)public 
-		ImpersonationCaller(_mc)
+	constructor(IDaoBase _dao)public 
+		ImpersonationCaller(_dao)
 	{
 	}
 

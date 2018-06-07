@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.22;
 
 import "./IMoneyflow.sol";
 
@@ -10,15 +10,14 @@ import "../utils/GenericCaller.sol";
 contract MoneyflowAuto is GenericCaller {
 	IMoneyflow mf;
 
-	constructor(IDaoBase _mc, IMoneyflow _mf)public 
-		GenericCaller(_mc)	
+	constructor(IDaoBase _dao, IMoneyflow _mf)public 
+		GenericCaller(_dao)	
 	{
 		mf = _mf;
 	}
 
 	/*
 	// this is moved to Scheme!
-
 	function addNewTaskAuto(WeiAbsoluteExpense _wt) public returns(address voteOut){
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(address(_wt));

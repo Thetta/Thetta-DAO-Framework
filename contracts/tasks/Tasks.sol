@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.22;
 
 import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
@@ -21,7 +21,9 @@ import '../IDaoBase.sol';
 //		has 'setNeededWei(uint _neededWei)' 
 // 
 contract GenericTask is WeiAbsoluteExpense {
-	IDaoBase mc;
+	// use DaoClient instead?
+	// (it will handle upgrades)
+	IDaoBase dao;
 	address employee = 0x0;		// who should complete this task and report on completion
 										// this will be set later
 	address output = 0x0;		// where to send money (can be split later)
@@ -63,19 +65,19 @@ contract GenericTask is WeiAbsoluteExpense {
 
 	/*
 	modifier onlyAnyEmployeeOrOwner() { 
-		require(mc.isEmployee(msg.sender) || msg.sender==owner); 
+		require(dao.isEmployee(msg.sender) || msg.sender==owner); 
 		_; 
 	}
    */
 
    modifier isCanDo(string _what){
-		require(mc.isCanDoAction(msg.sender,_what)); 
+		require(dao.isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
 
 	// if _neededWei==0 -> this is an 'Unknown cost' situation. use 'setNeededWei' method of WeiAbsoluteExpense
 	function GenericTask(
-		IDaoBase _mc, 
+		IDaoBase _dao, 
 		string _caption, 
 		string _desc, 
 		bool _isPostpaid, 
@@ -92,7 +94,7 @@ contract GenericTask is WeiAbsoluteExpense {
 			require(_neededWei>0);
 		}
 
-		mc = _mc;
+		dao = _dao;
 		caption = _caption;
 		desc = _desc;
 		isPostpaid = _isPostpaid;
@@ -201,8 +203,8 @@ contract GenericTask is WeiAbsoluteExpense {
 }
 
 contract WeiTask is GenericTask {
-	function WeiTask(IDaoBase _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime) public 
-		GenericTask(_mc, _caption, _desc, _isPostpaid, _isDonation, _neededWei, _deadlineTime) 
+	function WeiTask(IDaoBase _dao, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime) public 
+		GenericTask(_dao, _caption, _desc, _isPostpaid, _isDonation, _neededWei, _deadlineTime) 
 	{
 	}
 
@@ -222,8 +224,8 @@ contract WeiTask is GenericTask {
 
 // Bounty is always prepaid 
 contract WeiBounty is GenericTask {
-	function WeiBounty(IDaoBase _mc, string _caption, string _desc, uint _neededWei, uint64 _deadlineTime) public 
-		GenericTask(_mc, _caption, _desc, false, false, _neededWei, _deadlineTime) 
+	function WeiBounty(IDaoBase _dao, string _caption, string _desc, uint _neededWei, uint64 _deadlineTime) public 
+		GenericTask(_dao, _caption, _desc, false, false, _neededWei, _deadlineTime) 
 	{
 	}
 

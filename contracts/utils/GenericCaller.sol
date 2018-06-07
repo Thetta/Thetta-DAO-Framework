@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.22;
 
 import "../IDaoBase.sol";
 
@@ -33,10 +33,10 @@ contract GenericCaller is DaoClient, Ownable {
 	event GenericCaller_CreateNewProposal(string permission);
 
 /////
-	constructor(IDaoBase _mc)public
+	constructor(IDaoBase _dao)public
 		// DaoClient (for example) helps us to handle DaoBase upgrades
-		// and will automatically update the 'mc' to the new instance
-		DaoClient(_mc)	
+		// and will automatically update the 'dao' to the new instance
+		DaoClient(_dao)	
 	{
 	}
 
@@ -44,7 +44,7 @@ contract GenericCaller is DaoClient, Ownable {
 	// _methodSig some kind of "issueTokens(bytes32[])"
 	function doAction(string _permissionId, address _target, address _origin, string _methodSig, bytes32[] _params) public returns(address proposalOut) 
 	{
-		if(mc.isCanDoAction(msg.sender, _permissionId)){
+		if(dao.isCanDoAction(msg.sender, _permissionId)){
 			emit GenericCaller_DoActionDirectly(_permissionId);
 
 			// 1 - call immediately?
@@ -80,7 +80,7 @@ contract GenericCaller is DaoClient, Ownable {
 
 			// WARNING: should be permitted to add new proposal by the current contract address!!!
 			// check your permissions or see examples (tests) how to do that correctly
-			mc.addNewProposal(prop);		
+			dao.addNewProposal(prop);		
 			return prop;
 		}
 	}
@@ -103,7 +103,7 @@ contract GenericCaller is DaoClient, Ownable {
 		VotingParams memory vp = votingParams[keccak256(_permissionId)];
 
 		if(VotingType.Voting1p1v==vp.votingType){
-			return new Voting_1p1v(mc, _proposal, _origin, 
+			return new Voting_1p1v(dao, _proposal, _origin, 
 										  uint(vp.param1), 
 										  bytes32ToString(vp.param2), 
 										  uint(vp.param3), 
@@ -114,7 +114,7 @@ contract GenericCaller is DaoClient, Ownable {
 		/*
 		if(VotingType.VotingSimpleToken==vp.votingType){
 			// TODO: test
-			return new Voting_SimpleToken(mc, _proposal, _origin, uint(vp.param1), address(vp.param2), vp.param3);
+			return new Voting_SimpleToken(dao, _proposal, _origin, uint(vp.param1), address(vp.param2), vp.param3);
 		}
 		*/
 

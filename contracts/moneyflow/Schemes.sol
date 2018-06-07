@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.22;
 
 import "./IMoneyflow.sol";
 
@@ -10,7 +10,7 @@ import "../governance/Voting.sol";
 
 import "../IDaoBase.sol";
 
-// This contract should be used to automatically instantiate Default scheme for a microcompany.
+// This contract should be used to automatically instantiate Default moneyscheme for a DAO.
 // Use it as example. You can setup your own moneyflow.  
 // THIS IS A WORKING example!
 //
@@ -40,9 +40,9 @@ contract DefaultMoneyflowScheme is DaoClient {
 	WeiFund dividendsFund;
 
 /////
-	function DefaultMoneyflowScheme(IDaoBase _mc, address _fundOutput, 
+	function DefaultMoneyflowScheme(IDaoBase _dao, address _fundOutput, 
 											  uint _percentsReserve, uint _dividendsReserve) public 
-		DaoClient(_mc)											  
+		DaoClient(_dao)											  
 	{
 		require(0x0!=_fundOutput);
 
@@ -96,7 +96,7 @@ contract DefaultMoneyflowScheme is DaoClient {
 
 		// 0 - check if _employee is employee 
 		// TODO: WARNING!!!!!!!! Hard-coded type
-		require(mc.isGroupMember("Employees", _employee));
+		require(dao.isGroupMember("Employees", _employee));
 
 		// 1 - employee already added? 
 
@@ -129,11 +129,11 @@ contract DefaultMoneyflowScheme is DaoClient {
 
 contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
 	function DefaultMoneyflowSchemeWithUnpackers(
-			IDaoBase _mc, 
+			IDaoBase _dao, 
 			address _fundOutput, 
 			uint _percentsReserve, 
 			uint _dividendsReserve) public 
-		DefaultMoneyflowScheme(_mc,_fundOutput,_percentsReserve,_dividendsReserve)
+		DefaultMoneyflowScheme(_dao,_fundOutput,_percentsReserve,_dividendsReserve)
 	{
 
 	}

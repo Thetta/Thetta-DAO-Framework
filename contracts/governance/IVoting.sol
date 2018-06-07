@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.22;
 
 // The voice input is binary (yes or no only)
 // The result is binary (yes or no only)

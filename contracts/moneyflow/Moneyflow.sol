@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.22;
 import "./IMoneyflow.sol";
 
 import "./ether/WeiFund.sol";
@@ -32,8 +32,8 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	FallbackToWeiReceiver donationF2WR;
 	FallbackToWeiReceiver revenueF2WR;
 
-	constructor(IDaoBase _mc) public
-		DaoClient(_mc)
+	constructor(IDaoBase _dao) public
+		DaoClient(_dao)
 	{
 		// do not set output!
 		donationEndpoint = new WeiFund(0x0, true, 10000);
