@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.22;
 
 import './governance/IProposal.sol';
 
@@ -41,27 +41,27 @@ interface IDaoBase {
 
 // Just an easy-to-use wrapper
 contract DaoClient is IDaoObserver {
-	IDaoBase mc;
+	IDaoBase dao;
 
    modifier isCanDo(string _what){
-		require(mc.isCanDoAction(msg.sender, _what)); 
+		require(dao.isCanDoAction(msg.sender, _what)); 
 		_; 
 	}
 
-	constructor(IDaoBase _mc) public {
-		mc = _mc;
-		mc.addObserver(this);
+	constructor(IDaoBase _dao) public {
+		dao = _dao;
+		dao.addObserver(this);
 	}
 
-	// If your company is upgraded -> then this will automatically update the current mc.
-	// mc will point at NEW contract!
+	// If your company is upgraded -> then this will automatically update the current dao.
+	// dao will point at NEW contract!
 	function onUpgrade(address _newAddress) public {
-		require(msg.sender==address(mc));	
+		require(msg.sender==address(dao));	
 
-		mc = IDaoBase(_newAddress);
+		dao = IDaoBase(_newAddress);
 
 		// this is not needed because we are already in the list of observers (in the store) 
 		// and the controller is upgraded only
-		//mc.addObserver(this);
+		//dao.addObserver(this);
 	}
 }

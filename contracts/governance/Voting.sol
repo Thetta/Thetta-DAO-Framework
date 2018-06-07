@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.22;
 
 import '../IDaoBase.sol';
 
@@ -8,7 +8,10 @@ import './IProposal.sol';
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract Voting is IVoting {
-	IDaoBase mc;
+	// use DaoClient instead?
+	// (it will handle upgrades)
+	IDaoBase dao;
+
 	IProposal proposal; 
 	uint public minutesToVote;
 	bool finishedWithYes = false;
@@ -16,8 +19,8 @@ contract Voting is IVoting {
 
 	event Voting_CallAction();
 
-	constructor(IDaoBase _mc, IProposal _proposal, uint _minutesToVote){
-		mc = _mc;
+	constructor(IDaoBase _dao, IProposal _proposal, uint _minutesToVote){
+		dao = _dao;
 		proposal = _proposal;
 		minutesToVote = _minutesToVote;
 		genesis = now;
@@ -30,7 +33,7 @@ contract Voting is IVoting {
 			// should not be callable again!!!
 
 			// can throw!
-			proposal.action(mc, this);
+			proposal.action(dao, this);
 		}
 	}
 
@@ -63,9 +66,9 @@ contract Voting_SimpleToken is Voting, Ownable {
 
 ////////
 	// we can use _origin instead of tx.origin
-	constructor(IDaoBase _mc, IProposal _proposal, address _origin, 
+	constructor(IDaoBase _dao, IProposal _proposal, address _origin, 
 					uint _minutesToVote, address _tokenAddress, bytes32 _emptyParam)
-					public Voting(_mc, _proposal, _minutesToVote)
+					public Voting(_dao, _proposal, _minutesToVote)
 	{
 		tokenAddress = address(_tokenAddress);
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.22;
 
 import "../tokens/StdDaoToken.sol";
 
@@ -24,31 +24,31 @@ contract ExampleOfFineGrainedPerms is DaoClient {
 	StdDaoToken public tokenReputationDev;
 
 ////
-	constructor(IDaoBase _db) public DaoClient(_db){
+	constructor(IDaoBase _dao) public DaoClient(_dao){
 		// 1 - create tokens 
 		tokenGovernance = new StdDaoToken("YourDaoGovToken","GOV",18);
 		tokenReputation = new StdDaoToken("YourDaoRepToken","REP",18);
 		tokenReputationDev = new StdDaoToken("YourDaoRepDevToken","REPD",18);
 
 		// 2 - transfer ownership to the Dao
-		tokenGovernance.transferOwnership(mc);
-		tokenReputation.transferOwnership(mc);
-		tokenReputationDev.transferOwnership(mc);
+		tokenGovernance.transferOwnership(dao);
+		tokenReputation.transferOwnership(dao);
+		tokenReputationDev.transferOwnership(dao);
 	}
 
 // ACTIONS: 
 	function issueTokensGovr(address _to, uint _amount) isCanDo("CUSTOM_issueTokensGovr"){
 		// you should grant issueTokens permission to THIS contract
-		mc.issueTokens(tokenGovernance, _to, _amount);
+		dao.issueTokens(tokenGovernance, _to, _amount);
 	}
 
 	function issueTokensRep(address _to, uint _amount) isCanDo("CUSTOM_issueTokensRep"){
 		// you should grant issueTokens permission to THIS contract
-		mc.issueTokens(tokenReputation, _to, _amount);
+		dao.issueTokens(tokenReputation, _to, _amount);
 	}
 
 	function issueTokensRepDev(address _to, uint _amount) isCanDo("CUSTOM_issueTokensRepDev"){
 		// you should grant issueTokens permission to THIS contract
-		mc.issueTokens(tokenReputationDev, _to, _amount);
+		dao.issueTokens(tokenReputationDev, _to, _amount);
 	}
 }

@@ -10,7 +10,9 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 // Anton's implementation  + Kirill's updates
 // If group members change -> it will not work
 contract Voting_1p1v is IVoting, Ownable {
-	IDaoBase mc;
+	// use DaoClient instead?
+	// (it will handle upgrades)
+	IDaoBase dao;
 	IProposal proposal; 
 	uint public minutesToVote;
 	bool finishedWithYes = false;
@@ -28,13 +30,13 @@ contract Voting_1p1v is IVoting, Ownable {
 
 ////////
 	// we can use _origin instead of tx.origin
-	constructor(IDaoBase _mc, IProposal _proposal, 
+	constructor(IDaoBase _dao, IProposal _proposal, 
 		address _origin, uint _minutesToVote, string _groupName, 
 		uint _quorumPercent, uint _consensusPercent, bytes32 _emptyParam) public 
 	{
 		// require((_quorumPercent<=100)&&(_quorumPercent>0));
 		// require((_consensusPercent<=100)&&(_consensusPercent>0));
-		mc = _mc;
+		dao = _dao;
 		proposal = _proposal;
 		minutesToVote = _minutesToVote;
 		groupName = _groupName;
@@ -99,7 +101,7 @@ contract Voting_1p1v is IVoting, Ownable {
 	}
 
 	function internalVote(address _who, bool _yes) internal {
-		require(mc.isGroupMember(groupName, _who));
+		require(dao.isGroupMember(groupName, _who));
 
 		require(!addressVotedAlready[_who]);
 
@@ -120,7 +122,7 @@ contract Voting_1p1v is IVoting, Ownable {
 			finishedWithYes = true;
 
 			// can throw!
-			proposal.action(mc, this);
+			proposal.action(dao, this);
 		}
 	}
 
@@ -128,7 +130,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		uint votedCount = 0;
 
 		for(uint i=0; i<_votersTotal.length; ++i){
-			if(mc.isGroupMember(groupName,_votersTotal[i])){
+			if(dao.isGroupMember(groupName,_votersTotal[i])){
 				// count this vote
 				votedCount++;
 			}
@@ -139,7 +141,7 @@ contract Voting_1p1v is IVoting, Ownable {
 	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint votersTotal){
 		yesResults = filterResults(employeesVotedYes);
 		noResults = filterResults(employeesVotedNo);
-		votersTotal = mc.getMembersCount(groupName);
+		votersTotal = dao.getMembersCount(groupName);
 		return;
 	}
 }

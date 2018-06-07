@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.22;
 
 import "../IDaoBase.sol";
 
@@ -24,7 +24,7 @@ contract GenericProposal is IProposal, Ownable {
 	event GenericProposal_Action(IVoting _voting);
 
 // IVoting implementation
-	function action(IDaoBase _mc, IVoting _voting) public {
+	function action(IDaoBase _dao, IVoting _voting) public {
 		emit GenericProposal_Action(voting);
 
 		// in some cases voting is still not set
@@ -75,7 +75,7 @@ contract InformalProposal is IProposal, Ownable {
 		return voting;
 	}
 
-	function action(IDaoBase _mc, IVoting _voting)public{
+	function action(IDaoBase _dao, IVoting _voting)public{
 		return;
 	}
 }
