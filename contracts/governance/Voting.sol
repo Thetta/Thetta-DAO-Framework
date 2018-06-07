@@ -37,7 +37,7 @@ contract Voting is IVoting {
 			// should not be callable again!!!
 
 			// can throw!
-			proposal.action(dao, this);
+			proposal.action();
 		}
 	}
 

@@ -9,7 +9,7 @@ import '../IDaoBase.sol';
  * Proposal can do some action if voting is finished with 'yes' result. Or action can be empty. 
 */
 interface IProposal {
-	function action(IDaoBase _dao, IVoting _voting)public;
+	function action()external;
 	function getVoting()public constant returns(IVoting voting);
 
 	// ???

@@ -28,7 +28,7 @@ contract GenericProposal is IProposal, Ownable {
 	event GenericProposal_Action(IVoting _voting);
 
 // IVoting implementation
-	function action(IDaoBase _dao, IVoting _voting) public {
+	function action() public {
 		emit GenericProposal_Action(voting);
 
 		// in some cases voting is still not set
@@ -83,7 +83,7 @@ contract InformalProposal is IProposal, Ownable {
 		return voting;
 	}
 
-	function action(IDaoBase _dao, IVoting _voting)public{
+	function action()public{
 		return;
 	}
 }

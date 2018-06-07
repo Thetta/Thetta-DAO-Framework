@@ -116,14 +116,14 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
 
 	function getBalance()public constant returns(uint){
-		return this.balance;
+		return address(this).balance;
 	}
 
 	function getCurrentState()public constant returns(State){
 		// for Prepaid task -> client should call processFunds method to put money into this task
 		// when state is Init
 		if((State.Init==state) && (neededWei!=0) && (!isPostpaid)){
-			if(neededWei==this.balance){
+			if(neededWei==address(this).balance){
 				return State.PrePaid;
 			}
 		}
@@ -131,7 +131,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		// for Postpaid task -> client should call processFunds method to put money into this task
 		// when state is Complete. He is confirming the task by doing that (no need to call confirmCompletion)
 		if((State.Complete==state) && (neededWei!=0) && (isPostpaid)){
-			if(neededWei==this.balance){
+			if(neededWei==address(this).balance){
 				return State.CanGetFunds;
 			}
 		}
@@ -143,7 +143,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		require(getCurrentState()==State.Init || getCurrentState()==State.PrePaid);
 		if(getCurrentState()==State.PrePaid){
 			// return money to 'moneySource'
-			moneySource.transfer(this.balance);
+			moneySource.transfer(address(this).balance);
 		}
 		state = State.Cancelled;
 	}
@@ -182,7 +182,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		require(getCurrentState()==State.CanGetFunds);
 		require(0x0!=output);
 
-		output.transfer(this.balance);
+		output.transfer(address(this).balance);
 		state = State.Finished;
 	}
 

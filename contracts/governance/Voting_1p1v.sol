@@ -129,7 +129,7 @@ contract Voting_1p1v is IVoting, Ownable {
 			finishedWithYes = true;
 
 			// can throw!
-			proposal.action(dao, this);
+			proposal.action();
 		}
 	}
 

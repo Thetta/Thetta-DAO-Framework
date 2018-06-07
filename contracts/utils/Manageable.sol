@@ -47,7 +47,7 @@ contract Manageable is Ownable {
           require(managerEnabled[_manager] == false);
 
           managerEnabled[_manager] = true;
-          ManagerEnabledEvent(_manager);
+          emit ManagerEnabledEvent(_manager);
      }
 
      /**
@@ -58,7 +58,7 @@ contract Manageable is Ownable {
           require(managerEnabled[_manager] == true);
 
           managerEnabled[_manager] = false;
-          ManagerDisabledEvent(_manager);
+          emit ManagerDisabledEvent(_manager);
      }
 
      /**
@@ -77,7 +77,7 @@ contract Manageable is Ownable {
           require(managerPermissions[_manager][_permissionName] == false);
 
           managerPermissions[_manager][_permissionName] = true;
-          ManagerPermissionGrantedEvent(_manager, _permissionName);
+          emit ManagerPermissionGrantedEvent(_manager, _permissionName);
      }
 
      /**
@@ -96,7 +96,7 @@ contract Manageable is Ownable {
           require(managerPermissions[_manager][_permissionName] == true);
 
           managerPermissions[_manager][_permissionName] = false;
-          ManagerPermissionRevokedEvent(_manager, _permissionName);
+          emit ManagerPermissionRevokedEvent(_manager, _permissionName);
      }
 
      /**
