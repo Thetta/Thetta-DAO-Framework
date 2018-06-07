@@ -17,18 +17,18 @@ contract SplitterBase is ISplitter, Ownable {
 
 	string public name = "";
 
-	function SplitterBase(string _name) public {
+	constructor(string _name) public {
 		name = _name;
 	}
 
 // ISplitter:
-	function getChildrenCount() public constant returns(uint){
+	function getChildrenCount()external view returns(uint){
 		return childrenCount;
 	}
-	function getChild(uint _index) public constant returns(address){
+	function getChild(uint _index)external view returns(address){
 		return children[_index];
 	}
-	function addChild(address _newChild) public onlyOwner {
+	function addChild(address _newChild) external onlyOwner {
 		children[childrenCount] = _newChild;	
 		childrenCount = childrenCount + 1;	
 	}
@@ -40,12 +40,12 @@ contract SplitterBase is ISplitter, Ownable {
  * if they have ended. 
 */
 contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
-	function WeiTopDownSplitter(string _name) SplitterBase(_name) public {
+	constructor(string _name) SplitterBase(_name) public {
 	}
 
 // IWeiReceiver:
 	// calculate only absolute outputs, but do not take into account the Percents
-	function getMinWeiNeeded()constant public returns(uint){
+	function getMinWeiNeeded()external view returns(uint){
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
@@ -55,7 +55,11 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 		return total;
 	}
 
-	function getTotalWeiNeeded(uint _inputWei)constant public returns(uint){
+	function getTotalWeiNeeded(uint _inputWei)external view returns(uint){
+		return _getTotalWeiNeeded(_inputWei);
+	}
+
+	function _getTotalWeiNeeded(uint _inputWei)internal view returns(uint){
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
@@ -72,7 +76,7 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 		return total;
 	}
 
-	function getPercentsMul100()constant public returns(uint){
+	function getPercentsMul100()external view returns(uint){
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
@@ -105,12 +109,12 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 	// we can get the 'terminal' items and send money DIRECTLY FROM the signle source
 	// this will save gas 
 	// See this - https://github.com/Thetta/SmartContracts/issues/40
-	function processFunds(uint _currentFlow) public payable{
+	function processFunds(uint _currentFlow) external payable{
 		uint amount = _currentFlow;
 
 		// TODO: can remove this line?
 		// transfer below will throw if not enough money?
-		require(amount>=getTotalWeiNeeded(_currentFlow));
+		require(amount>=_getTotalWeiNeeded(_currentFlow));
 		// ???
 		//require(amount>=getMinWeiNeeded());
 
@@ -143,12 +147,12 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
  * @dev Will split money (order does not matter!). 
 */
 contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
-	function WeiUnsortedSplitter(string _name) SplitterBase(_name) public {
+	constructor(string _name) SplitterBase(_name) public {
 	}
 
 // IWeiReceiver:
 	// calculate only absolute outputs, but do not take into account the Percents
-	function getMinWeiNeeded()constant public returns(uint){
+	function getMinWeiNeeded()external view returns(uint){
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
@@ -158,7 +162,11 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 		return total;
 	}
 
-	function getTotalWeiNeeded(uint _inputWei)constant public returns(uint){
+	function getTotalWeiNeeded(uint _inputWei)external view returns(uint){
+		return _getTotalWeiNeeded(_inputWei);
+	}
+
+	function _getTotalWeiNeeded(uint _inputWei)internal view returns(uint){
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
@@ -168,7 +176,7 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 		return total;
 	}
 
-	function getPercentsMul100()constant public returns(uint){
+	function getPercentsMul100()external view returns(uint){
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
@@ -182,7 +190,7 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 		return total;
 	}
 
-	function isNeedsMoney()constant public returns(bool){
+	function isNeedsMoney()external view returns(bool){
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
 			// if at least 1 child needs money -> return true
@@ -196,12 +204,12 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 	// WeiSplitter allows to receive money from ANY address
 	// WeiSplitter should not hold any funds. Instead - it should split immediately
 	// If WeiSplitter receives less or more money than needed -> exception 
-	function processFunds(uint _currentFlow) public payable{
+	function processFunds(uint _currentFlow) external payable{
 		uint amount = msg.value;
 
 		// TODO: can remove this line?
 		// transfer below will throw if not enough money?
-		require(amount>=getTotalWeiNeeded(_currentFlow));
+		require(amount>=_getTotalWeiNeeded(_currentFlow));
 
 		// DO NOT SEND LESS!
 		// DO NOT SEND MORE!

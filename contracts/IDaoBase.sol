@@ -7,7 +7,7 @@ import './governance/IProposal.sol';
  * @dev Also, see DaoClient contract below.
  */
 interface IDaoObserver {
-	function onUpgrade(address _newAddress) public;
+	function onUpgrade(address _newAddress) external;
 }
 
 /**
@@ -16,33 +16,33 @@ interface IDaoObserver {
  * see DaoBase contract that implements it.
  */
 interface IDaoBase {
-	function addObserver(IDaoObserver _observer)public;
-	function upgradeDaoContract(IDaoBase _new)public;
+	function addObserver(IDaoObserver _observer)external;
+	function upgradeDaoContract(IDaoBase _new)external;
 
 // Groups
-	function addGroupMember(string _groupName, address _a) public;
-	function removeGroupMember(string _groupName, address _a) public;
-	function getMembersCount(string _groupName) public constant returns(uint);
-	function isGroupMember(string _groupName,address _a)public constant returns(bool);
+	function addGroupMember(string _groupName, address _a) external;
+	function removeGroupMember(string _groupName, address _a) external;
+	function getMembersCount(string _groupName) external constant returns(uint);
+	function isGroupMember(string _groupName,address _a)external constant returns(bool);
 
 // Permissions
-	function allowActionByShareholder(string _what, address _tokenAddress) public;
-	function allowActionByVoting(string _what, address _tokenAddress) public;
-	function allowActionByAddress(string _what, address _a) public;
-	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public;
+	function allowActionByShareholder(string _what, address _tokenAddress) external;
+	function allowActionByVoting(string _what, address _tokenAddress) external;
+	function allowActionByAddress(string _what, address _a) external;
+	function allowActionByAnyMemberOfGroup(string _what, string _groupName) external;
 
-	function isCanDoAction(address _a, string _permissionName)public constant returns(bool);
+	function isCanDoAction(address _a, string _permissionName)external constant returns(bool);
 
 // Tokens
 	// ???? TODO: needed
 	//function addTokenAddressToList();
-	function issueTokens(address _tokenAddress, address _to, uint amount)public;
-	function burnTokens(address _tokenAddress, address _who, uint amount)public;
+	function issueTokens(address _tokenAddress, address _to, uint amount)external;
+	function burnTokens(address _tokenAddress, address _who, uint amount)external;
 
 // Governance/Proposals
-	function addNewProposal(IProposal _proposal) public;
-	function getProposalAtIndex(uint _i)public constant returns(IProposal);
-	function getProposalsCount()public constant returns(uint);
+	function addNewProposal(IProposal _proposal) external;
+	function getProposalAtIndex(uint _i)external constant returns(IProposal);
+	function getProposalsCount()external constant returns(uint);
 }
 
 /**
@@ -71,7 +71,7 @@ contract DaoClient is IDaoObserver {
 	 * dao will point at NEW contract!
 	 * @param _newAddress New controller.
 	 */
-	function onUpgrade(address _newAddress) public {
+	function onUpgrade(address _newAddress) external {
 		require(msg.sender==address(dao));	
 
 		dao = IDaoBase(_newAddress);

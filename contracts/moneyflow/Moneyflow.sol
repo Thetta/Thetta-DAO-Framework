@@ -54,41 +54,49 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 
 // IMoneyflow:
 	// will withdraw donations
-	function withdrawDonationsTo(address _out) public isCanDo("withdrawDonations"){
+	function withdrawDonationsTo(address _out) external isCanDo("withdrawDonations"){
+		_withdrawDonationsTo(_out);
+	}
+
+	function _withdrawDonationsTo(address _out) internal{
 		emit WithdrawDonations(msg.sender, _out, donationEndpoint.balance);
 		donationEndpoint.flushTo(_out);
 	}
 
-	function getDonationEndpoint()public constant returns(IWeiReceiver){
+	function getDonationEndpoint()external constant returns(IWeiReceiver){
 		return donationEndpoint;
 	}
 
-	function getRevenueEndpoint()public constant returns(IWeiReceiver){
+	function getRevenueEndpoint()external constant returns(IWeiReceiver){
 		return rootReceiver;
 	}
 
-	function getDonationEndpointAddress()public constant returns(address){
+	function getDonationEndpointAddress()external constant returns(address){
 		return address(donationF2WR);	
 	}
 
-	function getRevenueEndpointAddress()public constant returns(address){
+	function getRevenueEndpointAddress()external constant returns(address){
 		return address(revenueF2WR);	
 	}
 
-	function setRootWeiReceiverGeneric(bytes32[] _params) public {
+	function setRootWeiReceiverGeneric(bytes32[] _params) external {
 		IWeiReceiver receiver = IWeiReceiver(address(_params[0]));
-		setRootWeiReceiver(receiver);
+		_setRootWeiReceiver(receiver);
 	}
 
-	function withdrawDonationsToGeneric(bytes32[] _params) public {
+	function withdrawDonationsToGeneric(bytes32[] _params) external {
 		address out = address(_params[0]);
-		withdrawDonationsTo(out);
+		_withdrawDonationsTo(out);
 	}
 
 // WeiReceivers:
 	// receiver can be a splitter, fund or event task
 	// _receiver can be 0x0!
-	function setRootWeiReceiver(IWeiReceiver _receiver) public isCanDo("setRootWeiReceiver"){
+	function setRootWeiReceiver(IWeiReceiver _receiver) external isCanDo("setRootWeiReceiver"){
+		_setRootWeiReceiver(_receiver);
+	}
+
+	function _setRootWeiReceiver(IWeiReceiver _receiver) internal{
 		rootReceiver = _receiver;
 		revenueF2WR = new FallbackToWeiReceiver(address(rootReceiver));
 	}

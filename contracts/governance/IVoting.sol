@@ -6,26 +6,26 @@ pragma solidity ^0.4.22;
 interface IVoting {
 	// _tokenAmount -> if this voting type DOES NOT use tokens -> set to any value (e.g., 0);
 	// will execute action automatically if the voting is finished 
-	function vote(bool _yes, uint _tokenAmount) public;
+	function vote(bool _yes, uint _tokenAmount) external;
 	
 	// stop the voting
-	function cancelVoting() public;
+	function cancelVoting() external;
 
 	// This is for statistics
-	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint totalResults);
+	function getFinalResults() external view returns(uint yesResults, uint noResults, uint totalResults);
 
 	// Is voting finished?
-	function isFinished()public constant returns(bool);
+	function isFinished()external view returns(bool);
 	// The result of voting
-	function isYes()public constant returns(bool);
+	function isYes()external view returns(bool);
 }
 
 // for "liquid democracy"
 // in this case the delegate does all voting
 interface IDelegationTable {
-	function delegateMyVoiceTo(address _to, uint _tokenAmount) public;
+	function delegateMyVoiceTo(address _to, uint _tokenAmount) external;
 
-	function removeDelegation(address _to) public;
+	function removeDelegation(address _to) external;
 }
 
 

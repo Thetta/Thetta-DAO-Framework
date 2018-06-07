@@ -51,7 +51,11 @@ contract Voting_1p1v is IVoting, Ownable {
 		internalVote(_origin, true);
 	}
 
-	function isFinished()public view returns(bool){
+	function isFinished()external view returns(bool){
+		return _isFinished();
+	}
+
+	function _isFinished()internal view returns(bool){
 		// 1 - if minutes elapsed
 		if(minutesToVote>0){
 			if((uint64(now) - genesis) < (minutesToVote * 60 * 1000)){
@@ -69,7 +73,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		uint noResults = 0;
 		uint votersTotal = 0;
 
-		(yesResults, noResults, votersTotal) = getFinalResults();
+		(yesResults, noResults, votersTotal) = _getFinalResults();
 		uint votesSum = yesResults + noResults;
 
 		
@@ -78,7 +82,11 @@ contract Voting_1p1v is IVoting, Ownable {
 		return ((votesSum * 100) >= votersTotal * quorumPercent);
 	}
 
-	function isYes()public view returns(bool){
+	function isYes()external view returns(bool){
+		return _isYes();
+	}
+
+	function _isYes()internal view returns(bool){
 		if(true==finishedWithYes){
 			return true;
 		}
@@ -87,22 +95,22 @@ contract Voting_1p1v is IVoting, Ownable {
 		uint noResults = 0;
 		uint votersTotal = 0;
 
-		(yesResults, noResults, votersTotal) = getFinalResults();
+		(yesResults, noResults, votersTotal) = _getFinalResults();
 		uint votesSum = yesResults + noResults;
 
-		return isFinished() && 
+		return _isFinished() && 
 		       (yesResults * 100 >= (yesResults + noResults)*consensusPercent) && 
 		       ((votesSum * 100) >= votersTotal * quorumPercent); // quorumTest if time passed, isFinished==true, but no quorum => isYes==false 
 	}
 
-	function cancelVoting() public onlyOwner {
+	function cancelVoting() external onlyOwner {
 		// TODO:
 	}
 
 	event Voting1p1v_vote(uint _votersTotal, uint votesSum);
 	
-	function vote(bool _yes, uint _tokenAmount) public {
-		require(!isFinished());
+	function vote(bool _yes, uint _tokenAmount) external {
+		require(!_isFinished());
 		// uint _tokenAmount is for interface
 
 		uint yesResults = 0;
@@ -110,7 +118,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		uint votersTotal = 0;
 
 
-		(yesResults, noResults, votersTotal) = getFinalResults();
+		(yesResults, noResults, votersTotal) = _getFinalResults();
 		uint votesSum = yesResults + noResults;
 
 		emit Voting1p1v_vote(votersTotal, votesSum);
@@ -131,11 +139,15 @@ contract Voting_1p1v is IVoting, Ownable {
 
 		addressVotedAlready[_who] = true;
 
-		callActionIfEnded();
+		_callActionIfEnded();
 	}
 
-	function callActionIfEnded() public {
-		if(!finishedWithYes && isFinished() && isYes()){ 
+	function callActionIfEnded() external {
+		_callActionIfEnded();
+	}
+
+	function _callActionIfEnded() internal {
+		if(!finishedWithYes && _isFinished() && _isYes()){ 
 			// should not be callable again!!!
 			finishedWithYes = true;
 
@@ -143,6 +155,7 @@ contract Voting_1p1v is IVoting, Ownable {
 			proposal.action();
 		}
 	}
+
 
 	function filterResults(address[] _votersTotal) internal constant returns(uint){
 		uint votedCount = 0;
@@ -156,10 +169,14 @@ contract Voting_1p1v is IVoting, Ownable {
 		return votedCount;
 	}
 
-	function getFinalResults() public constant returns(uint yesResults, uint noResults, uint votersTotal){
+	function getFinalResults() external constant returns(uint yesResults, uint noResults, uint votersTotal){
+		return _getFinalResults();
+	}
+
+	function _getFinalResults() internal constant returns(uint yesResults, uint noResults, uint votersTotal){
 		yesResults = filterResults(employeesVotedYes);
 		noResults = filterResults(employeesVotedNo);
 		votersTotal = dao.getMembersCount(groupName);
-		return;
-	}
+		return;	
+	}	
 }

@@ -17,35 +17,39 @@ contract Gate is Ownable, IWeiReceiver{
 	IWeiReceiver child;
 	IDaoBase dao;
 
-	function Gate(IDaoBase _dao, address _child) public{
+	constructor(IDaoBase _dao, address _child) public{
 		child = IWeiReceiver(_child);
 		dao = _dao;
 	}
 
-	function getPercentsMul100()constant public returns(uint){
+	function getPercentsMul100()view external returns(uint){
 		revert();
 	}
 
 	// TODO: this method is not provided in any interface 
 	// should be removed
-	function getChild() public constant returns(IWeiReceiver){
+	function getChild() external view returns(IWeiReceiver){
 		return child;
 	}
 
-	function open() public onlyOwner{
+	function open() external onlyOwner{
 		opened = true;
 	}
 
-	function close() public onlyOwner{
+	function close() external onlyOwner{
 		opened = false;
 	}
 
-	function isOpen() public constant returns(bool){
+	function isOpen() external view returns(bool){
 		return opened;
 	}
 
-	function isNeedsMoney() constant public returns(bool){
-		if(!isOpen()){
+	function _isOpen() internal view returns(bool){
+		return opened;
+	}
+
+	function isNeedsMoney() view external returns(bool){
+		if(!_isOpen()){
 			return false;
 		}else{
 			IWeiReceiver c = IWeiReceiver(child);
@@ -53,8 +57,8 @@ contract Gate is Ownable, IWeiReceiver{
 		}
 	}
 
-	function getTotalWeiNeeded(uint _currentFlow) constant public returns(uint){
-		if(!isOpen()){
+	function getTotalWeiNeeded(uint _currentFlow) view external returns(uint){
+		if(!_isOpen()){
 			return 0;
 		}else{
 			IWeiReceiver c = IWeiReceiver(child);
@@ -62,8 +66,8 @@ contract Gate is Ownable, IWeiReceiver{
 		}
 	}
 
-	function getMinWeiNeeded() constant public returns(uint){
-		if(!isOpen()){
+	function getMinWeiNeeded() view external returns(uint){
+		if(!_isOpen()){
 			return 0;
 		}else{
 			IWeiReceiver c = IWeiReceiver(child);
@@ -71,8 +75,8 @@ contract Gate is Ownable, IWeiReceiver{
 		}
 	}
 
-	function processFunds(uint _currentFlow) public payable{
-		require(isOpen());
+	function processFunds(uint _currentFlow) external payable{
+		require(_isOpen());
 
 		uint amount = _currentFlow;
 		IWeiReceiver c = IWeiReceiver(child);

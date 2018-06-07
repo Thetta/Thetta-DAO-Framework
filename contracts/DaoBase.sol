@@ -38,16 +38,20 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 	modifier isCanDo(string _what){
-		require(isCanDoAction(msg.sender,_what)); 
+		require(_isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
 
 // IDaoBase:
-	function addObserver(IDaoObserver _observer) public {
+	function addObserver(IDaoObserver _observer) external {
 		store.addObserver(_observer);	
 	}
 
-	function upgradeDaoContract(IDaoBase _new) public isCanDo("upgradeDaoContract") {
+	function upgradeDaoContract(IDaoBase _new) external isCanDo("upgradeDaoContract") {
+		_upgradeDaoContract(_new);
+	}
+
+	function _upgradeDaoContract(IDaoBase _new) internal{	
 		// call observers.onUpgrade() for all observers
 		for(uint i=0; i<store.getObserverCount(); ++i){
 			IDaoObserver(store.getObserverAtIndex(i)).onUpgrade(_new);
@@ -63,33 +67,33 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 // Groups:
-	function getMembersCount(string _groupName) public constant returns(uint){
+	function getMembersCount(string _groupName) external constant returns(uint){
 		return store.getMembersCount(keccak256(_groupName));
 	}
-	function addGroupMember(string _groupName, address _a) public isCanDo("manageGroups") {
+	function addGroupMember(string _groupName, address _a) external isCanDo("manageGroups") {
 		store.addGroupMember(keccak256(_groupName), _a);
 	}
-	function getGroupMembers(string _groupName) public constant returns(address[]){
+	function getGroupMembers(string _groupName) external constant returns(address[]){
 		return store.getGroupMembers(keccak256(_groupName));
 	}
-	function removeGroupMember(string _groupName, address _a) public isCanDo("manageGroups"){
+	function removeGroupMember(string _groupName, address _a) external isCanDo("manageGroups"){
 		store.removeGroupMember(keccak256(_groupName), _a);
 	}
-	function isGroupMember(string _groupName,address _a)public constant returns(bool) {
+	function isGroupMember(string _groupName,address _a)external constant returns(bool) {
 		return store.isGroupMember(keccak256(_groupName), _a);
 	}
 
 // Actions:
-	function allowActionByShareholder(string _what, address _tokenAddress) public isCanDo("manageGroups"){
+	function allowActionByShareholder(string _what, address _tokenAddress) external isCanDo("manageGroups"){
 		store.allowActionByShareholder(keccak256(_what), _tokenAddress);
 	}
-	function allowActionByVoting(string _what, address _tokenAddress) public isCanDo("manageGroups"){
+	function allowActionByVoting(string _what, address _tokenAddress) external isCanDo("manageGroups"){
 		store.allowActionByVoting(keccak256(_what),_tokenAddress);
 	}
-	function allowActionByAddress(string _what, address _a) public isCanDo("manageGroups") {
+	function allowActionByAddress(string _what, address _a) external isCanDo("manageGroups") {
 		store.allowActionByAddress(keccak256(_what),_a);
 	}
-	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public isCanDo("manageGroups"){
+	function allowActionByAnyMemberOfGroup(string _what, string _groupName) external isCanDo("manageGroups"){
 		store.allowActionByAnyMemberOfGroup(keccak256(_what), keccak256(_groupName));
 	}
 
@@ -104,7 +108,12 @@ contract DaoBase is IDaoBase, Ownable {
 	 *    b. caller is voting and it is succeeded -> allow
 	 * 4. deny
 	*/
-	function isCanDoAction(address _a, string _permissionName) public constant returns(bool){
+
+	function isCanDoAction(address _a, string _permissionName) external constant returns(bool){
+		return _isCanDoAction(_a, _permissionName);
+	}
+
+	function _isCanDoAction(address _a, string _permissionName) internal constant returns(bool){
 		bytes32 _permissionNameHash = keccak256(_permissionName);
 
 		// 0 - is can do by address?
@@ -118,15 +127,16 @@ contract DaoBase is IDaoBase, Ownable {
 		}
 
 		for(uint i=0; i<store.getAllTokenAddresses().length; ++i){
-			StdDaoToken t = store.getAllTokenAddresses()[i];
 
 			// 2 - check if shareholder can do that without voting?
-			if(store.isCanDoByShareholder(_permissionNameHash, t) && (t.balanceOf(_a)!=0)){
+			if(store.isCanDoByShareholder(_permissionNameHash, store.getAllTokenAddresses()[i]) && 
+				(store.getAllTokenAddresses()[i].balanceOf(_a)!=0)){
 				return true;
 			}
+			
 
 			// 3 - can do action only by starting new vote first?
-			bool isCan = store.isCanDoByVoting(_permissionNameHash, t);
+			bool isCan = store.isCanDoByVoting(_permissionNameHash, store.getAllTokenAddresses()[i]);
 			if(isCan){
 				bool isVotingFound = false;
 				bool votingResult = false;
@@ -141,7 +151,9 @@ contract DaoBase is IDaoBase, Ownable {
 				
 				// 4 - only token holders with > 51% of gov.tokens can add new task immediately 
 				// otherwise -> start voting
-				bool isInMajority = (t.balanceOf(_a))>(t.totalSupply()/2);
+				bool isInMajority = 
+					(store.getAllTokenAddresses()[i].balanceOf(_a)) >
+					(store.getAllTokenAddresses()[i].totalSupply()/2);
 				if(isInMajority){
 					return true;
 				}
@@ -152,20 +164,24 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 // Proposals:
-	function addNewProposal(IProposal _proposal) public isCanDo("addNewProposal") { 
+	function addNewProposal(IProposal _proposal) external isCanDo("addNewProposal") { 
 		store.addNewProposal(_proposal);
 	}
 
-	function getProposalAtIndex(uint _i)public constant returns(IProposal){
+	function getProposalAtIndex(uint _i)external constant returns(IProposal){
 		return store.getProposalAtIndex(_i);
 	}
 
-	function getProposalsCount()public constant returns(uint){
+	function getProposalsCount()external constant returns(uint){
 		return store.getProposalsCount();
 	}
 
 // Tokens:
-	function issueTokens(address _tokenAddress, address _to, uint _amount)public isCanDo("issueTokens") {
+	function issueTokens(address _tokenAddress, address _to, uint _amount)external isCanDo("issueTokens") {
+		_issueTokens(_tokenAddress,_to,_amount);
+	}
+
+	function _issueTokens(address _tokenAddress, address _to, uint _amount)internal{
 		for(uint i=0; i<store.getAllTokenAddresses().length; ++i){
 			if(store.getAllTokenAddresses()[i]==_tokenAddress){
 				// WARNING:
@@ -179,7 +195,7 @@ contract DaoBase is IDaoBase, Ownable {
 		revert();
 	}
 
-	function burnTokens(address _tokenAddress, address _who, uint _amount)public isCanDo("burnTokens"){
+	function burnTokens(address _tokenAddress, address _who, uint _amount)external isCanDo("burnTokens"){
 		for(uint i=0; i<store.getAllTokenAddresses().length; ++i){
 			if(store.getAllTokenAddresses()[i]==_tokenAddress){
 				// WARNING:
@@ -208,12 +224,12 @@ contract DaoBaseWithUnpackers is DaoBase {
 	{
 	}
 
-	function upgradeDaoContractGeneric(bytes32[] _params) public {
+	function upgradeDaoContractGeneric(bytes32[] _params) external {
 		IDaoBase _b = IDaoBase(address(_params[0]));
-		upgradeDaoContract(_b);
+		_upgradeDaoContract(_b);
 	}
 
-	function addGroupMemberGeneric(bytes32[] _params) public {
+	function addGroupMemberGeneric(bytes32[] _params) external {
 		bytes32 group = bytes32(_params[0]);
 		address a = address(_params[1]);
 
@@ -221,12 +237,12 @@ contract DaoBaseWithUnpackers is DaoBase {
 		store.addGroupMember(keccak256(group), a);
 	}
 
-	function issueTokensGeneric(bytes32[] _params) public {
+	function issueTokensGeneric(bytes32[] _params) external {
 		address _tokenAddress = address(_params[0]);
 		address _to = address(_params[1]);
 		uint _amount = uint(_params[2]);
 
-		issueTokens(_tokenAddress, _to, _amount);
+		_issueTokens(_tokenAddress, _to, _amount);
 	}
 
 	// TODO: add other methods:

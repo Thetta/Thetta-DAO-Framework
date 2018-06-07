@@ -37,17 +37,17 @@ contract ExampleOfFineGrainedPerms is DaoClient {
 	}
 
 // ACTIONS: 
-	function issueTokensGovr(address _to, uint _amount) isCanDo("CUSTOM_issueTokensGovr"){
+	function issueTokensGovr(address _to, uint _amount) external isCanDo("CUSTOM_issueTokensGovr"){
 		// you should grant issueTokens permission to THIS contract
 		dao.issueTokens(tokenGovernance, _to, _amount);
 	}
 
-	function issueTokensRep(address _to, uint _amount) isCanDo("CUSTOM_issueTokensRep"){
+	function issueTokensRep(address _to, uint _amount) external isCanDo("CUSTOM_issueTokensRep"){
 		// you should grant issueTokens permission to THIS contract
 		dao.issueTokens(tokenReputation, _to, _amount);
 	}
 
-	function issueTokensRepDev(address _to, uint _amount) isCanDo("CUSTOM_issueTokensRepDev"){
+	function issueTokensRepDev(address _to, uint _amount) external isCanDo("CUSTOM_issueTokensRepDev"){
 		// you should grant issueTokens permission to THIS contract
 		dao.issueTokens(tokenReputationDev, _to, _amount);
 	}

@@ -36,10 +36,14 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 		isPeriodic = _isPeriodic;
 	}
 
-	function processFunds(uint _currentFlow) public payable{
-		require(isNeedsMoney());
+	function processFunds(uint _currentFlow) external payable{
+		_processFunds(_currentFlow);
+	}
 
-		require(msg.value==getTotalWeiNeeded(_currentFlow));
+	function _processFunds(uint _currentFlow) internal{
+		require(_isNeedsMoney());
+
+		require(msg.value==_getTotalWeiNeeded(_currentFlow));
 
 		// TODO: why not working without if????
 		if(isPeriodic){ 
@@ -50,38 +54,50 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 		moneySource = msg.sender;
 	}
 
-	function getIsMoneyReceived() constant public returns(bool){
+	function getIsMoneyReceived() external view returns(bool){
 		return isMoneyReceived;
 	}
 
-	function getNeededWei() constant public returns(uint){
+	function getNeededWei() external view returns(uint){
 		return neededWei;
 	}	
 
-	function getTotalWeiNeeded(uint _inputWei)constant public returns(uint){
-		if(!isNeedsMoney()){
+	function getTotalWeiNeeded(uint _inputWei)external view returns(uint){
+		return _getTotalWeiNeeded(_inputWei);
+	}
+
+	function _getTotalWeiNeeded(uint _inputWei)internal view returns(uint){
+		if(!_isNeedsMoney()){
 			return 0;
 		}
 
 		if(0!=percentsMul100){
-			return (getDebtMultiplier()*(percentsMul100 * _inputWei)) / 10000;
+			return (_getDebtMultiplier()*(percentsMul100 * _inputWei)) / 10000;
 		}else{
-			return getMinWeiNeeded();
+			return _getMinWeiNeeded();
 		}
 	}
 
-	function getMinWeiNeeded()constant public returns(uint){
-		if(!isNeedsMoney() || (0!=percentsMul100)){
+	function getMinWeiNeeded()external view returns(uint){
+		return _getMinWeiNeeded();
+	}
+
+	function _getMinWeiNeeded()internal view returns(uint){
+		if(!_isNeedsMoney() || (0!=percentsMul100)){
 			return 0;
 		}
-		return getDebtMultiplier()*neededWei;
+		return _getDebtMultiplier()*neededWei;
 	}
 
-	function getMomentReceived() constant public returns(uint){
+	function getMomentReceived()external view returns(uint){
 		return momentReceived;
 	}
 		
-	function getDebtMultiplier() constant public returns(uint){
+	function getDebtMultiplier()external view returns(uint){
+		return _getDebtMultiplier();
+	}
+
+	function _getDebtMultiplier()internal view returns(uint){
 		if((isCalculateDebt)&&(0!=momentReceived)){
 			return ((now - momentReceived) / (periodHours * 3600 * 1000));	
 		} else{
@@ -89,7 +105,11 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 		}
 	}
 
-	function isNeedsMoney()constant public returns(bool){	
+	function isNeedsMoney()external view returns(bool){	
+		return _isNeedsMoney();
+	}
+
+	function _isNeedsMoney()internal view returns(bool){	
 		if(isPeriodic){ // For period Weiexpense
 			if ((uint64(now) - momentReceived) >= periodHours * 3600 * 1000){ 
 				return true;
@@ -104,28 +124,29 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 		_; 
 	}
 	
-	function getPercentsMul100()constant public returns(uint){
+	function getPercentsMul100()external view returns(uint){
 		return percentsMul100;
 	}
 
 	// TODO: remove from here
-	function getNow()constant public returns(uint){
+	function getNow()external view returns(uint){
 		return now;
 	}
 
-	function flush()public onlyOwner{
+	function flush()external onlyOwner{
 		owner.transfer(address(this).balance);
 	}
 
-	function flushTo(address _to) public onlyOwner {
+	function flushTo(address _to) external onlyOwner {
+		// address _to not used
 		revert();
 	}
 
-	function setNeededWei(uint _neededWei) public onlyOwner {
+	function setNeededWei(uint _neededWei) external onlyOwner {
 		neededWei = _neededWei;
 	}
 	
-	function setPercents(uint _percentsMul100) public onlyOwner {
+	function setPercents(uint _percentsMul100) external onlyOwner {
 		percentsMul100 = _percentsMul100;
 	}
 

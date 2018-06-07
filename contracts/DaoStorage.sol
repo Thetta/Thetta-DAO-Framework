@@ -38,11 +38,11 @@ contract DaoStorageGroups is Ownable {
 		groupToAddresses[_groupHash].push(_newMember);
 	}
 
-	function getMembersCount(bytes32 _groupHash) public constant returns(uint){
+	function getMembersCount(bytes32 _groupHash) public view returns(uint){
 		return groupToAddresses[_groupHash].length;
 	}
 
-	function getGroupMembers(bytes32 _groupHash) public constant returns(address[]){
+	function getGroupMembers(bytes32 _groupHash) public view returns(address[]){
 		return groupToAddresses[_groupHash];
 	}
 
@@ -53,7 +53,7 @@ contract DaoStorageGroups is Ownable {
 		removeGroupFromMemberGroups(_groupHash, _member);
 	}
 
-	function getIndexOfAddress(address _item, address[] array) internal pure returns(uint){
+	function getIndexOfAddress(address _item, address[] array)internal pure returns(uint){
 		for(uint j=0; j<array.length; ++j){
 			if(array[j]==_item){
 				return j;
@@ -79,7 +79,7 @@ contract DaoStorageGroups is Ownable {
 		groupToAddresses[_groupHash] = parts;
 	}
 
-	function getIndexOfBytes32(bytes32 _item, bytes32[] array) internal pure returns(uint){
+	function getIndexOfBytes32(bytes32 _item, bytes32[] array)internal pure returns(uint){
 		for(uint j=0; j<array.length; ++j){
 			if(array[j]==_item){
 				return j;
@@ -222,7 +222,7 @@ contract DaoStorage is DaoStorageGroups {
 		return (false,false);
 	}
 
-	function getAllTokenAddresses() public returns (StdDaoToken[]){
+	function getAllTokenAddresses() public view returns (StdDaoToken[]){
 		return tokens;
 	}	
 }

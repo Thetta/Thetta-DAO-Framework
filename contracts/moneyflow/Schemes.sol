@@ -43,8 +43,8 @@ contract DefaultMoneyflowScheme is DaoClient {
 	WeiFund dividendsFund;
 
 /////
-	function DefaultMoneyflowScheme(IDaoBase _dao, address _fundOutput, 
-											  uint _percentsReserve, uint _dividendsReserve) public 
+	constructor(IDaoBase _dao, address _fundOutput, 
+		uint _percentsReserve, uint _dividendsReserve) public 
 		DaoClient(_dao)											  
 	{
 		require(0x0!=_fundOutput);
