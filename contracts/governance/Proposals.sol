@@ -23,7 +23,7 @@ contract GenericProposal is IProposal, Ownable {
 		target = _target;
 		params = _params;
 		methodSig = _methodSig;
-		// TODO: _origin - how it uses?
+		address origin  = _origin; // TODO: how it uses?
 	}
 
 	event GenericProposal_Action(IVoting _voting);
@@ -40,18 +40,21 @@ contract GenericProposal is IProposal, Ownable {
 		// cool! voting is over and the majority said YES -> so let's go!
 		// as long as we call this method from WITHIN the vote contract 
 		// isCanDoAction() should return yes if voting finished with Yes result
-		target.call(
+		if(!address(target).call(
 			bytes4(keccak256(methodSig)),
 			uint256(32),				// pointer to the length of the array
 			uint256(params.length), // length of the array
-			params);						// array itself
+			params)
+		){
+			revert();
+		}						
 	}
 
-	function setVoting(IVoting _voting) public onlyOwner{
+	function setVoting(IVoting _voting) external onlyOwner{
 		voting = _voting;
 	}
 
-	function getVoting()public constant returns(IVoting){
+	function getVoting()external view returns(IVoting){
 		return voting;
 	}
 }

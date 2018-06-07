@@ -191,8 +191,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
 
 	function flushTo(address _to) external {
-		// address _to not used
-		revert();
+		if(_to==_to) revert();
 	}
 
 	function processFunds(uint _currentFlow) external payable{

@@ -138,8 +138,7 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	}
 
 	function flushTo(address _to) external onlyOwner {
-		// address _to not used
-		revert();
+		if(_to==_to) revert();
 	}
 
 	function setNeededWei(uint _neededWei) external onlyOwner {

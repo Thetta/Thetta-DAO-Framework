@@ -51,12 +51,13 @@ contract GenericCaller is DaoClient, Ownable {
 			emit GenericCaller_DoActionDirectly(_permissionId);
 
 			// 1 - call immediately?
-			_target.call(
+			if(!address(_target).call(
 				bytes4(keccak256(_methodSig)),
 				uint256(32),						 // pointer to the length of the array
 				uint256(_params.length),		 // length of the array
-				_params	
-			);					
+				_params)){
+				revert();
+			}					
 
 			/*
 			// Delegatecall: 

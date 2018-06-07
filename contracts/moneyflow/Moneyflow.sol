@@ -59,7 +59,7 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	}
 
 	function _withdrawDonationsTo(address _out) internal{
-		emit WithdrawDonations(msg.sender, _out, donationEndpoint.balance);
+		emit WithdrawDonations(msg.sender, _out, address(donationEndpoint).balance);
 		donationEndpoint.flushTo(_out);
 	}
 

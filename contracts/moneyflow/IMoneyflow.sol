@@ -39,7 +39,7 @@ interface IReceiver {
 	function processFunds(uint _currentFlow) external payable;
 
 	// non payable!
-	function()public;
+	function()external;
 }
 
 // IWeiReceiver does not store funds!

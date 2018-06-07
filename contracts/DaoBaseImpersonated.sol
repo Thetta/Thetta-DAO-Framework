@@ -30,12 +30,13 @@ contract ImpersonationCaller is DaoClient {
 		require(dao.isCanDoAction(client, _action));
 		
 		// 3 - call 
-		dao.call(
+		if(!address(dao).call(
 			bytes4(keccak256(_methodSig)),
 			uint256(32),						 // pointer to the length of the array
 			uint256(_params.length),		 // length of the array
-			_params	
-		);					
+			_params)){
+			revert();					
+		}
 	}
 }
 

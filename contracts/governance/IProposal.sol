@@ -10,7 +10,7 @@ import '../IDaoBase.sol';
 */
 interface IProposal {
 	function action()external;
-	function getVoting()public constant returns(IVoting voting);
+	function getVoting()external view returns(IVoting voting);
 
 	// ???
 	// function isOpen() public constant returns(bool);
