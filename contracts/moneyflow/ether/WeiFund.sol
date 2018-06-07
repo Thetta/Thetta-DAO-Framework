@@ -7,9 +7,11 @@ import "./WeiExpense.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-//////////////////////////////////////////////////////
-// WeiFund can store funds until 'flush' is called (pull model)
-// This is a terminal item, that has no children
+/**
+ * @title WeiFund 
+ * @dev WeiFund stores funds until 'flush' is called (pull model)
+ * This is a terminal item, that has no children.
+*/
 contract WeiFund is WeiRelativeExpense {
 	address public output;		// will not be able to change that later!
 	bool public allowFlushTo = true;

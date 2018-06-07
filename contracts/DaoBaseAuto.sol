@@ -3,7 +3,16 @@ pragma solidity ^0.4.22;
 import "./utils/GenericCaller.sol";
 
 // TODO: convert to library?
-// This contract is a helper that will create new Proposal (i.e. voting) if the action is not allowed directly
+
+/**
+ * @title DaoBaseAuto
+ * @dev This contract is a helper that will create new Proposal (i.e. voting) if the action is not allowed directly.
+ * This should be used with DaoBaseWithUnpackers (not with DaoBase) and is completely optional.
+ *
+ * WARNING: As long as this contract is just an ordinary DaoBase client -> you should provide permissions to it 
+ * just like to any other account/contract. So you should give 'manageGroups', 'issueTokens', etc to the DaoBaseAuto! 
+ * Please see 'tests' folder for example.
+*/
 contract DaoBaseAuto is GenericCaller {
 	constructor(IDaoBase _dao)public
 		GenericCaller(_dao)

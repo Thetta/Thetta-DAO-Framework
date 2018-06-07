@@ -4,6 +4,7 @@ import "./Manageable.sol";
 
 /**
  * @title Pausable
+ * @author https://github.com/jibrelnetwork/jibrel-contracts
  * @dev Base contract which allows children to implement an emergency stop mechanism.
  * @dev Based on zeppelin's Pausable, but integrated with Manageable
  * @dev Contract is in paused state by default and should be explicitly unlocked

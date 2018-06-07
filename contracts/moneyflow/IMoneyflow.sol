@@ -1,19 +1,29 @@
 pragma solidity ^0.4.22;
 
-// this contract should keep all money until flush is called
+/**
+ * @title IDestination 
+ * @dev Keeps all money until flush is called
+*/
 interface IDestination {
 	// pull model
 	function flush() public;
 	function flushTo(address _to) public;
 }
 
-// ISplitter does not store funds!
+/**
+ * @title ISplitter 
+ * @dev does not store funds. Splits them between the children
+*/
 interface ISplitter {
 	function getChildrenCount() public constant returns(uint);
 	function getChild(uint _index) public constant returns(address);
 	function addChild(address _newChild) public;
 }
 
+/**
+ * @title IReceiver 
+ * @dev Something that needs funds 
+*/
 interface IReceiver {
 	// In case we have absolute output -> will return 0
 	// in 1/100th percents of input. Examples:
@@ -60,6 +70,9 @@ contract IErc20Receiver is IReceiver {
 	function getTotalTokensNeeded(uint _inputTokens)constant public returns(uint);
 }
 
+/**
+ * @title Moneyflow 
+*/
 interface IMoneyflow {
 	// send Ether using 'sendFunds' method here
 	function getRevenueEndpoint()public constant returns(IWeiReceiver);

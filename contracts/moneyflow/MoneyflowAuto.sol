@@ -6,7 +6,15 @@ import "./ether/WeiExpense.sol";
 
 import "../utils/GenericCaller.sol";
 
-// TODO: add tests!
+/**
+ * @title MoneyflowAuto 
+ * @dev This contract is a helper that will create new Proposal (i.e. voting) if the action is not allowed directly.
+ * This is completely optional.
+ *
+ * WARNING: As long as this contract is just an ordinary DaoBase client -> you should provide permissions to it 
+ * just like to any other account/contract. So you should give 'withdrawDonations', 'setRootWeiReceiver', etc to the MoneyflowAuto! 
+ * Please see 'tests' folder for example.
+*/
 contract MoneyflowAuto is GenericCaller {
 	IMoneyflow mf;
 
@@ -17,6 +25,7 @@ contract MoneyflowAuto is GenericCaller {
 	}
 
 	/*
+	// TODO:
 	// this is moved to Scheme!
 	function addNewTaskAuto(WeiAbsoluteExpense _wt) public returns(address voteOut){
 		bytes32[] memory params = new bytes32[](1);

@@ -7,7 +7,10 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "../IDaoBase.sol";
 
-//////////////////////////////////////////////////////
+/**
+ * @title Gate (wei)
+ * @dev Opens or closes the moneyflow
+*/
 contract Gate is Ownable, IWeiReceiver{
 	// Simple Gate is open permanenlty; open/close implementation is for child;
 	bool opened = true;
@@ -23,6 +26,8 @@ contract Gate is Ownable, IWeiReceiver{
 		revert();
 	}
 
+	// TODO: this method is not provided in any interface 
+	// should be removed
 	function getChild() public constant returns(IWeiReceiver){
 		return child;
 	}
@@ -75,6 +80,8 @@ contract Gate is Ownable, IWeiReceiver{
 		c.processFunds.value(needed)(amount);
 	}
 
+	// use processFunds instead
 	function() public {
+		revert();
 	}
 }

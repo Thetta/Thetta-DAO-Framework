@@ -6,6 +6,10 @@ import "./tokens/StdDaoToken.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+/**
+ * @title DaoStorageGroupd
+ * @dev This contract is used by DaoStorage below. Do not use it directly
+*/
 contract DaoStorageGroups is Ownable {
 	// member -> group names
 	mapping (address=>bytes32[]) addressToGroups;
@@ -103,31 +107,13 @@ contract DaoStorageGroups is Ownable {
 	}	
 }
 
-//////////////////////////////////////////////////////////
-// Permissions:
-// 
-// addNewProposal
-// manageGroups
-// issueTokens
-// upgradeDao
-//
-// Tasks:
-//		startTask
-//		startBounty
-//		addNewTask
-//
-// Moneyflow:
-//		modifyMoneyscheme
-//		withdrawDonations
-//
-// How permissions works now:
-//		1. if caller is in the whitelist -> allow
-//		2. if caller is in the group and this action can be done by group members -> allow
-//		3. if caller is shareholder and this action can be done by a shareholder -> allow
-//		4. if this action requires voting 
-//			a. caller is in the majority -> allow
-//			b. caller is voting and it is succeeded -> allow
-//		4. deny
+/**
+ * @title DaoStorage
+ * @dev This is the basic contract that keeps all data. It is used by DaoBase (controller) on top.
+ * The controller can be updated but the storage will be kept intact.
+ *
+ * Storage works with bytes32 instead of strings. DaoBase converts strings to bytes32 by hashing (keccak256)
+*/
 contract DaoStorage is DaoStorageGroups {
 	// owner of DaoStorage will be the Dao (DaoBase)
 	// owner of tokens will be the Dao (DaoBase)

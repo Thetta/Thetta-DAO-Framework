@@ -6,21 +6,24 @@ import '../moneyflow/ether/WeiExpense.sol';
 
 import '../IDaoBase.sol';
 
-// 4 types of tasks:
-// PrePaid 
-// PostPaid with known neededWei amount 
-// PostPaid with unknown neededWei amount. Task is evaluated AFTER work is complete
-// PostPaid donation - client pays any amount he wants AFTER work is complete
-// 
-////////////////////////////////////////////////////////
-// WeiAbsoluteExpense:
-//		has 'owner'	(i.e. "admin")
-//		has 'moneySource' (i.e. "client")
-//		has 'neededWei'
-//		has 'processFunds(uint _currentFlow)' payable function 
-//		has 'setNeededWei(uint _neededWei)' 
-// 
-contract GenericTask is WeiAbsoluteExpense {
+/**
+ * @title WeiGenericTask 
+ * @dev Basic contract for WeiTask and WeiBounty
+ *
+ * 4 types of tasks:
+ *		PrePaid 
+ *		PostPaid with known neededWei amount 
+ *		PostPaid with unknown neededWei amount. Task is evaluated AFTER work is complete
+ *		PostPaid donation - client pays any amount he wants AFTER work is complete
+ * 
+ * WeiAbsoluteExpense:
+ *		has 'owner'	(i.e. "admin")
+ *		has 'moneySource' (i.e. "client")
+ *		has 'neededWei'
+ *		has 'processFunds(uint _currentFlow)' payable function 
+ *		has 'setNeededWei(uint _neededWei)' 
+*/ 
+contract WeiGenericTask is WeiAbsoluteExpense {
 	// use DaoClient instead?
 	// (it will handle upgrades)
 	IDaoBase dao;
@@ -76,7 +79,7 @@ contract GenericTask is WeiAbsoluteExpense {
 	}
 
 	// if _neededWei==0 -> this is an 'Unknown cost' situation. use 'setNeededWei' method of WeiAbsoluteExpense
-	function GenericTask(
+	function WeiGenericTask(
 		IDaoBase _dao, 
 		string _caption, 
 		string _desc, 
@@ -202,9 +205,13 @@ contract GenericTask is WeiAbsoluteExpense {
 	}
 }
 
-contract WeiTask is GenericTask {
+/**
+ * @title WeiTask 
+ * @dev Can be prepaid or postpaid. 
+*/
+contract WeiTask is WeiGenericTask {
 	function WeiTask(IDaoBase _dao, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime) public 
-		GenericTask(_dao, _caption, _desc, _isPostpaid, _isDonation, _neededWei, _deadlineTime) 
+		WeiGenericTask(_dao, _caption, _desc, _isPostpaid, _isDonation, _neededWei, _deadlineTime) 
 	{
 	}
 
@@ -222,10 +229,14 @@ contract WeiTask is GenericTask {
 	}
 }
 
-// Bounty is always prepaid 
-contract WeiBounty is GenericTask {
+/**
+ * @title WeiBounty 
+ * @dev Bounty is when you put money, then someone outside the DAO works
+ * That is why bounty is always prepaid 
+*/
+contract WeiBounty is WeiGenericTask {
 	function WeiBounty(IDaoBase _dao, string _caption, string _desc, uint _neededWei, uint64 _deadlineTime) public 
-		GenericTask(_dao, _caption, _desc, false, false, _neededWei, _deadlineTime) 
+		WeiGenericTask(_dao, _caption, _desc, false, false, _neededWei, _deadlineTime) 
 	{
 	}
 

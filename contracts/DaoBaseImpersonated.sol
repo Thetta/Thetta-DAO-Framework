@@ -5,6 +5,11 @@ import "./IDaoBase.sol";
 import "zeppelin-solidity/contracts/ECRecovery.sol";
 
 // TODO: convert to library?
+
+/**
+ * @title ImpersonationCaller 
+ * @dev This is a convenient wrapper that is used by the contract below (see DaoBaseImpersonated). Do not use it directly.
+*/
 contract ImpersonationCaller is DaoClient {
 	constructor(IDaoBase _dao) public DaoClient(_dao) {
 
@@ -35,6 +40,16 @@ contract ImpersonationCaller is DaoClient {
 }
 
 // TODO: convert to library?
+
+/**
+ * @title DaoBaseImpersonated 
+ * @dev This contract is a helper that will call the action is not allowed directly (by the current user) on behalf of the other user.
+ * It is calling it really without any 'delegatecall' so msg.sender will be DaoBaseImpersonated, not the original user!
+ * 
+ * WARNING: As long as this contract is just an ordinary DaoBase client -> you should provide permissions to it 
+ * just like to any other account/contract. So you should give 'manageGroups', 'issueTokens', etc to the DaoBaseImpersonated! 
+ * Please see 'tests' folder for example.
+*/
 contract DaoBaseImpersonated is ImpersonationCaller {
 	constructor(IDaoBase _dao)public 
 		ImpersonationCaller(_dao)

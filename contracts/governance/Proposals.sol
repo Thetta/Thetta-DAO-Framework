@@ -6,8 +6,12 @@ import "../governance/Voting.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-// This is an auto proposal that is used by GenericCaller to 
-// call actions on a _target 
+/**
+ * @title GenericProposal 
+ * @dev This is the implementation of IProposal interface. Each Proposal should have voting attached. 
+ * This is an auto proposal that is used by GenericCaller to call actions on a _target 
+ * Used by GenericCaller, DaoBaseAuto, MoneyflowAuto, etc
+*/
 contract GenericProposal is IProposal, Ownable {
 	IVoting voting;
 
@@ -51,9 +55,13 @@ contract GenericProposal is IProposal, Ownable {
 	}
 }
 
-// This proposal has no action and no consequences 
-// It should be used just for informal purps. 
-// i.e. with messages like "Lets switch to Slack?"
+/**
+ * @title GenericProposal 
+ * @dev This is the implementation of IProposal interface. Each Proposal should have voting attached. 
+ * This proposal has no action and no consequences 
+ * It should be used just for informal purps. 
+ * i.e. with messages like "Lets switch to Slack?"
+*/
 contract InformalProposal is IProposal, Ownable {
 	string proposalText = '';
 	IVoting voting;

@@ -7,6 +7,10 @@ import './IProposal.sol';
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+// commented for future purps.
+// please see Voting_1p1v.sol 
+
+/*
 contract Voting is IVoting {
 	// use DaoClient instead?
 	// (it will handle upgrades)
@@ -104,3 +108,4 @@ contract Voting_SimpleToken is Voting, Ownable {
 		// TODO: 
 	}
 }
+*/

@@ -7,8 +7,11 @@ import "../governance/Proposals.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-// This is a wrapper that help us to do action that CAN require votings
-// WARNING: should be permitted to add new proposal by the current DaoBase!!!
+/**
+ * @title GenericCaller
+ * @dev This is a wrapper that help us to do action that CAN require votings
+ * WARNING: should be permitted to add new proposal by the current DaoBase!!!
+*/
 contract GenericCaller is DaoClient, Ownable {
 	enum VotingType {
 		NoVoting,
@@ -112,8 +115,8 @@ contract GenericCaller is DaoClient, Ownable {
 		}
 
 		/*
+		// TODO: 
 		if(VotingType.VotingSimpleToken==vp.votingType){
-			// TODO: test
 			return new Voting_SimpleToken(dao, _proposal, _origin, uint(vp.param1), address(vp.param2), vp.param3);
 		}
 		*/

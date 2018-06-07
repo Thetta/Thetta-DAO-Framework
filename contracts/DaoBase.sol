@@ -8,12 +8,16 @@ import "./IDaoBase.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-// READ THIS:
-// 1. This contract will be the owner of the 'store' and all 'tokens' inside the store!
-// It will transfer ownership only during upgrade
-//
-// 2. Currently DaoBase works only with StdDaoToken. It does not support working with 
-// plain ERC20 tokens because we need some extra features like mint(), burn() and transferOwnership()
+/**
+ * @title DaoBase 
+ * @dev This is the base contract that you should use.
+ * 
+ * 1. This contract will be the owner of the 'store' and all 'tokens' inside the store!
+ * It will transfer ownership only during upgrade
+ *
+ * 2. Currently DaoBase works only with StdDaoToken. It does not support working with 
+ * plain ERC20 tokens because we need some extra features like mint(), burn() and transferOwnership()
+*/
 contract DaoBase is IDaoBase, Ownable {
 	DaoStorage public store;
 
@@ -89,6 +93,17 @@ contract DaoBase is IDaoBase, Ownable {
 		store.allowActionByAnyMemberOfGroup(keccak256(_what), keccak256(_groupName));
 	}
 
+	/**
+	 * @dev Function that will check if action is DIRECTLY callable by msg.sender (account or another contract)
+	 * How permissions works now:
+	 * 1. if caller is in the whitelist -> allow
+	 * 2. if caller is in the group and this action can be done by group members -> allow
+	 * 3. if caller is shareholder and this action can be done by a shareholder -> allow
+	 * 4. if this action requires voting 
+	 *    a. caller is in the majority -> allow
+	 *    b. caller is voting and it is succeeded -> allow
+	 * 4. deny
+	*/
 	function isCanDoAction(address _a, string _permissionName) public constant returns(bool){
 		bytes32 _permissionNameHash = keccak256(_permissionName);
 
@@ -97,7 +112,7 @@ contract DaoBase is IDaoBase, Ownable {
 			return true;
 		}
 
-		// 1 - check if employees can do that without voting?
+		// 1 - check if group member can do that without voting?
 	   if(store.isCanDoByGroupMember(_permissionNameHash, _a)){
 			return true;
 		}
@@ -179,6 +194,14 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 }
 
+/**
+ * @title DaoBaseWithUnpackers
+ * @dev Use this contract instead of DaoBase if you need DaoBaseAuto.
+ * It features method unpackers that will convert bytes32[] params to the method params.
+ *
+ * When DaoBaseAuto will creates voting/proposal -> it packs params into the bytes32[] 
+ * After voting is finished -> target method is called and params should be unpacked
+*/
 contract DaoBaseWithUnpackers is DaoBase {
 	constructor(DaoStorage _store) public 
 		DaoBase(_store)	

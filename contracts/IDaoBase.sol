@@ -2,21 +2,27 @@ pragma solidity ^0.4.22;
 
 import './governance/IProposal.sol';
 
+/**
+ * @title IDaoObserver, can be called IDaoClient really.
+ * @dev Also, see DaoClient contract below.
+ */
 interface IDaoObserver {
 	function onUpgrade(address _newAddress) public;
 }
 
+/**
+ * @title This is the base interface that you should use.
+ * @dev Derive your DAO from it and provide the method implementation or 
+ * see DaoBase contract that implements it.
+ */
 interface IDaoBase {
 	function addObserver(IDaoObserver _observer)public;
-
 	function upgradeDaoContract(IDaoBase _new)public;
 
 // Groups
 	function addGroupMember(string _groupName, address _a) public;
 	function removeGroupMember(string _groupName, address _a) public;
-	
 	function getMembersCount(string _groupName) public constant returns(uint);
-	
 	function isGroupMember(string _groupName,address _a)public constant returns(bool);
 
 // Permissions
@@ -39,7 +45,14 @@ interface IDaoBase {
 	function getProposalsCount()public constant returns(uint);
 }
 
-// Just an easy-to-use wrapper
+/**
+ * @title DaoClient, just an easy-to-use wrapper.
+ * @dev This contract provides you with internal 'dao' variable. 
+ * Once your DAO controller is upgraded -> all DaoClients will be notified and 'dao' var will be updated automatically.
+ *
+ * Some contracts like Votings or Auto-callers has 'dao' variable and don't use DaoClient.
+ * In this case they will stop working if the controller (DAO) is upgraded (it is as inteded).
+ */
 contract DaoClient is IDaoObserver {
 	IDaoBase dao;
 
@@ -53,8 +66,11 @@ contract DaoClient is IDaoObserver {
 		dao.addObserver(this);
 	}
 
-	// If your company is upgraded -> then this will automatically update the current dao.
-	// dao will point at NEW contract!
+	/**
+	 * @dev If your company is upgraded -> then this will automatically update the current dao.
+	 * dao will point at NEW contract!
+	 * @param _newAddress New controller.
+	 */
 	function onUpgrade(address _newAddress) public {
 		require(msg.sender==address(dao));	
 

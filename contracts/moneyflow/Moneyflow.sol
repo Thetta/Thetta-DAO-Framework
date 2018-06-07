@@ -7,8 +7,11 @@ import "../IDaoBase.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-// Easy-to-use wrapper to convert fallback -> processFunds()
-// fallback -> processFunds
+/**
+ * @title FallbackToWeiReceiver
+ * @dev Easy-to-use wrapper to convert fallback -> processFunds()
+ * fallback -> processFunds
+*/
 contract FallbackToWeiReceiver {
 	address output = 0x0;
 
@@ -23,6 +26,13 @@ contract FallbackToWeiReceiver {
 	}
 }
 
+/**
+ * @title MoneyFlow 
+ * @dev Reference (typical example) implementation of IMoneyflow
+ * Use it or modify as you like. Please see tests
+ * No elements are directly available. Work with all children only throught the methods like 
+ * 'setRootWeiReceiverGeneric', etc
+*/
 contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	WeiFund donationEndpoint;
 	// by default - this is 0x0, please use setWeiReceiver method

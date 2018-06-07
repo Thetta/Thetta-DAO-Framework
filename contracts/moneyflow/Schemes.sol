@@ -10,21 +10,24 @@ import "../governance/Voting.sol";
 
 import "../IDaoBase.sol";
 
-// This contract should be used to automatically instantiate Default moneyscheme for a DAO.
-// Use it as example. You can setup your own moneyflow.  
-// THIS IS A WORKING example!
-//
-// Layout:
-//
-// Root - top-down splitter 
-//		Spends - unsorted splitter
-//			Salaries - unsorted splitter 
-//			Other - unsorted splitter 
-//			Tasks - unsorted splitter
-//		Bonuses - unsorted splitter
-//		Rest - unsorted splitter
-//			ReserveFund - fund 
-//			DividendsFund - fund
+/**
+ * @title FallbackToWeiReceiver
+ * @dev This contract should be used to automatically instantiate Default moneyscheme for a DAO.
+ * Use it as example. You can setup your own moneyflow.  
+ * THIS IS A WORKING example!
+ *
+ * Layout:
+ * 
+ * Root - top-down splitter 
+ *		Spends - unsorted splitter
+ *			Salaries - unsorted splitter 
+ *			Other - unsorted splitter 
+ *			Tasks - unsorted splitter
+ *		Bonuses - unsorted splitter
+ *		Rest - unsorted splitter
+ *			ReserveFund - fund 
+ *			DividendsFund - fund
+*/
 contract DefaultMoneyflowScheme is DaoClient {
 	WeiTopDownSplitter root;
 
@@ -127,6 +130,7 @@ contract DefaultMoneyflowScheme is DaoClient {
 	}
 }
 
+// TODO:
 contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
 	function DefaultMoneyflowSchemeWithUnpackers(
 			IDaoBase _dao, 

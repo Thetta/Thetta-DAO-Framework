@@ -5,9 +5,10 @@ import "../IMoneyflow.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-//////////////////////////////////////////////////////
-// ISplitter has multiple outputs (allows to send money only to THESE addresses)
-// 
+/**
+ * @title SplitterBase 
+ * @dev Splitter has multiple outputs (allows to send money only to THESE addresses)
+*/
 contract SplitterBase is ISplitter, Ownable {
 	using SafeMath for uint;
 
@@ -33,6 +34,11 @@ contract SplitterBase is ISplitter, Ownable {
 	}
 }
 
+/**
+ * @title WeiTopDownSplitter 
+ * @dev Will split money from top to down (order matters!). It is possible for some children to not receive money 
+ * if they have ended. 
+*/
 contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 	function WeiTopDownSplitter(string _name) SplitterBase(_name) public {
 	}
@@ -132,6 +138,10 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 	}
 }
 
+/**
+ * @title WeiUnsortedSplitter 
+ * @dev Will split money (order does not matter!). 
+*/
 contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 	function WeiUnsortedSplitter(string _name) SplitterBase(_name) public {
 	}
