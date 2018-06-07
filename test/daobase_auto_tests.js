@@ -4,7 +4,7 @@ var DaoStorage = artifacts.require("./DaoStorage");
 
 var DaoBaseAuto = artifacts.require("./DaoBaseAuto");
 
-var Voting = artifacts.require("./Voting");
+var IVoting = artifacts.require("./IVoting");
 var IProposal = artifacts.require("./IProposal");
 
 var CheckExceptions = require('./utils/checkexceptions');
@@ -179,7 +179,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting.at(votingAddress);
+		const voting = await IVoting.at(votingAddress);
 
 		const r1 = await voting.getFinalResults();
 		global.assert.equal(r1[0],1,'yes');			// 1 already voted (who started the voting)
@@ -250,7 +250,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting.at(votingAddress);
+		const voting = await IVoting.at(votingAddress);
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -307,7 +307,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting.at(votingAddress);
+		const voting = await IVoting.at(votingAddress);
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
