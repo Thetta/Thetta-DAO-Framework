@@ -20,8 +20,6 @@ import "zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
  *		burn()
 */
 contract StdDaoToken is MintableToken, BurnableToken, DetailedERC20 {
-	event Burn(address indexed burner, uint256 value);
-
 	constructor(string _name, string _symbol, uint8 _decimals) public
 		DetailedERC20(_name, _symbol, _decimals)
 	{
@@ -29,14 +27,6 @@ contract StdDaoToken is MintableToken, BurnableToken, DetailedERC20 {
 
 	// this is an override of BurnableToken method
 	function burn(address _who, uint256 _value) public {
-		require(_value <= balances[_who]);
-		// no need to require value <= totalSupply, since that would imply the
-		// sender's balance is greater than the totalSupply, which *should* be an assertion failure
-
-		balances[_who] = balances[_who].sub(_value);
-		totalSupply_ = totalSupply_.sub(_value);
-
-		emit Burn(_who, _value);
-		emit Transfer(_who, address(0), _value);
+		_burn(_who, _value);
 	}
 }

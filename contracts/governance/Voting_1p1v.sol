@@ -58,6 +58,8 @@ contract Voting_1p1v is IVoting, Ownable {
 		if(minutesToVote>0){
 			if((uint64(now) - genesis) < (minutesToVote * 60 * 1000)){
 				return false;
+			}else{
+				return true;
 			}
 		}
 	   
@@ -90,7 +92,9 @@ contract Voting_1p1v is IVoting, Ownable {
 		(yesResults, noResults, votersTotal) = getFinalResults();
 		uint votesSum = yesResults + noResults;
 
-		return isFinished() && (yesResults * 100 >= (yesResults + noResults)*consensusPercent);
+		return isFinished() && 
+		       (yesResults * 100 >= (yesResults + noResults)*consensusPercent) && 
+		       ((votesSum * 100) >= votersTotal * quorumPercent); // quorumTest if time passed, isFinished==true, but no quorum => isYes==false 
 	}
 
 	function cancelVoting() public onlyOwner {
