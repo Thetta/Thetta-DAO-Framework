@@ -1,4 +1,4 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.22;
 
 import '../IDaoBase.sol';
 
@@ -17,14 +17,13 @@ contract Voting_1p1v is IVoting, Ownable {
 	// (it will handle upgrades)
 	IDaoBase dao;
 	IProposal proposal; 
+
 	uint public minutesToVote;
-	bool finishedWithYes = false;
+	bool finishedWithYes;
 	uint64 genesis;
 	uint public quorumPercent;
 	uint public consensusPercent;
 	bytes32 public emptyParam;
-
-////////
 	string public groupName;
 
 	mapping (address=>bool) addressVotedAlready;
@@ -32,13 +31,19 @@ contract Voting_1p1v is IVoting, Ownable {
 	address[] employeesVotedNo;
 
 ////////
-	// we can use _origin instead of tx.origin
+	/**
+	 * TODO: 
+	 * @param _minutesToVote - TODO 
+	 * @param _quorumPercent - TODO
+	 * @param _consensusPercent - TODO
+	*/
 	constructor(IDaoBase _dao, IProposal _proposal, 
 		address _origin, uint _minutesToVote, string _groupName, 
 		uint _quorumPercent, uint _consensusPercent, bytes32 _emptyParam) public 
 	{
-		// require((_quorumPercent<=100)&&(_quorumPercent>0));
-		// require((_consensusPercent<=100)&&(_consensusPercent>0));
+		require((_quorumPercent<=100)&&(_quorumPercent>0));
+		require((_consensusPercent<=100)&&(_consensusPercent>0));
+
 		dao = _dao;
 		proposal = _proposal;
 		minutesToVote = _minutesToVote;
@@ -56,30 +61,41 @@ contract Voting_1p1v is IVoting, Ownable {
 	}
 
 	function _isFinished()internal view returns(bool){
-		// 1 - if minutes elapsed
-		if(minutesToVote>0){
-			if((uint64(now) - genesis) < (minutesToVote * 60 * 1000)){
-				return false;
-			}else{
-				return true;
-			}
+		if(minutesToVote!=0){
+			return _isTimeElapsed();
 		}
-	   
+
 		if(finishedWithYes){
 			return true;
 		}
 
+		return _isQuorumReached();
+	}
+
+	function _isTimeElapsed() internal view returns(bool){
+		if(minutesToVote==0){
+			return false;
+		}
+
+		return (uint64(now) - genesis) >= (minutesToVote * 60 * 1000);
+	}
+
+	function _isQuorumReached() internal view returns(bool){
 		uint yesResults = 0;
 		uint noResults = 0;
 		uint votersTotal = 0;
 
-		(yesResults, noResults, votersTotal) = _getFinalResults();
-		uint votesSum = yesResults + noResults;
+		(yesResults, noResults, votersTotal) = _getVotingStats();
+		return ((yesResults + noResults) * 100) >= (votersTotal * quorumPercent);
+	}
 
-		
+	function _isConsensusReached() internal view returns(bool){
+		uint yesResults = 0;
+		uint noResults = 0;
+		uint votersTotal = 0;
 
-		// if enough participants voted
-		return ((votesSum * 100) >= votersTotal * quorumPercent);
+		(yesResults, noResults, votersTotal) = _getVotingStats();
+		return (yesResults * 100) >= ((yesResults + noResults) * consensusPercent);
 	}
 
 	function isYes()external view returns(bool){
@@ -91,47 +107,25 @@ contract Voting_1p1v is IVoting, Ownable {
 			return true;
 		}
 
-		uint yesResults = 0;
-		uint noResults = 0;
-		uint votersTotal = 0;
-
-		(yesResults, noResults, votersTotal) = _getFinalResults();
-		uint votesSum = yesResults + noResults;
-
 		return _isFinished() && 
-		       (yesResults * 100 >= (yesResults + noResults)*consensusPercent) && 
-		       ((votesSum * 100) >= votersTotal * quorumPercent); // quorumTest if time passed, isFinished==true, but no quorum => isYes==false 
+				 _isQuorumReached() &&
+				 _isConsensusReached();
 	}
 
 	function cancelVoting() external onlyOwner {
 		// TODO:
 	}
 
-	event Voting1p1v_vote(uint _votersTotal, uint votesSum);
-	
 	function vote(bool _yes, uint _tokenAmount) external {
 		require(!_isFinished());
-		
-		if(_tokenAmount!=0){
-			revert();
-		}
-
-		uint yesResults = 0;
-		uint noResults = 0;
-		uint votersTotal = 0;
-
-
-		(yesResults, noResults, votersTotal) = _getFinalResults();
-		uint votesSum = yesResults + noResults;
-
-		emit Voting1p1v_vote(votersTotal, votesSum);
+		// This voting type does not deal with tokens, that's why _tokenAmount should be ZERO
+		require(0==_tokenAmount);
 
 		internalVote(msg.sender, _yes);
 	}
 
 	function internalVote(address _who, bool _yes) internal {
 		require(dao.isGroupMember(groupName, _who));
-
 		require(!addressVotedAlready[_who]);
 
 		if(_yes){
@@ -159,7 +153,6 @@ contract Voting_1p1v is IVoting, Ownable {
 		}
 	}
 
-
 	function filterResults(address[] _votersTotal) internal constant returns(uint){
 		uint votedCount = 0;
 
@@ -172,11 +165,11 @@ contract Voting_1p1v is IVoting, Ownable {
 		return votedCount;
 	}
 
-	function getFinalResults() external constant returns(uint yesResults, uint noResults, uint votersTotal){
-		return _getFinalResults();
+	function getVotingStats() external constant returns(uint yesResults, uint noResults, uint votersTotal){
+		return _getVotingStats();
 	}
 
-	function _getFinalResults() internal constant returns(uint yesResults, uint noResults, uint votersTotal){
+	function _getVotingStats() internal constant returns(uint yesResults, uint noResults, uint votersTotal){
 		yesResults = filterResults(employeesVotedYes);
 		noResults = filterResults(employeesVotedNo);
 		votersTotal = dao.getMembersCount(groupName);
