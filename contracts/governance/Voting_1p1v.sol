@@ -32,9 +32,14 @@ contract Voting_1p1v is IVoting, Ownable {
 
 	/**
 	 * TODO: 
-	 * @param _minutesToVote - TODO 
-	 * @param _quorumPercent - TODO
-	 * @param _consensusPercent - TODO
+	 * @param _dao – DAO where proposal was created.
+	 * @param _proposal – proposal, which create vote.
+	 * @param _origin – who create voting (group member).
+	 * @param _minutesToVote - if is zero -> voting until quorum reached, else voting finish after minutesToVote minutes
+	 * @param _groupName - members of which group can vote.
+	 * @param _quorumPercent - percent of group members to make quorum reached. If minutesToVote==0 and quorum reached -> voting is finished
+	 * @param _consensusPercent - percent of voters (not of group members!) to make consensus reached. If consensus reached -> voting is finished with YES result
+	 * @param _emptyParam - not need here
 	*/
 
 	constructor(IDaoBase _dao, IProposal _proposal, 
