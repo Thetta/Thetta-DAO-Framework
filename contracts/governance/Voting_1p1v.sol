@@ -30,13 +30,13 @@ contract Voting_1p1v is IVoting, Ownable {
 	address[] employeesVotedYes;
 	address[] employeesVotedNo;
 
-////////
 	/**
 	 * TODO: 
 	 * @param _minutesToVote - TODO 
 	 * @param _quorumPercent - TODO
 	 * @param _consensusPercent - TODO
 	*/
+
 	constructor(IDaoBase _dao, IProposal _proposal, 
 		address _origin, uint _minutesToVote, string _groupName, 
 		uint _quorumPercent, uint _consensusPercent, bytes32 _emptyParam) public 
