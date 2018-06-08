@@ -42,17 +42,8 @@ global.contract('Voting_1p1v', (accounts) => {
 
 		await daoBase.allowActionByVoting("manageGroups", token.address);
 		await daoBase.allowActionByVoting("issueTokens", token.address);
-		await daoBase.allowActionByAnyMemberOfGroup("burnTokens", "Employees");
 	});
 	
-	global.it('should burn tokens',async() => {
-		let balance = await token.balanceOf(creator);
-		await daoBase.burnTokens(token.address, creator, 1000);
-		let balance2 = await token.balanceOf(creator);
-		let balanceDelta = balance.toNumber() - balance2.toNumber();
-		global.assert.equal(balanceDelta, 1000);
-	});	
-
 	global.it('should create and use 1p1v voting',async() => {
 		// add 3 employees
 		await daoBase.addGroupMember("Employees", employee1);
@@ -62,25 +53,22 @@ global.contract('Voting_1p1v', (accounts) => {
 		let proposal = await InformalProposal.new('Take the money and run', {from:creator, gas:10000000, gasPrice:0});	
 		let voting = await Voting_1p1v.new(daoBase.address, proposal.address, creator, 0, "Employees", 67, 50, 0);
 		
-		// vote by first, check results  (getFinalResults, isFinished, isYes, etc) 
-			
+		// vote by first, check results  (getVotingStats, isFinished, isYes, etc) 
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(false,0,{from:employee2});
 
-		var r2 = await voting.getFinalResults();
+		var r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1].toNumber(),1,'no');
-		
 
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-
 		await voting.vote(true,0,{from:employee1});
 
-		var r2 = await voting.getFinalResults();
+		var r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1].toNumber(),1,'no');
 		
@@ -100,10 +88,10 @@ global.contract('Voting_1p1v', (accounts) => {
 		let proposal = await InformalProposal.new('Take the money and run again', {from:creator, gas:10000000, gasPrice:0});	
 		let voting = await Voting_1p1v.new(daoBase.address, proposal.address, creator, 0, "Employees", 51, 50, 0);
 	
-		// vote by first, check results  (getFinalResults, isFinished, isYes, etc) 	
+		// vote by first, check results  (getVotingStats, isFinished, isYes, etc) 	
 		await voting.vote(true,0,{from:employee1});
 		
-		var r2 = await voting.getFinalResults();
+		var r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1].toNumber(),0,'no');
 		global.assert.equal(r2[2].toNumber(),6,'creator + 5 employee');
@@ -111,18 +99,16 @@ global.contract('Voting_1p1v', (accounts) => {
 		await daoBase.removeGroupMember("Employees", employee1);
 		// remove 2nd employee from the group 
 
-		var r2 = await voting.getFinalResults();
+		var r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1].toNumber(),0,'no');
 		global.assert.equal(r2[2].toNumber(),5,'creator + 4 employee');
 		
-		
 		await voting.vote(true,0,{from:employee2});
 
-		var r2 = await voting.getFinalResults();
+		var r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1].toNumber(),0,'no');
-		
 		
 		await CheckExceptions.checkContractThrows(
 			voting.vote, [true,0,{from:employee2}]);
@@ -140,53 +126,16 @@ global.contract('Voting_1p1v', (accounts) => {
 		// if voting is finished -> even if we remove some employees from the group 
 		// the voting results should not be changed!!!
 		// 
-		// BUT the 'getFinalResults()' will return different results
+		// BUT the 'getVotingStats()' will return different results
 		var emps = await daoBase.getMembersCount("Employees");
 		global.assert.equal(4, emps, '4 employees');
 
-		var res = await voting.getFinalResults();
+		var res = await voting.getVotingStats();
 		global.assert.strictEqual(res[0].toNumber(),2,'');
 		global.assert.strictEqual(res[1].toNumber(),0,'');
 
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished: 4/6 voted');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished: 4/6 voted, all said yes');	
 	});
-
-});
-
-global.contract('Voting_SimpleToken', (accounts) => {
-	const creator = accounts[0];
-	const employee1 = accounts[1];
-	const employee2 = accounts[2];
-	const employee3 = accounts[3];
-
-	let token;
-	let daoBase;
-
-	global.beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
-		await token.mint(creator, 1000);
-		let store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
-
-		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-
-		// add creator as first employee	
-		await store.addGroupMember(KECCAK256("Employees"), creator);
-		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
-
-		// do not forget to transfer ownership
-		await token.transferOwnership(daoBase.address);
-		await store.transferOwnership(daoBase.address);
-
-		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-
-		await daoBase.allowActionByVoting("manageGroups", token.address);
-		await daoBase.allowActionByVoting("issueTokens", token.address);
-	});
-
-	global.it('should create and use simple token voting',async() => {
-		// TODO:
-	});
-
 });
 

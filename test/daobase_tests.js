@@ -45,6 +45,7 @@ global.contract('DaoBase', (accounts) => {
 		await daoBase.allowActionByAnyMemberOfGroup("startTask","Employees");
 		await daoBase.allowActionByAnyMemberOfGroup("startBounty","Employees");
 		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("burnTokens", "Employees");
 
 		await daoBase.allowActionByVoting("manageGroups", token.address);
 		await daoBase.allowActionByVoting("addNewTask", token.address);
@@ -213,5 +214,14 @@ global.contract('DaoBase', (accounts) => {
 		// await daoBase.getGroupParticipants
 		global.assert.equal(3, (await daoBase.getMembersCount("Employees")).toNumber(), '2 employees + creator');
 	});
+
+	global.it('should burn tokens',async() => {
+		let balance = await token.balanceOf(creator);
+		await daoBase.burnTokens(token.address, creator, 1000);
+		let balance2 = await token.balanceOf(creator);
+		let balanceDelta = balance.toNumber() - balance2.toNumber();
+		global.assert.equal(balanceDelta, 1000);
+	});	
+
 });
 

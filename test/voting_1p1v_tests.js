@@ -138,7 +138,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(true,0,{from:employee2});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),2,'yes');
 		global.assert.equal(r2[1].toNumber(),0,'no');
 		
@@ -146,7 +146,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 		
 		await voting.vote(true,0,{from:employee3});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),3,'yes');
 		global.assert.equal(r2[1].toNumber(),0,'no');
 		
@@ -154,7 +154,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
 		await voting.vote(true,0,{from:employee4});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),4,'yes');
 		global.assert.equal(r2[1].toNumber(),0,'no');
 		
@@ -162,7 +162,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');	
 
 		await voting.vote(true,0,{from:employee5});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2
 			[0].toNumber(),5,'yes');
 		global.assert.equal(r2[1].toNumber(),0,'no');
@@ -186,7 +186,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.equal(quorumPercent.toNumber(), 10, 'quorumPercent should be 10'); 
 		global.assert.equal(consensusPercent.toNumber(), 100, 'consensusPercent should be 100'); 
 
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),0,'no');
 		
@@ -212,7 +212,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.equal(consensusPercent.toNumber(), 10, 'consensusPercent should be 10'); 
 
 		await voting.vote(false,0,{from:employee2});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),1,'no');
 		
@@ -220,7 +220,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 		
 		await voting.vote(false,0,{from:employee3});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),2,'no');
 		
@@ -228,7 +228,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
 		await voting.vote(false,0,{from:employee4});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),3,'no');
 		
@@ -236,7 +236,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');	
 
 		await voting.vote(false,0,{from:employee5});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),4,'no');
 		
@@ -257,7 +257,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(false,0,{from:employee2});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),1,'no');
 		
@@ -265,7 +265,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 		
 		await voting.vote(false,0,{from:employee3});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),2,'no');
 		
@@ -273,7 +273,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
 		await voting.vote(false,0,{from:employee4});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),3,'no');
 		
@@ -281,7 +281,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');	
 
 		await voting.vote(false,0,{from:employee5});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),4,'no');
 		
@@ -302,7 +302,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(false,0,{from:employee2});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),1,'no');
 		
@@ -310,7 +310,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 		
 		await voting.vote(false,0,{from:employee3});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),2,'no');
 		
@@ -318,7 +318,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
 		await voting.vote(false,0,{from:employee4});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),3,'no');
 		
@@ -326,7 +326,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');	
 
 		await voting.vote(false,0,{from:employee5});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),4,'no');
 		
@@ -347,7 +347,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(false,0,{from:employee2});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),1,'no');
 		
@@ -355,7 +355,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 		
 		await voting.vote(false,0,{from:employee3});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),2,'no');
 		
@@ -376,7 +376,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(true,0,{from:employee2});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),2,'yes');
 		global.assert.equal(r2[1].toNumber(),0,'no');
 		
@@ -384,7 +384,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 		
 		await voting.vote(false,0,{from:employee3});
-		r2 = await voting.getFinalResults();
+		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),2,'yes');
 		global.assert.equal(r2[1].toNumber(),1,'no');
 		

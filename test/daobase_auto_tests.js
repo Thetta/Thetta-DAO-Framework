@@ -181,7 +181,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		const votingAddress = await proposal.getVoting();
 		const voting = await IVoting.at(votingAddress);
 
-		const r1 = await voting.getFinalResults();
+		const r1 = await voting.getVotingStats();
 		global.assert.equal(r1[0],1,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r1[1],0,'no');
 
@@ -196,7 +196,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		// vote by employee 2
 		await voting.vote(true,0,{from:employee2});
 
-		const r2 = await voting.getFinalResults();
+		const r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1],0,'no');
 		
@@ -254,7 +254,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		const r = await voting.getFinalResults();
+		const r = await voting.getVotingStats();
 		global.assert.equal(r[0],1,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r[1],0,'no');
 		
@@ -264,7 +264,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		// should execute the action (issue tokens)!
 		await voting.vote(true,0,{from:employee2});
 
-		const r2 = await voting.getFinalResults();
+		const r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1],0,'no');
 		
@@ -313,7 +313,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 
 		await voting.vote(true,0,{from:creator});
 		
-		const r2 = await voting.getFinalResults();
+		const r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1].toNumber(),0,'no');
 		

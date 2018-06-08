@@ -163,7 +163,6 @@ global.contract('MoneyflowAuto', (accounts) => {
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
 		let groupName = await voting.groupName();
-		console.log('quorumPercent:', quorumPercent.toNumber(), 'consensusPercent:', consensusPercent.toNumber(), 'groupName:', groupName);
 
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
@@ -171,7 +170,7 @@ global.contract('MoneyflowAuto', (accounts) => {
 		await voting.vote(true,0,{from:employee2});
 
 		// check voting results again
-		const r2 = await voting.getFinalResults();
+		const r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1].toNumber(),0,'no');
 		
@@ -243,7 +242,7 @@ global.contract('MoneyflowAuto', (accounts) => {
 		await voting.vote(true,0,{from:employee2});
 
 		// check voting results again
-		const r2 = await voting.getFinalResults();
+		const r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1].toNumber(),0,'no');
 		
