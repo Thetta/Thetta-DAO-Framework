@@ -1,5 +1,4 @@
 var WeiTask = artifacts.require("./WeiTask");
-var WeiBounty = artifacts.require("./WeiBounty");
 var DaoBase = artifacts.require("./DaoBase");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
@@ -11,33 +10,34 @@ let store;
 let task;
 let daoBase;
 
+function KECCAK256 (x){
+	return web3.sha3(x);
+}
+
 async function setup(creator){
 	token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 	await token.mint(creator, 1000);
-	store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
+	store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 
 	// issue 1000 tokens
 	daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
 
-	{
-		await store.addGroup("Employees");
-		await store.addGroupMember("Employees", creator);
-
-		await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-		await store.allowActionByAnyMemberOfGroup("startTask","Employees");
-		await store.allowActionByAnyMemberOfGroup("startBounty","Employees");
-
-		// this is a list of actions that require voting
-		await store.allowActionByVoting("manageGroups",token.address);
-		await store.allowActionByVoting("addNewTask",token.address);
-		await store.allowActionByVoting("issueTokens",token.address);
-	}
+	// add creator as first employee	
+	await store.addGroupMember(KECCAK256("Employees"), creator);
+	await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 	// do not forget to transfer ownership
 	await token.transferOwnership(daoBase.address);
 	await store.transferOwnership(daoBase.address);
 
-	//moneyflowInstance = await MoneyFlow.new({from: creator});
+	await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+	await daoBase.allowActionByAnyMemberOfGroup("startTask","Employees");
+	await daoBase.allowActionByAnyMemberOfGroup("startBounty","Employees");
+
+	// this is a list of actions that require voting
+	await daoBase.allowActionByVoting("manageGroups",token.address);
+	await daoBase.allowActionByVoting("addNewTask",token.address);
+	await daoBase.allowActionByVoting("issueTokens",token.address);
 }
 
 global.contract('0.Tasks: prepaid positive scenario. Task created by creator', (accounts) => {
@@ -88,6 +88,7 @@ global.contract('0.Tasks: prepaid positive scenario. Task created by creator', (
 			false,
 			false,
 			ETH,
+			0,
 			{gas: 10000000, from: creator}
 		);
 	});
@@ -234,6 +235,7 @@ global.contract('1.Tasks: postpaid positive scenario with UNKNOWN price. Task cr
 			true,
 			false,
 			0,
+			0,
 			{gas: 10000000, from: creator}
 		);
 	});
@@ -343,6 +345,7 @@ global.contract('2.Tasks: postpaid positive scenario with KNOWN price. Task crea
 			true,
 			false,
 			ETH,
+			0,
 			{gas: 10000000, from: creator}
 		);
 	});
@@ -448,6 +451,7 @@ global.contract('3.Tasks: donation positive scenario. Task created by creator', 
 			'Task description',
 			true,
 			true,
+			0,
 			0,
 			{gas: 10000000, from: creator}
 		);
@@ -556,6 +560,7 @@ global.contract('4.Tasks: cancel on init state.', (accounts) => {
 			false,
 			false,
 			ETH,
+			0,
 			{gas: 10000000, from: creator}
 		);
 	});
@@ -598,6 +603,7 @@ global.contract('5.Tasks: cancel on prepaid state.', (accounts) => {
 			false,
 			false,
 			ETH,
+			0,
 			{gas: 10000000, from: creator}
 		);
 	});

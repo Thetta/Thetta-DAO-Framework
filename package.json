@@ -1,6 +1,6 @@
 {
-  "name": "thetta-smart-contracts",
-  "version": "1.0.0",
+  "name": "Thetta-DAO-Framework",
+  "version": "0.1.0",
   "description": "![CodeShip Build Status](https://codeship.com/projects/9cd363b0-a6d4-0135-e5e6-52d04353ae62/status?branch=master)",
   "main": "truffle.js",
   "directories": {
@@ -15,12 +15,12 @@
     "type": "git",
     "url": "git+https://github.com/Thetta/SmartContracts.git"
   },
-  "author": "Anthony Akentiev",
-  "license": "",
+  "author": "Thetta Research",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Thetta/SmartContracts/issues"
+    "url": "https://github.com/Thetta/Thetta-DAO-Framework/projects/1"
   },
-  "homepage": "https://github.com/Thetta/SmartContracts#readme",
+  "homepage": "https://github.com/Thetta/Thetta-DAO-Framework",
   "dependencies": {
     "babel-eslint": "^8.2.3",
     "babel-polyfill": "^6.26.0",
