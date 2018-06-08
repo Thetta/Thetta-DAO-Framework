@@ -24,9 +24,9 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
     * @dev Constructor
     * @param _neededWei - absolute value. how much Ether this expense should receive (in Wei). Can be zero (use _percentsMul100 in this case)
     * @param _percentsMul100 - if need to get % out of the input flow -> specify this parameter (1% is 100 units)
-    * @param _periodHours - TODO 
+    * @param _periodHours - if not isPeriodic and periodHours>0 ->no sense. if isPeriodic and periodHours==0 -> needs money everytime. if isPeriodic and periodHours>0 -> needs money every period.
     * @param _isCalculateDebt - if you don't pay in the current period -> will accumulate the needed amount (only for _neededWei!)
-    * @param _isPeriodic - TODO 
+    * @param _isPeriodic - if isPeriodic and periodHours>0 -> needs money every period. if isPeriodic and periodHours==0 -> needs money everytime.
     */
 	constructor(uint _neededWei, uint _percentsMul100, uint _periodHours, bool _isCalculateDebt, bool _isPeriodic) public {
 		percentsMul100 = _percentsMul100;
