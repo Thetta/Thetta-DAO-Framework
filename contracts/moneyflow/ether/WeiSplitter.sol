@@ -11,6 +11,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 */
 contract SplitterBase is ISplitter, Ownable {
 	using SafeMath for uint;
+	bool opened = true;
 
 	mapping (uint=>address) children;
 	uint childrenCount = 0;
@@ -21,7 +22,23 @@ contract SplitterBase is ISplitter, Ownable {
 		name = _name;
 	}
 
-// ISplitter:
+	function _isOpen() internal view returns(bool){
+		return opened;
+	}
+
+	// ISplitter:
+	function open() external onlyOwner{
+		opened = true;
+	}
+
+	function close() external onlyOwner{
+		opened = false;
+	}
+
+	function isOpen() external view returns(bool){
+		return opened;
+	}
+
 	function getChildrenCount()external view returns(uint){
 		return childrenCount;
 	}
@@ -46,6 +63,10 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 // IWeiReceiver:
 	// calculate only absolute outputs, but do not take into account the Percents
 	function getMinWeiNeeded()external view returns(uint){
+		if(!_isOpen()){
+			return 0;
+		}
+
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
@@ -60,6 +81,10 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 	}
 
 	function _getTotalWeiNeeded(uint _inputWei)internal view returns(uint){
+		if(!_isOpen()){
+			return 0;
+		}
+
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
@@ -91,6 +116,10 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 	}
 
 	function isNeedsMoney()constant public returns(bool){
+		if(!_isOpen()){
+			return false;
+		}
+
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
 			// if at least 1 child needs money -> return true
@@ -110,6 +139,7 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 	// this will save gas 
 	// See this - https://github.com/Thetta/SmartContracts/issues/40
 	function processFunds(uint _currentFlow) external payable{
+		require(_isOpen());
 		uint amount = _currentFlow;
 
 		// TODO: can remove this line?
@@ -153,6 +183,10 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 // IWeiReceiver:
 	// calculate only absolute outputs, but do not take into account the Percents
 	function getMinWeiNeeded()external view returns(uint){
+		if(!_isOpen()){
+			return 0;
+		}
+
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
@@ -167,6 +201,10 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 	}
 
 	function _getTotalWeiNeeded(uint _inputWei)internal view returns(uint){
+		if(!_isOpen()){
+			return 0;
+		}
+
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
@@ -191,6 +229,10 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 	}
 
 	function isNeedsMoney()external view returns(bool){
+		if(!_isOpen()){
+			return false;
+		}
+
 		for(uint i=0; i<childrenCount; ++i){
 			IWeiReceiver c = IWeiReceiver(children[i]);
 			// if at least 1 child needs money -> return true
@@ -205,6 +247,7 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 	// WeiSplitter should not hold any funds. Instead - it should split immediately
 	// If WeiSplitter receives less or more money than needed -> exception 
 	function processFunds(uint _currentFlow) external payable{
+		require(_isOpen());
 		uint amount = msg.value;
 
 		// TODO: can remove this line?

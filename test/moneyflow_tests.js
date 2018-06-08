@@ -6,8 +6,6 @@ var MoneyFlow = artifacts.require("./MoneyFlow");
 var WeiFund = artifacts.require("./WeiFund");
 var IWeiReceiver = artifacts.require("./IWeiReceiver");
 
-var Gate = artifacts.require("./Gate");
-
 var CheckExceptions = require('./utils/checkexceptions');
 
 var WeiTopDownSplitter = artifacts.require("./WeiTopDownSplitter");
@@ -702,38 +700,40 @@ global.contract('Moneyflow', (accounts) => {
 
 		let needsEmployee3 = await Employee1.isNeedsMoney({from:creator});
 		global.assert.equal(needsEmployee3, false, 'Dont need money, because he got it');	
-	});	
+	});
 
-	global.it('gates should access money then close then not accept',async() => {
+	global.it('Splitter should access money then close then not accept',async() => {
 		let callParams = {from:creator, gasPrice:0}	
 		let struct = {};
 		let balance0 = await web3.eth.getBalance(creator);
 
 		let tax = await WeiRelativeExpenseWithPeriod.new(1000, 0, false, callParams);
-		let gate1 = await Gate.new(daoBase.address, tax.address, callParams);
-		
-		let need1 = await gate1.isNeedsMoney({from:creator});
-		let totalNeed1 = await gate1.getTotalWeiNeeded(1000*money);
+
+		Splitter = await WeiTopDownSplitter.new('SimpleSplitter', callParams);
+		await Splitter.addChild(tax.address, callParams);
+
+		let need1 = await Splitter.isNeedsMoney({from:creator});
+		let totalNeed1 = await Splitter.getTotalWeiNeeded(1000*money);
 		global.assert.equal(need1, true, 'should need money');
 		global.assert.equal(totalNeed1.toNumber(), 100*money, 'should be 10% of 1000 money');
 
-		await gate1.processFunds(1000*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0});
+		await Splitter.processFunds(1000*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0});
 
 		let taxBalance = await web3.eth.getBalance(tax.address);
 		global.assert.equal(taxBalance.toNumber(), 100*money, 'Tax receiver should get 100 money');
 
-		let need2 = await gate1.isNeedsMoney({from:creator});
-		let totalNeed2 = await gate1.getTotalWeiNeeded(1000*money);
+		let need2 = await Splitter.isNeedsMoney({from:creator});
+		let totalNeed2 = await Splitter.getTotalWeiNeeded(1000*money);
 		global.assert.equal(need2, true, 'should need money');
 		global.assert.equal(totalNeed2.toNumber(), 100*money, 'should be 10% of 1000 money');
 
-		await gate1.close(callParams);
+		await Splitter.close(callParams);
 
-		let need3 = await gate1.isNeedsMoney({from:creator});
-		let totalNeed3 = await gate1.getTotalWeiNeeded(1000*money);
+		let need3 = await Splitter.isNeedsMoney({from:creator});
+		let totalNeed3 = await Splitter.getTotalWeiNeeded(1000*money);
 		global.assert.equal(need3, false, 'should not need money');
 		global.assert.equal(totalNeed3.toNumber(), 0, 'should be 0 money');
 
-		await CheckExceptions.checkContractThrows(gate1.processFunds, [100*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0}])
+		await CheckExceptions.checkContractThrows(Splitter.processFunds, [100*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0}])
 	});
 });

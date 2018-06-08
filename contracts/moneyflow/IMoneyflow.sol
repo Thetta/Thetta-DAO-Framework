@@ -18,6 +18,10 @@ interface ISplitter {
 	function getChildrenCount()external view returns(uint);
 	function getChild(uint _index)external view returns(address);
 	function addChild(address _newChild) external;
+
+	function open() external;
+	function close() external;
+	function isOpen() external view returns(bool);
 }
 
 /**
