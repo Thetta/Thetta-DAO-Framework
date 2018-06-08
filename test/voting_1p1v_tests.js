@@ -6,6 +6,7 @@ var WeiFund = artifacts.require("./WeiFund");
 var MoneyFlow = artifacts.require("./MoneyFlow");
 var IWeiReceiver = artifacts.require("./IWeiReceiver");
 var WeiAbsoluteExpense = artifacts.require("./WeiAbsoluteExpense");
+var InformalProposal = artifacts.require("./InformalProposal");
 
 var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 
@@ -58,6 +59,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 	const employee3 = accounts[3];
 	const employee4 = accounts[4];
 	const employee5 = accounts[5];
+	
 	const outsider  = accounts[6];
 	const output    = accounts[7]; 
 
@@ -71,6 +73,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 	let VOTING_TYPE_1P1V = 1;
 
 	global.beforeEach(async() => {
+
 		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
 
@@ -80,37 +83,34 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 
 		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
 
-		///////////////////////////////////////////////////
 		// SEE THIS? set voting type for the action!
 		const VOTING_TYPE_1P1V = 1;
 		const VOTING_TYPE_SIMPLE_TOKEN = 2;
 
-		// add creator as first employee	
-		// await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
 
-		await daoBase.allowActionByAnyMemberOfGroup("addNewEmployee","Employees");
-		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
-		await daoBase.allowActionByAddress("issueTokens", creator);
-		
 		// AAC requires special permissions
 		await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
-		// these actions required if AAC will call this actions DIRECTLY (without voting)
 		await daoBase.allowActionByAddress("withdrawDonations", aacInstance.address);
-		await daoBase.allowActionByAddress("addNewTask", aacInstance.address);
 		await daoBase.allowActionByAddress("setRootWeiReceiver", aacInstance.address);
-		await daoBase.allowActionByAddress("modifyMoneyscheme", aacInstance.address);	
+
+		// do not forget to transfer ownership
+		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+
+		await daoBase.allowActionByVoting("manageGroups", token.address);
+		await daoBase.allowActionByVoting("issueTokens", token.address);
 
 		// check permissions (permissions must be blocked)
 		await daoBase.addGroupMember("Employees", employee1);
 		await daoBase.addGroupMember("Employees", employee2);
 		await daoBase.addGroupMember("Employees", employee3);
 		await daoBase.addGroupMember("Employees", employee4);
-		await daoBase.addGroupMember("Employees", employee5);
+		// await daoBase.addGroupMember("Employees", creator);
 	});
 
 	global.it('0. should create new voting', async()=>{
@@ -124,6 +124,61 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.equal(consensusPercent.toNumber(), 71, 'consensusPercent should be 51'); 
 		global.assert.equal(groupName, "Employees", 'groupName should be Employees'); 
 	})
+
+	global.it('should create and use 1p1v voting while members change',async() => {
+		await daoBase.addGroupMember("Employees", employee5);
+		let proposal = await InformalProposal.new('Take the money and run again', {from:creator});	
+		let voting = await Voting_1p1v.new(daoBase.address, proposal.address, creator, 0, "Employees", 51, 90, 0, {from:creator});
+	
+		// vote by first, check results  (getVotingStats, isFinished, isYes, etc) 	
+		await voting.vote(true,0,{from:employee1});
+		
+		var r2 = await voting.getVotingStats();
+		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
+		global.assert.equal(r2[1].toNumber(),0,'no');
+		global.assert.equal(r2[2].toNumber(),6,'creator + 5 employee');
+
+		await daoBase.removeGroupMember("Employees", employee1, {from:creator});
+		// remove 2nd employee from the group 
+
+		var r2 = await voting.getVotingStats();
+		global.assert.equal(r2[0].toNumber(),1,'yes');			// 1 already voted (who started the voting)
+		global.assert.equal(r2[1].toNumber(),0,'no');
+		global.assert.equal(r2[2].toNumber(),5,'creator + 4 employee');
+		
+		await voting.vote(true,0,{from:employee2});
+
+		var r2 = await voting.getVotingStats();
+		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
+		global.assert.equal(r2[1].toNumber(),0,'no');
+		
+		await CheckExceptions.checkContractThrows(
+			voting.vote, [true,0,{from:employee2}]);
+	
+		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+
+		await voting.vote(true,0,{from:employee3});	
+
+		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished: 4/6 voted');
+		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished: 4/6 voted, all said yes');					
+		await daoBase.removeGroupMember("Employees", employee3, {from:creator});
+
+		// WARNING:
+		// if voting is finished -> even if we remove some employees from the group 
+		// the voting results should not be changed!!!
+		// 
+		// BUT the 'getVotingStats()' will return different results
+		var emps = await daoBase.getMembersCount("Employees");
+		global.assert.equal(4, emps, '4 employees');
+
+		var res = await voting.getVotingStats();
+		global.assert.strictEqual(res[0].toNumber(),2,'');
+		global.assert.strictEqual(res[1].toNumber(),0,'');
+
+		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished: 4/6 voted');
+		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished: 4/6 voted, all said yes');	
+	});
 
 	global.it('1.1. Q Scenario: 5 employees, 5/5 voted yes, params(100,100) => isYes==true',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(100), 0);
@@ -161,7 +216,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');	
 
-		await voting.vote(true,0,{from:employee5});
+		await voting.vote(true,0,{from:creator});
 		r2 = await voting.getVotingStats();
 		global.assert.equal(r2
 			[0].toNumber(),5,'yes');
@@ -235,7 +290,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');	
 
-		await voting.vote(false,0,{from:employee5});
+		await voting.vote(false,0,{from:creator});
 		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),4,'no');
@@ -280,7 +335,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');	
 
-		await voting.vote(false,0,{from:employee5});
+		await voting.vote(false,0,{from:creator});
 		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),4,'no');
@@ -325,7 +380,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');	
 
-		await voting.vote(false,0,{from:employee5});
+		await voting.vote(false,0,{from:creator});
 		r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),1,'yes');
 		global.assert.equal(r2[1].toNumber(),4,'no');
@@ -467,7 +522,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		await voting.vote(true,0,{from:employee2});
 		await voting.vote(false,0,{from:employee3});
 		await voting.vote(false,0,{from:employee4});
-		await voting.vote(false,0,{from:employee5});
+		await voting.vote(false,0,{from:creator});
 
 		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
