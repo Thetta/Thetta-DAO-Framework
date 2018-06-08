@@ -223,5 +223,24 @@ global.contract('DaoBase', (accounts) => {
 		global.assert.equal(balanceDelta, 1000);
 	});	
 
+	global.it('should not either burn or mint tokens',async() => {
+		await CheckExceptions.checkContractThrows(token.burn, [
+			creator, 1000, {from:creator}])
+		
+		await CheckExceptions.checkContractThrows(token.burn, [
+			creator, 1000, {from:employee1}])
+
+		await CheckExceptions.checkContractThrows(token.burn, [
+			creator, 1000, {from:outsider}])
+
+		await CheckExceptions.checkContractThrows(token.mint, [
+			creator, 1000, {from:creator}])
+		
+		await CheckExceptions.checkContractThrows(token.mint, [
+			creator, 1000, {from:employee1}])
+
+		await CheckExceptions.checkContractThrows(token.mint, [
+			creator, 1000, {from:outsider}])
+	});	
 });
 
