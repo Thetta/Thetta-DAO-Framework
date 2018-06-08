@@ -1,324 +1,256 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.22;
+
+import "./DaoStorage.sol";
+
+import "./tokens/StdDaoToken.sol";
 
 import "./IDaoBase.sol";
 
-import "./token/StdDaoToken.sol";
-import "./governance/Voting.sol";
-
-import "./tasks/Tasks.sol";
-
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-//////////////////////////////////////////////////////////
-// Permissions:
-// 
-// addNewProposal
-// manageGroups
-// issueTokens
-// upgradeDao
-//
-// Tasks:
-//		startTask
-//		startBounty
-//		addNewTask
-//
-// Moneyflow:
-//		modifyMoneyscheme
-//		withdrawDonations
-//
-// How permissions works now:
-//		1. if caller is in the whitelist -> allow
-//		2. if caller is employee and this action can be done by employee -> allow
-//		3. if caller shareholder and this action can be done by shareholder -> allow
-//		4. if this action requires voting 
-//			a. caller is in the majority -> allow
-//			b. caller is voting and it is succeeded -> allow
-//		4. deny
-contract DaoStorage is Ownable {
-	StdDaoToken public stdToken;
-
-	mapping (uint=>IProposal) proposals;
-	uint public proposalsCount = 0;
-
-	mapping (uint=>address) employees;
-	uint public employeesCount = 0;
-
-	address[] public observers;
-
-	mapping (string=>bool) byEmployee;
-	mapping (string=>bool) byShareholder;
-	mapping (string=>bool) byVoting;
-	mapping (address=>mapping(string=>bool)) byAddress;
-
-	// name -> members
-	mapping (string=>address[]) groups;
-	// name -> permission -> flag
-	mapping (string=>mapping(string=>bool)) groupPermissions;
-
-////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
-	function DaoStorage(StdDaoToken _stdToken) public {
-		stdToken = _stdToken;
-	}
-
-	function addObserver(IDaoObserver _observer) public {
-		observers.push(_observer);
-	}
-
-	function getObserverCount() constant returns(uint){
-		return observers.length;
-	}
-
-	function getObserverAtIndex(uint _index) constant returns(address){
-		return observers[_index];
-	}
-
-// Permissions:
-	function addGroup(string _groupName) public onlyOwner{
-		// do nothing
-	}
-
-	function addGroupMember(string _groupName, address _newMember) public onlyOwner{
-		// TODO: check if already added 
-		groups[_groupName].push(_newMember);
-	}
-
-	function removeGroupMember(string _groupName, address _member)public onlyOwner {
-		// TODO:
-	}
-
-	function isGroupMember(string _groupName, address _a) public constant returns(bool){
-		for(uint i=0; i<groups[_groupName].length; ++i){
-			if(groups[_groupName][i]==_a){
-				return true;
-			}
-		}
-		return false; 
-	}
-
-	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public onlyOwner {
-		groupPermissions[_groupName][_what] = true;
-	}
-
-	function isCanDoByGroupMember(string _what, string _groupName) public constant returns(bool){
-		return groupPermissions[_groupName][_what];
-	}
-
-	//////
-	// TODO: use _tokenAddress
-	function allowActionByShareholder(string _what, address _tokenAddress) public onlyOwner {
-		byShareholder[_what] = true;
-	}
-
-	// TODO: use _tokenAddress
-	function allowActionByVoting(string _what, address _tokenAddress) public onlyOwner {
-		byVoting[_what] = true;
-	}
-
-	function allowActionByAddress(string _what, address _a) public onlyOwner {
-		byAddress[_a][_what] = true;
-	}
-
-	function isCanDoByShareholder(string _permissionName) public constant returns(bool){
-		// TODO: use _tokenAddress 
-		// see <addActionBySha> method
-		return byShareholder[_permissionName];
-	}
-
-	function isCanDoByVoting(string _permissionName) public constant returns(bool,address){
-		// TODO: return _tokenAddress instead of 0x0!!!
-		// see <allowActionByVoting> method
-		return (byVoting[_permissionName], 0x0);
-	}
-
-	function isCanDoByAddress(string _permissionName, address _a) public constant returns(bool){
-		return byAddress[_a][_permissionName];
-	}
-
-// Vote:
-	function addNewProposal(IProposal _proposal) public onlyOwner {
-		proposals[proposalsCount] = _proposal;
-		proposalsCount++;
-	}
-
-	function getProposalAtIndex(uint _i)public constant returns(IProposal){
-		require(_i<proposalsCount);
-		return proposals[_i];
-	}
-
-	function getProposalVotingResults(address _p) public constant returns (bool isVotingFound, bool votingResult){
-		// scan all votings and search for the one that is finished
-		for(uint i=0; i<proposalsCount; ++i){
-			if(proposals[i]==_p){
-				IVoting voting = proposals[i].getVoting();
-				return (true, 	voting.isFinished() && voting.isYes());
-			}
-		}
-
-		return (false,false);
-	}
-
-	function isShareholder(address _a, address _token) public constant returns(bool){
-		return (ERC20(_token).balanceOf(_a)!=0);
-	}
-}
-
+/**
+ * @title DaoBase 
+ * @dev This is the base contract that you should use.
+ * 
+ * 1. This contract will be the owner of the 'store' and all 'tokens' inside the store!
+ * It will transfer ownership only during upgrade
+ *
+ * 2. Currently DaoBase works only with StdDaoToken. It does not support working with 
+ * plain ERC20 tokens because we need some extra features like mint(), burn() and transferOwnership()
+*/
 contract DaoBase is IDaoBase, Ownable {
 	DaoStorage public store;
 
-//////////////////////
-	// Constructor
-	function DaoBase(DaoStorage _store) public {
-		// the ownership should be transferred to microcompany
+	constructor(DaoStorage _store) public {
 		store = _store;
+
+		// WARNING: please! do not forget to transfer the store
+		// ownership to the Dao (this contract)
+		// Like this:
+		// 
+		// store.transferOwnership(daoBase);
+
+		// WARNING: please! do not forget to transfer all tokens'
+		// ownership to the Dao (i.e. DaoBase or any derived contract)
+		// Like this:
+		//
+		// token.transferOwnership(daoBase);
 	}
 
 	modifier isCanDo(string _what){
-		require(isCanDoAction(msg.sender,_what)); 
+		require(_isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
 
 // IDaoBase:
-	function addObserver(IDaoObserver _observer) public {
+	function addObserver(IDaoObserver _observer) external {
 		store.addObserver(_observer);	
 	}
 
-	function addGroup(string _groupName) public isCanDo("manageGroups"){
-		store.addGroup(_groupName);	
-	}
-	function addGroupMember(string _groupName, address _a) public isCanDo("manageGroups") {
-		store.addGroupMember(_groupName, _a);
-	}
-	function removeGroupMember(string _groupName, address _a) public isCanDo("manageGroups"){
-		store.removeGroupMember(_groupName, _a);
-	}
-	function isGroupMember(string _groupName,address _a)public constant returns(bool) {
-		return store.isGroupMember(_groupName, _a);
+	function upgradeDaoContract(IDaoBase _new) external isCanDo("upgradeDaoContract") {
+		_upgradeDaoContract(_new);
 	}
 
-	function allowActionByShareholder(string _what, address _tokenAddress) public isCanDo("manageGroups"){
-		store.allowActionByShareholder(_what, _tokenAddress);
-	}
-	function allowActionByVoting(string _what, address _tokenAddress) public isCanDo("manageGroups"){
-		store.allowActionByVoting(_what,_tokenAddress);
-	}
-	function allowActionByAddress(string _what, address _a) public isCanDo("manageGroups"){
-		store.allowActionByAddress(_what,_a);
-	}
-
-	function isCanDoAction(address _a, string _permissionName) public constant returns(bool){
-		// 0 - is can do by address?
-		if(store.isCanDoByAddress(_permissionName, _a)){
-			return true;
-		}
-
-		// 1 - check if employees can do that without voting?
-		// TODO: generalize for ALL groups!
-		if(store.isCanDoByGroupMember(_permissionName, "Employees") && store.isGroupMember("Employees", _a)){
-			return true;
-		}
-
-		// 2 - check if shareholder can do that without voting?
-		// TODO: implement this
-		// TODO: pass token address
-		address someToken = 0x0;
-		if(store.isCanDoByShareholder(_permissionName) && isShareholder(_a, someToken)){
-			return true;
-		}
-
-		// 2 - can do action only by starting new vote first?
-		var (isCan, tokenAddressForVoting) = store.isCanDoByVoting(_permissionName);
-		if(isCan){
-			var (isVotingFound, votingResult) = store.getProposalVotingResults(msg.sender);
-			if(isVotingFound){
-				// if this action can be done by voting, then Proposal can do this action 
-				// from within its context
-				// in this case msg.sender is a Voting!
-				return votingResult;
-			}
-			
-			// 3 - only token holders with > 51% of gov.tokens can add new task immediately 
-			// otherwise -> start voting
-			if(isInMajority(_a, tokenAddressForVoting)){
-				return true;
-			}
-
-			return false;
-		}
-
-		return false;
-	}
-
-	function upgradeDaoContract(IDaoBase _new) public isCanDo("upgradeDao") {
+	function _upgradeDaoContract(IDaoBase _new) internal{	
 		// call observers.onUpgrade() for all observers
 		for(uint i=0; i<store.getObserverCount(); ++i){
 			IDaoObserver(store.getObserverAtIndex(i)).onUpgrade(_new);
 		}
 
+		// transfer ownership of the store (this -> _new)
 		store.transferOwnership(_new);
-		store.stdToken().transferOwnership(_new);
+
+		// transfer ownership of all tokens (this -> _new)
+		for(i=0; i<store.getAllTokenAddresses().length; ++i){
+			store.getAllTokenAddresses()[i].transferOwnership(_new);
+		}
 	}
 
-	function addNewProposal(IProposal _proposal) public isCanDo("addNewProposal") { 
+// Groups:
+	function getMembersCount(string _groupName) external constant returns(uint){
+		return store.getMembersCount(keccak256(_groupName));
+	}
+	function addGroupMember(string _groupName, address _a) external isCanDo("manageGroups") {
+		store.addGroupMember(keccak256(_groupName), _a);
+	}
+	function getGroupMembers(string _groupName) external constant returns(address[]){
+		return store.getGroupMembers(keccak256(_groupName));
+	}
+	function removeGroupMember(string _groupName, address _a) external isCanDo("manageGroups"){
+		store.removeGroupMember(keccak256(_groupName), _a);
+	}
+	function isGroupMember(string _groupName,address _a)external constant returns(bool) {
+		return store.isGroupMember(keccak256(_groupName), _a);
+	}
+
+// Actions:
+	function allowActionByShareholder(string _what, address _tokenAddress) external isCanDo("manageGroups"){
+		store.allowActionByShareholder(keccak256(_what), _tokenAddress);
+	}
+	function allowActionByVoting(string _what, address _tokenAddress) external isCanDo("manageGroups"){
+		store.allowActionByVoting(keccak256(_what),_tokenAddress);
+	}
+	function allowActionByAddress(string _what, address _a) external isCanDo("manageGroups") {
+		store.allowActionByAddress(keccak256(_what),_a);
+	}
+	function allowActionByAnyMemberOfGroup(string _what, string _groupName) external isCanDo("manageGroups"){
+		store.allowActionByAnyMemberOfGroup(keccak256(_what), keccak256(_groupName));
+	}
+
+	/**
+	 * @dev Function that will check if action is DIRECTLY callable by msg.sender (account or another contract)
+	 * How permissions works now:
+	 * 1. if caller is in the whitelist -> allow
+	 * 2. if caller is in the group and this action can be done by group members -> allow
+	 * 3. if caller is shareholder and this action can be done by a shareholder -> allow
+	 * 4. if this action requires voting 
+	 *    a. caller is in the majority -> allow
+	 *    b. caller is voting and it is succeeded -> allow
+	 * 4. deny
+	*/
+
+	function isCanDoAction(address _a, string _permissionName) external constant returns(bool){
+		return _isCanDoAction(_a, _permissionName);
+	}
+
+	function _isCanDoAction(address _a, string _permissionName) internal constant returns(bool){
+		bytes32 _permissionNameHash = keccak256(_permissionName);
+
+		// 0 - is can do by address?
+		if(store.isCanDoByAddress(_permissionNameHash, _a)){
+			return true;
+		}
+
+		// 1 - check if group member can do that without voting?
+	   if(store.isCanDoByGroupMember(_permissionNameHash, _a)){
+			return true;
+		}
+
+		for(uint i=0; i<store.getAllTokenAddresses().length; ++i){
+
+			// 2 - check if shareholder can do that without voting?
+			if(store.isCanDoByShareholder(_permissionNameHash, store.getAllTokenAddresses()[i]) && 
+				(store.getAllTokenAddresses()[i].balanceOf(_a)!=0)){
+				return true;
+			}
+			
+
+			// 3 - can do action only by starting new vote first?
+			bool isCan = store.isCanDoByVoting(_permissionNameHash, store.getAllTokenAddresses()[i]);
+			if(isCan){
+				bool isVotingFound = false;
+				bool votingResult = false;
+				(isVotingFound, votingResult) = store.getProposalVotingResults(_a);
+
+				if(isVotingFound){
+					// if this action can be done by voting, then Proposal can do this action 
+					// from within its context
+					// in this case msg.sender is a Voting!
+					return votingResult;
+				}
+				
+				// 4 - only token holders with > 51% of gov.tokens can add new task immediately 
+				// otherwise -> start voting
+				bool isInMajority = 
+					(store.getAllTokenAddresses()[i].balanceOf(_a)) >
+					(store.getAllTokenAddresses()[i].totalSupply()/2);
+				if(isInMajority){
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+// Proposals:
+	function addNewProposal(IProposal _proposal) external isCanDo("addNewProposal") { 
 		store.addNewProposal(_proposal);
 	}
 
-	function getProposalAtIndex(uint _i)public constant returns(IProposal){
+	function getProposalAtIndex(uint _i)external constant returns(IProposal){
 		return store.getProposalAtIndex(_i);
 	}
 
-	function getProposalsCount()public constant returns(uint){
-		return store.proposalsCount();
+	function getProposalsCount()external constant returns(uint){
+		return store.getProposalsCount();
 	}
 
-	function issueTokens(address _to, uint _amount)public isCanDo("issueTokens") {
-		issueTokensInternal(_to, _amount);
+// Tokens:
+	function issueTokens(address _tokenAddress, address _to, uint _amount)external isCanDo("issueTokens") {
+		_issueTokens(_tokenAddress,_to,_amount);
 	}
 
-// Public (for tests)
-	function isShareholder(address _a, address _token) public constant returns(bool){
-		// TODO: use _tokenAddress
-		return store.isShareholder(_a, _token);
+	function _issueTokens(address _tokenAddress, address _to, uint _amount)internal{
+		for(uint i=0; i<store.getAllTokenAddresses().length; ++i){
+			if(store.getAllTokenAddresses()[i]==_tokenAddress){
+				// WARNING:
+				// token ownership should be transferred to the current DaoBase to do that!!!
+				store.getAllTokenAddresses()[i].mint(_to, _amount);
+				return;
+			}
+		}
+
+		// if not found!
+		revert();
 	}
 
-	// only token holders with > 51% of gov.tokens can add new task immediately 
-	function isInMajority(address _a, address _tokenAddress) public constant returns(bool){
-		// TODO: use _tokenAddress
-		return(store.stdToken().balanceOf(_a)>=store.stdToken().totalSupply()/2);
-	}
+	function burnTokens(address _tokenAddress, address _who, uint _amount)external isCanDo("burnTokens"){
+		for(uint i=0; i<store.getAllTokenAddresses().length; ++i){
+			if(store.getAllTokenAddresses()[i]==_tokenAddress){
+				// WARNING:
+				// token ownership should be transferred to the current DaoBase to do that!!!
+				store.getAllTokenAddresses()[i].burn(_who, _amount);
+				return;
+			}
+		}
 
-	function issueTokensInternal(address _to, uint _amount) internal {
-		// token ownership should be transferred to the current DaoBase
-		store.stdToken().mint(_to, _amount);
+		// if not found!
+		revert();
 	}
 }
 
+/**
+ * @title DaoBaseWithUnpackers
+ * @dev Use this contract instead of DaoBase if you need DaoBaseAuto.
+ * It features method unpackers that will convert bytes32[] params to the method params.
+ *
+ * When DaoBaseAuto will creates voting/proposal -> it packs params into the bytes32[] 
+ * After voting is finished -> target method is called and params should be unpacked
+*/
 contract DaoBaseWithUnpackers is DaoBase {
-	function DaoBaseWithUnpackers(DaoStorage _store) public 
+	constructor(DaoStorage _store) public 
 		DaoBase(_store)	
 	{
 	}
 
-	function upgradeDaoContractGeneric(bytes32[] _params) public {
+	function upgradeDaoContractGeneric(bytes32[] _params) external {
 		IDaoBase _b = IDaoBase(address(_params[0]));
-		upgradeDaoContract(_b);
+		_upgradeDaoContract(_b);
 	}
 
-	function addGroupMemberGeneric(bytes32[] _params) public {
-		// TODO: implement
-		assert(false);
+	function addGroupMemberGeneric(bytes32[] _params) external {
+		bytes32 group = bytes32(_params[0]);
+		address a = address(_params[1]);
 
-		/*
-		bytes32 _group = bytes32(_params[0]);
-		address _emp = address(_params[1]);
-
-		addGroupMember(_group, _emp);
-	   */
+		// direct call to storage here, instead of calling DaoBase.addGroupMember(string, address);
+		store.addGroupMember(keccak256(group), a);
 	}
 
-	function issueTokensGeneric(bytes32[] _params) public {
-		address _to = address(_params[0]);
-		uint _amount = uint(_params[1]);
-		issueTokens(_to, _amount);
+	function issueTokensGeneric(bytes32[] _params) external {
+		address _tokenAddress = address(_params[0]);
+		address _to = address(_params[1]);
+		uint _amount = uint(_params[2]);
+
+		_issueTokens(_tokenAddress, _to, _amount);
 	}
+
+	// TODO: add other methods:
+	/*
+	function removeGroupMember(string _groupName, address _a) public isCanDo("manageGroups"){
+	function allowActionByShareholder(string _what, address _tokenAddress) public isCanDo("manageGroups"){
+	function allowActionByVoting(string _what, address _tokenAddress) public isCanDo("manageGroups"){
+	function allowActionByAddress(string _what, address _a) public isCanDo("manageGroups"){
+	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public isCanDo("manageGroups"){
+   */
 }

@@ -1,19 +1,22 @@
 pragma solidity ^0.4.15;
 
-import "./IMoneyflow.sol";
+import "../IMoneyflow.sol";
+
 import "./WeiExpense.sol";
 
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-//////////////////////////////////////////////////////
-// WeiFund can store funds until 'flush' is called (pull model)
-// This is a terminal item, that has no children
+/**
+ * @title WeiFund 
+ * @dev WeiFund stores funds until 'flush' is called (pull model)
+ * This is a terminal item, that has no children.
+*/
 contract WeiFund is WeiRelativeExpense {
 	address public output;		// will not be able to change that later!
 	bool public allowFlushTo = true;
 
-	function WeiFund(address _output, bool _allowFlushTo, uint _percentsDiv100Needed) public 
+	constructor(address _output, bool _allowFlushTo, uint _percentsDiv100Needed) public 
 		WeiRelativeExpense(_percentsDiv100Needed)	
 	{
 		output = _output;
@@ -21,21 +24,21 @@ contract WeiFund is WeiRelativeExpense {
 	}
 
 	// Process funds, send it to the Output
-	function flushTo(address _to) public onlyOwner {
+	function flushTo(address _to) external onlyOwner {
 		require(allowFlushTo);		// this operation can be prohibited
-		_to.transfer(this.balance);
+		_to.transfer(address(this).balance);
 	}
 
 	// Process funds, send it to the Output
-	function flush() public onlyOwner {
+	function flush() external onlyOwner {
 		require(0x0!=output);
 
 		// TODO: check for vulnerabilities
 		isMoneyReceived = false;
-		output.transfer(this.balance);
+		output.transfer(address(this).balance);
 	}
 
-	function isNeedsMoney()constant public returns(bool){
+	function isNeedsMoney()external view returns(bool){
 		// fund always needs money!
 		return true;
 	}

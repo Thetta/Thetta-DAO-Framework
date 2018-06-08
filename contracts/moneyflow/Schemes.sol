@@ -1,27 +1,33 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.22;
 
-import "./WeiSplitter.sol";
-import "./WeiExpense.sol";
-import "./WeiFund.sol";
-
-import "../governance/Voting.sol";
-//import "./AutoMoneyflowActionCaller.sol";
-
-import "../IDaoBase.sol";
 import "./IMoneyflow.sol";
 
+import "./ether/WeiSplitter.sol";
+import "./ether/WeiExpense.sol";
+import "./ether/WeiFund.sol";
 
-// this contract should be used to automatically instantiate Default scheme for a microcompany:
-//
-// Root - top-down splitter 
-//		Spends - unsorted splitter
-//			Salaries - unsorted splitter 
-//			Other - unsorted splitter 
-//			Tasks - unsorted splitter
-//		Bonuses - unsorted splitter
-//		Rest - unsorted splitter
-//			ReserveFund - fund 
-//			DividendsFund - fund
+import "../governance/Voting.sol";
+
+import "../IDaoBase.sol";
+
+/**
+ * @title FallbackToWeiReceiver
+ * @dev This contract should be used to automatically instantiate Default moneyscheme for a DAO.
+ * Use it as example. You can setup your own moneyflow.  
+ * THIS IS A WORKING example!
+ *
+ * Layout:
+ * 
+ * Root - top-down splitter 
+ *		Spends - unsorted splitter
+ *			Salaries - unsorted splitter 
+ *			Other - unsorted splitter 
+ *			Tasks - unsorted splitter
+ *		Bonuses - unsorted splitter
+ *		Rest - unsorted splitter
+ *			ReserveFund - fund 
+ *			DividendsFund - fund
+*/
 contract DefaultMoneyflowScheme is DaoClient {
 	WeiTopDownSplitter root;
 
@@ -37,9 +43,9 @@ contract DefaultMoneyflowScheme is DaoClient {
 	WeiFund dividendsFund;
 
 /////
-	function DefaultMoneyflowScheme(IDaoBase _mc, address _fundOutput, 
-											  uint _percentsReserve, uint _dividendsReserve) public 
-		DaoClient(_mc)											  
+	constructor(IDaoBase _dao, address _fundOutput, 
+		uint _percentsReserve, uint _dividendsReserve) public 
+		DaoClient(_dao)											  
 	{
 		require(0x0!=_fundOutput);
 
@@ -78,8 +84,8 @@ contract DefaultMoneyflowScheme is DaoClient {
 	}
 
 ////////////////////////////////////////////////////////////////
-	// use AutoMoneyflowActionCaller to add new task with voting! 
-	function addNewTask(IWeiReceiver _wr) public isCanDo("addNewTask") {
+	// use MoneyflowAuto to add new task with voting! 
+	/*function addNewTask(IWeiReceiver _wr) public isCanDo("addNewTask") {
 		// 1 - add new task immediately
 		//tasks.addChild(_wr);
 	}
@@ -87,13 +93,13 @@ contract DefaultMoneyflowScheme is DaoClient {
 	// if _employee is not in the flow -> will add new WeiAbsoluteExpense
 	// if _employee is already in the flow -> will update the needed amount, i.e. call setNeededWei()
 	function setSalaryForEmployee(address _employee, uint _weiPerMonth) public isCanDo("modifyMoneyscheme") {
-		// TODO: is voting required? Move voting to AutoMoneyflowActionCaller!
+		// TODO: is voting required? Move voting to MoneyflowAuto!
 
 		// TODO: implement
 
 		// 0 - check if _employee is employee 
 		// TODO: WARNING!!!!!!!! Hard-coded type
-		require(mc.isGroupMember("Employees", _employee));
+		require(dao.isGroupMember("Employees", _employee));
 
 		// 1 - employee already added? 
 
@@ -101,7 +107,7 @@ contract DefaultMoneyflowScheme is DaoClient {
 	}
 
 	function setBonusForEmployee(address _employee, uint _bonusPercentsPerMonth) public isCanDo("modifyMoneyscheme") {
-		// TODO: is voting required? Move voting to AutoMoneyflowActionCaller!
+		// TODO: is voting required? Move voting to MoneyflowAuto!
 
 		// TODO: implement
 	}
@@ -109,19 +115,29 @@ contract DefaultMoneyflowScheme is DaoClient {
 	// to "remove" the spend -> set (_weiPerMonth==0)
 	// this method WILL NOT really remove the item!
 	function setOtherSpend(string _name, uint _weiPerMonth) public isCanDo("modifyMoneyscheme") {
-		// TODO: is voting required? Move voting to AutoMoneyflowActionCaller!
+		// TODO: is voting required? Move voting to MoneyflowAuto!
 
 		// TODO: implement
 	}
+
+	function flushReseveFundTo(address _to) public isCanDo("flushReserveFundTo"){
+		// TODO:
+	}
+
+	// TODO: Currently dividens fund is just another type of Reserve fund (because DividendFund is not implemented yet) 
+	function flushDividendsFundTo(address _to) public isCanDo("flushDividendsFundTo"){
+		// TODO:
+	}*/
 }
 
+// TODO:
 contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
-	function DefaultMoneyflowSchemeWithUnpackers(
-			IDaoBase _mc, 
+	/*function DefaultMoneyflowSchemeWithUnpackers(
+			IDaoBase _dao, 
 			address _fundOutput, 
 			uint _percentsReserve, 
 			uint _dividendsReserve) public 
-		DefaultMoneyflowScheme(_mc,_fundOutput,_percentsReserve,_dividendsReserve)
+		DefaultMoneyflowScheme(_dao,_fundOutput,_percentsReserve,_dividendsReserve)
 	{
 
 	}
@@ -129,5 +145,7 @@ contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
 	function addNewTaskGeneric(bytes32[] _params) public {
 		IWeiReceiver _iwr = IWeiReceiver(address(_params[0]));
 		addNewTask(_iwr);
-	}
+	}*/
+
+	// TODO: add unpackers for all methods of the Scheme
 }

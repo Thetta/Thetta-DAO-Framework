@@ -15,7 +15,9 @@ var WeiRelativeExpense = artifacts.require("./WeiRelativeExpense");
 var WeiAbsoluteExpenseWithPeriod = artifacts.require("./WeiAbsoluteExpenseWithPeriod");
 var WeiRelativeExpenseWithPeriod = artifacts.require("./WeiRelativeExpenseWithPeriod");
 
-
+function KECCAK256 (x){
+	return web3.sha3(x);
+}
 
 async function createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends){
 	let callParams = {from:creator, gasPrice:0}	
@@ -201,35 +203,38 @@ global.contract('Moneyflow', (accounts) => {
 	global.beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
-		store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
+		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
 
-		{
-			await store.addGroup("Employees");
-			await store.addGroupMember("Employees", creator);
-
-			// manually setup the Default organization 
-			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
-
-			// this is a list of actions that require voting
-			await store.allowActionByVoting("manageGroups", token.address);
-			await store.allowActionByVoting("addNewTask", token.address);
-			await store.allowActionByVoting("issueTokens", token.address);
-		}
-
-		moneyflowInstance = await MoneyFlow.new(daoBase.address,{from: creator});
-
-		// THIS permission IS VERY DANGEROUS!!!
-		// allow creator to get donations from the Moneyflow 
-		await store.allowActionByAddress("withdrawDonations", creator);
-
-		// moneyflow will not create Proposals in this case 
-		//await store.allowActionByAddress("addNewProposal", moneyflowInstance.address);
+		// add creator as first employee	
+		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
+
+		// manually setup the Default organization 
+		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("setRootWeiReceiver","Employees");
+
+		await daoBase.allowActionByAnyMemberOfGroup("openGate","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("closeGate","Employees");
+
+		// this is a list of actions that require voting
+		await daoBase.allowActionByVoting("manageGroups", token.address);
+		await daoBase.allowActionByVoting("addNewTask", token.address);
+		await daoBase.allowActionByVoting("issueTokens", token.address);
+
+		// THIS permission IS VERY DANGEROUS!!!
+		// allow creator to get donations from the Moneyflow 
+		await daoBase.allowActionByAddress("withdrawDonations", creator);
+
+		moneyflowInstance = await MoneyFlow.new(daoBase.address,{from: creator});
+
+		// moneyflow will not create Proposals in this case 
+		//await daoBase.allowActionByAddress("addNewProposal", moneyflowInstance.address);
 	});
 
 	global.it('should allow to send revenue',async() => {
@@ -607,7 +612,7 @@ global.contract('Moneyflow', (accounts) => {
 		let struct = {};
 		let balance0 = await web3.eth.getBalance(creator);
 
-		Employee1 = await WeiAbsoluteExpenseWithPeriod.new(1000*money, timePeriod, callParams);
+		Employee1 = await WeiAbsoluteExpenseWithPeriod.new(1000*money, timePeriod, true, callParams);
 
 		await Employee1.processFunds(1000*money, {value:1000*money, from:outsider, gas:1000000, gasPrice:0});
 		await CheckExceptions.checkContractThrows(Employee1.flush, [{from:outsider}])
@@ -643,5 +648,92 @@ global.contract('Moneyflow', (accounts) => {
 
 		let needsEmployee3 = await Employee1.isNeedsMoney({from:creator});
 		global.assert.equal(needsEmployee3, false, 'Dont need money, because he got it');
+	});
+
+	global.it('should process money with WeiAbsoluteExpenseWithPeriod, then 75 hours, then money needs again x3',async() => {
+		let timePeriod = 25;
+		let callParams = {from:creator, gasPrice:0}	
+		let struct = {};
+		let balance0 = await web3.eth.getBalance(creator);
+
+		Employee1 = await WeiAbsoluteExpenseWithPeriod.new(1000*money, timePeriod, true, callParams);
+
+		let multi1 = await Employee1.getDebtMultiplier();
+		global.assert.equal(multi1.toNumber(), 1, '0 hours => x1');
+		
+		await Employee1.processFunds(1000*money, {value:1000*money, from:outsider, gas:1000000, gasPrice:0});
+		await CheckExceptions.checkContractThrows(Employee1.flush, [{from:outsider}])
+		await Employee1.flush({from:creator, gasPrice:0});
+		
+		let balance = await web3.eth.getBalance(creator);
+		global.assert.equal(balance.toNumber() - balance0.toNumber(), 1000*money, 'Should get money');
+
+		let needsEmployee1 = await Employee1.isNeedsMoney({from:creator});
+		global.assert.equal(needsEmployee1, false, 'Dont need money, because he got it');
+
+		await web3.currentProvider.sendAsync({
+			jsonrpc: '2.0', 
+			method: 'evm_increaseTime',
+			params: [3600 * 75 * 1000],
+			id: new Date().getTime()
+		}, function(err){if(err) console.log('err:', err)});
+
+		// let periodHours = await Employee1.periodHours();
+		// let MomentReceived2 = await Employee1.momentReceived();
+		let NOW2 = await Employee1.getNow();
+		
+		let multi2 = await Employee1.getDebtMultiplier();
+		global.assert.equal(multi2.toNumber(), 3, '75 hours => x3');
+		
+		let needsEmployee2 = await Employee1.isNeedsMoney({from:creator});
+		global.assert.equal(needsEmployee2, true, 'Need money, because 24 hours passed');
+	
+
+		await CheckExceptions.checkContractThrows(Employee1.processFunds, [4000*money, {value:4000*money, from:outsider, gas:1000000, gasPrice:0}])
+		await CheckExceptions.checkContractThrows(Employee1.processFunds, [2000*money, {value:2000*money, from:outsider, gas:1000000, gasPrice:0}])
+
+		await Employee1.processFunds(3000*money, {value:3000*money, from:outsider, gas:1000000, gasPrice:0});
+		await Employee1.flush({from:creator, gasPrice:0});
+
+		let balance2 = await web3.eth.getBalance(creator);
+		global.assert.equal(balance2.toNumber() - balance0.toNumber(), 4000*money, 'Should get money');
+
+		let needsEmployee3 = await Employee1.isNeedsMoney({from:creator});
+		global.assert.equal(needsEmployee3, false, 'Dont need money, because he got it');	
+	});
+
+	global.it('Splitter should access money then close then not accept',async() => {
+		let callParams = {from:creator, gasPrice:0}	
+		let struct = {};
+		let balance0 = await web3.eth.getBalance(creator);
+
+		let tax = await WeiRelativeExpenseWithPeriod.new(1000, 0, false, callParams);
+
+		Splitter = await WeiTopDownSplitter.new('SimpleSplitter', callParams);
+		await Splitter.addChild(tax.address, callParams);
+
+		let need1 = await Splitter.isNeedsMoney({from:creator});
+		let totalNeed1 = await Splitter.getTotalWeiNeeded(1000*money);
+		global.assert.equal(need1, true, 'should need money');
+		global.assert.equal(totalNeed1.toNumber(), 100*money, 'should be 10% of 1000 money');
+
+		await Splitter.processFunds(1000*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0});
+
+		let taxBalance = await web3.eth.getBalance(tax.address);
+		global.assert.equal(taxBalance.toNumber(), 100*money, 'Tax receiver should get 100 money');
+
+		let need2 = await Splitter.isNeedsMoney({from:creator});
+		let totalNeed2 = await Splitter.getTotalWeiNeeded(1000*money);
+		global.assert.equal(need2, true, 'should need money');
+		global.assert.equal(totalNeed2.toNumber(), 100*money, 'should be 10% of 1000 money');
+
+		await Splitter.close(callParams);
+
+		let need3 = await Splitter.isNeedsMoney({from:creator});
+		let totalNeed3 = await Splitter.getTotalWeiNeeded(1000*money);
+		global.assert.equal(need3, false, 'should not need money');
+		global.assert.equal(totalNeed3.toNumber(), 0, 'should be 0 money');
+
+		await CheckExceptions.checkContractThrows(Splitter.processFunds, [100*money, {value:100*money, from:outsider, gas:1000000, gasPrice:0}])
 	});
 });

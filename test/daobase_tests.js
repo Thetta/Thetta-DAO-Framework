@@ -1,17 +1,18 @@
 var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
-var AutoDaoBaseActionCaller = artifacts.require("./AutoDaoBaseActionCaller");
 var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 
 // to check how upgrade works with IDaoBase clients
 var MoneyFlow = artifacts.require("./MoneyFlow");
 var IWeiReceiver = artifacts.require("./IWeiReceiver");
-
-var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
 
 var CheckExceptions = require('./utils/checkexceptions');
+
+function KECCAK256 (x){
+	return web3.sha3(x);
+}
 
 global.contract('DaoBase', (accounts) => {
 	let token;
@@ -22,54 +23,48 @@ global.contract('DaoBase', (accounts) => {
 	const employee1 = accounts[1];
 	const employee2 = accounts[2];
 	const outsider = accounts[3];
+	const employee3 = accounts[4];
 
 	global.beforeEach(async() => {
-	
 		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token.mint(creator, 1000);
-		store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
+		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
+
+		// add creator as first employee	
+		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-
-		{
-			// add creator as first employee	
-			await store.addGroup("Employees");
-			await store.addGroupMember("Employees", creator);
-
-			// manually setup the Default organization permissions
-			await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-			await store.allowActionByAnyMemberOfGroup("startTask","Employees");
-			await store.allowActionByAnyMemberOfGroup("startBounty","Employees");
-			await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
-
-			// this is a list of actions that require voting
-			await store.allowActionByVoting("manageGroups", token.address);
-			await store.allowActionByVoting("addNewTask", token.address);
-			await store.allowActionByVoting("issueTokens", token.address);
-			await store.allowActionByVoting("upgradeDao", token.address);
-		}
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
+
+		// Set permissions:
+		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("startTask","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("startBounty","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("burnTokens", "Employees");
+
+		await daoBase.allowActionByVoting("manageGroups", token.address);
+		await daoBase.allowActionByVoting("addNewTask", token.address);
+		await daoBase.allowActionByVoting("issueTokens", token.address);
+		await daoBase.allowActionByVoting("upgradeDaoContract", token.address);
 	});
 
 	global.it('should set everything correctly',async() => {
-		const isMember = await store.isGroupMember("Employees", creator);
+		const isMember = await daoBase.isGroupMember("Employees", creator);
 		global.assert.equal(isMember,true,'Permission should be set correctly');
 
-		const isMember2 = await store.isGroupMember("Employees", employee1);
+		const isMember2 = await daoBase.isGroupMember("Employees", employee1);
 		global.assert.equal(isMember2,false,'Permission should be set correctly');
 
-		///
-		const isCan = await store.isCanDoByGroupMember("addNewProposal", "Employees");
-		global.assert.equal(isCan,true,'Permission should be set correctly');
-
-		const isMajority = await daoBase.isInMajority(creator, token.address);
-		global.assert.strictEqual(isMajority,true,'Creator should be in majority');
-
-		const isMajority2 = await daoBase.isInMajority(employee1, token.address);
-		global.assert.strictEqual(isMajority2,false,'Employee should not be in majority');
+		const isCan = await store.isCanDoByGroupMember(KECCAK256("addNewProposal"), creator);
+		global.assert.equal(isCan,true,'Any employee should be able to add new proposal');
+		
+		const isCan2 = await daoBase.isCanDoAction(creator, "addNewProposal");
+		global.assert.equal(isCan2,true,'Creator should be able to call addNewProposal directly');
 	});
 
 	global.it('should return correct permissions for an outsider',async() => {
@@ -113,17 +108,16 @@ global.contract('DaoBase', (accounts) => {
 	});
 
 	global.it('should issue tokens to employee1 and employee2',async() => {
-		await daoBase.issueTokens(employee1,1000,{from: creator});
-		await daoBase.issueTokens(employee2,1000,{from: creator});
+		// currently creator has 1000 tokens, he is in majority, so this should not fail
+		await daoBase.issueTokens(token.address,employee1,2000,{from: creator});
 
-		const isMajority1 = await daoBase.isInMajority(creator, token.address);
-		global.assert.strictEqual(isMajority1,false,'Creator should NOT be in majority now');
+		// but now creator has 1000 and employee1 has 1000, so creator is not in majority
+		// this should fail
+		await CheckExceptions.checkContractThrows(daoBase.issueTokens.sendTransaction,
+			[token.address, employee2, 1000, { from: creator}],
+			'Should not issue more tokens because creator is no longer in majority');
 
-		const isMajority2 = await daoBase.isInMajority(employee1, token.address);
-		global.assert.strictEqual(isMajority2,false,'employee1 is now in majority');
-
-		const isMajority3 = await daoBase.isInMajority(employee2, token.address);
-		global.assert.strictEqual(isMajority3,false,'employee1 is now in majority');
+		await token.transfer(employee2, 1000, {from: employee1});
 
 		// CHECK this .at syntax!!!
 		const balance1 = await token.balanceOf(creator);
@@ -137,36 +131,23 @@ global.contract('DaoBase', (accounts) => {
 	});
 
 	global.it('should be able to upgrade',async() => {
-		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
-		await token.mint(creator, 1000);
-		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
-
-		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-
 		// one client of the IDaoBase (to test how upgrade works with it)
 		let moneyflowInstance = await MoneyFlow.new(daoBase.address,{from: creator});
 
-		await store.addGroup("Employees");
-		await store.addGroupMember("Employees", creator);
+		await daoBase.allowActionByAnyMemberOfGroup("upgradeDaoContract","Employees");
+		await daoBase.allowActionByAddress("withdrawDonations", creator);
 
-		await store.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-		await store.allowActionByAnyMemberOfGroup("manageGroups","Employees");
-		await store.allowActionByAnyMemberOfGroup("issueTokens","Employees");
-		await store.allowActionByAnyMemberOfGroup("upgradeDao","Employees");
-
-		// THIS permission IS VERY DANGEROUS!!!
-		// allow creator to get donations from the Moneyflow 
-		await store.allowActionByAddress("withdrawDonations", creator);
-
-		// do not forget to transfer ownership
-		await token.transferOwnership(daoBase.address);
-		await store.transferOwnership(daoBase.address);
+		let a1 = await token.owner();
+		global.assert.equal(a1,daoBase.address,'Ownership should be set');
 
 		// UPGRADE!
 		let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		await daoBase.upgradeDaoContract(daoBaseNew.address, {gas: 10000000, from: creator});
 
-		await daoBaseNew.issueTokens(employee1,1000,{from: creator});
+		let a2 = await token.owner();
+		global.assert.equal(a2,daoBaseNew.address,'Ownership should be transferred');
+
+		await daoBaseNew.issueTokens(token.address, employee1,1000,{from: creator});
 
 		// check employee1 balance
 		const balance1 = await token.balanceOf(employee1);
@@ -181,7 +162,7 @@ global.contract('DaoBase', (accounts) => {
 			'Should not add new employee to old MC');
 
 		await CheckExceptions.checkContractThrows(daoBase.issueTokens,
-			[employee2, { from: creator}],
+			[token.address, employee2, 100, { from: creator}],
 			'Should not issue tokens through MC');
 
 		// now try to withdraw donations with new mc
@@ -207,5 +188,59 @@ global.contract('DaoBase', (accounts) => {
 		let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);
 		global.assert.equal(donationBalance2.toNumber(),0, 'all donations now on creator`s balance');
 	});
+
+	global.it('should add group members',async() => {
+		await daoBase.addGroupMember("Employees", employee1);
+		await daoBase.addGroupMember("Employees", employee2);
+		await daoBase.addGroupMember("Employees", employee3);
+
+		await CheckExceptions.checkContractThrows(daoBase.addGroupMember, 
+			["Employees", employee3]); //Shouldnt add again
+
+		global.assert.strictEqual(await daoBase.isGroupMember("Employees", employee1,{from:creator}),
+			true, 'Should be in the group')
+		global.assert.strictEqual(await daoBase.isGroupMember("Employees", employee2,{from:creator}),
+			true, 'Should be in the group')
+		global.assert.strictEqual(await daoBase.isGroupMember("Employees", employee3,{from:creator}),
+			true, 'Should be in the group')
+
+		global.assert.equal(4, await daoBase.getMembersCount("Employees"), '3 employees + creator');
+
+		await daoBase.removeGroupMember("Employees", employee3, {from:creator});
+	
+		global.assert.strictEqual(await daoBase.isGroupMember("Employees", employee3,{from:creator}),
+			false, 'Should not be in the group')
+
+		// await daoBase.getGroupParticipants
+		global.assert.equal(3, (await daoBase.getMembersCount("Employees")).toNumber(), '2 employees + creator');
+	});
+
+	global.it('should burn tokens',async() => {
+		let balance = await token.balanceOf(creator);
+		await daoBase.burnTokens(token.address, creator, 1000);
+		let balance2 = await token.balanceOf(creator);
+		let balanceDelta = balance.toNumber() - balance2.toNumber();
+		global.assert.equal(balanceDelta, 1000);
+	});	
+
+	global.it('should not either burn or mint tokens',async() => {
+		await CheckExceptions.checkContractThrows(token.burn, [
+			creator, 1000, {from:creator}])
+		
+		await CheckExceptions.checkContractThrows(token.burn, [
+			creator, 1000, {from:employee1}])
+
+		await CheckExceptions.checkContractThrows(token.burn, [
+			creator, 1000, {from:outsider}])
+
+		await CheckExceptions.checkContractThrows(token.mint, [
+			creator, 1000, {from:creator}])
+		
+		await CheckExceptions.checkContractThrows(token.mint, [
+			creator, 1000, {from:employee1}])
+
+		await CheckExceptions.checkContractThrows(token.mint, [
+			creator, 1000, {from:outsider}])
+	});	
 });
 

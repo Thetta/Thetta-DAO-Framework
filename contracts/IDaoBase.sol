@@ -1,63 +1,83 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.22;
 
 import './governance/IProposal.sol';
 
+/**
+ * @title IDaoObserver, can be called IDaoClient really.
+ * @dev Also, see DaoClient contract below.
+ */
 interface IDaoObserver {
-	function onUpgrade(address _newAddress) public;
+	function onUpgrade(address _newAddress) external;
 }
 
+/**
+ * @title This is the base interface that you should use.
+ * @dev Derive your DAO from it and provide the method implementation or 
+ * see DaoBase contract that implements it.
+ */
 interface IDaoBase {
-	function addObserver(IDaoObserver _observer)public;
-
-	function upgradeDaoContract(IDaoBase _new)public;
+	function addObserver(IDaoObserver _observer)external;
+	function upgradeDaoContract(IDaoBase _new)external;
 
 // Groups
-	function addGroup(string _groupName) public;
-	function addGroupMember(string _groupName, address _a) public;
-	function removeGroupMember(string _groupName, address _a) public;
-	function isGroupMember(string _groupName,address _a)public constant returns(bool);
+	function addGroupMember(string _groupName, address _a) external;
+	function removeGroupMember(string _groupName, address _a) external;
+	function getMembersCount(string _groupName) external constant returns(uint);
+	function isGroupMember(string _groupName,address _a)external constant returns(bool);
 
 // Permissions
-	function allowActionByShareholder(string _what, address _tokenAddress) public;
-	function allowActionByVoting(string _what, address _tokenAddress) public;
-	function allowActionByAddress(string _what, address _a) public;
+	function allowActionByShareholder(string _what, address _tokenAddress) external;
+	function allowActionByVoting(string _what, address _tokenAddress) external;
+	function allowActionByAddress(string _what, address _a) external;
+	function allowActionByAnyMemberOfGroup(string _what, string _groupName) external;
 
-	function isCanDoAction(address _a, string _permissionName)public constant returns(bool);
-
-// Governance/Proposals
-	function addNewProposal(IProposal _proposal) public;
-	function getProposalAtIndex(uint _i)public constant returns(IProposal);
-	function getProposalsCount()public constant returns(uint);
+	function isCanDoAction(address _a, string _permissionName)external constant returns(bool);
 
 // Tokens
-	// TODO: curently DaoBase has only 1 type of tokens
-	// that gives full governance rights - "DefaultToken"
-	function issueTokens(address _to, uint amount)public;
+	// ???? TODO: needed
+	//function addTokenAddressToList();
+	function issueTokens(address _tokenAddress, address _to, uint amount)external;
+	function burnTokens(address _tokenAddress, address _who, uint amount)external;
+
+// Governance/Proposals
+	function addNewProposal(IProposal _proposal) external;
+	function getProposalAtIndex(uint _i)external constant returns(IProposal);
+	function getProposalsCount()external constant returns(uint);
 }
 
-// Just an easy-to-use wrapper
+/**
+ * @title DaoClient, just an easy-to-use wrapper.
+ * @dev This contract provides you with internal 'dao' variable. 
+ * Once your DAO controller is upgraded -> all DaoClients will be notified and 'dao' var will be updated automatically.
+ *
+ * Some contracts like Votings or Auto-callers has 'dao' variable and don't use DaoClient.
+ * In this case they will stop working if the controller (DAO) is upgraded (it is as inteded).
+ */
 contract DaoClient is IDaoObserver {
-	IDaoBase mc;
+	IDaoBase dao;
 
    modifier isCanDo(string _what){
-		require(mc.isCanDoAction(msg.sender, _what)); 
+		require(dao.isCanDoAction(msg.sender, _what)); 
 		_; 
 	}
 
-	function DaoClient(IDaoBase _mc)public{
-		mc = _mc;
-		mc.addObserver(this);
+	constructor(IDaoBase _dao) public {
+		dao = _dao;
+		dao.addObserver(this);
 	}
 
-	// If your company is upgraded -> then this will automatically update the current mc.
-	// mc will point at NEW contract!
-	function onUpgrade(address _newAddress) public {
-		require(msg.sender==address(mc));	
+	/**
+	 * @dev If your company is upgraded -> then this will automatically update the current dao.
+	 * dao will point at NEW contract!
+	 * @param _newAddress New controller.
+	 */
+	function onUpgrade(address _newAddress) external {
+		require(msg.sender==address(dao));	
 
-		mc = IDaoBase(_newAddress);
+		dao = IDaoBase(_newAddress);
 
 		// this is not needed because we are already in the list of observers (in the store) 
 		// and the controller is upgraded only
-		//mc.addObserver(this);
+		//dao.addObserver(this);
 	}
 }
