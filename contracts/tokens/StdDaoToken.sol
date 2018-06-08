@@ -3,6 +3,7 @@ pragma solidity ^0.4.22;
 import "zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
  * @title StdDaoToken 
@@ -26,7 +27,7 @@ contract StdDaoToken is MintableToken, BurnableToken, DetailedERC20 {
 	}
 
 	// this is an override of BurnableToken method
-	function burn(address _who, uint256 _value) public {
+	function burn(address _who, uint256 _value) external onlyOwner{
 		_burn(_who, _value);
 	}
 }
