@@ -11,44 +11,44 @@ import "./Manageable.sol";
  */
 contract Pausable is Manageable {
 // Fields:
-     bool paused = true;
+	bool paused = true;
 
 // Events:
-     event PauseEvent();
-     event UnpauseEvent();
+	event PauseEvent();
+	event UnpauseEvent();
 
 // Modifiers:
-     modifier whenContractNotPaused() {
-          require(paused == false);
-          _;
-     }
+	modifier whenContractNotPaused() {
+		require(paused == false);
+		_;
+	}
 
-     modifier whenContractPaused {
-          require(paused == true);
-          _;
-     }
+	modifier whenContractPaused {
+		require(paused == true);
+		_;
+	}
 
 // Methods:
-     /**
-      * @dev called by the manager to pause, triggers stopped state
-     */
-     function pauseContract() public onlyAllowedManager('pause_contract') whenContractNotPaused {
-          paused = true;
-          emit PauseEvent();
-     }
+	/**
+	 * @dev called by the manager to pause, triggers stopped state
+	*/
+	function pauseContract() public onlyAllowedManager('pause_contract') whenContractNotPaused {
+		paused = true;
+		emit PauseEvent();
+	}
 
-     /**
-      * @dev called by the manager to unpause, returns to normal state
-     */
-     function unpauseContract() public onlyAllowedManager('unpause_contract') whenContractPaused {
-          paused = false;
-          emit UnpauseEvent();
-     }
+	/**
+	 * @dev called by the manager to unpause, returns to normal state
+	*/
+	function unpauseContract() public onlyAllowedManager('unpause_contract') whenContractPaused {
+		paused = false;
+		emit UnpauseEvent();
+	}
 
-     /**
-      * @dev The getter for "paused" contract variable
-     */
-     function getPaused() constant public returns (bool) {
-          return paused;
-     }
+	/**
+	 * @dev The getter for "paused" contract variable
+	*/
+	function getPaused() constant public returns (bool) {
+		return paused;
+	}
 }
