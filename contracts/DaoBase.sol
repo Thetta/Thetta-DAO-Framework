@@ -234,7 +234,7 @@ contract DaoBaseWithUnpackers is DaoBase {
 		address a = address(_params[1]);
 
 		// direct call to storage here, instead of calling DaoBase.addGroupMember(string, address);
-		store.addGroupMember(keccak256(group), a);
+		store.addGroupMember(group, a);
 	}
 
 	function issueTokensGeneric(bytes32[] _params) external {
