@@ -5,10 +5,10 @@ var DaoStorage = artifacts.require("./DaoStorage");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
-let token;
-let store;
-let task;
-let daoBase;
+var token;
+var store;
+var task;
+var daoBase;
 
 function KECCAK256 (x){
 	return web3.sha3(x);
@@ -40,14 +40,14 @@ async function setup(creator){
 	await daoBase.allowActionByVoting("issueTokens",token.address);
 }
 
-global.contract('0.Tasks: prepaid positive scenario. Task created by creator', (accounts) => {
-	let firstContractBalance;
-	let firstEmployeeBalance;
-	let firstCreatorBalance;
+global.contract('Tasks', (accounts) => {
+	var firstContractBalance;
+	var firstEmployeeBalance;
+	var firstCreatorBalance;
 
-	let secondContractBalance;
-	let secondEmployeeBalance;
-	let secondCreatorBalance;
+	var secondContractBalance;
+	var secondEmployeeBalance;
+	var secondCreatorBalance;
 
 	const creator = accounts[0];
 	const employee1 = accounts[1];
@@ -60,26 +60,25 @@ global.contract('0.Tasks: prepaid positive scenario. Task created by creator', (
 		await setup(creator);
 	});
 
-	global.it('N1. should not create weiTask (prepaid + donation)',async() => {
+
+	global.it('Tasks: prepaid positive scenario. Task created by creator',async() => {
+		// should not create weiTask (prepaid + donation);
 		th = await CheckExceptions.checkContractThrows(WeiTask.new, 
 			[daoBase.address, 'Task Caption', 'Task description', false, true, ETH, {gas: 10000000, from: creator}]
 		);
-	});
 
-	global.it('N2. should not create weiTask (prepaid + 0 Wei)',async() => {
+		// should not create weiTask (prepaid + 0 Wei);
 		th = await CheckExceptions.checkContractThrows(WeiTask.new, 
 			[daoBase.address, 'Task Caption', 'Task description', false, false, 0, {gas: 10000000, from: creator}]
 		);
-	});
 
-	global.it('T0.1. should create weiTask',async() => {
-		firstContractBalance = await web3.eth.getBalance(daoBase.address)
-		global.assert.strictEqual(firstContractBalance.toNumber(),0)
+		// should create weiTask
+		firstContractBalance = await web3.eth.getBalance(daoBase.address);
+		global.assert.strictEqual(firstContractBalance.toNumber(),0);
 
-		firstEmployeeBalance = await web3.eth.getBalance(employee1)
-		global.assert.strictEqual(firstEmployeeBalance.toNumber(),100000000000000000000)
+		firstEmployeeBalance = await web3.eth.getBalance(employee1);
 
-		firstCreatorBalance = await web3.eth.getBalance(creator)
+		firstCreatorBalance = await web3.eth.getBalance(creator);
 
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
 			daoBase.address, 
@@ -91,96 +90,89 @@ global.contract('0.Tasks: prepaid positive scenario. Task created by creator', (
 			0,
 			{gas: 10000000, from: creator}
 		);
-	});
 
-	global.it('N3. should not become "InProgress" before "Prepaid"',async() => {
+		// should not become "InProgress" before "Prepaid"
 		th = await CheckExceptions.checkContractThrows(task.startTask,
 			[employee1, {gas: 10000000, from: employee1}]
 		);
-	});
 
-	global.it('T0.2. should become "PrePaid" after transfer 1 ETH',async() => {
-		let status = await task.getCurrentState();
+		// should become "PrePaid" after transfer 1 ETH
+		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(),0);
 		
-		let neededWei = await task.getNeededWei();
+		var neededWei = await task.getNeededWei();
 		global.assert.strictEqual(neededWei.toNumber(),ETH,'Should be 1 ETH');
 
-		let isNeedsMoneyBeforeSend = await task.isNeedsMoney();
+		var isNeedsMoneyBeforeSend = await task.isNeedsMoney();
 		global.assert.strictEqual(isNeedsMoneyBeforeSend, true);
 	
-		let minWeiNeeded = await task.getMinWeiNeeded();
+		var minWeiNeeded = await task.getMinWeiNeeded();
 		global.assert.strictEqual(minWeiNeeded.toNumber(),ETH);
 
-		let getIsMoneyReceived = await task.getIsMoneyReceived();
+		var getIsMoneyReceived = await task.getIsMoneyReceived();
 		global.assert.strictEqual(getIsMoneyReceived, false);
 
-		firstCreatorBalance = await web3.eth.getBalance(creator)
+		firstCreatorBalance = await web3.eth.getBalance(creator);
 
-		let th = await task.processFunds(ETH, {value:ETH});
+		var th = await task.processFunds(ETH, {value:ETH});
 
-		secondCreatorBalance = await web3.eth.getBalance(creator)
+		secondCreatorBalance = await web3.eth.getBalance(creator);
 
-		let creatorDelta = firstCreatorBalance.toNumber() - secondCreatorBalance.toNumber()
-		global.assert.strictEqual(creatorDelta > ETH*0.95 ,true)
+		var creatorDelta = firstCreatorBalance.toNumber() - secondCreatorBalance.toNumber();
+		global.assert.strictEqual(creatorDelta > ETH*0.95 ,true);
 
-		let getIsMoneyReceived2 = await task.getIsMoneyReceived();
+		var getIsMoneyReceived2 = await task.getIsMoneyReceived();
 		global.assert.strictEqual(getIsMoneyReceived2, true);
 
-		let isNeedsMoneyAfterSend = await task.isNeedsMoney();
+		var isNeedsMoneyAfterSend = await task.isNeedsMoney();
 		global.assert.strictEqual(isNeedsMoneyAfterSend, false);
 
-		let minWeiNeeded2 = await task.getMinWeiNeeded();
+		var minWeiNeeded2 = await task.getMinWeiNeeded();
 		global.assert.strictEqual(minWeiNeeded2.toNumber(),0);
 
-		let balance = await task.getBalance();
+		var balance = await task.getBalance();
 		global.assert.strictEqual(balance.toNumber(), ETH);
 		
-		let isPostpaid = await task.isPostpaid();
+		var isPostpaid = await task.isPostpaid();
 		global.assert.strictEqual(isPostpaid, false);
 
-		let status2 = await task.getCurrentState();
+		var status2 = await task.getCurrentState();
 		global.assert.strictEqual(status2.toNumber(), 2);
-	});
 
-	global.it('T0.3. should become "InProgress" after employee have started task',async() => {
-		let th = await task.startTask(employee1);
-		let status = await task.getCurrentState();
+
+		// should become "InProgress" after employee have started task
+		var th = await task.startTask(employee1);
+		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 3);
-	});
 
-	global.it('N4. should not become "Completed" after outsider call',async() => {
+		// should not become "Compvared" after outsider call
 		th = await CheckExceptions.checkContractThrows(task.notifyThatCompleted,
 			[{gas: 10000000, from: outsider}]
 		);
-	});
 
-	global.it('T0.4. should become "Completed" after employee have marked task as completed',async() => {
-		let th = await task.notifyThatCompleted({from:employee1});
+		// should become "Compvared" after employee have marked task as compvared
+		var th = await task.notifyThatCompleted({from:employee1, gasPrice:0});
 		
-		let status = await task.getCurrentState();
+		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 5);
 		
-		let neededWei = await task.getNeededWei();
+		var neededWei = await task.getNeededWei();
 		global.assert.strictEqual(neededWei.toNumber(),ETH,'Should be 1 ETH');
 
-		let isDonation = await task.isDonation();
+		var isDonation = await task.isDonation();
 		global.assert.strictEqual(isDonation,false);
-	});
 
-	global.it('N5. should not become "CanGetFunds" after outsider call',async() => {
+		//N5. should not become "CanGetFunds" after outsider call
 		th = await CheckExceptions.checkContractThrows(task.confirmCompletion,
 			[{gas: 10000000, from: outsider}]
 		);
-	});
 
-	global.it('T0.5. should become "CanGetFunds" after creator have marked task as completed',async() => {
-		let th = await task.confirmCompletion({from:creator});
-		let status = await task.getCurrentState();
+		// should become "CanGetFunds" after creator have marked task as compvared
+		var th = await task.confirmCompletion({from:creator});
+		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 6);
-	});
 
-	global.it('N6. should not become "Finished" after outsider calls',async() => {
+		//N6. should not become "Finished" after outsider calls
 		await CheckExceptions.checkContractThrows(task.setOutput,
 			[outsider,{gas: 10000000, from: outsider}]
 		);
@@ -188,156 +180,123 @@ global.contract('0.Tasks: prepaid positive scenario. Task created by creator', (
 		await CheckExceptions.checkContractThrows(task.setOutput,
 			[creator,{gas: 10000000, from: outsider}]
 		);
-	});
 
-	global.it('T0.6. should become "Finished" after employee set output and call flush() ',async() => {
-		let out = await task.setOutput(employee1);
-		let th = await task.flush();
-		let status = await task.getCurrentState();
-		global.assert.strictEqual(status.toNumber(), 7);
 
-		secondContractBalance = await web3.eth.getBalance(daoBase.address)
-		global.assert.strictEqual(secondContractBalance.toNumber(),0)
-
-		secondEmployeeBalance = await web3.eth.getBalance(employee1)
-		let employeeDelta = secondEmployeeBalance.toNumber() - firstEmployeeBalance.toNumber()
-		global.assert.strictEqual(employeeDelta > 950000000000000000 ,true)
-	});
-});
-
-global.contract('1.Tasks: postpaid positive scenario with UNKNOWN price. Task created by creator', (accounts) => {
-	let task;
-
-	const creator = accounts[0];
-	const employee1 = accounts[1];
-	const outsider = accounts[2];
-	const someAddress = accounts[3];
-
-	const ETH = 10000000000000000;
-
-	global.beforeEach(async() => {
-		await setup(creator);
-	});
-
-	global.it('T1.1. should create weiTask',async() => {
-		firstContractBalance = await web3.eth.getBalance(daoBase.address)
-		global.assert.strictEqual(firstContractBalance.toNumber(),0)
-
-		firstEmployeeBalance = await web3.eth.getBalance(employee1)
-		global.assert.strictEqual(firstEmployeeBalance.toNumber(),100000000000000000000)
-
-		firstCreatorBalance = await web3.eth.getBalance(creator)
-
-		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			daoBase.address, 
-			'Task Caption', 
-			'Task description',
-			true,
-			false,
-			0,
-			0,
-			{gas: 10000000, from: creator}
-		);
-	});
-
-	global.it('T1.2. should become "InProgress" after employee have started task',async() => {
-		let th = await task.startTask(employee1, {gasPrice:0});
-		let status = await task.getCurrentState();
-		global.assert.strictEqual(status.toNumber(), 3);
-	});
-
-	global.it('T1.3. should become "CompleteButNeedsEvaluation" after employee have marked task as completed',async() => {
-		let th = await task.notifyThatCompleted({from:employee1, gasPrice:0});
-
-		let neededWei = await task.getNeededWei();
-		global.assert.strictEqual(neededWei.toNumber(),0,'Should be 0');
-
-		let isDonation = await task.isDonation();
-		global.assert.strictEqual(isDonation,false);
-		
-		let status = await task.getCurrentState();
-		global.assert.strictEqual(status.toNumber(), 4);
-	});
-
-	global.it('T1.4. should become "Completed" after creator calls evaluateAndSetNeededWei()',async() => {
-		let th = await task.evaluateAndSetNeededWei(ETH, {from:creator});
-
-		let neededWei = await task.getNeededWei();
-		global.assert.strictEqual(neededWei.toNumber(),ETH,'Should be ETH');
-
-		let isPostpaid = await task.isPostpaid();
-		global.assert.strictEqual(isPostpaid, true);
-
-		let status = await task.getCurrentState();
-		global.assert.strictEqual(status.toNumber(), 5);
-	});
-
-	global.it('T1.5. should become "CanGetFunds" after creator calls processFunds()',async() => {
-		let isNeedsMoneyBeforeSend = await task.isNeedsMoney();
-		global.assert.strictEqual(isNeedsMoneyBeforeSend, true);
-	
-		let minWeiNeeded = await task.getMinWeiNeeded();
-		global.assert.strictEqual(minWeiNeeded.toNumber(),ETH);
-
-		let getIsMoneyReceived = await task.getIsMoneyReceived();
-		global.assert.strictEqual(getIsMoneyReceived, false);
-
-		firstCreatorBalance = await web3.eth.getBalance(creator);
-
-		let th = await task.processFunds(ETH, {value:ETH});
-
-		secondCreatorBalance = await web3.eth.getBalance(creator);
-
-		let creatorDelta = firstCreatorBalance.toNumber() - secondCreatorBalance.toNumber()
-		global.assert.strictEqual(creatorDelta > ETH*0.95 ,true)
-
-		let getIsMoneyReceived2 = await task.getIsMoneyReceived();
-		global.assert.strictEqual(getIsMoneyReceived2, true);
-
-		let isNeedsMoneyAfterSend = await task.isNeedsMoney();
-		global.assert.strictEqual(isNeedsMoneyAfterSend, false);
-
-		let minWeiNeeded2 = await task.getMinWeiNeeded();
-		global.assert.strictEqual(minWeiNeeded2.toNumber(),0);
-
-		let balance = await task.getBalance();
-		global.assert.strictEqual(balance.toNumber(), ETH);
-
-		let status = await task.getCurrentState();
-		global.assert.strictEqual(status.toNumber(), 6)		
-	});
-
-	global.it('T1.6. should become "Finished" after employee set output and call flush() ',async() => {
-		let out = await task.setOutput(employee1);
-		let th = await task.flush();
-		let status = await task.getCurrentState();
+		// should become "Finished" after employee set output and call flush();
+		var out = await task.setOutput(employee1);
+		var th = await task.flush();
+		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 7);
 
 		secondContractBalance = await web3.eth.getBalance(daoBase.address);
 		global.assert.strictEqual(secondContractBalance.toNumber(),0);
 
 		secondEmployeeBalance = await web3.eth.getBalance(employee1);
-		let employeeDelta = secondEmployeeBalance.toNumber() - firstEmployeeBalance.toNumber()
-		// global.assert.strictEqual(secondEmployeeBalance.toNumber(),0)
-		global.assert.strictEqual(employeeDelta, ETH);
-	})	
-});
-
-global.contract('2.Tasks: postpaid positive scenario with KNOWN price. Task created by creator', (accounts) => {
-	let task;
-
-	const creator = accounts[0];
-	const employee1 = accounts[1];
-	const outsider = accounts[2];
-	const someAddress = accounts[3];
-
-	const ETH = 10000000000000000;
-
-	global.beforeEach(async() => {
-		await setup(creator);
+		var employeeDelta = secondEmployeeBalance.toNumber() - firstEmployeeBalance.toNumber();
+		global.assert.strictEqual(employeeDelta > 950000000000000000 ,true);
 	});
 
-	global.it('T2.1. should create weiTask',async() => {
+	global.it('Tasks: postpaid positive scenario with UNKNOWN price. Task created by creator', async() => {
+		// should create weiTask
+		firstContractBalance = await web3.eth.getBalance(daoBase.address);
+		global.assert.strictEqual(firstContractBalance.toNumber(),0);
+
+		firstEmployeeBalance = await web3.eth.getBalance(employee1);
+		
+		firstCreatorBalance = await web3.eth.getBalance(creator);
+
+		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
+			daoBase.address, 
+			'Task Caption', 
+			'Task description',
+			true,
+			false,
+			0,
+			0,
+			{gas: 10000000, from: creator}
+		);
+
+		// should become "InProgress" after employee have started task
+		var th = await task.startTask(employee1, {gasPrice:0});
+		var status = await task.getCurrentState();
+		global.assert.strictEqual(status.toNumber(), 3);
+
+
+		// should become "CompvareButNeedsEvaluation" after employee have marked task as compvared
+		var th = await task.notifyThatCompleted({from:employee1, gasPrice:0});
+
+		var neededWei = await task.getNeededWei();
+		global.assert.strictEqual(neededWei.toNumber(),0,'Should be 0');
+
+		var isDonation = await task.isDonation();
+		global.assert.strictEqual(isDonation,false);
+		
+		var status = await task.getCurrentState();
+		global.assert.strictEqual(status.toNumber(), 4);
+
+		// should become "Compvared" after creator calls evaluateAndSetNeededWei();
+		var th = await task.evaluateAndSetNeededWei(ETH, {from:creator});
+
+		var neededWei = await task.getNeededWei();
+		global.assert.strictEqual(neededWei.toNumber(),ETH,'Should be ETH');
+
+		var isPostpaid = await task.isPostpaid();
+		global.assert.strictEqual(isPostpaid, true);
+
+		var status = await task.getCurrentState();
+		global.assert.strictEqual(status.toNumber(), 5);
+
+		// should become "CanGetFunds" after creator calls processFunds();
+		var isNeedsMoneyBeforeSend = await task.isNeedsMoney();
+		global.assert.strictEqual(isNeedsMoneyBeforeSend, true);
+	
+		var minWeiNeeded = await task.getMinWeiNeeded();
+		global.assert.strictEqual(minWeiNeeded.toNumber(),ETH);
+
+		var getIsMoneyReceived = await task.getIsMoneyReceived();
+		global.assert.strictEqual(getIsMoneyReceived, false);
+
+		firstCreatorBalance = await web3.eth.getBalance(creator);
+
+		var th = await task.processFunds(ETH, {value:ETH});
+
+		secondCreatorBalance = await web3.eth.getBalance(creator);
+
+		var creatorDelta = firstCreatorBalance.toNumber() - secondCreatorBalance.toNumber();
+		global.assert.strictEqual(creatorDelta > ETH*0.95 ,true);
+
+		var getIsMoneyReceived2 = await task.getIsMoneyReceived();
+		global.assert.strictEqual(getIsMoneyReceived2, true);
+
+		var isNeedsMoneyAfterSend = await task.isNeedsMoney();
+		global.assert.strictEqual(isNeedsMoneyAfterSend, false);
+
+		var minWeiNeeded2 = await task.getMinWeiNeeded();
+		global.assert.strictEqual(minWeiNeeded2.toNumber(),0);
+
+		var balance = await task.getBalance();
+		global.assert.strictEqual(balance.toNumber(), ETH);
+
+		var status = await task.getCurrentState();
+		global.assert.strictEqual(status.toNumber(), 6)		
+
+		// should become "Finished" after employee set output and call flush();
+		var out = await task.setOutput(employee1);
+		var th = await task.flush();
+		var status = await task.getCurrentState();
+		global.assert.strictEqual(status.toNumber(), 7);
+
+		secondContractBalance = await web3.eth.getBalance(daoBase.address);
+		global.assert.strictEqual(secondContractBalance.toNumber(),0);
+
+		secondEmployeeBalance = await web3.eth.getBalance(employee1);
+		var employeeDelta = secondEmployeeBalance.toNumber() - firstEmployeeBalance.toNumber();
+		// global.assert.strictEqual(secondEmployeeBalance.toNumber(),0);
+		global.assert.strictEqual(employeeDelta, ETH);
+	});
+
+	global.it('Tasks: postpaid positive scenario with KNOWN price. Task created by creator',async() => {
+		// should create weiTask
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
 			daoBase.address, 
 			'Task Caption', 
@@ -348,99 +307,81 @@ global.contract('2.Tasks: postpaid positive scenario with KNOWN price. Task crea
 			0,
 			{gas: 10000000, from: creator}
 		);
-	});
 
-	global.it('T2.2. should become "InProgress" after employee have started task',async() => {
-		let th = await task.startTask(employee1, {gasPrice:0});
-		let status = await task.getCurrentState();
+		firstEmployeeBalance = await web3.eth.getBalance(employee1);
+
+		// should become "InProgress" after employee have started task
+		var th = await task.startTask(employee1, {gasPrice:0});
+		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 3);
-	});
 
-	global.it('T2.3. should become "Completed" after employee have marked task as completed',async() => {
-		let th = await task.notifyThatCompleted({from:employee1, gasPrice:0});
+		// should become "Completed" after employee have marked task as completed
+		var th = await task.notifyThatCompleted({from:employee1, gasPrice:0});
 
-		let neededWei = await task.getNeededWei();
+		var neededWei = await task.getNeededWei();
 		global.assert.strictEqual(neededWei.toNumber(),ETH,'Should be ETH');
 
-		let isDonation = await task.isDonation();
+		var isDonation = await task.isDonation();
 		global.assert.strictEqual(isDonation,false);
 		
-		let status = await task.getCurrentState();
+		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 5);
-	});
 
-	global.it('T2.4. should become "CanGetFunds" after creator calls processFunds()',async() => {
-
-		let isNeedsMoneyBeforeSend = await task.isNeedsMoney();
+		// should become "CanGetFunds" after creator calls processFunds();
+		var isNeedsMoneyBeforeSend = await task.isNeedsMoney();
 		global.assert.strictEqual(isNeedsMoneyBeforeSend, true);
 	
-		let minWeiNeeded = await task.getMinWeiNeeded();
+		var minWeiNeeded = await task.getMinWeiNeeded();
 		global.assert.strictEqual(minWeiNeeded.toNumber(),ETH);
 
-		let getIsMoneyReceived = await task.getIsMoneyReceived();
+		var getIsMoneyReceived = await task.getIsMoneyReceived();
 		global.assert.strictEqual(getIsMoneyReceived, false);
 
-		firstCreatorBalance = await web3.eth.getBalance(creator)
+		firstCreatorBalance = await web3.eth.getBalance(creator);
 
-		let th = await task.processFunds(ETH, {value:ETH});
+		var th = await task.processFunds(ETH, {value:ETH});
 
-		secondCreatorBalance = await web3.eth.getBalance(creator)
+		secondCreatorBalance = await web3.eth.getBalance(creator);
 
-		let creatorDelta = firstCreatorBalance.toNumber() - secondCreatorBalance.toNumber()
-		global.assert.strictEqual(creatorDelta > ETH*0.95 ,true)
+		var creatorDelta = firstCreatorBalance.toNumber() - secondCreatorBalance.toNumber();
+		global.assert.strictEqual(creatorDelta > ETH*0.95 ,true);
 
-		let getIsMoneyReceived2 = await task.getIsMoneyReceived();
+		var getIsMoneyReceived2 = await task.getIsMoneyReceived();
 		global.assert.strictEqual(getIsMoneyReceived2, true);
 
-		let isNeedsMoneyAfterSend = await task.isNeedsMoney();
+		var isNeedsMoneyAfterSend = await task.isNeedsMoney();
 		global.assert.strictEqual(isNeedsMoneyAfterSend, false);
 
-		let minWeiNeeded2 = await task.getMinWeiNeeded();
+		var minWeiNeeded2 = await task.getMinWeiNeeded();
 		global.assert.strictEqual(minWeiNeeded2.toNumber(),0);
 
-		let balance = await task.getBalance();
+		var balance = await task.getBalance();
 		global.assert.strictEqual(balance.toNumber(), ETH);
 
-		let status = await task.getCurrentState();
+		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 6);
-	});
 
-	global.it('T2.5. should become "Finished" after employee set output and call flush() ',async() => {
-		let out = await task.setOutput(employee1, {gasPrice:0});
-		let th = await task.flush();
-		let status = await task.getCurrentState();
+		// should become "Finished" after employee set output and call flush();
+		var out = await task.setOutput(employee1, {gasPrice:0});
+		var th = await task.flush();
+		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 7);
 
-		secondContractBalance = await web3.eth.getBalance(daoBase.address)
-		global.assert.strictEqual(secondContractBalance.toNumber(),0)
+		secondContractBalance = await web3.eth.getBalance(daoBase.address);
+		global.assert.strictEqual(secondContractBalance.toNumber(),0);
 
-		secondEmployeeBalance = await web3.eth.getBalance(employee1)
-		let employeeDelta = secondEmployeeBalance.toNumber() - firstEmployeeBalance.toNumber()
-		// global.assert.strictEqual(secondEmployeeBalance.toNumber(),0)
+		secondEmployeeBalance = await web3.eth.getBalance(employee1);
+		var employeeDelta = secondEmployeeBalance.toNumber() - firstEmployeeBalance.toNumber();
+		// global.assert.strictEqual(secondEmployeeBalance.toNumber(),0);
 		global.assert.strictEqual(employeeDelta, ETH);
-	})	
-});
-
-global.contract('3.Tasks: donation positive scenario. Task created by creator', (accounts) => {
-	let task;
-
-	const creator = accounts[0];
-	const employee1 = accounts[1];
-	const outsider = accounts[2];
-	const someAddress = accounts[3];
-
-	const ETH = 10000000000000000;
-
-	global.beforeEach(async() => {
-		await setup(creator);
 	});
 
-	global.it('T3.1. should create weiTask',async() => {
+	global.it('Tasks: donation positive scenario. Task created by creator',async() => {
+		// should create weiTask'
 		firstContractBalance = await web3.eth.getBalance(daoBase.address);
 		global.assert.strictEqual(firstContractBalance.toNumber(),0);
 
 		firstEmployeeBalance = await web3.eth.getBalance(employee1);
-		global.assert.strictEqual(firstEmployeeBalance.toNumber(),100000000000000000000)
 
 		firstCreatorBalance = await web3.eth.getBalance(creator);
 
@@ -454,103 +395,81 @@ global.contract('3.Tasks: donation positive scenario. Task created by creator', 
 			0,
 			{gas: 10000000, from: creator}
 		);
-	});
 
-	global.it('T3.2. should become "InProgress" after employee have started task',async() => {
-		let th = await task.startTask(employee1, {gasPrice:0});
-		let status = await task.getCurrentState();
+		// should become "InProgress" after employee have started task
+		var th = await task.startTask(employee1, {gasPrice:0});
+		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 3);
-	});
+		
+		// should become "Completed" after creator calls evaluateAndSetNeededWei();
+		var th = await task.notifyThatCompleted({from:employee1, gasPrice:0});
 
-	global.it('T3.3. should become "Completed" after creator calls evaluateAndSetNeededWei()',async() => {
-		let th = await task.notifyThatCompleted({from:employee1, gasPrice:0});
-
-		let neededWei = await task.getNeededWei();
+		var neededWei = await task.getNeededWei();
 		global.assert.strictEqual(neededWei.toNumber(),0,'Should be ETH');
 
-		let isPostpaid = await task.isPostpaid();
+		var isPostpaid = await task.isPostpaid();
 		global.assert.strictEqual(isPostpaid, true);
 
-		let status = await task.getCurrentState();
+		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 5);
-	});
-
-	global.it('T3.4. should become "CanGetFunds" after creator calls processFunds()',async() => {
-
-		let isNeedsMoneyBeforeSend = await task.isNeedsMoney();
-		// global.assert.strictEqual(isNeedsMoneyBeforeSend, true);
+		
+		// should become "CanGetFunds" after creator calls processFunds();
+		var isNeedsMoneyBeforeSend = await task.isNeedsMoney();
+		global.assert.strictEqual(isNeedsMoneyBeforeSend, true);
 	
-		let minWeiNeeded = await task.getMinWeiNeeded();
-		// global.assert.strictEqual(minWeiNeeded.toNumber(),0);
+		var minWeiNeeded = await task.getMinWeiNeeded();
+		global.assert.strictEqual(minWeiNeeded.toNumber(),0);
 
-		let getIsMoneyReceived = await task.getIsMoneyReceived();
-		// global.assert.strictEqual(getIsMoneyReceived, false);
+		var getIsMoneyReceived = await task.getIsMoneyReceived();
+		global.assert.strictEqual(getIsMoneyReceived, false);
 
-		firstCreatorBalance = await web3.eth.getBalance(creator)
+		firstCreatorBalance = await web3.eth.getBalance(creator);
 
-		let th = await task.processFunds(ETH, {value:ETH});
+		var th = await task.processFunds(ETH, {value:ETH});
 
-		secondCreatorBalance = await web3.eth.getBalance(creator)
+		secondCreatorBalance = await web3.eth.getBalance(creator);
 
-		let creatorDelta = firstCreatorBalance.toNumber() - secondCreatorBalance.toNumber()
-		global.assert.strictEqual(creatorDelta > ETH*0.95 ,true)
+		var creatorDelta = firstCreatorBalance.toNumber() - secondCreatorBalance.toNumber();
+		global.assert.strictEqual(creatorDelta > ETH*0.95 ,true);
 
 
-		let getIsMoneyReceived2 = await task.getIsMoneyReceived();
-		// global.assert.strictEqual(getIsMoneyReceived2, true);
+		var getIsMoneyReceived2 = await task.getIsMoneyReceived();
+		global.assert.strictEqual(getIsMoneyReceived2, true);
 
-		let isNeedsMoneyAfterSend = await task.isNeedsMoney();
-		// global.assert.strictEqual(isNeedsMoneyAfterSend, false);
+		var isNeedsMoneyAfterSend = await task.isNeedsMoney();
+		global.assert.strictEqual(isNeedsMoneyAfterSend, false);
 
-		let minWeiNeeded2 = await task.getMinWeiNeeded();
-		// global.assert.strictEqual(minWeiNeeded2.toNumber(),0);
+		var minWeiNeeded2 = await task.getMinWeiNeeded();
+		global.assert.strictEqual(minWeiNeeded2.toNumber(),0);
 
-		let balance = await task.getBalance();
-		// global.assert.strictEqual(balance.toNumber(), ETH);
+		var balance = await task.getBalance();
+		global.assert.strictEqual(balance.toNumber(), ETH);
 
-		let status = await task.getCurrentState();
-		// global.assert.strictEqual(status.toNumber(), 6)		
-	});
+		var status = await task.getCurrentState();
+		global.assert.strictEqual(status.toNumber(), 6)		
 
-	global.it('T3.5. should become "Finished" after employee set output and call flush() ',async() => {
-		let out = await task.setOutput(employee1, {gasPrice:0});
-		let th = await task.flush();
-		let status = await task.getCurrentState();
+		// should become "Finished" after employee set output and call flush();
+		var out = await task.setOutput(employee1, {gasPrice:0});
+		var th = await task.flush();
+		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 7);
 		
-		secondContractBalance = await web3.eth.getBalance(daoBase.address)
-		global.assert.strictEqual(secondContractBalance.toNumber(),0)
+		secondContractBalance = await web3.eth.getBalance(daoBase.address);
+		global.assert.strictEqual(secondContractBalance.toNumber(),0);
 
-		secondEmployeeBalance = await web3.eth.getBalance(employee1)
-		let employeeDelta = secondEmployeeBalance.toNumber() - firstEmployeeBalance.toNumber()
-		// global.assert.strictEqual(secondEmployeeBalance.toNumber(),0)
+		secondEmployeeBalance = await web3.eth.getBalance(employee1);
+		var employeeDelta = secondEmployeeBalance.toNumber() - firstEmployeeBalance.toNumber();
 		global.assert.strictEqual(employeeDelta, ETH);
-	})	
-});
-
-global.contract('4.Tasks: cancel on init state.', (accounts) => {
-	let task;
-
-	const creator = accounts[0];
-	const employee1 = accounts[1];
-	const outsider = accounts[2];
-	const someAddress = accounts[3];
-
-	const ETH = 10000000000000000;
-
-	global.beforeEach(async() => {
-		await setup(creator);
 	});
 
-	global.it('T4.1. should create weiTask',async() => {
+	global.it('Tasks: cancel on init state.', async() => {
+		// should create weiTask',async() => {
+		firstContractBalance = await web3.eth.getBalance(daoBase.address);
+		global.assert.strictEqual(firstContractBalance.toNumber(),0);
 
-		firstContractBalance = await web3.eth.getBalance(daoBase.address)
-		global.assert.strictEqual(firstContractBalance.toNumber(),0)
+		firstEmployeeBalance = await web3.eth.getBalance(employee1);
 
-		firstEmployeeBalance = await web3.eth.getBalance(employee1)
-		global.assert.strictEqual(firstEmployeeBalance.toNumber(),100000000000000000000)
-
-		firstCreatorBalance = await web3.eth.getBalance(creator)
+		firstCreatorBalance = await web3.eth.getBalance(creator);
 
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
 			daoBase.address, 
@@ -562,36 +481,21 @@ global.contract('4.Tasks: cancel on init state.', (accounts) => {
 			0,
 			{gas: 10000000, from: creator}
 		);
-	});
 
-	global.it('T4.2. should become "Cancelled"',async() => {
-		th = await task.cancell({from:creator})
+		// should become "Cancelled"
+		th = await task.cancell({from:creator});
 		
-		let status = await task.getCurrentState();
+		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 1);
-	})	
-});
-
-global.contract('5.Tasks: cancel on prepaid state.', (accounts) => {
-	let task;
-
-	const creator = accounts[0];
-	const employee1 = accounts[1];
-	const outsider = accounts[2];
-	const someAddress = accounts[3];
-
-	const ETH = 10000000000000000;
-
-	global.beforeEach(async() => {
-		await setup(creator);
 	});
 
-	global.it('T5.1. should create weiTask',async() => {
-		firstContractBalance = await web3.eth.getBalance(daoBase.address)
-		global.assert.strictEqual(firstContractBalance.toNumber(),0)
+	global.it('Tasks: cancel on prepaid state.',async() => {
 
-		firstEmployeeBalance = await web3.eth.getBalance(employee1)
-		global.assert.strictEqual(firstEmployeeBalance.toNumber(),100000000000000000000)
+		// should create weiTask
+		firstContractBalance = await web3.eth.getBalance(daoBase.address);
+		global.assert.strictEqual(firstContractBalance.toNumber(),0);
+
+		firstEmployeeBalance = await web3.eth.getBalance(employee1);
 
 		firstCreatorBalance = await web3.eth.getBalance(creator)		
 
@@ -605,57 +509,54 @@ global.contract('5.Tasks: cancel on prepaid state.', (accounts) => {
 			0,
 			{gas: 10000000, from: creator}
 		);
-	});
 
-	global.it('T5.2. should become "PrePaid" after transfer 1 ETH',async() => {
-		let status = await task.getCurrentState();
+		// should become "PrePaid" after transfer 1 ETH
+		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(),0);
 		
-		let neededWei = await task.getNeededWei();
+		var neededWei = await task.getNeededWei();
 		global.assert.strictEqual(neededWei.toNumber(),ETH,'Should be 1 ETH');
 
-		let isNeedsMoneyBeforeSend = await task.isNeedsMoney();
+		var isNeedsMoneyBeforeSend = await task.isNeedsMoney();
 		global.assert.strictEqual(isNeedsMoneyBeforeSend, true);
 	
-		let minWeiNeeded = await task.getMinWeiNeeded();
+		var minWeiNeeded = await task.getMinWeiNeeded();
 		global.assert.strictEqual(minWeiNeeded.toNumber(),ETH);
 
-		let getIsMoneyReceived = await task.getIsMoneyReceived();
+		var getIsMoneyReceived = await task.getIsMoneyReceived();
 		global.assert.strictEqual(getIsMoneyReceived, false);
 
-		firstCreatorBalance = await web3.eth.getBalance(creator)
+		firstCreatorBalance = await web3.eth.getBalance(creator);
 
-		let th = await task.processFunds(ETH, {value:ETH});
+		var th = await task.processFunds(ETH, {value:ETH});
 
-		secondCreatorBalance = await web3.eth.getBalance(creator)
+		secondCreatorBalance = await web3.eth.getBalance(creator);
 
-		let creatorDelta = firstCreatorBalance.toNumber() - secondCreatorBalance.toNumber()
-		global.assert.strictEqual(creatorDelta > ETH*0.95 ,true)
+		var creatorDelta = firstCreatorBalance.toNumber() - secondCreatorBalance.toNumber();
+		global.assert.strictEqual(creatorDelta > ETH*0.95 ,true);
 
-
-		let getIsMoneyReceived2 = await task.getIsMoneyReceived();
+		var getIsMoneyReceived2 = await task.getIsMoneyReceived();
 		global.assert.strictEqual(getIsMoneyReceived2, true);
 
-		let isNeedsMoneyAfterSend = await task.isNeedsMoney();
+		var isNeedsMoneyAfterSend = await task.isNeedsMoney();
 		global.assert.strictEqual(isNeedsMoneyAfterSend, false);
 
-		let minWeiNeeded2 = await task.getMinWeiNeeded();
+		var minWeiNeeded2 = await task.getMinWeiNeeded();
 		global.assert.strictEqual(minWeiNeeded2.toNumber(),0);
 
-		let balance = await task.getBalance();
+		var balance = await task.getBalance();
 		global.assert.strictEqual(balance.toNumber(), ETH);
 		
-		let isPostpaid = await task.isPostpaid();
+		var isPostpaid = await task.isPostpaid();
 		global.assert.strictEqual(isPostpaid, false);
 
-		let status2 = await task.getCurrentState();
+		var status2 = await task.getCurrentState();
 		global.assert.strictEqual(status2.toNumber(), 2);
-	});
 
-	global.it('T5.2. should become "Cancelled"',async() => {
-		th = await task.cancell({from:creator})
+		// should become "Cancelled"
+		th = await task.cancell({from:creator});
 		
-		let status = await task.getCurrentState();
+		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 1);
-	})	
+	});	
 });
