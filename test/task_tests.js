@@ -241,13 +241,13 @@ global.contract('1.Tasks: postpaid positive scenario with UNKNOWN price. Task cr
 	});
 
 	global.it('T1.2. should become "InProgress" after employee have started task',async() => {
-		let th = await task.startTask(employee1);
+		let th = await task.startTask(employee1, {gasPrice:0});
 		let status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 3);
 	});
 
 	global.it('T1.3. should become "CompleteButNeedsEvaluation" after employee have marked task as completed',async() => {
-		let th = await task.notifyThatCompleted({from:employee1});
+		let th = await task.notifyThatCompleted({from:employee1, gasPrice:0});
 
 		let neededWei = await task.getNeededWei();
 		global.assert.strictEqual(neededWei.toNumber(),0,'Should be 0');
@@ -272,7 +272,7 @@ global.contract('1.Tasks: postpaid positive scenario with UNKNOWN price. Task cr
 		global.assert.strictEqual(status.toNumber(), 5);
 	});
 
-	global.it('T1.4. should become "CanGetFunds" after creator calls processFunds()',async() => {
+	global.it('T1.5. should become "CanGetFunds" after creator calls processFunds()',async() => {
 		let isNeedsMoneyBeforeSend = await task.isNeedsMoney();
 		global.assert.strictEqual(isNeedsMoneyBeforeSend, true);
 	
@@ -282,11 +282,11 @@ global.contract('1.Tasks: postpaid positive scenario with UNKNOWN price. Task cr
 		let getIsMoneyReceived = await task.getIsMoneyReceived();
 		global.assert.strictEqual(getIsMoneyReceived, false);
 
-		firstCreatorBalance = await web3.eth.getBalance(creator)
+		firstCreatorBalance = await web3.eth.getBalance(creator);
 
 		let th = await task.processFunds(ETH, {value:ETH});
 
-		secondCreatorBalance = await web3.eth.getBalance(creator)
+		secondCreatorBalance = await web3.eth.getBalance(creator);
 
 		let creatorDelta = firstCreatorBalance.toNumber() - secondCreatorBalance.toNumber()
 		global.assert.strictEqual(creatorDelta > ETH*0.95 ,true)
@@ -307,19 +307,19 @@ global.contract('1.Tasks: postpaid positive scenario with UNKNOWN price. Task cr
 		global.assert.strictEqual(status.toNumber(), 6)		
 	});
 
-	global.it('T1.5. should become "Finished" after employee set output and call flush() ',async() => {
+	global.it('T1.6. should become "Finished" after employee set output and call flush() ',async() => {
 		let out = await task.setOutput(employee1);
 		let th = await task.flush();
 		let status = await task.getCurrentState();
-		global.assert.strictEqual(status.toNumber(), 7)		
+		global.assert.strictEqual(status.toNumber(), 7);
 
-		secondContractBalance = await web3.eth.getBalance(daoBase.address)
-		global.assert.strictEqual(secondContractBalance.toNumber(),0)
+		secondContractBalance = await web3.eth.getBalance(daoBase.address);
+		global.assert.strictEqual(secondContractBalance.toNumber(),0);
 
-		secondEmployeeBalance = await web3.eth.getBalance(employee1)
+		secondEmployeeBalance = await web3.eth.getBalance(employee1);
 		let employeeDelta = secondEmployeeBalance.toNumber() - firstEmployeeBalance.toNumber()
 		// global.assert.strictEqual(secondEmployeeBalance.toNumber(),0)
-		global.assert.strictEqual(employeeDelta > 0.7*ETH ,true)
+		global.assert.strictEqual(employeeDelta, ETH);
 	})	
 });
 
@@ -351,13 +351,13 @@ global.contract('2.Tasks: postpaid positive scenario with KNOWN price. Task crea
 	});
 
 	global.it('T2.2. should become "InProgress" after employee have started task',async() => {
-		let th = await task.startTask(employee1);
+		let th = await task.startTask(employee1, {gasPrice:0});
 		let status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 3);
 	});
 
 	global.it('T2.3. should become "Completed" after employee have marked task as completed',async() => {
-		let th = await task.notifyThatCompleted({from:employee1});
+		let th = await task.notifyThatCompleted({from:employee1, gasPrice:0});
 
 		let neededWei = await task.getNeededWei();
 		global.assert.strictEqual(neededWei.toNumber(),ETH,'Should be ETH');
@@ -406,7 +406,7 @@ global.contract('2.Tasks: postpaid positive scenario with KNOWN price. Task crea
 	});
 
 	global.it('T2.5. should become "Finished" after employee set output and call flush() ',async() => {
-		let out = await task.setOutput(employee1);
+		let out = await task.setOutput(employee1, {gasPrice:0});
 		let th = await task.flush();
 		let status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 7);
@@ -417,7 +417,7 @@ global.contract('2.Tasks: postpaid positive scenario with KNOWN price. Task crea
 		secondEmployeeBalance = await web3.eth.getBalance(employee1)
 		let employeeDelta = secondEmployeeBalance.toNumber() - firstEmployeeBalance.toNumber()
 		// global.assert.strictEqual(secondEmployeeBalance.toNumber(),0)
-		global.assert.strictEqual(employeeDelta > 0.7*ETH ,true)
+		global.assert.strictEqual(employeeDelta, ETH);
 	})	
 });
 
@@ -436,14 +436,13 @@ global.contract('3.Tasks: donation positive scenario. Task created by creator', 
 	});
 
 	global.it('T3.1. should create weiTask',async() => {
+		firstContractBalance = await web3.eth.getBalance(daoBase.address);
+		global.assert.strictEqual(firstContractBalance.toNumber(),0);
 
-		firstContractBalance = await web3.eth.getBalance(daoBase.address)
-		global.assert.strictEqual(firstContractBalance.toNumber(),0)
-
-		firstEmployeeBalance = await web3.eth.getBalance(employee1)
+		firstEmployeeBalance = await web3.eth.getBalance(employee1);
 		global.assert.strictEqual(firstEmployeeBalance.toNumber(),100000000000000000000)
 
-		firstCreatorBalance = await web3.eth.getBalance(creator)
+		firstCreatorBalance = await web3.eth.getBalance(creator);
 
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
 			daoBase.address, 
@@ -458,13 +457,13 @@ global.contract('3.Tasks: donation positive scenario. Task created by creator', 
 	});
 
 	global.it('T3.2. should become "InProgress" after employee have started task',async() => {
-		let th = await task.startTask(employee1);
+		let th = await task.startTask(employee1, {gasPrice:0});
 		let status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 3);
 	});
 
 	global.it('T3.3. should become "Completed" after creator calls evaluateAndSetNeededWei()',async() => {
-		let th = await task.notifyThatCompleted({from:employee1});
+		let th = await task.notifyThatCompleted({from:employee1, gasPrice:0});
 
 		let neededWei = await task.getNeededWei();
 		global.assert.strictEqual(neededWei.toNumber(),0,'Should be ETH');
@@ -514,7 +513,7 @@ global.contract('3.Tasks: donation positive scenario. Task created by creator', 
 	});
 
 	global.it('T3.5. should become "Finished" after employee set output and call flush() ',async() => {
-		let out = await task.setOutput(employee1);
+		let out = await task.setOutput(employee1, {gasPrice:0});
 		let th = await task.flush();
 		let status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 7);
@@ -525,7 +524,7 @@ global.contract('3.Tasks: donation positive scenario. Task created by creator', 
 		secondEmployeeBalance = await web3.eth.getBalance(employee1)
 		let employeeDelta = secondEmployeeBalance.toNumber() - firstEmployeeBalance.toNumber()
 		// global.assert.strictEqual(secondEmployeeBalance.toNumber(),0)
-		global.assert.strictEqual(employeeDelta > 0.7*ETH ,true)
+		global.assert.strictEqual(employeeDelta, ETH);
 	})	
 });
 

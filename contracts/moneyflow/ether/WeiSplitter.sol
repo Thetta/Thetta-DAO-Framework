@@ -12,11 +12,15 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 contract SplitterBase is ISplitter, Ownable {
 	using SafeMath for uint;
 	bool opened = true;
-
 	mapping (uint=>address) children;
 	uint childrenCount = 0;
 
 	string public name = "";
+
+	event ProcessFundsEvent(address sender, uint value, uint _currentFlow);
+	event OpenEvent(address sender);
+	event CloseEvent(address sender);
+	event AddChildEvent(address newChild);
 
 	constructor(string _name) public {
 		name = _name;
@@ -28,10 +32,12 @@ contract SplitterBase is ISplitter, Ownable {
 
 	// ISplitter:
 	function open() external onlyOwner{
+		emit OpenEvent(msg.sender);
 		opened = true;
 	}
 
 	function close() external onlyOwner{
+		emit CloseEvent(msg.sender);
 		opened = false;
 	}
 
@@ -46,6 +52,7 @@ contract SplitterBase is ISplitter, Ownable {
 		return children[_index];
 	}
 	function addChild(address _newChild) external onlyOwner {
+		emit AddChildEvent(_newChild);
 		children[childrenCount] = _newChild;	
 		childrenCount = childrenCount + 1;	
 	}
@@ -140,6 +147,7 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 	// See this - https://github.com/Thetta/SmartContracts/issues/40
 	function processFunds(uint _currentFlow) external payable{
 		require(_isOpen());
+		emit ProcessFundsEvent(msg.sender, msg.value, _currentFlow);
 		uint amount = _currentFlow;
 
 		// TODO: can remove this line?
@@ -248,6 +256,7 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 	// If WeiSplitter receives less or more money than needed -> exception 
 	function processFunds(uint _currentFlow) external payable{
 		require(_isOpen());
+		emit ProcessFundsEvent(msg.sender, msg.value, _currentFlow);
 		uint amount = msg.value;
 
 		// TODO: can remove this line?

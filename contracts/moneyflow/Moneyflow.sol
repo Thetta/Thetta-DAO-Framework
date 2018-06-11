@@ -42,6 +42,9 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	FallbackToWeiReceiver donationF2WR;
 	FallbackToWeiReceiver revenueF2WR;
 
+	event WithdrawDonationsEvent(address by, address to, uint balance);
+	event SetRootWeiReceiverEvent(address sender, address receiver);
+
 	constructor(IDaoBase _dao) public
 		DaoClient(_dao)
 	{
@@ -50,8 +53,6 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 		donationF2WR = new FallbackToWeiReceiver(donationEndpoint);
 	}
 
-	event WithdrawDonations(address _by, address _to, uint _balance);
-
 // IMoneyflow:
 	// will withdraw donations
 	function withdrawDonationsTo(address _out) external isCanDo("withdrawDonations"){
@@ -59,7 +60,7 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	}
 
 	function _withdrawDonationsTo(address _out) internal{
-		emit WithdrawDonations(msg.sender, _out, address(donationEndpoint).balance);
+		emit WithdrawDonationsEvent(msg.sender, _out, address(donationEndpoint).balance);
 		donationEndpoint.flushTo(_out);
 	}
 
@@ -97,6 +98,7 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	}
 
 	function _setRootWeiReceiver(IWeiReceiver _receiver) internal{
+		emit SetRootWeiReceiverEvent(msg.sender, address(_receiver));
 		rootReceiver = _receiver;
 		revenueF2WR = new FallbackToWeiReceiver(address(rootReceiver));
 	}
