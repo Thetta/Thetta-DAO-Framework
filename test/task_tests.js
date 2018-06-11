@@ -5,40 +5,13 @@ var DaoStorage = artifacts.require("./DaoStorage");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
-var token;
-var store;
-var task;
-var daoBase;
-
 function KECCAK256 (x){
 	return web3.sha3(x);
 }
 
-async function setup(creator){
-	token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
-	await token.mint(creator, 1000);
-	store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
-
-	// issue 1000 tokens
-	daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
-
-	// add creator as first employee	
-	await store.addGroupMember(KECCAK256("Employees"), creator);
-	await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
-
-	// do not forget to transfer ownership
-	await token.transferOwnership(daoBase.address);
-	await store.transferOwnership(daoBase.address);
-
-	await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-	await daoBase.allowActionByAnyMemberOfGroup("startTask","Employees");
-	await daoBase.allowActionByAnyMemberOfGroup("startBounty","Employees");
-
-	// this is a list of actions that require voting
-	await daoBase.allowActionByVoting("manageGroups",token.address);
-	await daoBase.allowActionByVoting("addNewTask",token.address);
-	await daoBase.allowActionByVoting("issueTokens",token.address);
-}
+let token;
+let daoBase;
+let store;
 
 global.contract('Tasks', (accounts) => {
 	var firstContractBalance;
@@ -57,9 +30,28 @@ global.contract('Tasks', (accounts) => {
 	const ETH = 1000000000000000000;
 
 	global.beforeEach(async() => {
-		await setup(creator);
-	});
+		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
+		await token.mint(creator, 1000);
+		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
+		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
 
+		// add creator as first employee	
+		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
+
+		// do not forget to transfer ownership
+		await token.transferOwnership(daoBase.address);
+		await store.transferOwnership(daoBase.address);
+
+		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("startTask","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup("startBounty","Employees");
+
+		// this is a list of actions that require voting
+		await daoBase.allowActionByVoting("manageGroups",token.address);
+		await daoBase.allowActionByVoting("addNewTask",token.address);
+		await daoBase.allowActionByVoting("issueTokens",token.address);		
+	});
 
 	global.it('Tasks: prepaid positive scenario. Task created by creator',async() => {
 		// should not create weiTask (prepaid + donation);
@@ -139,7 +131,6 @@ global.contract('Tasks', (accounts) => {
 		var status2 = await task.getCurrentState();
 		global.assert.strictEqual(status2.toNumber(), 2);
 
-
 		// should become "InProgress" after employee have started task
 		var th = await task.startTask(employee1);
 		var status = await task.getCurrentState();
@@ -181,7 +172,6 @@ global.contract('Tasks', (accounts) => {
 			[creator,{gas: 10000000, from: outsider}]
 		);
 
-
 		// should become "Finished" after employee set output and call flush();
 		var out = await task.setOutput(employee1);
 		var th = await task.flush();
@@ -220,7 +210,6 @@ global.contract('Tasks', (accounts) => {
 		var th = await task.startTask(employee1, {gasPrice:0});
 		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 3);
-
 
 		// should become "CompvareButNeedsEvaluation" after employee have marked task as compvared
 		var th = await task.notifyThatCompleted({from:employee1, gasPrice:0});
@@ -431,7 +420,6 @@ global.contract('Tasks', (accounts) => {
 
 		var creatorDelta = firstCreatorBalance.toNumber() - secondCreatorBalance.toNumber();
 		global.assert.strictEqual(creatorDelta > ETH*0.95 ,true);
-
 
 		var getIsMoneyReceived2 = await task.getIsMoneyReceived();
 		global.assert.strictEqual(getIsMoneyReceived2, true);
