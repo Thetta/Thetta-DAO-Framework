@@ -64,7 +64,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	event WeiGenericTask_SetEmployee(address  _employee);
 	event WeiGenericTask_SetOutput(address _output);
 	event WeiGenericTask_ProcessFunds(address _sender, uint _value, uint _currentFlow);
-	event WeiGenericTask_StateChange(State _state);
+	event WeiGenericTask_StateChanged(State _state);
 
 	modifier onlyEmployeeOrOwner() { 
 		require(msg.sender==employee || msg.sender==owner); 
@@ -157,7 +157,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 			moneySource.transfer(address(this).balance);
 		}
 		state = State.Cancelled;
-		emit WeiGenericTask_StateChange(state);
+		emit WeiGenericTask_StateChanged(state);
 	}
 
 	function notifyThatCompleted() external onlyEmployeeOrOwner {
@@ -166,10 +166,10 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		if((0!=neededWei) || (isDonation)){ // if donation or prePaid - no need in ev-ion; if postpaid with unknown payment - neededWei=0 yet
 			
 			state = State.Complete;
-			emit WeiGenericTask_StateChange(state);
+			emit WeiGenericTask_StateChanged(state);
 		}else{
 			state = State.CompleteButNeedsEvaluation;
-			emit WeiGenericTask_StateChange(state);
+			emit WeiGenericTask_StateChanged(state);
 		}
 	}
 
@@ -179,7 +179,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 		neededWei = _neededWei;
 		state = State.Complete;
-		emit WeiGenericTask_StateChange(state);
+		emit WeiGenericTask_StateChanged(state);
 	}
 
 	// for Prepaid tasks only! 
@@ -190,7 +190,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		require(0!=neededWei);
 
 		state = State.CanGetFunds;
-		emit WeiGenericTask_StateChange(state);
+		emit WeiGenericTask_StateChanged(state);
 	}
 
 // IDestination overrides:
@@ -201,7 +201,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 		output.transfer(address(this).balance);
 		state = State.Finished;
-		emit WeiGenericTask_StateChange(state);
+		emit WeiGenericTask_StateChanged(state);
 	}
 
 	function flushTo(address _to) external {
@@ -244,7 +244,7 @@ contract WeiTask is WeiGenericTask {
 		}
 		employee = _employee;	
 		state = State.InProgress;
-		emit WeiGenericTask_StateChange(state);
+		emit WeiGenericTask_StateChanged(state);
 	}
 }
 
@@ -264,6 +264,6 @@ contract WeiBounty is WeiGenericTask {
 		require(_getCurrentState()==State.PrePaid);
 		employee = msg.sender;	
 		state = State.InProgress;
-		emit WeiGenericTask_StateChange(state);
+		emit WeiGenericTask_StateChanged(state);
 	}
 }
