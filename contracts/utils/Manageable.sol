@@ -16,11 +16,11 @@ contract Manageable is Ownable {
 	mapping (address => bool) managerEnabled;  // hard switch for a manager - on/off
 	mapping (address => mapping (string => bool)) managerPermissions;  // detailed info about manager`s permissions
 
-// Events:
-	event ManagerEnabledEvent(address indexed manager);
-	event ManagerDisabledEvent(address indexed manager);
-	event ManagerPermissionGrantedEvent(address indexed manager, string permission);
-	event ManagerPermissionRevokedEvent(address indexed manager, string permission);
+//Events:
+	event Manageable_ManagerEnabled(address indexed _manager);
+	event Manageable_ManagerDisabled(address indexed _manager);
+	event Manageable_ManagerPermissionGranted(address indexed _manager, string _permission);
+	event Manageable_ManagerPermissionRevoked(address indexed _manager, string _permission);
 
 // Modifiers:
 	modifier onlyValidAddress(address _manager) {
@@ -47,7 +47,7 @@ contract Manageable is Ownable {
 		require(managerEnabled[_manager] == false);
 
 		managerEnabled[_manager] = true;
-		emit ManagerEnabledEvent(_manager);
+		emit Manageable_ManagerEnabled(_manager);
 	}
 
 	/**
@@ -58,7 +58,7 @@ contract Manageable is Ownable {
 		require(managerEnabled[_manager] == true);
 
 		managerEnabled[_manager] = false;
-		emit ManagerDisabledEvent(_manager);
+		emit Manageable_ManagerDisabled(_manager);
 	}
 
 	/**
@@ -77,7 +77,7 @@ contract Manageable is Ownable {
 		require(managerPermissions[_manager][_permissionName] == false);
 
 		managerPermissions[_manager][_permissionName] = true;
-		emit ManagerPermissionGrantedEvent(_manager, _permissionName);
+		emit Manageable_ManagerPermissionGranted(_manager, _permissionName);
 	}
 
 	/**
@@ -96,7 +96,7 @@ contract Manageable is Ownable {
 		require(managerPermissions[_manager][_permissionName] == true);
 
 		managerPermissions[_manager][_permissionName] = false;
-		emit ManagerPermissionRevokedEvent(_manager, _permissionName);
+		emit Manageable_ManagerPermissionRevoked(_manager, _permissionName);
 	}
 
 	/**

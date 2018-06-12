@@ -32,8 +32,8 @@ contract GenericCaller is DaoClient, Ownable {
 
 	mapping (bytes32=>VotingParams) votingParams;
 
-	event GenericCaller_DoActionDirectly(string permission);
-	event GenericCaller_CreateNewProposal(string permission);
+	event GenericCaller_DoActionDirectly(string _permission, address _target, address _origin, string _methodSig);
+	event GenericCaller_CreateNewProposal(string _permission, address _target, address _origin, string _methodSig);
 
 /////
 	constructor(IDaoBase _dao)public
@@ -48,7 +48,7 @@ contract GenericCaller is DaoClient, Ownable {
 	function doAction(string _permissionId, address _target, address _origin, string _methodSig, bytes32[] _params) public returns(address proposalOut) 
 	{
 		if(dao.isCanDoAction(msg.sender, _permissionId)){
-			emit GenericCaller_DoActionDirectly(_permissionId);
+			emit GenericCaller_DoActionDirectly(_permissionId, _target, _origin, _methodSig);
 
 			// 1 - call immediately?
 			if(!address(_target).call(
@@ -74,7 +74,7 @@ contract GenericCaller is DaoClient, Ownable {
 			return 0x0;
 		}else{
 			// 2 - create proposal + voting first  
-			emit GenericCaller_CreateNewProposal(_permissionId);
+			emit GenericCaller_CreateNewProposal(_permissionId, _target, _origin, _methodSig);
 
 			// _origin is the initial msg.sender (just like tx.origin) 
 			GenericProposal prop = new GenericProposal(_target, _origin, _methodSig, _params);

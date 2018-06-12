@@ -30,6 +30,9 @@ contract Voting_1p1v is IVoting, Ownable {
 	address[] employeesVotedYes;
 	address[] employeesVotedNo;
 
+	event  Voting1p1v_Vote(address _who, bool _yes);
+	event  Voting1p1v_CallAction();
+
 	/**
 	 * TODO: 
 	 * @param _dao – DAO where proposal was created.
@@ -140,6 +143,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		}
 
 		addressVotedAlready[_who] = true;
+		emit  Voting1p1v_Vote(_who, _yes);
 
 		_callActionIfEnded();
 	}
@@ -154,6 +158,7 @@ contract Voting_1p1v is IVoting, Ownable {
 			finishedWithYes = true;
 
 			// can throw!
+			emit  Voting1p1v_CallAction();
 			proposal.action();
 		}
 	}
