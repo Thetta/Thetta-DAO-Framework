@@ -26,10 +26,8 @@ Our thanks go to these people:
 
 ## Disclaimer 
 
-We are doing our best to keep the code quality at the very high level.
-However: Thetta community and Thetta inc. can not garantee that code has no bugs. As long as any smart contract can involve real cryptocurrency -> please double check that you know what you are doing. 
-
-Thetta DAO Framework CAN LEAD TO the monetary loss. Thetta has no liabilities.
+We are doing our best to keep the code quality at the very high level. 
+However: Thetta community and Thetta inc. can not guarantee that code has no bugs. Thetta DAO Framework CAN LEAD TO the monetary loss. Thetta has no liabilities.
 
 ## Contact Us
 
