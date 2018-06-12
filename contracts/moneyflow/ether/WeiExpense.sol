@@ -20,10 +20,10 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	uint neededWei = 0;
 	address moneySource = 0x0;
 
-	event FlushEvent(address owner, uint balance);
-	event SetNeededWeiEvent(uint _neededWei);
-	event SetPercentsEvent(uint _percentsMul100);
-	event ProcessFundsEvent(address sender, uint value, uint _currentFlow);
+	event WeiExpense_Flush(address _owner, uint _balance);
+	event WeiExpense_SetNeededWei(uint _neededWei);
+	event WeiExpense_SetPercents(uint _percentsMul100);
+	event WeiWxpense_ProcessFunds(address _sender, uint _value, uint _currentFlow);
 
 	/**
 	* @dev Constructor
@@ -42,7 +42,7 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	}
 
 	function processFunds(uint _currentFlow) external payable{
-		emit ProcessFundsEvent(msg.sender, msg.value, _currentFlow);
+		emit WeiWxpense_ProcessFunds(msg.sender, msg.value, _currentFlow);
 		_processFunds(_currentFlow);
 	}
 
@@ -140,7 +140,7 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	}
 
 	function flush()external onlyOwner{
-		emit FlushEvent(owner, address(this).balance);
+		emit WeiExpense_Flush(owner, address(this).balance);
 		owner.transfer(address(this).balance);
 	}
 
@@ -149,12 +149,12 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	}
 
 	function setNeededWei(uint _neededWei) external onlyOwner {
-		emit SetNeededWeiEvent(_neededWei);
+		emit WeiExpense_SetNeededWei(_neededWei);
 		neededWei = _neededWei;
 	}
 	
 	function setPercents(uint _percentsMul100) external onlyOwner {
-		emit SetPercentsEvent(_percentsMul100);
+		emit WeiExpense_SetPercents(_percentsMul100);
 		percentsMul100 = _percentsMul100;
 	}
 

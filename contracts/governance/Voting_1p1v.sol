@@ -30,8 +30,8 @@ contract Voting_1p1v is IVoting, Ownable {
 	address[] employeesVotedYes;
 	address[] employeesVotedNo;
 
-	event VoteEvent(address _who, bool _yes);
-	event CallActionEvent();
+	event  Voting1p1v_Vote(address _who, bool _yes);
+	event  Voting1p1v_CallAction();
 
 	/**
 	 * TODO: 
@@ -143,7 +143,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		}
 
 		addressVotedAlready[_who] = true;
-		emit VoteEvent(_who, _yes);
+		emit  Voting1p1v_Vote(_who, _yes);
 
 		_callActionIfEnded();
 	}
@@ -158,7 +158,7 @@ contract Voting_1p1v is IVoting, Ownable {
 			finishedWithYes = true;
 
 			// can throw!
-			emit CallActionEvent();
+			emit  Voting1p1v_CallAction();
 			proposal.action();
 		}
 	}

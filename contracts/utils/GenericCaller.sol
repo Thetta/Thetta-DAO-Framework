@@ -32,8 +32,8 @@ contract GenericCaller is DaoClient, Ownable {
 
 	mapping (bytes32=>VotingParams) votingParams;
 
-	event GenericCaller_DoActionDirectly(string permission, address target, address origin, string methodSig);
-	event GenericCaller_CreateNewProposal(string permission, address target, address origin, string methodSig);
+	event GenericCaller_DoActionDirectly(string _permission, address _target, address _origin, string _methodSig);
+	event GenericCaller_CreateNewProposal(string _permission, address _target, address _origin, string _methodSig);
 
 /////
 	constructor(IDaoBase _dao)public
