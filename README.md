@@ -6,6 +6,10 @@ Code is modular, so you can use different subsystems almost independently.
 
 [ ![Codeship Status for Thetta/SmartContracts](https://app.codeship.com/projects/f1b38150-b26e-0135-0584-462fcae7d1c8/status?branch=master)](https://app.codeship.com/projects/258076)
 
+## Simplified Design scheme
+
+![Thetta DAO Framework design](https://i.imgsafe.org/f9/f97822d1fe.png)
+
 ## Documentation
 
 1. [Overview](https://docs.google.com/document/d/1VG0-zY9Jn6FA21IJuVEt2voDQkBQN6B_uyKZWjb9hSM/edit?usp=sharing)
