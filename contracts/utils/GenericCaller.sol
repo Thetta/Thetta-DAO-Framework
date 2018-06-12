@@ -3,6 +3,7 @@ pragma solidity ^0.4.22;
 import "../IDaoBase.sol";
 
 import "../governance/Voting_1p1v.sol";
+import "../governance/Voting_SimpleToken.sol";
 import "../governance/Proposals.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -108,19 +109,22 @@ contract GenericCaller is DaoClient, Ownable {
 
 		if(VotingType.Voting1p1v==vp.votingType){
 			return new Voting_1p1v(dao, _proposal, _origin, 
-										  uint(vp.param1), 
-										  bytes32ToString(vp.param2), 
-										  uint(vp.param3), 
-										  uint(vp.param4), 
-										  vp.param5);
+				uint(vp.param1), 
+				bytes32ToString(vp.param2), 
+				uint(vp.param3), 
+				uint(vp.param4), 
+				vp.param5);
 		}
 
-		/*
-		// TODO: 
 		if(VotingType.VotingSimpleToken==vp.votingType){
-			return new Voting_SimpleToken(dao, _proposal, _origin, uint(vp.param1), address(vp.param2), vp.param3);
+			return new Voting_SimpleToken(dao, _proposal, _origin, 
+				uint(vp.param1), 
+				bytes32ToString(vp.param2), 
+				uint(vp.param3), 
+				uint(vp.param4), 
+				address(vp.param5));
 		}
-		*/
+		
 
 		// TODO: add other implementations
 		// no implementation for this type!

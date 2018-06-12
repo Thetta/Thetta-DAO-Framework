@@ -6,8 +6,6 @@ import "./ether/WeiSplitter.sol";
 import "./ether/WeiExpense.sol";
 import "./ether/WeiFund.sol";
 
-import "../governance/Voting.sol";
-
 import "../IDaoBase.sol";
 
 /**
