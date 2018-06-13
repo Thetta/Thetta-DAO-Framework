@@ -1,3 +1,7 @@
+[ ![Codeship Status for Thetta/SmartContracts](https://app.codeship.com/projects/f1b38150-b26e-0135-0584-462fcae7d1c8/status?branch=master)](https://app.codeship.com/projects/258076)
+
+***
+
 <p align="center">
   <img alt="Thetta logo" src="https://i.imgsafe.org/15/15604a1c64.png" height="250" />
   <h3 align="center">Thetta DAO Framework</h3>
@@ -8,10 +12,6 @@
 
 Thetta DAO Framework is a DAO Framework that will help you to create your own DAO on top of it.
 Code is modular, so you can use different subsystems almost independently.
-
-[ ![Codeship Status for Thetta/SmartContracts](https://app.codeship.com/projects/f1b38150-b26e-0135-0584-462fcae7d1c8/status?branch=master)](https://app.codeship.com/projects/258076)
-
-## Simplified Design scheme
 
 ![Thetta DAO Framework design](https://i.imgsafe.org/f9/f97822d1fe.png)
 
