@@ -32,7 +32,7 @@ function KECCAK256 (x){
 		// 50/50 between reserve fund and dividends 
 		moneyflowScheme = await DefaultMoneyflowSchemeWithUnpackers.new(daoBase.address, output, 5000, 5000, {from: creator});
 
-		// add creator as first employee	
+		// add creator as first employee
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 		await store.allowActionByAddress(KECCAK256("setRootWeiReceiver"),creator);

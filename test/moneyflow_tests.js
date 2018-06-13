@@ -20,7 +20,7 @@ function KECCAK256 (x){
 }
 
 async function createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends){
-	let callParams = {from:creator, gasPrice:0}	
+	let callParams = {from:creator, gasPrice:0}
 	let o = {};
 
 	o.AllOutpults = await WeiTopDownSplitter.new('AllOutpults', callParams);
@@ -43,7 +43,7 @@ async function createStructure(creator, money, e1, e2, e3, office, internet, t1,
 		o.Rest = await WeiUnsortedSplitter.new('Rest', callParams);
 			o.ReserveFund = await WeiFund.new(creator, false, reserve, callParams);
 			o.DividendsFund = await WeiFund.new(creator, false, dividends, callParams);
-	
+
 	// CONNECTIONS
 	await o.AllOutpults.addChild(o.Spends.address, callParams);
 		await o.Spends.addChild(o.Salaries.address, callParams);
@@ -56,7 +56,7 @@ async function createStructure(creator, money, e1, e2, e3, office, internet, t1,
 		await o.Spends.addChild(o.Tasks.address, callParams);
 			await o.Tasks.addChild(o.Task1.address, callParams);
 			await o.Tasks.addChild(o.Task2.address, callParams);
-			await o.Tasks.addChild(o.Task3.address, callParams);			
+			await o.Tasks.addChild(o.Task3.address, callParams);
 	await o.AllOutpults.addChild(o.Bonuses.address, callParams);
 		await o.Bonuses.addChild(o.Bonus1.address, callParams);
 		await o.Bonuses.addChild(o.Bonus2.address, callParams);
@@ -146,7 +146,7 @@ async function getSplitterParams(i, CURRENT_INPUT, money, creator){
 }
 
 async function structureAsserts(i){
-	global.assert.equal(i.AllOutpultsChildrenCount.toNumber(), 3, 'Children count should be 3');		
+	global.assert.equal(i.AllOutpultsChildrenCount.toNumber(), 3, 'Children count should be 3');
 	global.assert.equal(i.SpendsChildrenCount.toNumber(), 3, 'Children count should be 3');
 	global.assert.equal(i.SalariesChildrenCount.toNumber(), 3, 'Children count should be 3');
 	global.assert.equal(i.OtherChildrenCount.toNumber(), 2, 'Children count should be 2');
@@ -174,7 +174,7 @@ async function balancesAsserts(i, CURRENT_INPUT, money, e1, e2, e3, office, inte
 	global.assert.equal(i.Bonus3Balance.toNumber()/money, bonusesSpendPercent*b3, `Bonus3 balance should be ${bonusesSpendPercent*b3} money`);
 
 	global.assert.equal(i.Reserve3Balance.toNumber()/money, fundsPercent*reserve, `Reserve3 balance should be ${fundsPercent*reserve} money`);
-	global.assert.equal(i.Dividends3Balance.toNumber()/money, fundsPercent*dividends, `Dividends3 balance should be ${fundsPercent*dividends} money`);	
+	global.assert.equal(i.Dividends3Balance.toNumber()/money, fundsPercent*dividends, `Dividends3 balance should be ${fundsPercent*dividends} money`);
 }
 
 async function splitterBalancesAsserts(i, money, allOutpultsBalance, spendsBalance, salariesBalance, otherBalance, tasksBalance, bonusesBalance, restBalance){
@@ -206,7 +206,7 @@ global.contract('Moneyflow', (accounts) => {
 		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
 
-		// add creator as first employee	
+		// add creator as first employee
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
@@ -276,13 +276,13 @@ global.contract('Moneyflow', (accounts) => {
 		// test fund.flushTo();
 		let fundBalance3 = await web3.eth.getBalance(fund.address);
 		global.assert.equal(fundBalance,money,'Money should be transferred to the fund');
-		
+
 		let firstOutsiderBalance = await web3.eth.getBalance(outsider);
 		await fund.flushTo(outsider, {from:creator, gas:1000000, gasPrice:0});
 		let secondOutsiderBalance = await web3.eth.getBalance(outsider);
 		let outsiderBalanceDelta = secondOutsiderBalance.toNumber() - firstOutsiderBalance.toNumber();
 		global.assert.equal(outsiderBalanceDelta, money, 'outsider gets all money by flushTo();');
-		
+
 		let fundBalance4 = await web3.eth.getBalance(fund.address);
 		let fundBalanceDelta2 = fundBalance3.toNumber() - fundBalance4.toNumber();
 		global.assert.equal(fundBalanceDelta2, money, 'fund have given all money to creator by flushTo();');
@@ -300,12 +300,12 @@ global.contract('Moneyflow', (accounts) => {
 
 		let donationBalance = await web3.eth.getBalance(donationEndpoint.address);
 		global.assert.equal(donationBalance.toNumber(),money, 'all money at donation point now');
-		
+
 		// this should not work, because creator is NOT a IWeiReceiver
 		await CheckExceptions.checkContractThrows(moneyflowInstance.setRootWeiReceiver, 
 			[creator, {gas: 10000000, value:1000*money, from: creator}]
-		);		
-		
+		);
+
 		// get the donations 
 		let outsiderBalance = await web3.eth.getBalance(outsider);
 
@@ -325,7 +325,7 @@ global.contract('Moneyflow', (accounts) => {
 		let weiAbsoluteExpense1 = await WeiAbsoluteExpense.new(1*money, {from:creator, gasPrice:0});
 		let weiAbsoluteExpense2 = await WeiAbsoluteExpense.new(2*money, {from:creator, gasPrice:0});
 		let weiAbsoluteExpense3 = await WeiAbsoluteExpense.new(3*money, {from:creator, gasPrice:0});
-		
+
 		// // add 3 WeiAbsoluteExpense outputs to the splitter
 		await weiTopDownSplitter.addChild(weiAbsoluteExpense1.address);
 		await weiTopDownSplitter.addChild(weiAbsoluteExpense2.address);
@@ -335,7 +335,7 @@ global.contract('Moneyflow', (accounts) => {
 		await moneyflowInstance.setRootWeiReceiver(weiTopDownSplitter.address);
 
 		let revenueEndpointAddress = await moneyflowInstance.getRevenueEndpoint();
-		
+
 		global.assert.equal(revenueEndpointAddress, weiTopDownSplitter.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
 
 		// now send some money to the revenue endpoint 
@@ -344,10 +344,10 @@ global.contract('Moneyflow', (accounts) => {
 		// money should end up in the outputs
 		let weiAbsoluteExpense1Balance = await web3.eth.getBalance(weiAbsoluteExpense1.address);
 		global.assert.equal(weiAbsoluteExpense1Balance.toNumber(),1*money, 'resource point received money from splitter');
-		
+
 		let weiAbsoluteExpense2Balance = await web3.eth.getBalance(weiAbsoluteExpense2.address);
 		global.assert.equal(weiAbsoluteExpense2Balance.toNumber(),2*money, 'resource point received money from splitter');
-		
+
 		let weiAbsoluteExpense3Balance = await web3.eth.getBalance(weiAbsoluteExpense3.address);
 		global.assert.equal(weiAbsoluteExpense3Balance.toNumber(),3*money, 'resource point received money from splitter');
 	});
@@ -359,7 +359,7 @@ global.contract('Moneyflow', (accounts) => {
 		let weiAbsoluteExpense1 = await WeiAbsoluteExpense.new(1*money, {from:creator, gasPrice:0});
 		let weiAbsoluteExpense2 = await WeiAbsoluteExpense.new(2*money, {from:creator, gasPrice:0});
 		let weiAbsoluteExpense3 = await WeiAbsoluteExpense.new(3*money, {from:creator, gasPrice:0});
-		
+
 		// // add 3 WeiAbsoluteExpense outputs to the splitter
 		await weiUnsortedSplitter.addChild(weiAbsoluteExpense1.address);
 		await weiUnsortedSplitter.addChild(weiAbsoluteExpense2.address);
@@ -369,7 +369,7 @@ global.contract('Moneyflow', (accounts) => {
 		await moneyflowInstance.setRootWeiReceiver(weiUnsortedSplitter.address);
 
 		let revenueEndpointAddress = await moneyflowInstance.getRevenueEndpoint();
-		
+
 		global.assert.equal(revenueEndpointAddress, weiUnsortedSplitter.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
 
 		// now send some money to the revenue endpoint 
@@ -378,10 +378,10 @@ global.contract('Moneyflow', (accounts) => {
 		// money should end up in the outputs
 		let weiAbsoluteExpense1Balance = await web3.eth.getBalance(weiAbsoluteExpense1.address);
 		global.assert.equal(weiAbsoluteExpense1Balance.toNumber(),1*money, 'resource point received money from splitter');
-		
+
 		let weiAbsoluteExpense2Balance = await web3.eth.getBalance(weiAbsoluteExpense2.address);
 		global.assert.equal(weiAbsoluteExpense2Balance.toNumber(),2*money, 'resource point received money from splitter');
-		
+
 		let weiAbsoluteExpense3Balance = await web3.eth.getBalance(weiAbsoluteExpense3.address);
 		global.assert.equal(weiAbsoluteExpense3Balance.toNumber(),3*money, 'resource point received money from splitter');
 	});
@@ -392,7 +392,7 @@ global.contract('Moneyflow', (accounts) => {
 
 		let Employee1 = await WeiAbsoluteExpense.new(1000*money, {from:creator, gasPrice:0});
 		let Employee2 = await WeiAbsoluteExpense.new(1500*money, {from:creator, gasPrice:0});
-		let Employee3 = await WeiAbsoluteExpense.new(800*money, {from:creator, gasPrice:0});		
+		let Employee3 = await WeiAbsoluteExpense.new(800*money, {from:creator, gasPrice:0});
 
 		await AllOutpults.addChild(Salaries.address, {from:creator, gas:1000000, gasPrice:0});
 
@@ -442,12 +442,12 @@ global.contract('Moneyflow', (accounts) => {
 		let dividends = 2500;
 
 		let struct = await createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
-		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);	
+		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);
 		await totalAndMinNeedsAsserts(splitterParams, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await structureAsserts(splitterParams);
-	
+
 		await struct.AllOutpults.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money, from:creator, gas:1000000, gasPrice:0});
-		
+
 		let balances = await getBalances(struct);
 		await balancesAsserts(balances, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await splitterBalancesAsserts(balances, money, 0, 0, 0, 0, 0, 0, 0);
@@ -470,12 +470,12 @@ global.contract('Moneyflow', (accounts) => {
 		let dividends = 2500;
 
 		let struct = await createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
-		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);	
+		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);
 		await totalAndMinNeedsAsserts(splitterParams, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await structureAsserts(splitterParams);
-	
+
 		await struct.AllOutpults.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money, from:creator, gas:1000000, gasPrice:0});
-		
+
 		let balances = await getBalances(struct);
 		await balancesAsserts(balances, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, 0, 0, 0, 0, 0);
 		await splitterBalancesAsserts(balances, money, 0, 0, 0, 0, 0, 0, 0);
@@ -498,21 +498,21 @@ global.contract('Moneyflow', (accounts) => {
 		let dividends = 2500;
 
 		let struct = await createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
-		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);	
+		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);
 		await totalAndMinNeedsAsserts(splitterParams, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await structureAsserts(splitterParams);
-	
+
 		await CheckExceptions.checkContractThrows(struct.AllOutpults.processFunds, 
 			[1000*money, {gas: 10000000, value:1000*money, from: creator}]
-		);	
+		);
 
 		await CheckExceptions.checkContractThrows(struct.AllOutpults.processFunds, 
 			[100000*money, {gas: 10000000, value:1000*money, from: creator}]
-		);		
+		);
 
 		await CheckExceptions.checkContractThrows(struct.AllOutpults.processFunds, 
 			[1000*money, {gas: 10000000, value:100000*money, from: creator}]
-		);	
+		);
 	});
 
 	global.it('should process money with a scheme just like in the paper: 10/15 others, send MORE than minNeed; ',async() => {
@@ -532,12 +532,12 @@ global.contract('Moneyflow', (accounts) => {
 		let dividends = 1500;
 
 		let struct = await createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
-		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);	
+		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);
 		await totalAndMinNeedsAsserts(splitterParams, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await structureAsserts(splitterParams);
-	
+
 		await struct.AllOutpults.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money, from:creator, gas:1000000, gasPrice:0});
-		
+
 		let balances = await getBalances(struct);
 		await balancesAsserts(balances, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await splitterBalancesAsserts(balances, money, 10800, 0, 0, 0, 0, 0, 0);
@@ -560,12 +560,12 @@ global.contract('Moneyflow', (accounts) => {
 		let dividends = 1500;
 
 		let struct = await createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
-		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);	
+		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);
 		await totalAndMinNeedsAsserts(splitterParams, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await structureAsserts(splitterParams);
-	
+
 		await struct.AllOutpults.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money, from:creator, gas:1000000, gasPrice:0});
-		
+
 		let balances = await getBalances(struct);
 		await balancesAsserts(balances, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, 0, 0, 0, 0, 0);
 		await splitterBalancesAsserts(balances, money, 0, 0, 0, 0, 0, 0, 0);
@@ -588,27 +588,27 @@ global.contract('Moneyflow', (accounts) => {
 		let dividends = 1500;
 
 		let struct = await createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
-		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);	
+		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);
 		await totalAndMinNeedsAsserts(splitterParams, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await structureAsserts(splitterParams);
-	
+
 		await CheckExceptions.checkContractThrows(struct.AllOutpults.processFunds, 
 			[1000*money, {gas: 10000000, value:1000*money, from: creator}]
-		);	
+		);
 
 		await CheckExceptions.checkContractThrows(struct.AllOutpults.processFunds, 
 			[100000*money, {gas: 10000000, value:1000*money, from: creator}]
-		);		
+		);
 
 		await CheckExceptions.checkContractThrows(struct.AllOutpults.processFunds, 
 			[1000*money, {gas: 10000000, value:100000*money, from: creator}]
-		);	
+		);
 	});
 
 	global.it('should process money with WeiAbsoluteExpenseWithPeriod, then 25 hours, then money needs again',async() => {
 		const CURRENT_INPUT = 30900;
 		let timePeriod = 25;
-		let callParams = {from:creator, gasPrice:0}	
+		let callParams = {from:creator, gasPrice:0}
 		let struct = {};
 		let balance0 = await web3.eth.getBalance(creator);
 
@@ -617,7 +617,7 @@ global.contract('Moneyflow', (accounts) => {
 		await Employee1.processFunds(1000*money, {value:1000*money, from:outsider, gas:1000000, gasPrice:0});
 		await CheckExceptions.checkContractThrows(Employee1.flush, [{from:outsider}])
 		await Employee1.flush({from:creator, gasPrice:0});
-		
+
 		let balance = await web3.eth.getBalance(creator);
 		global.assert.equal(balance.toNumber() - balance0.toNumber(), 1000*money, 'Should get money');
 
@@ -636,10 +636,10 @@ global.contract('Moneyflow', (accounts) => {
 		let NOW2 = await Employee1.getNow();
 
 		// global.assert.equal ( Math.round((NOW2.toNumber() - MomentReceived2.toNumber())/(3600*1000)), 25 )
-		
+
 		let needsEmployee2 = await Employee1.isNeedsMoney({from:creator});
 		global.assert.equal(needsEmployee2, true, 'Need money, because 24 hours passed');
-	
+
 		await Employee1.processFunds(1000*money, {value:1000*money, from:outsider, gas:1000000, gasPrice:0});
 		await Employee1.flush({from:creator, gasPrice:0});
 
@@ -652,7 +652,7 @@ global.contract('Moneyflow', (accounts) => {
 
 	global.it('should process money with WeiAbsoluteExpenseWithPeriod, then 75 hours, then money needs again x3',async() => {
 		let timePeriod = 25;
-		let callParams = {from:creator, gasPrice:0}	
+		let callParams = {from:creator, gasPrice:0}
 		let struct = {};
 		let balance0 = await web3.eth.getBalance(creator);
 
@@ -660,11 +660,11 @@ global.contract('Moneyflow', (accounts) => {
 
 		let multi1 = await Employee1.getDebtMultiplier();
 		global.assert.equal(multi1.toNumber(), 1, '0 hours => x1');
-		
+
 		await Employee1.processFunds(1000*money, {value:1000*money, from:outsider, gas:1000000, gasPrice:0});
 		await CheckExceptions.checkContractThrows(Employee1.flush, [{from:outsider}])
 		await Employee1.flush({from:creator, gasPrice:0});
-		
+
 		let balance = await web3.eth.getBalance(creator);
 		global.assert.equal(balance.toNumber() - balance0.toNumber(), 1000*money, 'Should get money');
 
@@ -681,13 +681,13 @@ global.contract('Moneyflow', (accounts) => {
 		// let periodHours = await Employee1.periodHours();
 		// let MomentReceived2 = await Employee1.momentReceived();
 		let NOW2 = await Employee1.getNow();
-		
+
 		let multi2 = await Employee1.getDebtMultiplier();
 		global.assert.equal(multi2.toNumber(), 3, '75 hours => x3');
-		
+
 		let needsEmployee2 = await Employee1.isNeedsMoney({from:creator});
 		global.assert.equal(needsEmployee2, true, 'Need money, because 24 hours passed');
-	
+
 
 		await CheckExceptions.checkContractThrows(Employee1.processFunds, [4000*money, {value:4000*money, from:outsider, gas:1000000, gasPrice:0}])
 		await CheckExceptions.checkContractThrows(Employee1.processFunds, [2000*money, {value:2000*money, from:outsider, gas:1000000, gasPrice:0}])
@@ -699,11 +699,11 @@ global.contract('Moneyflow', (accounts) => {
 		global.assert.equal(balance2.toNumber() - balance0.toNumber(), 4000*money, 'Should get money');
 
 		let needsEmployee3 = await Employee1.isNeedsMoney({from:creator});
-		global.assert.equal(needsEmployee3, false, 'Dont need money, because he got it');	
+		global.assert.equal(needsEmployee3, false, 'Dont need money, because he got it');
 	});
 
 	global.it('Splitter should access money then close then not accept',async() => {
-		let callParams = {from:creator, gasPrice:0}	
+		let callParams = {from:creator, gasPrice:0}
 		let struct = {};
 		let balance0 = await web3.eth.getBalance(creator);
 

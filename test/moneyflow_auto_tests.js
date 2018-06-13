@@ -82,7 +82,7 @@ global.contract('MoneyflowAuto', (accounts) => {
 		await aacInstance.setVotingParams("withdrawDonations", VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(51), UintToToBytes32(50), 0);
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(51), UintToToBytes32(50), 0);
 
-		// add creator as first employee	
+		// add creator as first employee
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
@@ -173,7 +173,7 @@ global.contract('MoneyflowAuto', (accounts) => {
 		const r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1].toNumber(),0,'no');
-		
+
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 
@@ -245,7 +245,7 @@ global.contract('MoneyflowAuto', (accounts) => {
 		const r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1].toNumber(),0,'no');
-		
+
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 

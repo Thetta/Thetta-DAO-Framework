@@ -20,7 +20,7 @@ contract WeiFund is WeiRelativeExpense {
 	event WeiFund_Flush(address _to, uint _balance);
 
 	constructor(address _output, bool _allowFlushTo, uint _percentsDiv100Needed) public 
-		WeiRelativeExpense(_percentsDiv100Needed)	
+		WeiRelativeExpense(_percentsDiv100Needed)
 	{
 		output = _output;
 		allowFlushTo = _allowFlushTo;

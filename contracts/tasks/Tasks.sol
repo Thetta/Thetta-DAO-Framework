@@ -55,7 +55,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		Complete,
 
 		// These are set by Creator or Client:
-		CanGetFunds,						// call flush to get funds	
+		CanGetFunds,						// call flush to get funds
 		Finished								// funds are transferred to the output and the task is finished
 	}
 	// Use 'getCurrentState' method instead to access state outside of contract
@@ -118,7 +118,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 	// where to send money
 	function setOutput(address _output) external onlyOwner {
-		emit WeiGenericTask_SetOutput(_output);	
+		emit WeiGenericTask_SetOutput(_output);
 		output = _output;
 	}
 
@@ -164,7 +164,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		require(_getCurrentState()==State.InProgress);
 
 		if((0!=neededWei) || (isDonation)){ // if donation or prePaid - no need in ev-ion; if postpaid with unknown payment - neededWei=0 yet
-			
+
 			state = State.Complete;
 			emit WeiGenericTask_StateChanged(state);
 		}else{
@@ -213,7 +213,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		if(isPostpaid && (0==neededWei) && (State.Complete==state)){
 			// this is a donation
 			// client can send any sum!
-			neededWei = msg.value;		
+			neededWei = msg.value;
 		}
 
 		super._processFunds(_currentFlow);
@@ -235,14 +235,14 @@ contract WeiTask is WeiGenericTask {
 	}
 
 	// callable by any Employee of the current DaoBase or Owner
-	function startTask(address _employee) public isCanDo("startTask") {	
+	function startTask(address _employee) public isCanDo("startTask") {
 		require(_getCurrentState()==State.Init || _getCurrentState()==State.PrePaid);
-		
+
 		if(_getCurrentState()==State.Init){
 			// can start only if postpaid task 
 			require(isPostpaid);
 		}
-		employee = _employee;	
+		employee = _employee;
 		state = State.InProgress;
 		emit WeiGenericTask_StateChanged(state);
 	}
@@ -262,7 +262,7 @@ contract WeiBounty is WeiGenericTask {
 	// callable by anyone
 	function startTask() public isCanDo("startBounty") {
 		require(_getCurrentState()==State.PrePaid);
-		employee = msg.sender;	
+		employee = msg.sender;
 		state = State.InProgress;
 		emit WeiGenericTask_StateChanged(state);
 	}

@@ -183,6 +183,6 @@ contract Voting_1p1v is IVoting, Ownable {
 		yesResults = filterResults(employeesVotedYes);
 		noResults = filterResults(employeesVotedNo);
 		votersTotal = dao.getMembersCount(groupName);
-		return;	
-	}	
+		return;
+	}
 }

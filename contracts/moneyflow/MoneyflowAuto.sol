@@ -19,7 +19,7 @@ contract MoneyflowAuto is GenericCaller {
 	IMoneyflow mf;
 
 	constructor(IDaoBase _dao, IMoneyflow _mf)public 
-		GenericCaller(_dao)	
+		GenericCaller(_dao)
 	{
 		mf = _mf;
 	}

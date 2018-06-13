@@ -66,7 +66,7 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 
 	function getNeededWei() external view returns(uint){
 		return neededWei;
-	}	
+	}
 
 	function getTotalWeiNeeded(uint _inputWei)external view returns(uint){
 		return _getTotalWeiNeeded(_inputWei);
@@ -98,24 +98,24 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	function getMomentReceived()external view returns(uint){
 		return momentReceived;
 	}
-		
+
 	function getDebtMultiplier()external view returns(uint){
 		return _getDebtMultiplier();
 	}
 
 	function _getDebtMultiplier()internal view returns(uint){
 		if((isAccumulateDebt)&&(0!=momentReceived)){
-			return ((now - momentReceived) / (periodHours * 3600 * 1000));	
+			return ((now - momentReceived) / (periodHours * 3600 * 1000));
 		} else{
 			return 1;
 		}
 	}
 
-	function isNeedsMoney()external view returns(bool){	
+	function isNeedsMoney()external view returns(bool){
 		return _isNeedsMoney();
 	}
 
-	function _isNeedsMoney()internal view returns(bool){	
+	function _isNeedsMoney()internal view returns(bool){
 		if(isPeriodic){ // For period Weiexpense
 			if ((uint64(now) - momentReceived) >= periodHours * 3600 * 1000){ 
 				return true;
@@ -129,7 +129,7 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 		require(msg.sender==moneySource); 
 		_; 
 	}
-	
+
 	function getPercentsMul100()external view returns(uint){
 		return percentsMul100;
 	}
@@ -152,7 +152,7 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 		emit WeiExpense_SetNeededWei(_neededWei);
 		neededWei = _neededWei;
 	}
-	
+
 	function setPercents(uint _percentsMul100) external onlyOwner {
 		emit WeiExpense_SetPercents(_percentsMul100);
 		percentsMul100 = _percentsMul100;

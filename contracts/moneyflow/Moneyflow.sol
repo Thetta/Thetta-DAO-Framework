@@ -22,7 +22,7 @@ contract FallbackToWeiReceiver {
 
 	function()public payable{
 		IWeiReceiver iwr = IWeiReceiver(output);
-		iwr.processFunds.value(msg.value)(msg.value);		
+		iwr.processFunds.value(msg.value)(msg.value);
 	}
 }
 
@@ -73,11 +73,11 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	}
 
 	function getDonationEndpointAddress()external constant returns(address){
-		return address(donationF2WR);	
+		return address(donationF2WR);
 	}
 
 	function getRevenueEndpointAddress()external constant returns(address){
-		return address(revenueF2WR);	
+		return address(revenueF2WR);
 	}
 
 	function setRootWeiReceiverGeneric(bytes32[] _params) external {

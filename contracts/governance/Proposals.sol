@@ -49,7 +49,7 @@ contract GenericProposal is IProposal, Ownable {
 			params)
 		){
 			revert();
-		}						
+		}
 	}
 
 	function setVoting(IVoting _voting) external onlyOwner{

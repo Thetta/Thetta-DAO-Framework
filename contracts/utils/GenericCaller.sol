@@ -40,7 +40,7 @@ contract GenericCaller is DaoClient, Ownable {
 	constructor(IDaoBase _dao)public
 		// DaoClient (for example) helps us to handle DaoBase upgrades
 		// and will automatically update the 'dao' to the new instance
-		DaoClient(_dao)	
+		DaoClient(_dao)
 	{
 	}
 
@@ -58,7 +58,7 @@ contract GenericCaller is DaoClient, Ownable {
 				uint256(_params.length),		 // length of the array
 				_params)){
 				revert();
-			}					
+			}
 
 			/*
 			// Delegatecall: 
@@ -68,8 +68,8 @@ contract GenericCaller is DaoClient, Ownable {
 				bytes4(keccak256(_methodSig)),
 				uint256(32),						 // pointer to the length of the array
 				uint256(_params.length),		 // length of the array
-				_params	
-			);					
+				_params
+			);
 		   */
 
 			return 0x0;
@@ -85,7 +85,7 @@ contract GenericCaller is DaoClient, Ownable {
 
 			// WARNING: should be permitted to add new proposal by the current contract address!!!
 			// check your permissions or see examples (tests) how to do that correctly
-			dao.addNewProposal(prop);		
+			dao.addNewProposal(prop);
 			return prop;
 		}
 	}
@@ -123,7 +123,7 @@ contract GenericCaller is DaoClient, Ownable {
 				uint(vp.param4), 
 				address(vp.param5));
 		}
-		
+
 
 		// TODO: add other implementations
 		// no implementation for this type!
@@ -146,6 +146,6 @@ contract GenericCaller is DaoClient, Ownable {
 			bytesStringTrimmed[j] = bytesString[j];
 		}
 		return string(bytesStringTrimmed);
-	}	
+	}
 }
 

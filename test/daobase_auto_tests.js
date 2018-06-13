@@ -80,7 +80,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		await aacInstance.setVotingParams("upgradeDaoContract", VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(51), UintToToBytes32(51), 0);
 
 
-		// add creator as first employee	
+		// add creator as first employee
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
@@ -88,7 +88,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
 	});
-	
+
 	global.it('should not automatically create proposal because AAC has no rights',async() => {
 		// Set permissions:
 
@@ -199,7 +199,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		const r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1],0,'no');
-		
+
 
 		// vote by employee 3
 		await voting.vote(true,0,{from:employee3});
@@ -207,7 +207,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		// get voting results again
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
-		
+
 		const balance2 = await token.balanceOf(employee1);
 		global.assert.notEqual(balance2.toNumber(),1000,'employee1 balance should not be updated');
 	});
@@ -257,7 +257,7 @@ global.contract('DaoBaseAuto', (accounts) => {
 		const r = await voting.getVotingStats();
 		global.assert.equal(r[0],1,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r[1],0,'no');
-		
+
 		const balance1 = await token.balanceOf(employee1);
 		global.assert.strictEqual(balance1.toNumber(),600,'initial employee1 balance');
 
@@ -267,8 +267,8 @@ global.contract('DaoBaseAuto', (accounts) => {
 		const r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1],0,'no');
-		
-		
+
+
 		// get voting results again
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting is finished now');
 		global.assert.strictEqual(await voting.isYes(),true,'Voting result is yes!');
@@ -312,11 +312,11 @@ global.contract('DaoBaseAuto', (accounts) => {
 		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(true,0,{from:creator});
-		
+
 		const r2 = await voting.getVotingStats();
 		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		global.assert.equal(r2[1].toNumber(),0,'no');
-		
+
 
 		// get voting results again
 		global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
