@@ -17,6 +17,12 @@ Code is modular, so you can use different subsystems almost independently.
 1. [HOW TO Build and Test](DEVELOPMENT.md)
 1. [HOW TO Contribute](CONTRIBUTING.md)
 
+## Branches 
+
+1. **master** is for releases only
+1. **dev** is for testing 
+1. **dev2** is for development
+
 ## The Community
 
 Our thanks go to these people:
