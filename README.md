@@ -1,5 +1,10 @@
-# Thetta DAO Framework 
-**"OpenZeppelin for DAOs"**
+<p align="center">
+  <img alt="Thetta logo" src="https://i.imgsafe.org/15/15604a1c64.png" height="250" />
+  <h3 align="center">Thetta DAO Framework</h3>
+  <p align="center">"OpenZeppelin for DAOs"</p>
+</p>
+
+***
 
 Thetta DAO Framework is a DAO Framework that will help you to create your own DAO on top of it.
 Code is modular, so you can use different subsystems almost independently.
