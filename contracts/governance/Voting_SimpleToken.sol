@@ -24,8 +24,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 	uint64 genesis;
 	uint public quorumPercent;
 	uint public consensusPercent;
-	string public groupName;
-	ERC20Basic ERC20Token;
+	ERC20Basic erc20Token;
 
 	mapping (address=>bool) addressVotedAlready;
 
@@ -46,14 +45,13 @@ contract Voting_SimpleToken is IVoting, Ownable {
 	 * @param _proposal – proposal, which create vote.
 	 * @param _origin – who create voting (group member).
 	 * @param _minutesToVote - if is zero -> voting until quorum reached, else voting finish after minutesToVote minutes
-	 * @param _groupName - members of which group can vote.
 	 * @param _quorumPercent - percent of group members to make quorum reached. If minutesToVote==0 and quorum reached -> voting is finished
 	 * @param _consensusPercent - percent of voters (not of group members!) to make consensus reached. If consensus reached -> voting is finished with YES result
 	 * @param _tokenAddress - address of token what uses for voting
 	*/
 
 	constructor(IDaoBase _dao, IProposal _proposal, 
-		address _origin, uint _minutesToVote, string _groupName, 
+		address _origin, uint _minutesToVote,
 		uint _quorumPercent, uint _consensusPercent, address _tokenAddress) public 
 	{
 		require((_quorumPercent<=100)&&(_quorumPercent>0));
@@ -62,10 +60,9 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		dao = _dao;
 		proposal = _proposal;
 		minutesToVote = _minutesToVote;
-		groupName = _groupName;
 		quorumPercent = _quorumPercent;
 		consensusPercent = _consensusPercent;
-		ERC20Token = ERC20Basic(_tokenAddress);
+		erc20Token = ERC20Basic(_tokenAddress);
 		genesis = uint64(now);
 
 		internalVote(_origin, true);
@@ -139,9 +136,8 @@ contract Voting_SimpleToken is IVoting, Ownable {
 	}
 
 	function internalVote(address _who, bool _yes) internal {
-		uint tokenBalance = ERC20Token.balanceOf(_who);
+		uint tokenBalance = erc20Token.balanceOf(_who);
 
-		require(dao.isGroupMember(groupName, _who));
 		require(!addressVotedAlready[_who]);
 
 		tokenVotesArray.push(TokenVote(_who, _yes, tokenBalance));
@@ -174,15 +170,12 @@ contract Voting_SimpleToken is IVoting, Ownable {
 	function _getVotingStats() internal constant returns(uint yesResults, uint noResults, uint votersTotal){
 		yesResults = 0;
 		noResults = 0;
-		votersTotal = dao.getMembersCount(groupName);
-
+		votersTotal = erc20Token.totalSupply();
 		for(uint i=0; i<tokenVotesArray.length; ++i){
-			if(dao.isGroupMember(groupName,tokenVotesArray[i].voter)){
-				if(tokenVotesArray[i].vote){
-					yesResults+= tokenVotesArray[i].tokenAmount;
-				}else{
-					noResults+= tokenVotesArray[i].tokenAmount;
-				}
+			if(tokenVotesArray[i].vote){
+				yesResults+= tokenVotesArray[i].tokenAmount;
+			}else{
+				noResults+= tokenVotesArray[i].tokenAmount;
 			}
 		}
 		return;

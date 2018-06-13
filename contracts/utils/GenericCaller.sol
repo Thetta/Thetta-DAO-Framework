@@ -119,7 +119,6 @@ contract GenericCaller is DaoClient, Ownable {
 		if(VotingType.VotingSimpleToken==vp.votingType){
 			return new Voting_SimpleToken(dao, _proposal, _origin, 
 				uint(vp.param1), 
-				bytes32ToString(vp.param2), 
 				uint(vp.param3), 
 				uint(vp.param4), 
 				address(vp.param5));
