@@ -112,8 +112,7 @@ contract GenericCaller is DaoClient, Ownable {
 				uint(vp.param1), 
 				bytes32ToString(vp.param2), 
 				uint(vp.param3), 
-				uint(vp.param4), 
-				vp.param5);
+				uint(vp.param4));
 		}
 
 		if(VotingType.VotingSimpleToken==vp.votingType){

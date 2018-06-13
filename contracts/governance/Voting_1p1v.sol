@@ -23,7 +23,6 @@ contract Voting_1p1v is IVoting, Ownable {
 	uint64 genesis;
 	uint public quorumPercent;
 	uint public consensusPercent;
-	bytes32 public emptyParam;
 	string public groupName;
 
 	mapping (address=>bool) addressVotedAlready;
@@ -42,12 +41,11 @@ contract Voting_1p1v is IVoting, Ownable {
 	 * @param _groupName - members of which group can vote.
 	 * @param _quorumPercent - percent of group members to make quorum reached. If minutesToVote==0 and quorum reached -> voting is finished
 	 * @param _consensusPercent - percent of voters (not of group members!) to make consensus reached. If consensus reached -> voting is finished with YES result
-	 * @param _emptyParam - not need here
 	*/
 
 	constructor(IDaoBase _dao, IProposal _proposal, 
 		address _origin, uint _minutesToVote, string _groupName, 
-		uint _quorumPercent, uint _consensusPercent, bytes32 _emptyParam) public 
+		uint _quorumPercent, uint _consensusPercent) public 
 	{
 		require((_quorumPercent<=100)&&(_quorumPercent>0));
 		require((_consensusPercent<=100)&&(_consensusPercent>0));
@@ -58,7 +56,6 @@ contract Voting_1p1v is IVoting, Ownable {
 		groupName = _groupName;
 		quorumPercent = _quorumPercent;
 		consensusPercent = _consensusPercent;
-		emptyParam = _emptyParam;
 		genesis = uint64(now);
 
 		internalVote(_origin, true);

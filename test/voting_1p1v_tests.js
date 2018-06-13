@@ -115,7 +115,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 	global.it('0. should create new voting', async()=>{
 		let isGroupMember = await daoBase.isGroupMember('Employees', employee1);
 		global.assert.equal(isGroupMember,true, 'Creator is ein the group');
-		let voting = await Voting_1p1v.new(daoBase.address, employee1, employee1, 60, "Employees", 51, 71, 0);
+		let voting = await Voting_1p1v.new(daoBase.address, employee1, employee1, 60, "Employees", 51, 71);
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
 		let groupName = await voting.groupName();
@@ -127,7 +127,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 	global.it('should create and use 1p1v voting while members change',async() => {
 		await daoBase.addGroupMember("Employees", employee5);
 		let proposal = await InformalProposal.new('Take the money and run again', {from:creator});
-		let voting = await Voting_1p1v.new(daoBase.address, proposal.address, creator, 0, "Employees", 51, 90, 0, {from:creator});
+		let voting = await Voting_1p1v.new(daoBase.address, proposal.address, creator, 0, "Employees", 51, 90, {from:creator});
 
 		// vote by first, check results  (getVotingStats, isFinished, isYes, etc) 
 		await voting.vote(true,0,{from:employee1});
