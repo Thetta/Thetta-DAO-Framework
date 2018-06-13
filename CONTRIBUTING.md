@@ -5,7 +5,7 @@ I'm really glad you're reading this, because we need volunteer developers to hel
 ## Our Culture
 
 - We are **open source only**.
-- We are a **fully distributed** company – we don't care where you are located. However, out core-team is located in Moscow, Russia.
+- We are a **fully distributed** company – we don't care where you are located.
 - We have almost no bureaucracy.
 - We are a technology company.
 - One of our goals is to build a community of developers around our product. 
