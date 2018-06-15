@@ -45,7 +45,7 @@ contract GenericCaller is DaoClient, Ownable {
 
 	// _actionId is something like "issueTokens"
 	// _methodSig some kind of "issueTokens(bytes32[])"
-	function doAction(string _permissionId, address _target, address _origin, string _methodSig, bytes32[] _params) public returns(address proposalOut) 
+	function doAction(string _permissionId, address _target, address _origin, string _methodSig, bytes32[] _params) internal returns(address proposalOut) 
 	{
 		if(dao.isCanDoAction(msg.sender, _permissionId)){
 			emit GenericCaller_DoActionDirectly(_permissionId, _target, _origin, _methodSig);
