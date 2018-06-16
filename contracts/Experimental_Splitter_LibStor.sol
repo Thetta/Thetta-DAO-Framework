@@ -10,91 +10,98 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  * @dev Splitter has multiple outputs (allows to send money only to THESE addresses)
 */
 
-contract SplitterStorage{
-	address[] children;
-	address main;
-	bool public opened = true;
+contract Splitter{
+	using SplitterLib for SplitterLib.SplitterStorage;
+	SplitterLib.SplitterStorage stor;
 
-	constructor(address _main, address[] _children) public{
-		children = _children;
-		main = _main;
+	constructor(address[] _children) public{
+		stor.children = _children;
+		stor.opened = true;
 	}
 
 	function getChildren() external returns(address[]){
-		return children;
+		return stor.children;
 	}
 
 	function setStatus(bool _isOpen) external{
-		require(msg.sender==main);
-		opened = _isOpen;
+		stor.opened = _isOpen;
 	}
 
 	function processFunds(uint _currentFlow) external payable{
-		SplitterMain(main).processFunds.value(msg.value)(_currentFlow);
+		stor.processFunds.value(msg.value)(_currentFlow);
 	}
 
 	function getMinWeiNeeded() external returns(uint){
-		return SplitterMain(main).getMinWeiNeeded();
+		return stor.getMinWeiNeeded();
 	}
 
 	function getTotalWeiNeeded(uint _currentFlow) external returns(uint){
-		return SplitterMain(main).getTotalWeiNeeded(_currentFlow);
+		return stor.getTotalWeiNeeded(_currentFlow);
 	}
 
 	function isNeedsMoney() external returns(bool){
-		return SplitterMain(main).isNeedsMoney();
+		return stor.isNeedsMoney();
 	}	
 }
 
-contract SplitterMain{
-	function _isOpen(address stor) internal view returns(bool){
-		return SplitterStorage(stor).opened();
+library SplitterLib{
+	struct SplitterStorage{
+		address[] children;
+		bool opened;
 	}
 
-	function isOpen(address stor) external view returns(bool){
-		return SplitterStorage(stor).opened();
+	// function init(SplitterStorage storage self, _children){
+	// 	self.children = _children;
+	// }
+
+	function _isOpen(SplitterStorage storage self) internal view returns(bool){
+		return self.opened;
 	}
 
-	function getChildrenCount(address stor)external view returns(uint){
-		return SplitterStorage(stor).getChildren().length;
+	function isOpen(SplitterStorage storage self) external view returns(bool){
+		return self.opened;
 	}
 
-	function getChild(address stor, uint _index)external view returns(address){
-		return SplitterStorage(stor).getChildren()[_index];
+	function getChildrenCount(SplitterStorage storage self)external view returns(uint){
+		return self.children.length;
 	}
 
-	function getChildren(address stor)public view returns(address[]){
-		return SplitterStorage(stor).getChildren();
+	function getChild(SplitterStorage storage self, uint _index)external view returns(address){
+		return self.children[_index];
 	}
 
-	function getMinWeiNeeded()external view returns(uint){
-		if(!_isOpen(msg.sender)){
+	function getChildren(SplitterStorage storage self)public view returns(address[]){
+		return self.children;
+	}
+
+	function getMinWeiNeeded(SplitterStorage storage self)external view returns(uint){
+		if(!self.opened){
 			return 0;
 		}
-		address[] memory children = getChildren(msg.sender);
+		// address[] memory children = getChildren(msg.sender);
 		uint total = 0;
-		for(uint i=0; i<children.length; ++i){
-			IWeiReceiver c = IWeiReceiver(children[i]);
+		for(uint i=0; i<self.children.length; ++i){
+			IWeiReceiver c = IWeiReceiver(self.children[i]);
 			uint needed = c.getMinWeiNeeded();
 			total = total + needed;
 		}
 		return total;
 	}
 
-	function getTotalWeiNeeded(uint _inputWei)external view returns(uint){
-		return _getTotalWeiNeeded(_inputWei);
+	function getTotalWeiNeeded(SplitterStorage storage self, uint _inputWei)external view returns(uint){
+		return _getTotalWeiNeeded(self, _inputWei);
 	}
 
-	function _getTotalWeiNeeded(uint _inputWei)internal view returns(uint){
-		if(!_isOpen(msg.sender)){
+	function _getTotalWeiNeeded(SplitterStorage storage self, uint _inputWei)internal view returns(uint){
+		if(!self.opened){
 			return 0;
 		}
 
-		address[] memory children = getChildren(msg.sender);
+		// address[] memory children = getChildren(msg.sender);
 
 		uint total = 0;
-		for(uint i=0; i<children.length; ++i){
-			IWeiReceiver c = IWeiReceiver(children[i]);
+		for(uint i=0; i<self.children.length; ++i){
+			IWeiReceiver c = IWeiReceiver(self.children[i]);
 			uint needed = c.getTotalWeiNeeded(_inputWei);
 			total = total + needed;
 
@@ -108,11 +115,11 @@ contract SplitterMain{
 		return total;
 	}
 
-	function getPercentsMul100()external view returns(uint){
+	function getPercentsMul100(SplitterStorage storage self)external view returns(uint){
 		uint total = 0;
-		address[] memory children = getChildren(msg.sender);
-		for(uint i=0; i<children.length; ++i){
-			IWeiReceiver c = IWeiReceiver(children[i]);
+		// address[] memory children = getChildren(msg.sender);
+		for(uint i=0; i<self.children.length; ++i){
+			IWeiReceiver c = IWeiReceiver(self.children[i]);
 			total = total + c.getPercentsMul100();	
 		}
 
@@ -123,14 +130,14 @@ contract SplitterMain{
 		return total;
 	}
 
-	function isNeedsMoney()constant public returns(bool){
-		address[] memory children = getChildren(msg.sender);
-		if(!_isOpen(msg.sender)){
+	function isNeedsMoney(SplitterStorage storage self)constant public returns(bool){
+		// address[] memory children = getChildren(msg.sender);
+		if(!self.opened){
 			return false;
 		}
 
-		for(uint i=0; i<children.length; ++i){
-			IWeiReceiver c = IWeiReceiver(children[i]);
+		for(uint i=0; i<self.children.length; ++i){
+			IWeiReceiver c = IWeiReceiver(self.children[i]);
 			// if at least 1 child needs money -> return true
 			if(c.isNeedsMoney()){
 				return true;
@@ -139,16 +146,16 @@ contract SplitterMain{
 		return false;
 	}
 
-	function processFunds(uint _currentFlow) external payable{
-		address[] memory children = getChildren(msg.sender);
-		require(_isOpen(msg.sender));
+	function processFunds(SplitterStorage storage self, uint _currentFlow) external payable{
+		// address[] memory children = getChildren(msg.sender);
+		// require(_isOpen(msg.sender));
 		// emit SplitterBase_ProcessFunds(msg.sender, msg.value, _currentFlow);
 		uint amount = _currentFlow;
 
 		require(amount>=_getTotalWeiNeeded(_currentFlow));
 
-		for(uint i=0; i<children.length; ++i){
-			IWeiReceiver c = IWeiReceiver(children[i]);
+		for(uint i=0; i<self.children.length; ++i){
+			IWeiReceiver c = IWeiReceiver(self.children[i]);
 			uint needed = c.getTotalWeiNeeded(amount);
 
 			// send money. can throw!
@@ -165,6 +172,4 @@ contract SplitterMain{
 		}
 	}
 
-	function() public {
-	}
 }
