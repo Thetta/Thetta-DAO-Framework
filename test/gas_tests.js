@@ -11,6 +11,9 @@ var DaoBaseTest = artifacts.require("./DaoBaseTest");
 var DaoBaseWithUnpackersTest = artifacts.require("./DaoBaseWithUnpackersTest"); 
 var Splitter = artifacts.require("./Splitter") ;
 
+var SplitterStorage = artifacts.require("./SplitterStorage");
+var SplitterMain = artifacts.require("./SplitterMain");
+
 var CheckExceptions = require('./utils/checkexceptions');
 
 function KECCAK256 (x){
@@ -55,6 +58,31 @@ global.contract('Gas measurements', (accounts) => {
 		console.log('Splitter gas (4 children):', b5.toNumber() - b6.toNumber());
 		console.log('Splitter gas (5 children):', b6.toNumber() - b7.toNumber());
 	});
+
+	global.it('Should estimate gas for SplitterStorage',async() => {
+		var b1 = await web3.eth.getBalance(creator);
+		let splitterMain = await SplitterMain.new({from: creator, gasPrice:1})
+		var b2 = await web3.eth.getBalance(creator);
+		await SplitterStorage.new(splitterMain.address, [employee3], {from: creator, gasPrice:1});
+		var b3 = await web3.eth.getBalance(creator);
+
+		await SplitterStorage.new(splitterMain.address, [employee3, employee4], {from: creator, gasPrice:1});
+		var b4 = await web3.eth.getBalance(creator);
+		await SplitterStorage.new(splitterMain.address, [employee3, employee4, employee5], {from: creator, gasPrice:1});
+		var b5 = await web3.eth.getBalance(creator);
+		await SplitterStorage.new(splitterMain.address, [employee2, employee3, employee4, employee5], {from: creator, gasPrice:1});
+		var b6 = await web3.eth.getBalance(creator);
+		await SplitterStorage.new(splitterMain.address, [employee1, employee2, employee3, employee4, employee5], {from: creator, gasPrice:1});
+		var b7 = await web3.eth.getBalance(creator);
+
+		console.log('SplitterMain gas:', b1.toNumber() - b2.toNumber());
+		console.log('Splitter gas (1 child):', b2.toNumber() - b3.toNumber());
+		console.log('Splitter gas (2 children):', b3.toNumber() - b4.toNumber());
+		console.log('Splitter gas (3 children):', b4.toNumber() - b5.toNumber());
+		console.log('Splitter gas (4 children):', b5.toNumber() - b6.toNumber());
+		console.log('Splitter gas (5 children):', b6.toNumber() - b7.toNumber());
+	});
+
 
 	global.it('Should estimate gas for daoBase',async() => {
 		token1 = await StdDaoToken.new("StdToken","STDT",18,{from: creator});

@@ -28,7 +28,15 @@ contract Splitter{
 	}
 
 	function processFunds(uint _currentFlow) external payable{
-		stor.processFunds.value(msg.value)(_currentFlow);
+		uint prevAmount = _currentFlow;
+		address receiver;
+		uint needed;
+		uint amount;
+		for(uint i=0; i<stor.getChildrenCount(); ++i){
+			(receiver, needed, amount) = stor.getFundReceiverArray(_currentFlow, i, prevAmount);
+			IWeiReceiver(receiver).processFunds.value(needed)(amount);
+			prevAmount = amount;
+		}
 	}
 
 	function getMinWeiNeeded() external returns(uint){
@@ -50,9 +58,28 @@ library SplitterLib{
 		bool opened;
 	}
 
-	// function init(SplitterStorage storage self, _children){
-	// 	self.children = _children;
-	// }
+	struct FundReceiver{
+		address receiver;
+		uint needed;
+		uint amount;
+	}
+
+	function getFundReceiverArray(SplitterStorage storage self, uint _currentFlow, uint _iter, uint _amount) external view returns(address, uint, uint){
+		uint amount = _amount;
+		
+		require(amount>=_getTotalWeiNeeded(self, _currentFlow));
+			
+		IWeiReceiver c = IWeiReceiver(self.children[_iter]);
+		uint needed = c.getTotalWeiNeeded(amount);
+
+		if(_currentFlow>=needed){
+			amount = amount - needed;
+		}else{
+			amount = 0;
+		}
+
+		return (self.children[_iter], needed, amount);
+	}
 
 	function _isOpen(SplitterStorage storage self) internal view returns(bool){
 		return self.opened;
@@ -130,7 +157,7 @@ library SplitterLib{
 		return total;
 	}
 
-	function isNeedsMoney(SplitterStorage storage self)constant public returns(bool){
+	function isNeedsMoney(SplitterStorage storage self)external view returns(bool){
 		// address[] memory children = getChildren(msg.sender);
 		if(!self.opened){
 			return false;
@@ -145,31 +172,4 @@ library SplitterLib{
 		}
 		return false;
 	}
-
-	function processFunds(SplitterStorage storage self, uint _currentFlow) external payable{
-		// address[] memory children = getChildren(msg.sender);
-		// require(_isOpen(msg.sender));
-		// emit SplitterBase_ProcessFunds(msg.sender, msg.value, _currentFlow);
-		uint amount = _currentFlow;
-
-		require(amount>=_getTotalWeiNeeded(_currentFlow));
-
-		for(uint i=0; i<self.children.length; ++i){
-			IWeiReceiver c = IWeiReceiver(self.children[i]);
-			uint needed = c.getTotalWeiNeeded(amount);
-
-			// send money. can throw!
-			// we sent needed money but specifying TOTAL amount of flow
-			// this help relative Splitters to calculate how to split money
-			c.processFunds.value(needed)(amount);
-
-			// this should be reduced because next child can get only 'amount minus what prev. child got'
-			if(amount>=needed){
-				amount = amount - needed;
-			}else{
-				amount = 0;
-			}
-		}
-	}
-
 }
