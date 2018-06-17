@@ -9,7 +9,11 @@ var IWeiReceiver = artifacts.require("./IWeiReceiver");
 var IProposal = artifacts.require("./IProposal");
 var DaoBaseTest = artifacts.require("./DaoBaseTest"); 
 var DaoBaseWithUnpackersTest = artifacts.require("./DaoBaseWithUnpackersTest"); 
-var Splitter = artifacts.require("./Splitter") ;
+var Splitter = artifacts.require("./Splitter");
+var SplitterSimple = artifacts.require("./SplitterSimple");
+var MoneyflowCentral = artifacts.require("./MoneyflowCentral");
+
+var MoneyflowCentral2 = artifacts.require("./MoneyflowCentral2");
 
 var SplitterStorage = artifacts.require("./SplitterStorage");
 var SplitterMain = artifacts.require("./SplitterMain");
@@ -20,7 +24,6 @@ function KECCAK256 (x){
 	return web3.sha3(x);
 }
 
-var SplitterM  = require('../migrations/2_deploy_contracts.js');
 global.contract('Gas measurements', (accounts) => {
 	let token;
 	let store;
@@ -37,7 +40,66 @@ global.contract('Gas measurements', (accounts) => {
 	global.beforeEach(async() => {
 	});
 
-	global.it('Should estimate gas for Splitter',async() => {
+	global.it('Should estimate gas for MoneyflowCentral',async() => {
+		var b1 = await web3.eth.getBalance(creator);
+		moneyflowCentral = await MoneyflowCentral.new({from: creator, gasPrice:1})
+		var b2 = await web3.eth.getBalance(creator);
+		console.log('Estimate gas setNewConnection:', await moneyflowCentral.setNewConnection.estimateGas(0, [1,2], {from: creator, gasPrice:1}));
+		await moneyflowCentral.setNewConnection(0, [1,2], {from: creator, gasPrice:1});
+		var b3 = await web3.eth.getBalance(creator);
+		await moneyflowCentral.setNewOutput(1, employee1, {from: creator, gasPrice:1});
+		var b4 = await web3.eth.getBalance(creator);
+		
+		console.log('Estimate gas setNewOutput:', await moneyflowCentral.setNewOutput.estimateGas(2, employee2, {from: creator, gasPrice:1}));
+		await moneyflowCentral.setNewOutput(2, employee2, {from: creator, gasPrice:1});
+		
+		var b5 = await web3.eth.getBalance(creator);
+		console.log('MoneyflowCentral: contract ', b1.toNumber() - b2.toNumber());
+		console.log('MoneyflowCentral: setNewPoint', b2.toNumber() - b3.toNumber());
+		console.log('MoneyflowCentral: setNewOutput', b3.toNumber() - b4.toNumber());
+		console.log('MoneyflowCentral: setNewOutput', b4.toNumber() - b5.toNumber());	
+	});
+
+	global.it('Should estimate gas for MoneyflowCentral2',async() => {
+		var b1 = await web3.eth.getBalance(creator);
+		moneyflowCentral = await MoneyflowCentral2.new({from: creator, gasPrice:1});
+		var b2 = await web3.eth.getBalance(creator);
+		await moneyflowCentral.setMoneyflowPoint(0, [1,2], 0, true, '0x0', {from: creator, gasPrice:1});
+		var b3 = await web3.eth.getBalance(creator);
+		await moneyflowCentral.setMoneyflowPoint(1, [3,4], 0, true, '0x0', {from: creator, gasPrice:1});
+		var b4 = await web3.eth.getBalance(creator);
+		await moneyflowCentral.setMoneyflowPoint(2, [5,6], 0, true, '0x0', {from: creator, gasPrice:1});
+		var b5 = await web3.eth.getBalance(creator);
+		console.log('MoneyflowCentral2: contract ', b1.toNumber() - b2.toNumber());
+		console.log('Estimate gas setMoneyflowPoint:', await moneyflowCentral.setMoneyflowPoint.estimateGas(0, [1,2], 0, true, '0x0', {from: creator, gasPrice:1}));
+		console.log('MoneyflowCentral2: setNewPoint', b2.toNumber() - b3.toNumber());
+		console.log('MoneyflowCentral2: setNewOutput', b3.toNumber() - b4.toNumber());
+		console.log('MoneyflowCentral2: setNewOutput', b4.toNumber() - b5.toNumber());	
+	});	
+
+	global.it('Should estimate gas for SplitterSimple',async() => {
+		var b1 = await web3.eth.getBalance(creator);
+		await SplitterSimple.new([employee3, employee4, employee5], {from: creator, gasPrice:1})
+		var b2 = await web3.eth.getBalance(creator);
+		await SplitterSimple.new([employee3], {from: creator, gasPrice:1})
+		var b3 = await web3.eth.getBalance(creator);
+		await SplitterSimple.new([employee3, employee4], {from: creator, gasPrice:1})
+		var b4 = await web3.eth.getBalance(creator);
+		await SplitterSimple.new([employee3, employee4, employee5], {from: creator, gasPrice:1})
+		var b5 = await web3.eth.getBalance(creator);
+		await SplitterSimple.new([employee2, employee3, employee4, employee5], {from: creator, gasPrice:1})
+		var b6 = await web3.eth.getBalance(creator);
+		await SplitterSimple.new([employee1, employee2, employee3, employee4, employee5], {from: creator, gasPrice:1})
+		var b7 = await web3.eth.getBalance(creator);		
+		console.log('SplitterSimple gas (first deploy):', b1.toNumber() - b2.toNumber());
+		console.log('SplitterSimple gas (1 child):', b2.toNumber() - b3.toNumber());
+		console.log('SplitterSimple gas (2 children):', b3.toNumber() - b4.toNumber());
+		console.log('SplitterSimple gas (3 children):', b4.toNumber() - b5.toNumber());
+		console.log('SplitterSimple gas (4 children):', b5.toNumber() - b6.toNumber());
+		console.log('SplitterSimple gas (5 children):', b6.toNumber() - b7.toNumber());
+	});
+
+	global.it('Should estimate gas for Splitter with Lib',async() => {
 		var b1 = await web3.eth.getBalance(creator);
 		await Splitter.new([employee3, employee4, employee5], {from: creator, gasPrice:1})
 		var b2 = await web3.eth.getBalance(creator);
@@ -59,7 +121,7 @@ global.contract('Gas measurements', (accounts) => {
 		console.log('Splitter gas (5 children):', b6.toNumber() - b7.toNumber());
 	});
 
-	global.it('Should estimate gas for SplitterStorage',async() => {
+	global.it('Should estimate gas for SplitterStorage + SplitterMain',async() => {
 		var b1 = await web3.eth.getBalance(creator);
 		let splitterMain = await SplitterMain.new({from: creator, gasPrice:1})
 		var b2 = await web3.eth.getBalance(creator);
@@ -76,11 +138,11 @@ global.contract('Gas measurements', (accounts) => {
 		var b7 = await web3.eth.getBalance(creator);
 
 		console.log('SplitterMain gas:', b1.toNumber() - b2.toNumber());
-		console.log('Splitter gas (1 child):', b2.toNumber() - b3.toNumber());
-		console.log('Splitter gas (2 children):', b3.toNumber() - b4.toNumber());
-		console.log('Splitter gas (3 children):', b4.toNumber() - b5.toNumber());
-		console.log('Splitter gas (4 children):', b5.toNumber() - b6.toNumber());
-		console.log('Splitter gas (5 children):', b6.toNumber() - b7.toNumber());
+		console.log('SplitterStorage gas (1 child):', b2.toNumber() - b3.toNumber());
+		console.log('SplitterStorage gas (2 children):', b3.toNumber() - b4.toNumber());
+		console.log('SplitterStorage gas (3 children):', b4.toNumber() - b5.toNumber());
+		console.log('SplitterStorage gas (4 children):', b5.toNumber() - b6.toNumber());
+		console.log('SplitterStorage gas (5 children):', b6.toNumber() - b7.toNumber());
 	});
 
 
