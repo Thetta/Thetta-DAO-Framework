@@ -55,7 +55,7 @@ global.contract('Gas measurements', (accounts) => {
 		
 		var b5 = await web3.eth.getBalance(creator);
 		console.log('MoneyflowCentral: contract ', b1.toNumber() - b2.toNumber());
-		console.log('MoneyflowCentral: setNewPoint', b2.toNumber() - b3.toNumber());
+		console.log('MoneyflowCentral: setNewNode', b2.toNumber() - b3.toNumber());
 		console.log('MoneyflowCentral: setNewOutput', b3.toNumber() - b4.toNumber());
 		console.log('MoneyflowCentral: setNewOutput', b4.toNumber() - b5.toNumber());	
 	});
@@ -64,15 +64,15 @@ global.contract('Gas measurements', (accounts) => {
 		var b1 = await web3.eth.getBalance(creator);
 		moneyflowCentral = await MoneyflowCentral2.new({from: creator, gasPrice:1});
 		var b2 = await web3.eth.getBalance(creator);
-		await moneyflowCentral.setMoneyflowPoint(0, [1,2], 0, true, '0x0', {from: creator, gasPrice:1});
+		await moneyflowCentral.setMoneyflowNode(0, [1,2], 0, true, '0x0', {from: creator, gasPrice:1});
 		var b3 = await web3.eth.getBalance(creator);
-		await moneyflowCentral.setMoneyflowPoint(1, [3,4], 0, true, '0x0', {from: creator, gasPrice:1});
+		await moneyflowCentral.setMoneyflowNode(1, [3,4], 0, true, '0x0', {from: creator, gasPrice:1});
 		var b4 = await web3.eth.getBalance(creator);
-		await moneyflowCentral.setMoneyflowPoint(2, [5,6], 0, true, '0x0', {from: creator, gasPrice:1});
+		await moneyflowCentral.setMoneyflowNode(2, [5,6], 0, true, '0x0', {from: creator, gasPrice:1});
 		var b5 = await web3.eth.getBalance(creator);
 		console.log('MoneyflowCentral2: contract ', b1.toNumber() - b2.toNumber());
-		console.log('Estimate gas setMoneyflowPoint:', await moneyflowCentral.setMoneyflowPoint.estimateGas(0, [1,2], 0, true, '0x0', {from: creator, gasPrice:1}));
-		console.log('MoneyflowCentral2: setNewPoint', b2.toNumber() - b3.toNumber());
+		console.log('Estimate gas setMoneyflowNode:', await moneyflowCentral.setMoneyflowNode.estimateGas(0, [1,2], 0, true, '0x0', {from: creator, gasPrice:1}));
+		console.log('MoneyflowCentral2: setNewNode', b2.toNumber() - b3.toNumber());
 		console.log('MoneyflowCentral2: setNewOutput', b3.toNumber() - b4.toNumber());
 		console.log('MoneyflowCentral2: setNewOutput', b4.toNumber() - b5.toNumber());	
 	});	
