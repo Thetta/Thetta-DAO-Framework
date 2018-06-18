@@ -146,7 +146,7 @@ global.contract('Gas measurements', (accounts) => {
 	});
 
 
-	global.it('Should estimate gas for daoBase',async() => {
+	/*global.it('Should estimate gas for daoBase',async() => {
 		token1 = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token1.mint(creator, 1000);
 		store1 = await DaoStorage.new([token1.address],{gas: 10000000, from: creator});
@@ -166,9 +166,9 @@ global.contract('Gas measurements', (accounts) => {
 		//emplooyee now have 10 ETH
 
 		var b1 = await web3.eth.getBalance(employee1);
-		var daoBaseOld = await DaoBaseWithUnpackersTest.new(store1.address,{gas: 10000000, from: employee1, gasPrice:1});
+		// var daoBaseOld = await DaoBaseWithUnpackersTest.new(store1.address,{gas: 10000000, from: employee1, gasPrice:1});
 		var b2 = await web3.eth.getBalance(employee1);
-		var daoBaseNew = await DaoBaseWithUnpackers.new(store2.address,{gas: 10000000, from: employee1, gasPrice:1});
+		// var daoBaseNew = await DaoBaseWithUnpackers.new(store2.address,{gas: 10000000, from: employee1, gasPrice:1});
 		var b3 = await web3.eth.getBalance(employee1);
 
 		await token1.transferOwnership(daoBaseOld.address);
@@ -219,6 +219,6 @@ global.contract('Gas measurements', (accounts) => {
 
 		console.log('Old:', c1.toNumber()-c2.toNumber(), 'New:', c2.toNumber()-c3.toNumber());
 		// global.assert.equal(true,false);
-	});
+	});*/
 });
 
