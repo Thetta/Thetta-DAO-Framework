@@ -1,7 +1,7 @@
 pragma solidity ^0.4.21;
 
 import "./moneyflow/IMoneyflow.sol";
-import "../IDaoBase.sol";
+import "./IDaoBase.sol";
 
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -38,7 +38,9 @@ contract MoneyflowCentral{
 
 // TODO: move some functions to moneyflow library
 // TODO:  
+
 /*contract MoneyflowCentral2 is DaoClient, Ownable{
+
 	mapping (uint => MoneyflowNode) public moneyflowNodes;
 	uint moneyflowNodesCount;
 
@@ -142,4 +144,4 @@ contract MoneyflowCentral{
 		return total;
 	}
 
-}/*
+}*/

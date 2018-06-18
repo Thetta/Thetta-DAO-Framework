@@ -13,7 +13,7 @@ var Splitter = artifacts.require("./Splitter");
 var SplitterSimple = artifacts.require("./SplitterSimple");
 var MoneyflowCentral = artifacts.require("./MoneyflowCentral");
 
-var MoneyflowCentral2 = artifacts.require("./MoneyflowCentral2");
+// var MoneyflowCentral2 = artifacts.require("./MoneyflowCentral2");
 
 var SplitterStorage = artifacts.require("./SplitterStorage");
 var SplitterMain = artifacts.require("./SplitterMain");
