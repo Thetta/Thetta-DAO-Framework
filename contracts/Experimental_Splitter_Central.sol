@@ -38,7 +38,7 @@ contract MoneyflowCentral{
 
 // TODO: move some functions to moneyflow library
 // TODO:  
-contract MoneyflowCentral2 is DaoClient, Ownable{
+/*contract MoneyflowCentral2 is DaoClient, Ownable{
 	mapping (uint => MoneyflowNode) public moneyflowNodes;
 	uint moneyflowNodesCount;
 
@@ -116,14 +116,12 @@ contract MoneyflowCentral2 is DaoClient, Ownable{
 			}
 		
 		}else if(NodeType.WeiUnsortedSplitter==node.nodeType){
-			amount = _amount;
 			total += _getTotalWeiNeeded(node, amount); 
 		}	
 		return total;
 	}
 
-	function _getMinWeiNeeded(MoneyflowNode node, uint _currentFlow)internal view returns(uint){
-		amount = _currentFlow;
+	function _getMinWeiNeeded(MoneyflowNode node)internal view returns(uint){
 		if(!node.isOpen){
 			return 0;
 		}
@@ -137,19 +135,11 @@ contract MoneyflowCentral2 is DaoClient, Ownable{
 		}else if(NodeType.WeiTopDownSplitter==node.nodeType){
 			uint needed = _getMinWeiNeeded(node, amount);
 			total += needed; 
-			if(amount>=needed){
-				amount = amount - needed;
-			}else{
-				amount = 0;
-			}
 		
 		}else if(NodeType.WeiUnsortedSplitter==node.nodeType){
-			amount = _amount;
 			total += _getMinWeiNeeded(node, amount); 
 		}	
 		return total;
 	}
 
-}
-
-contract MoneyflowCentral2
+}/*

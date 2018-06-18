@@ -60,7 +60,7 @@ global.contract('Gas measurements', (accounts) => {
 		console.log('MoneyflowCentral: setNewOutput', b4.toNumber() - b5.toNumber());	
 	});
 
-	global.it('Should estimate gas for MoneyflowCentral2',async() => {
+	/*global.it('Should estimate gas for MoneyflowCentral2',async() => {
 		var b1 = await web3.eth.getBalance(creator);
 		moneyflowCentral = await MoneyflowCentral2.new({from: creator, gasPrice:1});
 		var b2 = await web3.eth.getBalance(creator);
@@ -75,7 +75,7 @@ global.contract('Gas measurements', (accounts) => {
 		console.log('MoneyflowCentral2: setNewNode', b2.toNumber() - b3.toNumber());
 		console.log('MoneyflowCentral2: setNewOutput', b3.toNumber() - b4.toNumber());
 		console.log('MoneyflowCentral2: setNewOutput', b4.toNumber() - b5.toNumber());	
-	});	
+	});*/	
 
 	global.it('Should estimate gas for SplitterSimple',async() => {
 		var b1 = await web3.eth.getBalance(creator);
