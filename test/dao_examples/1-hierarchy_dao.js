@@ -47,7 +47,7 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 		let aacInstance = await DaoBaseAuto.new(daoBase.address, {from: creator});
 
 		{
-			// add creator as first employee	
+			// add creator as first employee
 			await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 			// do not forget to transfer ownership
@@ -106,7 +106,7 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 		let empls = [employee1, employee2];
 
 		let hdf = await HierarchyDaoFactory.new(boss, mgrs, empls, {gas: 155000000, from: creator, gasPrice:0});
-		
+
 		const daoAddress = await hdf.dao();
 		const daoBase = await DaoBase.at(daoAddress);
 

@@ -12,7 +12,7 @@ contract DaoWithBoD_Factory {
 
 	StdDaoToken token;
 	DaoStorage store;
-	
+
 	function DaoWithBoD_Factory(address _creator, address[] _bod, address[] _employees)public{
 		createDao(_creator, _bod, _employees);
 	}

@@ -23,4 +23,5 @@ else
   testrpc_pid=$!
 fi
 
+# truffle migrate
 truffle test $1

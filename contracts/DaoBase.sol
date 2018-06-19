@@ -20,7 +20,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 */
 contract DaoBase is IDaoBase, Ownable {
 	DaoStorage public store;
-	
+
 	event DaoBase_UpgradeDaoContract(address _new);
 	event DaoBase_AddGroupMember(string _groupName, address _a);
 	event DaoBase_RemoveGroupMember(address _new);
@@ -55,14 +55,14 @@ contract DaoBase is IDaoBase, Ownable {
 
 // IDaoBase:
 	function addObserver(IDaoObserver _observer) external {
-		store.addObserver(_observer);	
+		store.addObserver(_observer);
 	}
 
 	function upgradeDaoContract(IDaoBase _new) external isCanDo("upgradeDaoContract") {
 		_upgradeDaoContract(_new);
 	}
 
-	function _upgradeDaoContract(IDaoBase _new) internal{	
+	function _upgradeDaoContract(IDaoBase _new) internal{
 		emit DaoBase_UpgradeDaoContract(_new);
 		// call observers.onUpgrade() for all observers
 		for(uint i=0; i<store.getObserverCount(); ++i){
@@ -151,7 +151,7 @@ contract DaoBase is IDaoBase, Ownable {
 				(store.getAllTokenAddresses()[i].balanceOf(_a)!=0)){
 				return true;
 			}
-			
+
 
 			// 3 - can do action only by starting new vote first?
 			bool isCan = store.isCanDoByVoting(_permissionNameHash, store.getAllTokenAddresses()[i]);
@@ -166,7 +166,7 @@ contract DaoBase is IDaoBase, Ownable {
 					// in this case msg.sender is a Voting!
 					return votingResult;
 				}
-				
+
 				// 4 - only token holders with > 51% of gov.tokens can add new task immediately 
 				// otherwise -> start voting
 				bool isInMajority = 
@@ -242,7 +242,7 @@ contract DaoBase is IDaoBase, Ownable {
 */
 contract DaoBaseWithUnpackers is DaoBase {
 	constructor(DaoStorage _store) public 
-		DaoBase(_store)	
+		DaoBase(_store)
 	{
 	}
 

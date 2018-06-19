@@ -30,7 +30,7 @@ global.contract('DaoBase', (accounts) => {
 		await token.mint(creator, 1000);
 		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 
-		// add creator as first employee	
+		// add creator as first employee
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
@@ -62,7 +62,7 @@ global.contract('DaoBase', (accounts) => {
 
 		const isCan = await store.isCanDoByGroupMember(KECCAK256("addNewProposal"), creator);
 		global.assert.equal(isCan,true,'Any employee should be able to add new proposal');
-		
+
 		const isCan2 = await daoBase.isCanDoAction(creator, "addNewProposal");
 		global.assert.equal(isCan2,true,'Creator should be able to call addNewProposal directly');
 	});
@@ -125,7 +125,7 @@ global.contract('DaoBase', (accounts) => {
 
 		const balance2 = await token.balanceOf(employee1);
 		global.assert.equal(balance2,1000,'employee1 balance');
-		
+
 		const balance3 = await token.balanceOf(employee2);
 		global.assert.equal(balance3,1000,'employee2 balance');
 	});
@@ -207,7 +207,7 @@ global.contract('DaoBase', (accounts) => {
 		global.assert.equal(4, await daoBase.getMembersCount("Employees"), '3 employees + creator');
 
 		await daoBase.removeGroupMember("Employees", employee3, {from:creator});
-	
+
 		global.assert.strictEqual(await daoBase.isGroupMember("Employees", employee3,{from:creator}),
 			false, 'Should not be in the group')
 
@@ -221,12 +221,12 @@ global.contract('DaoBase', (accounts) => {
 		let balance2 = await token.balanceOf(creator);
 		let balanceDelta = balance.toNumber() - balance2.toNumber();
 		global.assert.equal(balanceDelta, 1000);
-	});	
+	});
 
 	global.it('should not either burn or mint tokens',async() => {
 		await CheckExceptions.checkContractThrows(token.burn, [
 			creator, 1000, {from:creator}])
-		
+
 		await CheckExceptions.checkContractThrows(token.burn, [
 			creator, 1000, {from:employee1}])
 
@@ -235,12 +235,12 @@ global.contract('DaoBase', (accounts) => {
 
 		await CheckExceptions.checkContractThrows(token.mint, [
 			creator, 1000, {from:creator}])
-		
+
 		await CheckExceptions.checkContractThrows(token.mint, [
 			creator, 1000, {from:employee1}])
 
 		await CheckExceptions.checkContractThrows(token.mint, [
 			creator, 1000, {from:outsider}])
-	});	
+	});
 });
 

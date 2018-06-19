@@ -42,7 +42,7 @@ contract DaoBaseAuto is GenericCaller {
 
 		return doAction("upgradeDaoContract", dao, msg.sender,"upgradeDaoContractGeneric(bytes32[])",params);
 	}
-	
+
 	// TODO: add other methods:
 	/*
 	function addGroup(string _groupName) public isCanDo("manageGroups")

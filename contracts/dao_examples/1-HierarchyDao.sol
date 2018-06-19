@@ -18,7 +18,7 @@ contract HierarchyDaoFactory {
 
 	HierarchyDao public dao;
 	DaoBaseAuto public aac;
-	
+
 	address[] tokens;
 
 	constructor(address _boss, address[] _managers, address[] _employees)public{
@@ -104,7 +104,7 @@ contract HierarchyDaoFactory {
 	// Unfortunately creating MoneyflowAuto here caused some weird bug 
 	// with OutOfGas...That's why i moved DaoBaseAuto creation outside of this contract
 	function setupAmac(MoneyflowAuto _amac) public {
-		uint VOTING_TYPE_1P1V = 1;		
+		uint VOTING_TYPE_1P1V = 1;
 		_amac.setVotingParams("modifyMoneyscheme", VOTING_TYPE_1P1V, bytes32(0), "Managers", bytes32(50), bytes32(50), 0);
 
 		dao.allowActionByAddress("addNewProposal", _amac);

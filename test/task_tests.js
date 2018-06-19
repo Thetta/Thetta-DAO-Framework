@@ -36,7 +36,7 @@ global.contract('Tasks', (accounts) => {
 		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
 
-		// add creator as first employee	
+		// add creator as first employee
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
@@ -52,7 +52,7 @@ global.contract('Tasks', (accounts) => {
 		// this is a list of actions that require voting
 		await daoBase.allowActionByVoting("manageGroups",token.address);
 		await daoBase.allowActionByVoting("addNewTask",token.address);
-		await daoBase.allowActionByVoting("issueTokens",token.address);		
+		await daoBase.allowActionByVoting("issueTokens",token.address);
 	});
 
 	global.it('Tasks: prepaid positive scenario. Task created by creator',async() => {
@@ -93,13 +93,13 @@ global.contract('Tasks', (accounts) => {
 		// should become "PrePaid" after transfer 1 ETH
 		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(),0);
-		
+
 		var neededWei = await task.getNeededWei();
 		global.assert.strictEqual(neededWei.toNumber(),ETH,'Should be 1 ETH');
 
 		var isNeedsMoneyBeforeSend = await task.isNeedsMoney();
 		global.assert.strictEqual(isNeedsMoneyBeforeSend, true);
-	
+
 		var minWeiNeeded = await task.getMinWeiNeeded();
 		global.assert.strictEqual(minWeiNeeded.toNumber(),ETH);
 
@@ -126,7 +126,7 @@ global.contract('Tasks', (accounts) => {
 
 		var balance = await task.getBalance();
 		global.assert.strictEqual(balance.toNumber(), ETH);
-		
+
 		var isPostpaid = await task.isPostpaid();
 		global.assert.strictEqual(isPostpaid, false);
 
@@ -145,10 +145,10 @@ global.contract('Tasks', (accounts) => {
 
 		// should become "Completed" after employee have marked task as compvared
 		var th = await task.notifyThatCompleted({from:employee1, gasPrice:0});
-		
+
 		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 5);
-		
+
 		var neededWei = await task.getNeededWei();
 		global.assert.strictEqual(neededWei.toNumber(),ETH,'Should be 1 ETH');
 
@@ -194,7 +194,7 @@ global.contract('Tasks', (accounts) => {
 		global.assert.strictEqual(firstContractBalance.toNumber(),0);
 
 		firstEmployeeBalance = await web3.eth.getBalance(employee1);
-		
+
 		firstCreatorBalance = await web3.eth.getBalance(creator);
 
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
@@ -221,7 +221,7 @@ global.contract('Tasks', (accounts) => {
 
 		var isDonation = await task.isDonation();
 		global.assert.strictEqual(isDonation,false);
-		
+
 		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 4);
 
@@ -240,7 +240,7 @@ global.contract('Tasks', (accounts) => {
 		// should become "CanGetFunds" after creator calls processFunds();
 		var isNeedsMoneyBeforeSend = await task.isNeedsMoney();
 		global.assert.strictEqual(isNeedsMoneyBeforeSend, true);
-	
+
 		var minWeiNeeded = await task.getMinWeiNeeded();
 		global.assert.strictEqual(minWeiNeeded.toNumber(),ETH);
 
@@ -269,7 +269,7 @@ global.contract('Tasks', (accounts) => {
 		global.assert.strictEqual(balance.toNumber(), ETH);
 
 		var status = await task.getCurrentState();
-		global.assert.strictEqual(status.toNumber(), 6)		
+		global.assert.strictEqual(status.toNumber(), 6)
 
 		// should become "Finished" after employee set output and call flush();
 		var out = await task.setOutput(employee1);
@@ -314,14 +314,14 @@ global.contract('Tasks', (accounts) => {
 
 		var isDonation = await task.isDonation();
 		global.assert.strictEqual(isDonation,false);
-		
+
 		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 5);
 
 		// should become "CanGetFunds" after creator calls processFunds();
 		var isNeedsMoneyBeforeSend = await task.isNeedsMoney();
 		global.assert.strictEqual(isNeedsMoneyBeforeSend, true);
-	
+
 		var minWeiNeeded = await task.getMinWeiNeeded();
 		global.assert.strictEqual(minWeiNeeded.toNumber(),ETH);
 
@@ -391,7 +391,7 @@ global.contract('Tasks', (accounts) => {
 		var th = await task.startTask(employee1, {gasPrice:0});
 		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 3);
-		
+
 		// should become "Completed" after creator calls evaluateAndSetNeededWei();
 		var th = await task.notifyThatCompleted({from:employee1, gasPrice:0});
 
@@ -403,11 +403,11 @@ global.contract('Tasks', (accounts) => {
 
 		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 5);
-		
+
 		// should become "CanGetFunds" after creator calls processFunds();
 		var isNeedsMoneyBeforeSend = await task.isNeedsMoney();
 		global.assert.strictEqual(isNeedsMoneyBeforeSend, true);
-	
+
 		var minWeiNeeded = await task.getMinWeiNeeded();
 		global.assert.strictEqual(minWeiNeeded.toNumber(),0);
 
@@ -436,14 +436,14 @@ global.contract('Tasks', (accounts) => {
 		global.assert.strictEqual(balance.toNumber(), ETH);
 
 		var status = await task.getCurrentState();
-		global.assert.strictEqual(status.toNumber(), 6)		
+		global.assert.strictEqual(status.toNumber(), 6)
 
 		// should become "Finished" after employee set output and call flush();
 		var out = await task.setOutput(employee1, {gasPrice:0});
 		var th = await task.flush();
 		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 7);
-		
+
 		secondContractBalance = await web3.eth.getBalance(daoBase.address);
 		global.assert.strictEqual(secondContractBalance.toNumber(),0);
 
@@ -474,7 +474,7 @@ global.contract('Tasks', (accounts) => {
 
 		// should become "Cancelled"
 		th = await task.cancell({from:creator});
-		
+
 		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 1);
 	});
@@ -487,7 +487,7 @@ global.contract('Tasks', (accounts) => {
 
 		firstEmployeeBalance = await web3.eth.getBalance(employee1);
 
-		firstCreatorBalance = await web3.eth.getBalance(creator)		
+		firstCreatorBalance = await web3.eth.getBalance(creator)
 
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
 			daoBase.address, 
@@ -503,13 +503,13 @@ global.contract('Tasks', (accounts) => {
 		// should become "PrePaid" after transfer 1 ETH
 		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(),0);
-		
+
 		var neededWei = await task.getNeededWei();
 		global.assert.strictEqual(neededWei.toNumber(),ETH,'Should be 1 ETH');
 
 		var isNeedsMoneyBeforeSend = await task.isNeedsMoney();
 		global.assert.strictEqual(isNeedsMoneyBeforeSend, true);
-	
+
 		var minWeiNeeded = await task.getMinWeiNeeded();
 		global.assert.strictEqual(minWeiNeeded.toNumber(),ETH);
 
@@ -536,7 +536,7 @@ global.contract('Tasks', (accounts) => {
 
 		var balance = await task.getBalance();
 		global.assert.strictEqual(balance.toNumber(), ETH);
-		
+
 		var isPostpaid = await task.isPostpaid();
 		global.assert.strictEqual(isPostpaid, false);
 
@@ -545,7 +545,7 @@ global.contract('Tasks', (accounts) => {
 
 		// should become "Cancelled"
 		th = await task.cancell({from:creator});
-		
+
 		var status = await task.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 1);
 	});
@@ -576,13 +576,13 @@ global.contract('Tasks', (accounts) => {
 		// should become "PrePaid" after transfer 1 ETH
 		var status = await bounty.getCurrentState();
 		global.assert.strictEqual(status.toNumber(),0);
-		
+
 		var neededWei = await bounty.getNeededWei();
 		global.assert.strictEqual(neededWei.toNumber(),ETH,'Should be 1 ETH');
 
 		var isNeedsMoneyBeforeSend = await bounty.isNeedsMoney();
 		global.assert.strictEqual(isNeedsMoneyBeforeSend, true);
-	
+
 		var minWeiNeeded = await bounty.getMinWeiNeeded();
 		global.assert.strictEqual(minWeiNeeded.toNumber(),ETH);
 
@@ -609,7 +609,7 @@ global.contract('Tasks', (accounts) => {
 
 		var balance = await bounty.getBalance();
 		global.assert.strictEqual(balance.toNumber(), ETH);
-		
+
 		var isPostpaid = await bounty.isPostpaid();
 		global.assert.strictEqual(isPostpaid, false);
 
@@ -628,10 +628,10 @@ global.contract('Tasks', (accounts) => {
 
 		// should become "Completed" after employee have marked bounty as compvared
 		var th = await bounty.notifyThatCompleted({from:employee1, gasPrice:0});
-		
+
 		var status = await bounty.getCurrentState();
 		global.assert.strictEqual(status.toNumber(), 5);
-		
+
 		var neededWei = await bounty.getNeededWei();
 		global.assert.strictEqual(neededWei.toNumber(),ETH,'Should be 1 ETH');
 
@@ -669,5 +669,5 @@ global.contract('Tasks', (accounts) => {
 		secondEmployeeBalance = await web3.eth.getBalance(employee1);
 		var employeeDelta = secondEmployeeBalance.toNumber() - firstEmployeeBalance.toNumber();
 		global.assert.strictEqual(employeeDelta > 950000000000000000 ,true);
-	});	
+	});
 });

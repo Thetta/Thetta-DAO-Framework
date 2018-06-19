@@ -6,13 +6,14 @@ import './IVoting.sol';
 import './IProposal.sol';
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+import "zeppelin-solidity/contracts/token/ERC20/ERC20Basic.sol";
 
 /**
- * @title Voting_1p1v 
+ * @title Voting_SimpleToken 
  * @dev This is the implementation of IVoting interface. Each Proposal should have voting attached. 
  * If group members change -> it will not work
 */
-contract Voting_1p1v is IVoting, Ownable {
+contract Voting_SimpleToken is IVoting, Ownable {
 	// use DaoClient instead?
 	// (it will handle upgrades)
 	IDaoBase dao;
@@ -23,14 +24,20 @@ contract Voting_1p1v is IVoting, Ownable {
 	uint64 genesis;
 	uint public quorumPercent;
 	uint public consensusPercent;
-	string public groupName;
+	ERC20Basic erc20Token;
 
 	mapping (address=>bool) addressVotedAlready;
-	address[] employeesVotedYes;
-	address[] employeesVotedNo;
 
-	event  Voting1p1v_Vote(address _who, bool _yes);
-	event  Voting1p1v_CallAction();
+	struct TokenVote{
+		address voter;
+		bool vote;
+		uint tokenAmount;
+	}
+
+	TokenVote[] tokenVotesArray;
+
+	event  VotingSimpleToken_Vote(address _who, bool _yes, uint _tokenAmount);
+	event  VotingSimpleToken_CallAction();
 
 	/**
 	 * TODO: 
@@ -38,14 +45,14 @@ contract Voting_1p1v is IVoting, Ownable {
 	 * @param _proposal – proposal, which create vote.
 	 * @param _origin – who create voting (group member).
 	 * @param _minutesToVote - if is zero -> voting until quorum reached, else voting finish after minutesToVote minutes
-	 * @param _groupName - members of which group can vote.
 	 * @param _quorumPercent - percent of group members to make quorum reached. If minutesToVote==0 and quorum reached -> voting is finished
 	 * @param _consensusPercent - percent of voters (not of group members!) to make consensus reached. If consensus reached -> voting is finished with YES result
+	 * @param _tokenAddress - address of token what uses for voting
 	*/
 
 	constructor(IDaoBase _dao, IProposal _proposal, 
-		address _origin, uint _minutesToVote, string _groupName, 
-		uint _quorumPercent, uint _consensusPercent) public 
+		address _origin, uint _minutesToVote,
+		uint _quorumPercent, uint _consensusPercent, address _tokenAddress) public 
 	{
 		require((_quorumPercent<=100)&&(_quorumPercent>0));
 		require((_consensusPercent<=100)&&(_consensusPercent>0));
@@ -53,9 +60,9 @@ contract Voting_1p1v is IVoting, Ownable {
 		dao = _dao;
 		proposal = _proposal;
 		minutesToVote = _minutesToVote;
-		groupName = _groupName;
 		quorumPercent = _quorumPercent;
 		consensusPercent = _consensusPercent;
+		erc20Token = ERC20Basic(_tokenAddress);
 		genesis = uint64(now);
 
 		internalVote(_origin, true);
@@ -112,9 +119,9 @@ contract Voting_1p1v is IVoting, Ownable {
 			return true;
 		}
 
-		return _isFinished() && 
-				 _isQuorumReached() &&
-				 _isConsensusReached();
+		return  _isFinished() &&
+		   _isQuorumReached() &&
+		_isConsensusReached();
 	}
 
 	function cancelVoting() external onlyOwner {
@@ -123,24 +130,20 @@ contract Voting_1p1v is IVoting, Ownable {
 
 	function vote(bool _yes, uint _tokenAmount) external {
 		require(!_isFinished());
-		// This voting type does not deal with tokens, that's why _tokenAmount should be ZERO
 		require(0==_tokenAmount);
 
 		internalVote(msg.sender, _yes);
 	}
 
 	function internalVote(address _who, bool _yes) internal {
-		require(dao.isGroupMember(groupName, _who));
+		uint tokenBalance = erc20Token.balanceOf(_who);
+
 		require(!addressVotedAlready[_who]);
 
-		if(_yes){
-			employeesVotedYes.push(_who);
-		}else{
-			employeesVotedNo.push(_who);
-		}
-
+		tokenVotesArray.push(TokenVote(_who, _yes, tokenBalance));
 		addressVotedAlready[_who] = true;
-		emit  Voting1p1v_Vote(_who, _yes);
+
+		emit VotingSimpleToken_Vote(_who, _yes, tokenBalance);
 
 		_callActionIfEnded();
 	}
@@ -150,26 +153,14 @@ contract Voting_1p1v is IVoting, Ownable {
 	}
 
 	function _callActionIfEnded() internal {
-		if(!finishedWithYes && _isFinished() && _isYes()){ 
+		if(!finishedWithYes && _isFinished() && _isYes()){
 			// should not be callable again!!!
 			finishedWithYes = true;
 
 			// can throw!
-			emit  Voting1p1v_CallAction();
+			emit VotingSimpleToken_CallAction();
 			proposal.action();
 		}
-	}
-
-	function filterResults(address[] _votersTotal) internal constant returns(uint){
-		uint votedCount = 0;
-
-		for(uint i=0; i<_votersTotal.length; ++i){
-			if(dao.isGroupMember(groupName,_votersTotal[i])){
-				// count this vote
-				votedCount++;
-			}
-		}
-		return votedCount;
 	}
 
 	function getVotingStats() external constant returns(uint yesResults, uint noResults, uint votersTotal){
@@ -177,9 +168,16 @@ contract Voting_1p1v is IVoting, Ownable {
 	}
 
 	function _getVotingStats() internal constant returns(uint yesResults, uint noResults, uint votersTotal){
-		yesResults = filterResults(employeesVotedYes);
-		noResults = filterResults(employeesVotedNo);
-		votersTotal = dao.getMembersCount(groupName);
+		yesResults = 0;
+		noResults = 0;
+		votersTotal = erc20Token.totalSupply();
+		for(uint i=0; i<tokenVotesArray.length; ++i){
+			if(tokenVotesArray[i].vote){
+				yesResults+= tokenVotesArray[i].tokenAmount;
+			}else{
+				noResults+= tokenVotesArray[i].tokenAmount;
+			}
+		}
 		return;
 	}
 }
