@@ -17,6 +17,9 @@ var MoneyflowCentral = artifacts.require("./MoneyflowCentral");
 
 var SplitterStorage = artifacts.require("./SplitterStorage");
 var SplitterMain = artifacts.require("./SplitterMain");
+var WeiTopDownSplitter = artifacts.require("./WeiTopDownSplitter");
+var WeiUnsortedSplitter = artifacts.require("./WeiUnsortedSplitter");
+
 
 var CheckExceptions = require('./utils/checkexceptions');
 
@@ -39,6 +42,40 @@ global.contract('Gas measurements', (accounts) => {
 
 	global.beforeEach(async() => {
 	});
+
+	global.it('Should estimate gas for WeiTopDownSplitter',async() => {
+		var b1 = await web3.eth.getBalance(creator);
+		var td = await WeiTopDownSplitter.new('a',{from: creator, gasPrice:1})
+		var b2 = await web3.eth.getBalance(creator);
+		var td = await WeiTopDownSplitter.new('a',{from: creator, gasPrice:1})
+		var b3 = await web3.eth.getBalance(creator);
+		var td = await WeiTopDownSplitter.new('a',{from: creator, gasPrice:1})
+		var b4 = await web3.eth.getBalance(creator);
+		var td = await WeiTopDownSplitter.new('a',{from: creator, gasPrice:1})
+		var b5 = await web3.eth.getBalance(creator);
+		var td = await WeiTopDownSplitter.new('a',{from: creator, gasPrice:1})
+		console.log('WeiTopDownSplitter 1:', b1.toNumber() - b2.toNumber());
+		console.log('WeiTopDownSplitter 2:', b2.toNumber() - b3.toNumber());
+		console.log('WeiTopDownSplitter 3:', b3.toNumber() - b4.toNumber());
+		console.log('WeiTopDownSplitter 4:', b4.toNumber() - b5.toNumber());
+	});
+
+	global.it('Should estimate gas for WeiUnsortedSplitter',async() => {
+		var b1 = await web3.eth.getBalance(creator);
+		var td = await WeiUnsortedSplitter.new('a',{from: creator, gasPrice:1})
+		var b2 = await web3.eth.getBalance(creator);
+		var td = await WeiUnsortedSplitter.new('a',{from: creator, gasPrice:1})
+		var b3 = await web3.eth.getBalance(creator);
+		var td = await WeiUnsortedSplitter.new('a',{from: creator, gasPrice:1})
+		var b4 = await web3.eth.getBalance(creator);
+		var td = await WeiUnsortedSplitter.new('a',{from: creator, gasPrice:1})
+		var b5 = await web3.eth.getBalance(creator);
+		var td = await WeiUnsortedSplitter.new('a',{from: creator, gasPrice:1})
+		console.log('WeiUnsortedSplitter 1:', b1.toNumber() - b2.toNumber());
+		console.log('WeiUnsortedSplitter 2:', b2.toNumber() - b3.toNumber());
+		console.log('WeiUnsortedSplitter 3:', b3.toNumber() - b4.toNumber());
+		console.log('WeiUnsortedSplitter 4:', b4.toNumber() - b5.toNumber());
+	});	
 
 	global.it('Should estimate gas for MoneyflowCentral',async() => {
 		var b1 = await web3.eth.getBalance(creator);
@@ -101,40 +138,40 @@ global.contract('Gas measurements', (accounts) => {
 
 	global.it('Should estimate gas for Splitter with Lib',async() => {
 		var b1 = await web3.eth.getBalance(creator);
-		await Splitter.new([employee3, employee4, employee5], {from: creator, gasPrice:1})
+		await Splitter.new('a', {from: creator, gasPrice:1})
 		var b2 = await web3.eth.getBalance(creator);
-		await Splitter.new([employee3], {from: creator, gasPrice:1})
+		await Splitter.new('a', {from: creator, gasPrice:1})
 		var b3 = await web3.eth.getBalance(creator);
-		await Splitter.new([employee3, employee4], {from: creator, gasPrice:1})
+		await Splitter.new('a', {from: creator, gasPrice:1})
 		var b4 = await web3.eth.getBalance(creator);
-		await Splitter.new([employee3, employee4, employee5], {from: creator, gasPrice:1})
+		await Splitter.new('a', {from: creator, gasPrice:1})
 		var b5 = await web3.eth.getBalance(creator);
-		await Splitter.new([employee2, employee3, employee4, employee5], {from: creator, gasPrice:1})
+		await Splitter.new('a', {from: creator, gasPrice:1})
 		var b6 = await web3.eth.getBalance(creator);
-		await Splitter.new([employee1, employee2, employee3, employee4, employee5], {from: creator, gasPrice:1})
+		await Splitter.new('a', {from: creator, gasPrice:1})
 		var b7 = await web3.eth.getBalance(creator);		
-		console.log('Splitter gas (first deploy):', b1.toNumber() - b2.toNumber());
-		console.log('Splitter gas (1 child):', b2.toNumber() - b3.toNumber());
-		console.log('Splitter gas (2 children):', b3.toNumber() - b4.toNumber());
-		console.log('Splitter gas (3 children):', b4.toNumber() - b5.toNumber());
-		console.log('Splitter gas (4 children):', b5.toNumber() - b6.toNumber());
-		console.log('Splitter gas (5 children):', b6.toNumber() - b7.toNumber());
+		console.log('Splitter gas :', b1.toNumber() - b2.toNumber());
+		console.log('Splitter gas :', b2.toNumber() - b3.toNumber());
+		console.log('Splitter gas :', b3.toNumber() - b4.toNumber());
+		console.log('Splitter gas :', b4.toNumber() - b5.toNumber());
+		console.log('Splitter gas :', b5.toNumber() - b6.toNumber());
+		console.log('Splitter gas :', b6.toNumber() - b7.toNumber());
 	});
 
 	global.it('Should estimate gas for SplitterStorage + SplitterMain',async() => {
 		var b1 = await web3.eth.getBalance(creator);
 		let splitterMain = await SplitterMain.new({from: creator, gasPrice:1})
 		var b2 = await web3.eth.getBalance(creator);
-		await SplitterStorage.new(splitterMain.address, [employee3], {from: creator, gasPrice:1});
+		await SplitterStorage.new(splitterMain.address, 'a', {from: creator, gasPrice:1});
 		var b3 = await web3.eth.getBalance(creator);
 
-		await SplitterStorage.new(splitterMain.address, [employee3, employee4], {from: creator, gasPrice:1});
+		await SplitterStorage.new(splitterMain.address, 'a', {from: creator, gasPrice:1});
 		var b4 = await web3.eth.getBalance(creator);
-		await SplitterStorage.new(splitterMain.address, [employee3, employee4, employee5], {from: creator, gasPrice:1});
+		await SplitterStorage.new(splitterMain.address, 'a', {from: creator, gasPrice:1});
 		var b5 = await web3.eth.getBalance(creator);
-		await SplitterStorage.new(splitterMain.address, [employee2, employee3, employee4, employee5], {from: creator, gasPrice:1});
+		await SplitterStorage.new(splitterMain.address, 'a', {from: creator, gasPrice:1});
 		var b6 = await web3.eth.getBalance(creator);
-		await SplitterStorage.new(splitterMain.address, [employee1, employee2, employee3, employee4, employee5], {from: creator, gasPrice:1});
+		await SplitterStorage.new(splitterMain.address, 'a', {from: creator, gasPrice:1});
 		var b7 = await web3.eth.getBalance(creator);
 
 		console.log('SplitterMain gas:', b1.toNumber() - b2.toNumber());

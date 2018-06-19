@@ -10,23 +10,26 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  * @dev Splitter has multiple outputs (allows to send money only to THESE addresses)
 */
 
-contract SplitterStorage{
-	address[] children;
+contract SplitterStorage is ISplitter, Ownable{
+	mapping (uint=>address) children;
+
+	uint childrenCount = 0;
+
 	address main;
 	bool public opened = true;
+	string name;
 
-	constructor(address _main, address[] _children) public{
-		children = _children;
+	event SplitterBase_AddChild(address _newChild);
+
+	constructor(address _main, string _name) public{
+		name = _name;
 		main = _main;
 	}
 
-	function getChildren() external returns(address[]){
-		return children;
-	}
-
-	function setStatus(bool _isOpen) external{
-		require(msg.sender==main);
-		opened = _isOpen;
+	function addChild(address _newChild) external{
+		emit SplitterBase_AddChild(_newChild);
+		children[childrenCount] = _newChild;
+		childrenCount += 1;	
 	}
 
 	function processFunds(uint _currentFlow) external payable{
@@ -44,9 +47,37 @@ contract SplitterStorage{
 	function isNeedsMoney() external returns(bool){
 		return SplitterMain(main).isNeedsMoney();
 	}	
+
+	function open() external onlyOwner{
+		opened = true;
+	}
+
+	function close() external onlyOwner{
+		opened = false;
+	}
+
+	function isOpen() external view returns(bool){
+		return opened;
+	}	
+
+	function getChildrenCount()external view returns(uint){
+		return childrenCount;
+	}
+
+	function getChild(uint _index)external view returns(address){
+		return children[_index];
+	}
+
+	function getPercentsMul100() external view returns(uint){
+		return SplitterMain(main).getPercentsMul100();
+	}	
 }
 
 contract SplitterMain{
+	event SplitterBase_ProcessFunds(address _sender, uint _value, uint _currentFlow);
+	event SplitterBase_Open(address _sender);
+	event SplitterBase_Close(address _sender);
+
 	function _isOpen(address stor) internal view returns(bool){
 		return SplitterStorage(stor).opened();
 	}
@@ -55,31 +86,27 @@ contract SplitterMain{
 		return SplitterStorage(stor).opened();
 	}
 
-	function getChildrenCount(address stor)external view returns(uint){
-		return SplitterStorage(stor).getChildren().length;
+	function getChildrenCount(address stor)public view returns(uint){
+		return SplitterStorage(stor).getChildrenCount();
 	}
 
-	function getChild(address stor, uint _index)external view returns(address){
-		return SplitterStorage(stor).getChildren()[_index];
-	}
-
-	function getChildren(address stor)public view returns(address[]){
-		return SplitterStorage(stor).getChildren();
+	function getChild(address stor, uint _index)public view returns(address){
+		return SplitterStorage(stor).getChild(_index);
 	}
 
 	function getMinWeiNeeded()external view returns(uint){
 		if(!_isOpen(msg.sender)){
 			return 0;
 		}
-		address[] memory children = getChildren(msg.sender);
+		uint childrenCount = getChildrenCount(msg.sender);
 		uint total = 0;
-		for(uint i=0; i<children.length; ++i){
-			IWeiReceiver c = IWeiReceiver(children[i]);
+		for(uint i=0; i<childrenCount; ++i){
+			IWeiReceiver c = IWeiReceiver(getChild(msg.sender,i));
 			uint needed = c.getMinWeiNeeded();
 			total = total + needed;
 		}
 		return total;
-	}
+	}	
 
 	function getTotalWeiNeeded(uint _inputWei)external view returns(uint){
 		return _getTotalWeiNeeded(_inputWei);
@@ -89,12 +116,10 @@ contract SplitterMain{
 		if(!_isOpen(msg.sender)){
 			return 0;
 		}
-
-		address[] memory children = getChildren(msg.sender);
-
+		uint childrenCount = getChildrenCount(msg.sender);
 		uint total = 0;
-		for(uint i=0; i<children.length; ++i){
-			IWeiReceiver c = IWeiReceiver(children[i]);
+		for(uint i=0; i<childrenCount; ++i){
+			IWeiReceiver c = IWeiReceiver(getChild(msg.sender,i));
 			uint needed = c.getTotalWeiNeeded(_inputWei);
 			total = total + needed;
 
@@ -110,9 +135,9 @@ contract SplitterMain{
 
 	function getPercentsMul100()external view returns(uint){
 		uint total = 0;
-		address[] memory children = getChildren(msg.sender);
-		for(uint i=0; i<children.length; ++i){
-			IWeiReceiver c = IWeiReceiver(children[i]);
+		uint childrenCount = getChildrenCount(msg.sender);
+		for(uint i=0; i<childrenCount; ++i){
+			IWeiReceiver c = IWeiReceiver(getChild(msg.sender,i));
 			total = total + c.getPercentsMul100();	
 		}
 
@@ -124,13 +149,13 @@ contract SplitterMain{
 	}
 
 	function isNeedsMoney()constant public returns(bool){
-		address[] memory children = getChildren(msg.sender);
+		uint childrenCount = getChildrenCount(msg.sender);
 		if(!_isOpen(msg.sender)){
 			return false;
 		}
 
-		for(uint i=0; i<children.length; ++i){
-			IWeiReceiver c = IWeiReceiver(children[i]);
+		for(uint i=0; i<childrenCount; ++i){
+			IWeiReceiver c = IWeiReceiver(getChild(msg.sender,i));
 			// if at least 1 child needs money -> return true
 			if(c.isNeedsMoney()){
 				return true;
@@ -140,15 +165,15 @@ contract SplitterMain{
 	}
 
 	function processFunds(uint _currentFlow) external payable{
-		address[] memory children = getChildren(msg.sender);
+		uint childrenCount = getChildrenCount(msg.sender);
 		require(_isOpen(msg.sender));
 		// emit SplitterBase_ProcessFunds(msg.sender, msg.value, _currentFlow);
 		uint amount = _currentFlow;
 
 		require(amount>=_getTotalWeiNeeded(_currentFlow));
 
-		for(uint i=0; i<children.length; ++i){
-			IWeiReceiver c = IWeiReceiver(children[i]);
+		for(uint i=0; i<childrenCount; ++i){
+			IWeiReceiver c = IWeiReceiver(getChild(msg.sender,i));
 			uint needed = c.getTotalWeiNeeded(amount);
 
 			// send money. can throw!
