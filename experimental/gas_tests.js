@@ -21,7 +21,7 @@ var WeiTopDownSplitter = artifacts.require("./WeiTopDownSplitter");
 var WeiUnsortedSplitter = artifacts.require("./WeiUnsortedSplitter");
 
 
-var CheckExceptions = require('./utils/checkexceptions');
+var CheckExceptions = require('../test/utils/checkexceptions');
 
 function KECCAK256 (x){
 	return web3.sha3(x);
@@ -136,7 +136,7 @@ global.contract('Gas measurements', (accounts) => {
 		console.log('SplitterSimple gas (5 children):', b6.toNumber() - b7.toNumber());
 	});
 
-	global.it('Should estimate gas for Splitter with Lib',async() => {
+	/*global.it('Should estimate gas for Splitter with Lib',async() => {
 		var b1 = await web3.eth.getBalance(creator);
 		await Splitter.new('a', {from: creator, gasPrice:1})
 		var b2 = await web3.eth.getBalance(creator);
@@ -156,7 +156,7 @@ global.contract('Gas measurements', (accounts) => {
 		console.log('Splitter gas :', b4.toNumber() - b5.toNumber());
 		console.log('Splitter gas :', b5.toNumber() - b6.toNumber());
 		console.log('Splitter gas :', b6.toNumber() - b7.toNumber());
-	});
+	});*/
 
 	global.it('Should estimate gas for SplitterStorage + SplitterMain',async() => {
 		var b1 = await web3.eth.getBalance(creator);
