@@ -1,11 +1,8 @@
 {
-  "name": "Thetta-DAO-Framework",
-  "version": "0.1.0",
-  "description": "![CodeShip Build Status](https://codeship.com/projects/9cd363b0-a6d4-0135-e5e6-52d04353ae62/status?branch=master)",
+  "name": "@thetta/core",
+  "version": "1.2.0",
+  "description": "Thetta Decentralized Autonomous Organizations framework core",
   "main": "truffle.js",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
     "coverage": "scripts/coverage.sh",
     "test": "scripts/test.sh",
@@ -13,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Thetta/SmartContracts.git"
+    "url": "git+https://github.com/Thetta/Thetta-DAO-Framework.git"
   },
-  "author": "Thetta Research",
+  "author": "Thetta Community <community@thetta.io>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/Thetta/Thetta-DAO-Framework/projects/1"
   },
-  "homepage": "https://github.com/Thetta/Thetta-DAO-Framework",
+  "homepage": "https://web.thetta.io",
   "dependencies": {
     "babel-eslint": "^8.2.3",
     "babel-polyfill": "^6.26.0",
