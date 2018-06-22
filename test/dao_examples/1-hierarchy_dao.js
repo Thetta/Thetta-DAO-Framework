@@ -18,7 +18,7 @@ function KECCAK256 (x){
 	return web3.sha3(x);
 }
 
-global.contract('HierarchyDaoFactory', (accounts) => {
+contract('HierarchyDaoFactory', (accounts) => {
 	let token;
 	let store;
 	let daoBase;
@@ -34,13 +34,13 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 	const manager1 = accounts[6];
 	const manager2 = accounts[7];
 
-	global.beforeEach(async() => {
+	beforeEach(async() => {
 
 	});
 
 	/*
-	global.it('should create Boss -> Managers -> Employees hierarchy',async() => {
-		let token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
+	it('should create Boss -> Managers -> Employees hierarchy',async() => {
+		let token = await StdDaoToken.new("StdToken","STDT",18);
 		//await token.mint(creator, 1000);
 		let store = await DaoStorage.new(token.address,{gas: 10000000, from: creator});
 		let daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
@@ -101,7 +101,7 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 	});
 	*/
 
-	global.it('should create Boss -> Managers -> Employees hierarchy using HierarchyDaoFactory',async() => {
+	it('should create Boss -> Managers -> Employees hierarchy using HierarchyDaoFactory',async() => {
 		let mgrs = [manager1, manager2];
 		let empls = [employee1, employee2];
 
@@ -132,7 +132,7 @@ global.contract('HierarchyDaoFactory', (accounts) => {
 		// test permissions 
 		// 1 - check if AAC has manageGroups perm. 
 		const isCan = await daoBase.isCanDoAction(aac.address, "manageGroups");
-		global.assert.equal(isCan, true, 'AAC should be able to <manageGroups>');
+		assert.equal(isCan, true, 'AAC should be able to <manageGroups>');
 		*/
 	});
 });

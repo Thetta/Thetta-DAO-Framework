@@ -51,7 +51,7 @@ function fromUtf8(str) {
 	return padToBytes32(hex);
 };
 
-global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
+contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 	const creator   = accounts[0];
 	const employee1 = accounts[1];
 	const employee2 = accounts[2];
@@ -71,9 +71,9 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 	let money = web3.toWei(0.001, "ether");
 	let VOTING_TYPE_1P1V = 1;
 
-	global.beforeEach(async() => {
+	beforeEach(async() => {
 
-		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
+		token = await StdDaoToken.new("StdToken","STDT",18);
 		await token.mint(creator, 1000);
 
 		let store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
@@ -112,19 +112,19 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		// await daoBase.addGroupMember("Employees", creator);
 	});
 
-	global.it('0. should create new voting', async()=>{
+	it('0. should create new voting', async()=>{
 		let isGroupMember = await daoBase.isGroupMember('Employees', employee1);
-		global.assert.equal(isGroupMember,true, 'Creator is ein the group');
+		assert.equal(isGroupMember,true, 'Creator is ein the group');
 		let voting = await Voting_1p1v.new(daoBase.address, employee1, employee1, 60, "Employees", 51, 71);
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
 		let groupName = await voting.groupName();
-		global.assert.equal(quorumPercent.toNumber(), 51, 'quorumPercent should be 51'); 
-		global.assert.equal(consensusPercent.toNumber(), 71, 'consensusPercent should be 51'); 
-		global.assert.equal(groupName, "Employees", 'groupName should be Employees'); 
+		assert.equal(quorumPercent.toNumber(), 51, 'quorumPercent should be 51'); 
+		assert.equal(consensusPercent.toNumber(), 71, 'consensusPercent should be 51'); 
+		assert.equal(groupName, "Employees", 'groupName should be Employees'); 
 	})
 
-	global.it('should create and use 1p1v voting while members change',async() => {
+	it('should create and use 1p1v voting while members change',async() => {
 		await daoBase.addGroupMember("Employees", employee5);
 		let proposal = await InformalProposal.new('Take the money and run again', {from:creator});
 		let voting = await Voting_1p1v.new(daoBase.address, proposal.address, creator, 0, "Employees", 51, 90, {from:creator});
@@ -133,34 +133,34 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		await voting.vote(true,0,{from:employee1});
 
 		var r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
-		global.assert.equal(r2[1].toNumber(),0,'no');
-		global.assert.equal(r2[2].toNumber(),6,'creator + 5 employee');
+		assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
+		assert.equal(r2[1].toNumber(),0,'no');
+		assert.equal(r2[2].toNumber(),6,'creator + 5 employee');
 
 		await daoBase.removeGroupMember("Employees", employee1, {from:creator});
 		// remove 2nd employee from the group 
 
 		var r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),1,'yes');			// 1 already voted (who started the voting)
-		global.assert.equal(r2[1].toNumber(),0,'no');
-		global.assert.equal(r2[2].toNumber(),5,'creator + 4 employee');
+		assert.equal(r2[0].toNumber(),1,'yes');			// 1 already voted (who started the voting)
+		assert.equal(r2[1].toNumber(),0,'no');
+		assert.equal(r2[2].toNumber(),5,'creator + 4 employee');
 
 		await voting.vote(true,0,{from:employee2});
 
 		var r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
-		global.assert.equal(r2[1].toNumber(),0,'no');
+		assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
+		assert.equal(r2[1].toNumber(),0,'no');
 
 		await CheckExceptions.checkContractThrows(
 			voting.vote, [true,0,{from:employee2}]);
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(true,0,{from:employee3});
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished: 4/6 voted');
-		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished: 4/6 voted, all said yes');
+		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished: 4/6 voted');
+		assert.strictEqual(await voting.isYes(),true,'Voting is finished: 4/6 voted, all said yes');
 		await daoBase.removeGroupMember("Employees", employee3, {from:creator});
 
 		// WARNING:
@@ -169,17 +169,17 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		// 
 		// BUT the 'getVotingStats()' will return different results
 		var emps = await daoBase.getMembersCount("Employees");
-		global.assert.equal(4, emps, '4 employees');
+		assert.equal(4, emps, '4 employees');
 
 		var res = await voting.getVotingStats();
-		global.assert.strictEqual(res[0].toNumber(),2,'');
-		global.assert.strictEqual(res[1].toNumber(),0,'');
+		assert.strictEqual(res[0].toNumber(),2,'');
+		assert.strictEqual(res[1].toNumber(),0,'');
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished: 4/6 voted');
-		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished: 4/6 voted, all said yes');
+		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished: 4/6 voted');
+		assert.strictEqual(await voting.isYes(),true,'Voting is finished: 4/6 voted, all said yes');
 	});
 
-	global.it('1.1. Q Scenario: 5 employees, 5/5 voted yes, params(100,100) => isYes==true',async() => {
+	it('1.1. Q Scenario: 5 employees, 5/5 voted yes, params(100,100) => isYes==true',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(100), 0);
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -188,44 +188,44 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_1p1v.at(votingAddress);
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(true,0,{from:employee2});
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),2,'yes');
-		global.assert.equal(r2[1].toNumber(),0,'no');
+		assert.equal(r2[0].toNumber(),2,'yes');
+		assert.equal(r2[1].toNumber(),0,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
 		await voting.vote(true,0,{from:employee3});
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),3,'yes');
-		global.assert.equal(r2[1].toNumber(),0,'no');
+		assert.equal(r2[0].toNumber(),3,'yes');
+		assert.equal(r2[1].toNumber(),0,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
 		await voting.vote(true,0,{from:employee4});
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),4,'yes');
-		global.assert.equal(r2[1].toNumber(),0,'no');
+		assert.equal(r2[0].toNumber(),4,'yes');
+		assert.equal(r2[1].toNumber(),0,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(true,0,{from:creator});
+		await voting.vote(true,0);
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2
+		assert.equal(r2
 			[0].toNumber(),5,'yes');
-		global.assert.equal(r2[1].toNumber(),0,'no');
+		assert.equal(r2[1].toNumber(),0,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 	});
 
-	global.it('1.2. Q Scenario: 5 employees, 1/5 voted yes, params(10,100) => isYes==true',async() => {
+	it('1.2. Q Scenario: 5 employees, 1/5 voted yes, params(10,100) => isYes==true',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(10), UintToToBytes32(100), 0);
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -237,18 +237,18 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
-		global.assert.equal(quorumPercent.toNumber(), 10, 'quorumPercent should be 10'); 
-		global.assert.equal(consensusPercent.toNumber(), 100, 'consensusPercent should be 100'); 
+		assert.equal(quorumPercent.toNumber(), 10, 'quorumPercent should be 10'); 
+		assert.equal(consensusPercent.toNumber(), 100, 'consensusPercent should be 100'); 
 
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),1,'yes');
-		global.assert.equal(r2[1].toNumber(),0,'no');
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),0,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 	});
 
-	global.it('1.3. Q Scenario: 5 employees, 1/5 voted yes, 4/5 voted no, params(100,10) => isYes==true',async() => {
+	it('1.3. Q Scenario: 5 employees, 1/5 voted yes, 4/5 voted no, params(100,10) => isYes==true',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(10), 0);
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -257,48 +257,48 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_1p1v.at(votingAddress);
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
-		global.assert.equal(quorumPercent.toNumber(), 100, 'quorumPercent should be 100'); 
-		global.assert.equal(consensusPercent.toNumber(), 10, 'consensusPercent should be 10'); 
+		assert.equal(quorumPercent.toNumber(), 100, 'quorumPercent should be 100'); 
+		assert.equal(consensusPercent.toNumber(), 10, 'consensusPercent should be 10'); 
 
 		await voting.vote(false,0,{from:employee2});
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),1,'yes');
-		global.assert.equal(r2[1].toNumber(),1,'no');
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),1,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
 		await voting.vote(false,0,{from:employee3});
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),1,'yes');
-		global.assert.equal(r2[1].toNumber(),2,'no');
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),2,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
 		await voting.vote(false,0,{from:employee4});
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),1,'yes');
-		global.assert.equal(r2[1].toNumber(),3,'no');
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),3,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:creator});
+		await voting.vote(false,0);
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),1,'yes');
-		global.assert.equal(r2[1].toNumber(),4,'no');
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),4,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 	});
 
-	global.it('1.4. Q Scenario: 5 employees, 1/5 voted yes, 4/5 voted no, params(100,20) => isYes==true',async() => {
+	it('1.4. Q Scenario: 5 employees, 1/5 voted yes, 4/5 voted no, params(100,20) => isYes==true',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(20), 0);
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -307,43 +307,43 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_1p1v.at(votingAddress);
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(false,0,{from:employee2});
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),1,'yes');
-		global.assert.equal(r2[1].toNumber(),1,'no');
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),1,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
 		await voting.vote(false,0,{from:employee3});
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),1,'yes');
-		global.assert.equal(r2[1].toNumber(),2,'no');
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),2,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
 		await voting.vote(false,0,{from:employee4});
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),1,'yes');
-		global.assert.equal(r2[1].toNumber(),3,'no');
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),3,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:creator});
+		await voting.vote(false,0);
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),1,'yes');
-		global.assert.equal(r2[1].toNumber(),4,'no');
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),4,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 	});
 
-	global.it('1.5. Q Scenario: 5 employees, 1/5 voted yes, 4/5 voted no, params(100,21) => isYes==false',async() => {
+	it('1.5. Q Scenario: 5 employees, 1/5 voted yes, 4/5 voted no, params(100,21) => isYes==false',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(21), 0);
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -352,43 +352,43 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_1p1v.at(votingAddress);
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(false,0,{from:employee2});
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),1,'yes');
-		global.assert.equal(r2[1].toNumber(),1,'no');
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),1,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
 		await voting.vote(false,0,{from:employee3});
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),1,'yes');
-		global.assert.equal(r2[1].toNumber(),2,'no');
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),2,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
 		await voting.vote(false,0,{from:employee4});
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),1,'yes');
-		global.assert.equal(r2[1].toNumber(),3,'no');
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),3,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:creator});
+		await voting.vote(false,0);
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),1,'yes');
-		global.assert.equal(r2[1].toNumber(),4,'no');
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),4,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 	});
 
-	global.it('1.6. Q Scenario: 5 employees, 1/5 voted yes, 2/5 voted no, params(50,50) => isYes==false',async() => {
+	it('1.6. Q Scenario: 5 employees, 1/5 voted yes, 2/5 voted no, params(50,50) => isYes==false',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), 0);
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -397,27 +397,27 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_1p1v.at(votingAddress);
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(false,0,{from:employee2});
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),1,'yes');
-		global.assert.equal(r2[1].toNumber(),1,'no');
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),1,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
 		await voting.vote(false,0,{from:employee3});
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),1,'yes');
-		global.assert.equal(r2[1].toNumber(),2,'no');
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),2,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 	});
 
-	global.it('1.7. Q Scenario: 5 employees, 2/5 voted yes, 1/5 voted no, params(50,50) => isYes==true',async() => {
+	it('1.7. Q Scenario: 5 employees, 2/5 voted yes, 1/5 voted no, params(50,50) => isYes==true',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), 0);
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -426,27 +426,27 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_1p1v.at(votingAddress);
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(true,0,{from:employee2});
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),2,'yes');
-		global.assert.equal(r2[1].toNumber(),0,'no');
+		assert.equal(r2[0].toNumber(),2,'yes');
+		assert.equal(r2[1].toNumber(),0,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
 		await voting.vote(false,0,{from:employee3});
 		r2 = await voting.getVotingStats();
-		global.assert.equal(r2[0].toNumber(),2,'yes');
-		global.assert.equal(r2[1].toNumber(),1,'no');
+		assert.equal(r2[0].toNumber(),2,'yes');
+		assert.equal(r2[1].toNumber(),1,'no');
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 	});
 
-	global.it('1.8. T Scenario: 5 employees, 2/5 voted yes, 1/5 voted no, params(50,50) => isYes==true',async() => {
+	it('1.8. T Scenario: 5 employees, 2/5 voted yes, 1/5 voted no, params(50,50) => isYes==true',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), 0);
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -455,16 +455,16 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_1p1v.at(votingAddress);
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(true,0,{from:employee2});
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting should not be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting should not be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is not finished');
 
 		await voting.vote(true,0,{from:employee3});
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting should not be finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting should not be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is not finished');
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0', 
@@ -473,11 +473,11 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting should not be finished');
-		global.assert.strictEqual(await voting.isYes(),true,'Voting is not finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting should not be finished');
+		assert.strictEqual(await voting.isYes(),true,'Voting is not finished');
 	})
 
-	global.it('1.9. T Scenario: no yes yes, params(100,20) => isYes==false',async() => {
+	it('1.9. T Scenario: no yes yes, params(100,20) => isYes==false',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(20), 0);
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -486,14 +486,14 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_1p1v.at(votingAddress);
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(true,0,{from:employee2});
 		await voting.vote(false,0,{from:employee3});
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0', 
@@ -502,11 +502,11 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is  finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is  finished');
 	})
 
-	global.it('1.10. T Scenario: no no no yes yes, params(100,20) => isYes==true',async() => {
+	it('1.10. T Scenario: no no no yes yes, params(100,20) => isYes==true',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(20), 0);
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -515,16 +515,16 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_1p1v.at(votingAddress);
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(true,0,{from:employee2});
 		await voting.vote(false,0,{from:employee3});
 		await voting.vote(false,0,{from:employee4});
-		await voting.vote(false,0,{from:creator});
+		await voting.vote(false,0);
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0', 
@@ -533,12 +533,12 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
 
 	})
 
-	global.it('1.11. T Scenario: yes no no yes, params(50,50) => isYes==true',async() => {
+	it('1.11. T Scenario: yes no no yes, params(50,50) => isYes==true',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), 0);
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -547,8 +547,8 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_1p1v.at(votingAddress);
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(false,0,{from:employee2});
 		await voting.vote(false,0,{from:employee3});
@@ -560,13 +560,13 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(true,0,{from:employee4});
 
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0', 
@@ -575,11 +575,11 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
 	})
 
-	global.it('1.12. T Scenario: yes, params(20,20) => isYes==true',async() => {
+	it('1.12. T Scenario: yes, params(20,20) => isYes==true',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(20), UintToToBytes32(20), 0);
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -588,8 +588,8 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_1p1v.at(votingAddress);
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0', 
@@ -598,11 +598,11 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
-		global.assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
+		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 	})
 
-	global.it('1.13. T Scenario: yes yes no no, params(51,51) => isYes==false',async() => {
+	it('1.13. T Scenario: yes yes no no, params(51,51) => isYes==false',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(51), UintToToBytes32(51), 0);
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -611,8 +611,8 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_1p1v.at(votingAddress);
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(false,0,{from:employee2});
 		await voting.vote(false,0,{from:employee3});
@@ -625,12 +625,12 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is no');
+		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is no');
 
 	})
 
-	global.it('1.14. T Scenario: yes, params(21,21) => isYes==false',async() => {
+	it('1.14. T Scenario: yes, params(21,21) => isYes==false',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(21), UintToToBytes32(21), 0);
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -639,8 +639,8 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_1p1v.at(votingAddress);
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0', 
@@ -649,11 +649,11 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is no');
+		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is no');
 	})
 
-	global.it('1.15. T Scenario: yes no, params(21,21) => isYes==false',async() => {
+	it('1.15. T Scenario: yes no, params(21,21) => isYes==false',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_1P1V, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(21), UintToToBytes32(51), 0);
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -662,8 +662,8 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_1p1v.at(votingAddress);
-		global.assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await voting.vote(false,0,{from:employee2});
 
@@ -674,7 +674,7 @@ global.contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		global.assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
-		global.assert.strictEqual(await voting.isYes(),false,'Voting is no');
+		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is no');
 	})
 });

@@ -18,7 +18,7 @@ function KECCAK256 (x){
 	return web3.sha3(x);
 }
 
-global.contract('Scheme', (accounts) => {
+contract('Scheme', (accounts) => {
 	let token;
 	let store;
 	let daoBase;
@@ -31,8 +31,8 @@ global.contract('Scheme', (accounts) => {
 	const employee1 = accounts[1];
 	const output = accounts[2];
 
-	global.beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
+	beforeEach(async() => {
+		token = await StdDaoToken.new("StdToken","STDT",18);
 		await token.mint(creator, 1000);
 		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
@@ -78,13 +78,13 @@ global.contract('Scheme', (accounts) => {
 		// await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 		// await daoBase.allowActionByVoting("withdrawDonations", token.address);
 
-		// moneyflowInstance = await MoneyFlow.new(daoBase.address,{from: creator});
+		// moneyflowInstance = await MoneyFlow.new(daoBase.address);
 
 		// const root = await moneyflowScheme.getRootReceiver();
 		// await moneyflowInstance.setRootWeiReceiver(root, {from: creator});
 	});
 
-	global.it('should set everything correctly',async() => {
+	it('should set everything correctly',async() => {
 		// TODO: test DefaultMoneyflowScheme
 	});
 
