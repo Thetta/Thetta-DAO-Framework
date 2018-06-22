@@ -1,6 +1,8 @@
 [ ![Codeship Status for Thetta/SmartContracts](https://app.codeship.com/projects/f1b38150-b26e-0135-0584-462fcae7d1c8/status?branch=master)](https://app.codeship.com/projects/258076)
 [![](https://tokei.rs/b1/github/Thetta/Thetta-DAO-Framework)](https://github.com/Thetta/Thetta-DAO-Framework)
 
+[![NPM](https://nodei.co/npm/<package>.png?mini=true)](https://npmjs.org/package/@thetta/core)
+
 ***
 
 <p align="center">
