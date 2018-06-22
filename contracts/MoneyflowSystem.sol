@@ -10,8 +10,9 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 // TODO: move some functions to moneyflow library
 // TODO:  MoneyflowSystem -> MoneyflowProcessor + MoneyflowStorage
 
-contract MoneyflowSystem is Ownable{
-	mapping (uint => Node) nodes;
+contract MoneyflowSystemBasis is Ownable{
+	mapping (uint => Node) public nodes;
+	uint[] public nodeIds;
 	
 	struct Node{
 		uint[] outputNodeIds;
@@ -19,6 +20,7 @@ contract MoneyflowSystem is Ownable{
 		bool isPeriodic;
 		bool isAccumulateDebt;
 		bool isActive;
+		bool isExist;
 
 		uint periodHours;
 		uint condensatedAmount;
@@ -38,16 +40,89 @@ contract MoneyflowSystem is Ownable{
 				bool _isAccumulateDebt, 
 				bool _isActive, 
 				uint _periodHours, 
-				uint _condensatedAmount) external onlyOwner {
+				uint _condensatedAmount) public onlyOwner {
 
 		require(_outputNodeIds.length==_outputPercents.length);
+		if(!nodes[_nodeId].isExist){
+			nodeIds.push(_nodeId);
+		}
 
-		nodes[_nodeId] = Node(_outputNodeIds, _outputPercents, _isPeriodic, _isAccumulateDebt, _isActive, _periodHours, _condensatedAmount, 0, 0);
+		nodes[_nodeId] = Node(_outputNodeIds, _outputPercents, _isPeriodic, _isAccumulateDebt, _isActive, true, _periodHours, _condensatedAmount, 0, 0);
 	}
+
+	function getNewNodeId() public view returns(uint){
+		uint out = nodeIds[nodeIds.length-1];
+		bool founded = false;
+		while(founded==false){
+			if(nodes[out].isExist==false){
+				founded = true;
+			}else{
+				out += 1;
+			}
+		}
+		return out;
+	}
+
+	function uintArraySum(uint[] arr) public pure returns(uint) {
+		uint S;
+		for(uint i; i<arr.length; i++){
+			S += arr[i];
+		}
+		return S;
+	}
+
+	// function getNode(uint _nodeId)public view returns(Node) {
+	// 	return nodes[_nodeId];
+	// }
 
 	function flushNodeBalanceTo(uint _nodeId, address _receiver) external onlyOwner {
 		_receiver.transfer(nodes[_nodeId].balance);
 	}
+
+	function connectNewNodeToExistingOne(
+			uint _connecctionTargetId, 
+			uint[] _connecctionTargetNodeIds, 
+			uint[] _conecctionTargetPercents,
+
+			uint[] _outputNodeIds,
+			uint[] _outputPercents,
+			bool _isPeriodic, 
+			bool _isAccumulateDebt,
+			bool _isActive, 
+			uint _periodHours, 
+			uint _condensatedAmount) public onlyOwner returns(uint){
+		
+		require(_connecctionTargetNodeIds.length==_conecctionTargetPercents.length);
+		require(_outputNodeIds.length==_outputPercents.length);
+
+		uint nodeId = getNewNodeId();
+
+		// FIRST: create new node
+		setNode(
+			nodeId,
+			_outputNodeIds,
+			_outputPercents,
+			_isPeriodic,
+			_isAccumulateDebt,
+			_isActive,
+			_periodHours,
+			_condensatedAmount
+		);
+		// SECOND: connect node to moneyFlow node
+		Node connecctionTargetNode = nodes[_connecctionTargetId];
+		setNode(
+			_connecctionTargetId,
+			_connecctionTargetNodeIds,
+			_conecctionTargetPercents,
+
+			connecctionTargetNode.isPeriodic,
+			connecctionTargetNode.isAccumulateDebt,
+			connecctionTargetNode.isActive,
+			connecctionTargetNode.periodHours,
+			connecctionTargetNode.condensatedAmount);
+
+		return nodeId;
+	}	
 
 	function _sendAmountToNode(uint _nodeId, uint _value) internal {
 		uint value = _value;
@@ -84,4 +159,30 @@ contract MoneyflowSystem is Ownable{
 	}
 
 }
- 
+
+contract MoneyflowSystem is MoneyflowSystemBasis{
+	function addSplitter(uint _connecctionTargetId, uint[] _connecctionTargetNodeIds, uint[] _conecctionTargetPercents, uint[] _outputNodeIds, uint[] _outputPercents) external returns(uint) {
+
+		return connectNewNodeToExistingOne(
+			_connecctionTargetId, _connecctionTargetNodeIds, _conecctionTargetPercents,
+			_outputNodeIds, _outputPercents, false, false, false, 0, 0);
+	}
+
+	function addRelativeExpense(uint _connecctionTargetId, uint[] _connecctionTargetNodeIds, uint[] _conecctionTargetPercents, uint[] _outputNodeIds, uint[] _outputPercents) external returns(uint) {
+		require(1==_outputNodeIds.length);
+		require(10000>uintArraySum(_outputPercents));
+
+		return connectNewNodeToExistingOne(
+			_connecctionTargetId, _connecctionTargetNodeIds, _conecctionTargetPercents,
+			_outputNodeIds, _outputPercents, false, false, false, 0, 0);
+	}
+
+	function addAbsoluteExpense(uint _connecctionTargetId, uint[] _connecctionTargetNodeIds, uint[] _conecctionTargetPercents, uint[] _outputNodeIds, uint[] _outputPercents, uint condensatedAmount) external returns(uint) {
+		require(1==_outputNodeIds.length);
+		require(10000==uintArraySum(_outputPercents));
+
+		return connectNewNodeToExistingOne(
+			_connecctionTargetId, _connecctionTargetNodeIds, _conecctionTargetPercents,
+			_outputNodeIds, _outputPercents, false, false, false, 0, condensatedAmount);
+	}
+}
