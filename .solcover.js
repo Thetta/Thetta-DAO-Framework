@@ -6,5 +6,9 @@ module.exports = {
 	norpc: true,
 	testCommand: 'node --max-old-space-size=4096 ../node_modules/.bin/truffle test --network coverage',
 	copyPackages: ['zeppelin-solidity'],
-	skipFiles: []
+	skipFiles: [
+        'moneyflow/erc20/Erc20Expense.sol',
+        'moneyflow/erc20/Erc20Fund.sol',
+        'moneyflow/erc20/Erc20Splitter.sol'
+    ]
 };
