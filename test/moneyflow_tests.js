@@ -655,7 +655,6 @@ contract('Moneyflow', (accounts) => {
 		let callParams = {from:creator, gasPrice:0}
 		let struct = {};
 		let balance0 = await web3.eth.getBalance(creator);
-		console.log("before: "+web3.eth.getBalance(creator));
 		Employee1 = await WeiAbsoluteExpenseWithPeriod.new(1000*money, timePeriod, true, callParams);
 
 		let multi1 = await Employee1.getDebtMultiplier();
@@ -665,12 +664,10 @@ contract('Moneyflow', (accounts) => {
 		
 		await CheckExceptions.checkContractThrows(Employee1.flush, [{from:outsider}])
 		
-		console.log("after: "+web3.eth.getBalance(creator));
 		await Employee1.flush({from:creator, gasPrice:0});
 		
 		let balance = await web3.eth.getBalance(creator);
-		console.log(balance.toNumber() - balance0.toNumber() + ": Ravno ");
-		console.log(1000*money + ": Ravno money");
+
 		assert.equal(balance.toNumber() - balance0.toNumber(), 1000*money, 'Should get money');
 
 		let needsEmployee1 = await Employee1.isNeedsMoney({from:creator});
