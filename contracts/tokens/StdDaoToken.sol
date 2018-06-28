@@ -1,7 +1,7 @@
 pragma solidity ^0.4.22;
 
 import "zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
-import "zeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
+import "zeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -20,14 +20,66 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  *		mint()
  *		burn()
 */
-contract StdDaoToken is MintableToken, BurnableToken, DetailedERC20 {
-	constructor(string _name, string _symbol, uint8 _decimals) public
-		DetailedERC20(_name, _symbol, _decimals)
-	{
+contract StdDaoToken is MintableToken, PausableToken, DetailedERC20 {
+
+	uint256 public cap;
+	bool isMintable;
+	bool isBurnable;
+	bool isPausable;
+
+	event Burn(address indexed burner, uint256 value);
+
+	modifier isMintable_() { 
+		require (isMintable); 
+		_;
 	}
 
-	// this is an override of BurnableToken method
-	function burn(address _who, uint256 _value) external onlyOwner{
-		_burn(_who, _value);
+	modifier isBurnable_() { 
+		require (isBurnable); 
+		_; 
 	}
+
+	modifier isPausable_() { 
+		require (isPausable); 
+		_; 
+	}
+	
+	constructor(string _name, string _symbol, uint8 _decimals, bool _isMintable, bool _isBurnable, bool _isPausable, uint256 _cap) public
+		DetailedERC20(_name, _symbol, _decimals)
+	{
+		require(_cap > 0);
+		cap = _cap;
+		isMintable = _isMintable;
+		isBurnable = _isBurnable;
+		isPausable = _isPausable;
+	}
+
+	// this is BurnableToken method
+	function burn(address _who, uint256 _value) isBurnable_ onlyOwner public{
+		require(_value <= balances[_who]);
+
+		balances[_who] = balances[_who].sub(_value);
+		totalSupply_ = totalSupply_.sub(_value);
+		emit Burn(_who, _value);
+		emit Transfer(_who, address(0), _value);
+	}
+
+	// this is an override of MintableToken method with cap
+	function mint(address _to, uint256 _amount) isMintable_ onlyOwner public returns(bool){
+		require(totalSupply_.add(_amount) <= cap);
+		super.mint(_to, _amount);
+		return true;
+	}
+
+	// this is an override of PausableToken method
+	function pause() isPausable_ onlyOwner public{
+		super.pause();
+	}
+
+	// this is an override of PausableToken method
+	function unpause() isPausable_ onlyOwner  public{
+		super.unpause();
+	}
+
+
 }

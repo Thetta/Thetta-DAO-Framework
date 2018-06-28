@@ -1,3 +1,7 @@
+var increaseTimeTo = require('./utils/increaseTime');
+var latestTime = require('./utils/latestTime');
+var advanceBlock = require('./utils/advanceToBlock');
+
 var WeiTask = artifacts.require("./WeiTask");
 var WeiBounty = artifacts.require("./WeiBounty");
 var DaoBase = artifacts.require("./DaoBase");
@@ -9,6 +13,15 @@ var CheckExceptions = require('./utils/checkexceptions');
 function KECCAK256 (x){
 	return web3.sha3(x);
 }
+
+const duration = {
+  seconds: function (val) { return val; },
+  minutes: function (val) { return val * this.seconds(60); },
+  hours: function (val) { return val * this.minutes(60); },
+  days: function (val) { return val * this.hours(24); },
+  weeks: function (val) { return val * this.days(7); },
+  years: function (val) { return val * this.days(365); },
+};
 
 let token;
 let daoBase;
@@ -23,6 +36,8 @@ contract('Tasks', (accounts) => {
 	var secondEmployeeBalance;
 	var secondCreatorBalance;
 
+	var timeToCancell = 2;
+
 	const creator = accounts[0];
 	const employee1 = accounts[1];
 	const outsider = accounts[2];
@@ -30,8 +45,12 @@ contract('Tasks', (accounts) => {
 
 	const ETH = 1000000000000000000;
 
+	before(async function () {
+		await advanceBlock();
+	});
+
 	beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18);
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000);
 		await token.mint(creator, 1000);
 		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
@@ -82,6 +101,7 @@ contract('Tasks', (accounts) => {
 			false,
 			ETH,
 			0,
+			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
 
@@ -205,6 +225,7 @@ contract('Tasks', (accounts) => {
 			false,
 			0,
 			0,
+			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
 
@@ -296,6 +317,7 @@ contract('Tasks', (accounts) => {
 			false,
 			ETH,
 			0,
+			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
 
@@ -384,6 +406,7 @@ contract('Tasks', (accounts) => {
 			true,
 			0,
 			0,
+			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
 
@@ -469,9 +492,10 @@ contract('Tasks', (accounts) => {
 			false,
 			ETH,
 			0,
+			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
-
+		await increaseTimeTo(duration.hours(3))
 		// should become "Cancelled"
 		th = await task.cancell({from:creator});
 
@@ -497,6 +521,7 @@ contract('Tasks', (accounts) => {
 			false,
 			ETH,
 			0,
+			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
 
@@ -543,6 +568,7 @@ contract('Tasks', (accounts) => {
 		var status2 = await task.getCurrentState();
 		assert.strictEqual(status2.toNumber(), 2);
 
+		await increaseTimeTo(duration.hours(3))
 		// should become "Cancelled"
 		th = await task.cancell({from:creator});
 
@@ -565,6 +591,7 @@ contract('Tasks', (accounts) => {
 			'Bounty description',
 			ETH,
 			0,
+			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
 
@@ -670,4 +697,57 @@ contract('Tasks', (accounts) => {
 		var employeeDelta = secondEmployeeBalance.toNumber() - firstEmployeeBalance.toNumber();
 		assert.strictEqual(employeeDelta > 950000000000000000 ,true);
 	});
+
+	describe('isCanCancell test with cancell() method', function () {
+
+		it('should fail due to _timeToCancell =< 0', async function () {
+			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
+			daoBase.address, 
+			'Task Caption', 
+			'Task description',
+			false,
+			false,
+			ETH,
+			0,
+			0,
+			{gas: 10000000, from: creator}
+		).should.be.rejectedWith('revert');
+		});
+			
+		it('should fail due to not time to cancell yet', async function () {
+			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
+			daoBase.address, 
+			'Task Caption', 
+			'Task description',
+			false,
+			false,
+			ETH,
+			0,
+			timeToCancell,
+			{gas: 10000000, from: creator}
+		);
+			await task.cancell({from: creator}).should.be.rejectedWith('revert');
+			var status = await task.getCurrentState();
+			assert.notEqual(status.toNumber(), 1); //must not be cancelled
+		});
+			
+		it('should pass', async function () {
+			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
+			daoBase.address, 
+			'Task Caption', 
+			'Task description',
+			false,
+			false,
+			ETH,
+			0,
+			timeToCancell,
+			{gas: 10000000, from: creator}
+		);
+			await increaseTimeTo(duration.hours(3));
+			await task.cancell({from: creator}).should.be.fulfilled;
+			var status = await task.getCurrentState();
+			assert.strictEqual(status.toNumber(), 1); // should be cancelled
+		});
+		});
+
 });

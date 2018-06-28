@@ -201,8 +201,8 @@ contract('Moneyflow', (accounts) => {
 	const outsider = accounts[3];
 
 	beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18);
-		await token.mint(creator, 1000);
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000000000000000000000);
+		await token.mint(creator, 1000, {gasPrice: 0});
 		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
 
@@ -655,17 +655,19 @@ contract('Moneyflow', (accounts) => {
 		let callParams = {from:creator, gasPrice:0}
 		let struct = {};
 		let balance0 = await web3.eth.getBalance(creator);
-
 		Employee1 = await WeiAbsoluteExpenseWithPeriod.new(1000*money, timePeriod, true, callParams);
 
 		let multi1 = await Employee1.getDebtMultiplier();
 		assert.equal(multi1.toNumber(), 1, '0 hours => x1');
 
 		await Employee1.processFunds(1000*money, {value:1000*money, from:outsider, gas:1000000, gasPrice:0});
+		
 		await CheckExceptions.checkContractThrows(Employee1.flush, [{from:outsider}])
+		
 		await Employee1.flush({from:creator, gasPrice:0});
-
+		
 		let balance = await web3.eth.getBalance(creator);
+
 		assert.equal(balance.toNumber() - balance0.toNumber(), 1000*money, 'Should get money');
 
 		let needsEmployee1 = await Employee1.isNeedsMoney({from:creator});
