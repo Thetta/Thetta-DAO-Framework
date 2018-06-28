@@ -3,9 +3,9 @@ const BigNumber = web3.BigNumber;
 const StdDaoToken = artifacts.require('StdDaoToken');
 
 require('chai')
-  .use(require('chai-as-promised'))
-  .use(require('chai-bignumber')(BigNumber))
-  .should();
+	.use(require('chai-as-promised'))
+	.use(require('chai-bignumber')(BigNumber))
+	.should();
 
 	contract('StdDaoToken', (accounts) => {
 		
@@ -13,7 +13,7 @@ require('chai')
 		
 		const ETH = 1000000000000000000;
 
-	    beforeEach(async function () {
+		beforeEach(async function () {
 
 		});
 
@@ -37,6 +37,9 @@ require('chai')
 		it('should pass', async function () {
 			this.token = await StdDaoToken.new("StdToken","STDT",18, true, false, false, ETH);
 			await this.token.mint(web3.eth.accounts[0], 1000).should.be.fulfilled;
+			this.token.balanceOf(web3.eth.accounts[0]).then(result => {
+				assert.equal(result.toNumber(), 1000);
+			});
 		});
 		});
 
@@ -61,6 +64,9 @@ require('chai')
 			this.token = await StdDaoToken.new("StdToken","STDT",18, true, true, false, ETH);
 			await this.token.mint(web3.eth.accounts[0], 1000).should.be.fulfilled;
 			await this.token.burn(web3.eth.accounts[0], 1000).should.be.fulfilled;
+			this.token.balanceOf(web3.eth.accounts[0]).then(result => {
+				assert.equal(result.toNumber(), 0);
+			});
 		});
 		});
 

@@ -48,20 +48,20 @@ contract StdDaoToken is MintableToken, PausableToken, DetailedERC20 {
 		DetailedERC20(_name, _symbol, _decimals)
 	{
 		require(_cap > 0);
-    	cap = _cap;
-    	isMintable = _isMintable;
-    	isBurnable = _isBurnable;
-    	isPausable = _isPausable;
+		cap = _cap;
+		isMintable = _isMintable;
+		isBurnable = _isBurnable;
+		isPausable = _isPausable;
 	}
 
 	// this is BurnableToken method
 	function burn(address _who, uint256 _value) isBurnable_ onlyOwner public{
 		require(_value <= balances[_who]);
 
-	    balances[_who] = balances[_who].sub(_value);
-	    totalSupply_ = totalSupply_.sub(_value);
-	    emit Burn(_who, _value);
-	    emit Transfer(_who, address(0), _value);
+		balances[_who] = balances[_who].sub(_value);
+		totalSupply_ = totalSupply_.sub(_value);
+		emit Burn(_who, _value);
+		emit Transfer(_who, address(0), _value);
 	}
 
 	// this is an override of MintableToken method with cap
