@@ -36,7 +36,7 @@ contract('Tasks', (accounts) => {
 	var secondEmployeeBalance;
 	var secondCreatorBalance;
 
-	var timeToCancell = latestTime() + duration.days(7);
+	var timeToCancell = 2;
 
 	const creator = accounts[0];
 	const employee1 = accounts[1];
@@ -101,7 +101,7 @@ contract('Tasks', (accounts) => {
 			false,
 			ETH,
 			0,
-			latestTime() + duration.minutes(1),
+			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
 
@@ -225,7 +225,7 @@ contract('Tasks', (accounts) => {
 			false,
 			0,
 			0,
-			latestTime() + duration.minutes(1),
+			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
 
@@ -317,7 +317,7 @@ contract('Tasks', (accounts) => {
 			false,
 			ETH,
 			0,
-			latestTime() + duration.minutes(1),
+			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
 
@@ -406,7 +406,7 @@ contract('Tasks', (accounts) => {
 			true,
 			0,
 			0,
-			latestTime() + duration.minutes(1),
+			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
 
@@ -492,10 +492,10 @@ contract('Tasks', (accounts) => {
 			false,
 			ETH,
 			0,
-			latestTime() + duration.minutes(1),
+			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
-		await increaseTimeTo(duration.minutes(2))
+		await increaseTimeTo(duration.hours(3))
 		// should become "Cancelled"
 		th = await task.cancell({from:creator});
 
@@ -521,7 +521,7 @@ contract('Tasks', (accounts) => {
 			false,
 			ETH,
 			0,
-			latestTime() + duration.minutes(1),
+			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
 
@@ -568,7 +568,7 @@ contract('Tasks', (accounts) => {
 		var status2 = await task.getCurrentState();
 		assert.strictEqual(status2.toNumber(), 2);
 
-		await increaseTimeTo(duration.minutes(2))
+		await increaseTimeTo(duration.hours(3))
 		// should become "Cancelled"
 		th = await task.cancell({from:creator});
 
@@ -591,7 +591,7 @@ contract('Tasks', (accounts) => {
 			'Bounty description',
 			ETH,
 			0,
-			latestTime() + duration.minutes(1),
+			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
 
@@ -700,7 +700,7 @@ contract('Tasks', (accounts) => {
 
 	describe('isCanCancell test with cancell() method', function () {
 
-		it('should fail due to _timeToCancell < now', async function () {
+		it('should fail due to _timeToCancell =< 0', async function () {
 			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
 			daoBase.address, 
 			'Task Caption', 
@@ -743,7 +743,7 @@ contract('Tasks', (accounts) => {
 			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
-			await increaseTimeTo(duration.days(7));
+			await increaseTimeTo(duration.hours(3));
 			await task.cancell({from: creator}).should.be.fulfilled;
 			var status = await task.getCurrentState();
 			assert.strictEqual(status.toNumber(), 1); // should be cancelled

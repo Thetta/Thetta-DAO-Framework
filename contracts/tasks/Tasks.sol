@@ -37,6 +37,8 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 	bool public isDonation = false;		// if true -> any price
 
+	uint256 public creationTime;
+
 	uint64 public timeToCancell;
 
 	uint64 public deadlineTime;
@@ -72,7 +74,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
 
 	modifier isCanCancell() { 
-		require (now >= timeToCancell); 
+		require (now - creationTime >= timeToCancell); 
 		_; 
 	}
 	
@@ -100,7 +102,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		uint64 _deadlineTime,
 		uint64 _timeToCancell) public WeiAbsoluteExpense(_neededWei) 
 	{
-		require (_timeToCancell >= now);
+		require (_timeToCancell > 0);
 		
 		// Donation should be postpaid 
 		if(_isDonation) {
@@ -111,13 +113,14 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 			require(_neededWei>0);
 		}
 
+		creationTime = now;
 		dao = _dao;
 		caption = _caption;
 		desc = _desc;
 		isPostpaid = _isPostpaid;
 		isDonation = _isDonation;
 		deadlineTime = _deadlineTime;
-		timeToCancell = _timeToCancell;
+		timeToCancell = _timeToCancell * 1 hours;
 	}
 
 	// who will complete this task
