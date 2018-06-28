@@ -101,7 +101,7 @@ contract('Tasks', (accounts) => {
 			false,
 			ETH,
 			0,
-			latestTime(),
+			latestTime() + duration.minutes(1),
 			{gas: 10000000, from: creator}
 		);
 
@@ -225,7 +225,7 @@ contract('Tasks', (accounts) => {
 			false,
 			0,
 			0,
-			latestTime(),
+			latestTime() + duration.minutes(1),
 			{gas: 10000000, from: creator}
 		);
 
@@ -317,7 +317,7 @@ contract('Tasks', (accounts) => {
 			false,
 			ETH,
 			0,
-			latestTime(),
+			latestTime() + duration.minutes(1),
 			{gas: 10000000, from: creator}
 		);
 
@@ -406,7 +406,7 @@ contract('Tasks', (accounts) => {
 			true,
 			0,
 			0,
-			latestTime(),
+			latestTime() + duration.minutes(1),
 			{gas: 10000000, from: creator}
 		);
 
@@ -492,10 +492,10 @@ contract('Tasks', (accounts) => {
 			false,
 			ETH,
 			0,
-			latestTime(),
+			latestTime() + duration.minutes(1),
 			{gas: 10000000, from: creator}
 		);
-
+		await increaseTimeTo(duration.minutes(2))
 		// should become "Cancelled"
 		th = await task.cancell({from:creator});
 
@@ -521,7 +521,7 @@ contract('Tasks', (accounts) => {
 			false,
 			ETH,
 			0,
-			latestTime(),
+			latestTime() + duration.minutes(1),
 			{gas: 10000000, from: creator}
 		);
 
@@ -568,6 +568,7 @@ contract('Tasks', (accounts) => {
 		var status2 = await task.getCurrentState();
 		assert.strictEqual(status2.toNumber(), 2);
 
+		await increaseTimeTo(duration.minutes(2))
 		// should become "Cancelled"
 		th = await task.cancell({from:creator});
 
@@ -590,7 +591,7 @@ contract('Tasks', (accounts) => {
 			'Bounty description',
 			ETH,
 			0,
-			latestTime(),
+			latestTime() + duration.minutes(1),
 			{gas: 10000000, from: creator}
 		);
 
@@ -698,6 +699,20 @@ contract('Tasks', (accounts) => {
 	});
 
 	describe('isCanCancell test with cancell() method', function () {
+
+		it('should fail due to _timeToCancell < now', async function () {
+			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
+			daoBase.address, 
+			'Task Caption', 
+			'Task description',
+			false,
+			false,
+			ETH,
+			0,
+			0,
+			{gas: 10000000, from: creator}
+		).should.be.rejectedWith('revert');
+		});
 			
 		it('should fail due to not time to cancell yet', async function () {
 			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public

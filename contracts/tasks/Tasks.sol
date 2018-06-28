@@ -37,7 +37,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 	bool public isDonation = false;		// if true -> any price
 
-	uint64 public timeToCancel;
+	uint64 public timeToCancell;
 
 	uint64 public deadlineTime;
 
@@ -72,7 +72,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
 
 	modifier isCanCancell() { 
-		require (now >= timeToCancel); 
+		require (now >= timeToCancell); 
 		_; 
 	}
 	
@@ -98,8 +98,10 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		bool _isDonation, 
 		uint _neededWei, 
 		uint64 _deadlineTime,
-		uint64 _timeToCancel) public WeiAbsoluteExpense(_neededWei) 
+		uint64 _timeToCancell) public WeiAbsoluteExpense(_neededWei) 
 	{
+		require (_timeToCancell >= now);
+		
 		// Donation should be postpaid 
 		if(_isDonation) {
 			require(_isPostpaid); 
@@ -115,7 +117,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		isPostpaid = _isPostpaid;
 		isDonation = _isDonation;
 		deadlineTime = _deadlineTime;
-		timeToCancel = _timeToCancel;
+		timeToCancell = _timeToCancell;
 	}
 
 	// who will complete this task
@@ -237,8 +239,8 @@ contract WeiGenericTask is WeiAbsoluteExpense {
  * @dev Can be prepaid or postpaid. 
 */
 contract WeiTask is WeiGenericTask {
-	constructor(IDaoBase _dao, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancel) public 
-		WeiGenericTask(_dao, _caption, _desc, _isPostpaid, _isDonation, _neededWei, _deadlineTime, _timeToCancel) 
+	constructor(IDaoBase _dao, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) public 
+		WeiGenericTask(_dao, _caption, _desc, _isPostpaid, _isDonation, _neededWei, _deadlineTime, _timeToCancell) 
 	{
 	}
 
@@ -262,8 +264,8 @@ contract WeiTask is WeiGenericTask {
  * That is why bounty is always prepaid 
 */
 contract WeiBounty is WeiGenericTask {
-	constructor(IDaoBase _dao, string _caption, string _desc, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancel) public 
-		WeiGenericTask(_dao, _caption, _desc, false, false, _neededWei, _deadlineTime, _timeToCancel) 
+	constructor(IDaoBase _dao, string _caption, string _desc, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) public 
+		WeiGenericTask(_dao, _caption, _desc, false, false, _neededWei, _deadlineTime, _timeToCancell) 
 	{
 	}
 
