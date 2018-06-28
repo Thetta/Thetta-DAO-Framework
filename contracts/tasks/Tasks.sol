@@ -36,10 +36,10 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	bool public isPostpaid = false;		// prepaid/postpaid switch
 
 	bool public isDonation = false;		// if true -> any price
-	// TODO: use it
-	uint64 public timeToCancel = 0;
-	// TODO: use it
-	uint64 public deadlineTime = 0;
+
+	uint64 public timeToCancell;
+
+	uint64 public deadlineTime;
 
 	enum State {
 		Init,
@@ -71,6 +71,12 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		_; 
 	}
 
+	modifier isCanCancell() { 
+		require (now >= timeToCancell); 
+		_; 
+	}
+	
+
 	/*
 	modifier onlyAnyEmployeeOrOwner() { 
 		require(dao.isEmployee(msg.sender) || msg.sender==owner); 
@@ -91,8 +97,11 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		bool _isPostpaid, 
 		bool _isDonation, 
 		uint _neededWei, 
-		uint64 _deadlineTime) public WeiAbsoluteExpense(_neededWei) 
+		uint64 _deadlineTime,
+		uint64 _timeToCancell) public WeiAbsoluteExpense(_neededWei) 
 	{
+		require (_timeToCancell >= now);
+		
 		// Donation should be postpaid 
 		if(_isDonation) {
 			require(_isPostpaid); 
@@ -108,6 +117,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		isPostpaid = _isPostpaid;
 		isDonation = _isDonation;
 		deadlineTime = _deadlineTime;
+		timeToCancell = _timeToCancell;
 	}
 
 	// who will complete this task
@@ -150,7 +160,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		return state; 
 	}
 
-	function cancell() external onlyOwner {
+	function cancell() external isCanCancell onlyOwner {
 		require(_getCurrentState()==State.Init || _getCurrentState()==State.PrePaid);
 		if(_getCurrentState()==State.PrePaid){
 			// return money to 'moneySource'
@@ -229,8 +239,8 @@ contract WeiGenericTask is WeiAbsoluteExpense {
  * @dev Can be prepaid or postpaid. 
 */
 contract WeiTask is WeiGenericTask {
-	constructor(IDaoBase _dao, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime) public 
-		WeiGenericTask(_dao, _caption, _desc, _isPostpaid, _isDonation, _neededWei, _deadlineTime) 
+	constructor(IDaoBase _dao, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) public 
+		WeiGenericTask(_dao, _caption, _desc, _isPostpaid, _isDonation, _neededWei, _deadlineTime, _timeToCancell) 
 	{
 	}
 
@@ -254,8 +264,8 @@ contract WeiTask is WeiGenericTask {
  * That is why bounty is always prepaid 
 */
 contract WeiBounty is WeiGenericTask {
-	constructor(IDaoBase _dao, string _caption, string _desc, uint _neededWei, uint64 _deadlineTime) public 
-		WeiGenericTask(_dao, _caption, _desc, false, false, _neededWei, _deadlineTime) 
+	constructor(IDaoBase _dao, string _caption, string _desc, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) public 
+		WeiGenericTask(_dao, _caption, _desc, false, false, _neededWei, _deadlineTime, _timeToCancell) 
 	{
 	}
 
