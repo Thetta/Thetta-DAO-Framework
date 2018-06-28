@@ -39,6 +39,8 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 	uint256 public creationTime;
 
+	uint256 public startTime;
+
 	uint64 public timeToCancell;
 
 	uint64 public deadlineTime;
@@ -58,7 +60,8 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 		// These are set by Creator or Client:
 		CanGetFunds,						// call flush to get funds
-		Finished								// funds are transferred to the output and the task is finished
+		Finished,								// funds are transferred to the output and the task is finished
+		DeadlineMissed
 	}
 	// Use 'getCurrentState' method instead to access state outside of contract
 	State state = State.Init;
@@ -75,6 +78,11 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 	modifier isCanCancell() { 
 		require (now - creationTime >= timeToCancell); 
+		_; 
+	}
+
+	modifier isDeadlineMissed() { 
+		require (now - startTime >= deadlineTime); 
 		_; 
 	}
 	
@@ -103,6 +111,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		uint64 _timeToCancell) public WeiAbsoluteExpense(_neededWei) 
 	{
 		require (_timeToCancell > 0);
+		require (_deadlineTime > 0);
 		
 		// Donation should be postpaid 
 		if(_isDonation) {
@@ -170,6 +179,16 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 			moneySource.transfer(address(this).balance);
 		}
 		state = State.Cancelled;
+		emit WeiGenericTask_StateChanged(state);
+	}
+
+	function returnMoney() external isDeadlineMissed onlyOwner {
+		require(_getCurrentState()==State.InProgress);
+		if(address(this).balance > 0){
+			// return money to 'moneySource'
+			moneySource.transfer(address(this).balance);
+		}
+		state = State.DeadlineMissed;
 		emit WeiGenericTask_StateChanged(state);
 	}
 
@@ -255,6 +274,7 @@ contract WeiTask is WeiGenericTask {
 			// can start only if postpaid task 
 			require(isPostpaid);
 		}
+		startTime = now;
 		employee = _employee;
 		state = State.InProgress;
 		emit WeiGenericTask_StateChanged(state);
@@ -275,6 +295,7 @@ contract WeiBounty is WeiGenericTask {
 	// callable by anyone
 	function startTask() public isCanDo("startBounty") {
 		require(_getCurrentState()==State.PrePaid);
+		startTime = now;
 		employee = msg.sender;
 		state = State.InProgress;
 		emit WeiGenericTask_StateChanged(state);
