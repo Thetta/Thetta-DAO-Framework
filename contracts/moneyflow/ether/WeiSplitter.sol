@@ -53,7 +53,7 @@ contract SplitterBase is ISplitter, Ownable {
 	}
 	function addChild(address _newChild) external onlyOwner {
 		emit SplitterBase_AddChild(_newChild);
-		children[childrenCount] = _newChild;	
+		children[childrenCount] = _newChild;
 		childrenCount = childrenCount + 1;	
 	}
 }
