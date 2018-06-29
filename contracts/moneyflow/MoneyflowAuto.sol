@@ -39,13 +39,13 @@ contract MoneyflowAuto is GenericCaller {
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(address(_wt));
 
-		return doAction("setRootWeiReceiver", mf, msg.sender,"setRootWeiReceiverGeneric(bytes32[])",params);
+		return doAction(SET_ROOT_WEI_RECEIVER, mf, msg.sender,"setRootWeiReceiverGeneric(bytes32[])",params);
 	}
 
 	function withdrawDonationsToAuto(address _wt) public returns(address voteOut){
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(_wt);
 
-		return doAction("withdrawDonations", mf, msg.sender,"withdrawDonationsToGeneric(bytes32[])",params);
+		return doAction(WITHDRAW_DONATIONS, mf, msg.sender,"withdrawDonationsToGeneric(bytes32[])",params);
 	}
 }

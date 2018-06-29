@@ -35,6 +35,19 @@ contract('Tasks', (accounts) => {
 	var secondContractBalance;
 	var secondEmployeeBalance;
 	var secondCreatorBalance;
+	
+	let issueTokens;
+	let manageGroups;
+	let addNewProposal;
+	let upgradeDaoContract;
+	let addNewTask;
+	let startTask;
+	let startBounty;
+	let modifyMoneyscheme;
+	let withdrawDonations;
+	let setRootWeiReceiver;
+	let burnTokens;
+	let addNewEmployee;
 
 	var timeToCancell = 2;
 	var deadlineTime = 5;
@@ -55,24 +68,70 @@ contract('Tasks', (accounts) => {
 		await token.mint(creator, 1000);
 		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
+		
+		await daoBase.ISSUE_TOKENS().then(result => {
+			issueTokens = result;
+		});
+		
+		await daoBase.MANAGE_GROUPS().then(result => {
+			manageGroups = result;
+		});
+		
+		await daoBase.ADD_NEW_PROPOSAL().then(result => {
+			addNewProposal = result;
+		});
+		
+		await daoBase.UPGRADE_DAO_CONTRACT().then(result => {
+			upgradeDaoContract = result;
+		});
+		
+		await daoBase.ADD_NEW_TASK().then(result => {
+			addNewTask = result;
+		});
+		
+		await daoBase.START_TASK().then(result => {
+			startTask = result;
+		});
+		
+		await daoBase.START_BOUNTY().then(result => {
+			startBounty = result;
+		});
+		
+		await daoBase.MODIFY_MONEY_SCHEME().then(result => {
+			modifyMoneyscheme = result;
+		});
+		
+		await daoBase.WITHDRAW_DONATIONS().then(result => {
+			withdrawDonations = result;
+		});
+		
+		await daoBase.SET_ROOT_WEI_RECEIVER().then(result => {
+			setRootWeiReceiver = result;
+		});
+		
+		await daoBase.BURN_TOKENS().then(result => {
+			burnTokens = result;
+		});
+
 
 		// add creator as first employee
 		await store.addGroupMember(KECCAK256("Employees"), creator);
-		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
+		await store.allowActionByAddress(manageGroups,creator);
+		
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
 
-		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-		await daoBase.allowActionByAnyMemberOfGroup("startTask","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(startTask,"Employees");
 
-		await daoBase.allowActionByAddress("startBounty",employee1);
+		await daoBase.allowActionByAddress(startBounty,employee1);
 
 		// this is a list of actions that require voting
-		await daoBase.allowActionByVoting("manageGroups",token.address);
-		await daoBase.allowActionByVoting("addNewTask",token.address);
-		await daoBase.allowActionByVoting("issueTokens",token.address);
+		await daoBase.allowActionByVoting(manageGroups,token.address);
+		await daoBase.allowActionByVoting(addNewTask,token.address);
+		await daoBase.allowActionByVoting(issueTokens,token.address);
 	});
 
 	it('Tasks: prepaid positive scenario. Task created by creator',async() => {

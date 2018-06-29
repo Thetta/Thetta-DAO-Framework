@@ -193,6 +193,19 @@ contract('Moneyflow', (accounts) => {
 	let daoBase;
 	let moneyflowInstance;
 
+	let issueTokens;
+	let manageGroups;
+	let addNewProposal;
+	let upgradeDaoContract;
+	let addNewTask;
+	let startTask;
+	let startBounty;
+	let modifyMoneyscheme;
+	let withdrawDonations;
+	let setRootWeiReceiver;
+	let burnTokens;
+	let addNewEmployee;
+	
 	let money = web3.toWei(0.001, "ether");
 
 	const creator = accounts[0];
@@ -205,31 +218,75 @@ contract('Moneyflow', (accounts) => {
 		await token.mint(creator, 1000, {gasPrice: 0});
 		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
+		
+		await daoBase.ISSUE_TOKENS().then(result => {
+			issueTokens = result;
+		});
+		
+		await daoBase.MANAGE_GROUPS().then(result => {
+			manageGroups = result;
+		});
+		
+		await daoBase.ADD_NEW_PROPOSAL().then(result => {
+			addNewProposal = result;
+		});
+		
+		await daoBase.UPGRADE_DAO_CONTRACT().then(result => {
+			upgradeDaoContract = result;
+		});
+		
+		await daoBase.ADD_NEW_TASK().then(result => {
+			addNewTask = result;
+		});
+		
+		await daoBase.START_TASK().then(result => {
+			startTask = result;
+		});
+		
+		await daoBase.START_BOUNTY().then(result => {
+			startBounty = result;
+		});
+		
+		await daoBase.MODIFY_MONEY_SCHEME().then(result => {
+			modifyMoneyscheme = result;
+		});
+		
+		await daoBase.WITHDRAW_DONATIONS().then(result => {
+			withdrawDonations = result;
+		});
+		
+		await daoBase.SET_ROOT_WEI_RECEIVER().then(result => {
+			setRootWeiReceiver = result;
+		});
+		
+		await daoBase.BURN_TOKENS().then(result => {
+			burnTokens = result;
+		});
 
 		// add creator as first employee
 		await store.addGroupMember(KECCAK256("Employees"), creator);
-		await store.allowActionByAddress(KECCAK256(daoBase.MANAGE_GROUPS),creator);
+		await store.allowActionByAddress(manageGroups,creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
 
 		// manually setup the Default organization 
-		await daoBase.allowActionByAnyMemberOfGroup(daoBase.ADD_NEW_PROPOSAL,"Employees");
-		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
-		await daoBase.allowActionByAnyMemberOfGroup("setRootWeiReceiver","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(modifyMoneyscheme,"Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(setRootWeiReceiver,"Employees");
 
-		await daoBase.allowActionByAnyMemberOfGroup("openGate","Employees");
-		await daoBase.allowActionByAnyMemberOfGroup("closeGate","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(KECCAK256("openGate"),"Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(KECCAK256("closeGate"),"Employees");
 	
 		// this is a list of actions that require voting
-		await daoBase.allowActionByVoting(daoBase.MANAGE_GROUPS, token.address);
-		await daoBase.allowActionByVoting(daoBase.ADD_NEW_TASK, token.address);
-		await daoBase.allowActionByVoting(daoBase.ISSUE_TOKENS, token.address);
+		await daoBase.allowActionByVoting(manageGroups, token.address);
+		await daoBase.allowActionByVoting(addNewTask, token.address);
+		await daoBase.allowActionByVoting(issueTokens, token.address);
 
 		// THIS permission IS VERY DANGEROUS!!!
 		// allow creator to get donations from the Moneyflow 
-		await daoBase.allowActionByAddress(daoBase.WITHDRAW_DONATIONS, creator);
+		await daoBase.allowActionByAddress(withdrawDonations, creator);
 
 		moneyflowInstance = await MoneyFlow.new(daoBase.address);
 
@@ -244,8 +301,9 @@ contract('Moneyflow', (accounts) => {
 
 		const isEnableFlushTo = true;
 		let fund = await WeiFund.new(creator,isEnableFlushTo,10000);
+		console.log("before");
 		await moneyflowInstance.setRootWeiReceiver(fund.address);
-
+		console.log("after");
 		const revEndpoint2 = await moneyflowInstance.getRevenueEndpoint();
 		assert.equal(revEndpoint2,fund.address,'Endpoint should be non zero now');
 
