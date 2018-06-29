@@ -37,6 +37,7 @@ contract('Tasks', (accounts) => {
 	var secondCreatorBalance;
 
 	var timeToCancell = 2;
+	var deadlineTime = 5;
 
 	const creator = accounts[0];
 	const employee1 = accounts[1];
@@ -100,7 +101,7 @@ contract('Tasks', (accounts) => {
 			false,
 			false,
 			ETH,
-			0,
+			deadlineTime,
 			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
@@ -224,7 +225,7 @@ contract('Tasks', (accounts) => {
 			true,
 			false,
 			0,
-			0,
+			deadlineTime,
 			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
@@ -316,7 +317,7 @@ contract('Tasks', (accounts) => {
 			true,
 			false,
 			ETH,
-			0,
+			deadlineTime,
 			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
@@ -405,7 +406,7 @@ contract('Tasks', (accounts) => {
 			true,
 			true,
 			0,
-			0,
+			deadlineTime,
 			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
@@ -491,7 +492,7 @@ contract('Tasks', (accounts) => {
 			false,
 			false,
 			ETH,
-			0,
+			deadlineTime,
 			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
@@ -520,7 +521,7 @@ contract('Tasks', (accounts) => {
 			false,
 			false,
 			ETH,
-			0,
+			deadlineTime,
 			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
@@ -590,7 +591,7 @@ contract('Tasks', (accounts) => {
 			'Bounty Caption', 
 			'Bounty description',
 			ETH,
-			0,
+			deadlineTime,
 			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
@@ -708,7 +709,7 @@ contract('Tasks', (accounts) => {
 			false,
 			false,
 			ETH,
-			0,
+			deadlineTime,
 			0,
 			{gas: 10000000, from: creator}
 		).should.be.rejectedWith('revert');
@@ -722,7 +723,7 @@ contract('Tasks', (accounts) => {
 			false,
 			false,
 			ETH,
-			0,
+			deadlineTime,
 			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
@@ -739,7 +740,7 @@ contract('Tasks', (accounts) => {
 			false,
 			false,
 			ETH,
-			0,
+			deadlineTime,
 			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
@@ -747,6 +748,166 @@ contract('Tasks', (accounts) => {
 			await task.cancell({from: creator}).should.be.fulfilled;
 			var status = await task.getCurrentState();
 			assert.strictEqual(status.toNumber(), 1); // should be cancelled
+		});
+		});
+
+	describe('test returnMoney after deadline missed', function () {
+
+		it('should fail due to deadlineTime =< 0', async function () {
+			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
+			daoBase.address, 
+			'Task Caption', 
+			'Task description',
+			false,
+			false,
+			ETH,
+			0,
+			timeToCancell,
+			{gas: 10000000, from: creator}
+		).should.be.rejectedWith('revert');
+		});
+			
+		it('should fail due to not deadline missed yet', async function () {
+			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
+			daoBase.address, 
+			'Task Caption', 
+			'Task description',
+			false,
+			false,
+			ETH,
+			deadlineTime,
+			timeToCancell,
+			{gas: 10000000, from: creator}
+		);
+			var status = await task.getCurrentState();
+			assert.strictEqual(status.toNumber(),0);
+
+			var neededWei = await task.getNeededWei();
+			assert.strictEqual(neededWei.toNumber(),ETH,'Should be 1 ETH');
+
+			var isNeedsMoneyBeforeSend = await task.isNeedsMoney();
+			assert.strictEqual(isNeedsMoneyBeforeSend, true);
+
+			var minWeiNeeded = await task.getMinWeiNeeded();
+			assert.strictEqual(minWeiNeeded.toNumber(),ETH);
+
+			var getIsMoneyReceived = await task.getIsMoneyReceived();
+			assert.strictEqual(getIsMoneyReceived, false);
+
+			firstCreatorBalance = await web3.eth.getBalance(creator);
+
+			var th = await task.processFunds(ETH, {value:ETH});
+
+			secondCreatorBalance = await web3.eth.getBalance(creator);
+
+			var creatorDelta = firstCreatorBalance.toNumber() - secondCreatorBalance.toNumber();
+			assert.strictEqual(creatorDelta > ETH*0.95 ,true);
+
+			await task.startTask(employee1);
+			var status = await task.getCurrentState();
+			assert.strictEqual(status.toNumber(), 3); //should be in progress
+
+			await task.returnMoney({from: creator}).should.be.rejectedWith('revert');
+
+		});
+
+
+		it('should fail due to state != InProgress yet', async function () {
+			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
+			daoBase.address, 
+			'Task Caption', 
+			'Task description',
+			false,
+			false,
+			ETH,
+			deadlineTime,
+			timeToCancell,
+			{gas: 10000000, from: creator}
+		);
+
+			var status = await task.getCurrentState();
+			assert.strictEqual(status.toNumber(),0);
+
+			var neededWei = await task.getNeededWei();
+			assert.strictEqual(neededWei.toNumber(),ETH,'Should be 1 ETH');
+
+			var isNeedsMoneyBeforeSend = await task.isNeedsMoney();
+			assert.strictEqual(isNeedsMoneyBeforeSend, true);
+
+			var minWeiNeeded = await task.getMinWeiNeeded();
+			assert.strictEqual(minWeiNeeded.toNumber(),ETH);
+
+			var getIsMoneyReceived = await task.getIsMoneyReceived();
+			assert.strictEqual(getIsMoneyReceived, false);
+
+			firstCreatorBalance = await web3.eth.getBalance(creator);
+
+			var th = await task.processFunds(ETH, {value:ETH});
+
+			secondCreatorBalance = await web3.eth.getBalance(creator);
+
+			var creatorDelta = firstCreatorBalance.toNumber() - secondCreatorBalance.toNumber();
+			assert.strictEqual(creatorDelta > ETH*0.95 ,true);
+
+			assert.notEqual(status.toNumber(), 3); //should be in progress
+
+			await increaseTimeTo(duration.hours(deadlineTime));
+
+			await task.returnMoney({from: creator}).should.be.rejectedWith('revert');
+
+		});
+
+		it('should pass', async function () {
+			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
+			daoBase.address, 
+			'Task Caption', 
+			'Task description',
+			false,
+			false,
+			ETH,
+			deadlineTime,
+			timeToCancell,
+			{gas: 10000000, from: creator}
+		);
+
+			var status = await task.getCurrentState();
+			assert.strictEqual(status.toNumber(),0);
+
+			var neededWei = await task.getNeededWei();
+			assert.strictEqual(neededWei.toNumber(),ETH,'Should be 1 ETH');
+
+			var isNeedsMoneyBeforeSend = await task.isNeedsMoney();
+			assert.strictEqual(isNeedsMoneyBeforeSend, true);
+
+			var minWeiNeeded = await task.getMinWeiNeeded();
+			assert.strictEqual(minWeiNeeded.toNumber(),ETH);
+
+			var getIsMoneyReceived = await task.getIsMoneyReceived();
+			assert.strictEqual(getIsMoneyReceived, false);
+
+			firstCreatorBalance = await web3.eth.getBalance(creator);
+
+			var th = await task.processFunds(ETH, {value:ETH});
+
+			secondCreatorBalance = await web3.eth.getBalance(creator);
+
+			var creatorDelta = firstCreatorBalance.toNumber() - secondCreatorBalance.toNumber();
+			assert.strictEqual(creatorDelta > ETH*0.95 ,true);
+
+			await task.startTask(employee1);
+			var status = await task.getCurrentState();
+			assert.strictEqual(status.toNumber(), 3); //should be in progress
+
+			await increaseTimeTo(duration.hours(deadlineTime));
+
+			firstCreatorBalance = await web3.eth.getBalance(creator);
+			await task.returnMoney({from: creator});
+			secondCreatorBalance = await web3.eth.getBalance(creator);
+			creatorDelta = secondCreatorBalance.toNumber() - firstCreatorBalance.toNumber();
+			assert.strictEqual(creatorDelta > ETH*0.9 ,true);
+
+			var status = await task.getCurrentState();
+			assert.strictEqual(status.toNumber(), 8); //must be DeadlineMissed
 		});
 		});
 
