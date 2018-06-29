@@ -20,6 +20,9 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	uint neededWei = 0;
 	address moneySource = 0x0;
 
+	bytes32 constant public START_TASK = keccak256("startTask");
+	bytes32 constant public START_BOUNTY = keccak256("startBounty");
+
 	event WeiExpense_Flush(address _owner, uint _balance);
 	event WeiExpense_SetNeededWei(uint _neededWei);
 	event WeiExpense_SetPercents(uint _percentsMul100);

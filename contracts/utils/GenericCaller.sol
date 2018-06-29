@@ -33,8 +33,8 @@ contract GenericCaller is DaoClient, Ownable {
 
 	mapping (bytes32=>VotingParams) votingParams;
 
-	event GenericCaller_DoActionDirectly(string _permission, address _target, address _origin, string _methodSig);
-	event GenericCaller_CreateNewProposal(string _permission, address _target, address _origin, string _methodSig);
+	event GenericCaller_DoActionDirectly(bytes32 _permission, address _target, address _origin, string _methodSig);
+	event GenericCaller_CreateNewProposal(bytes32 _permission, address _target, address _origin, string _methodSig);
 
 /////
 	constructor(IDaoBase _dao)public
@@ -46,7 +46,7 @@ contract GenericCaller is DaoClient, Ownable {
 
 	// _actionId is something like "issueTokens"
 	// _methodSig some kind of "issueTokens(bytes32[])"
-	function doAction(string _permissionId, address _target, address _origin, string _methodSig, bytes32[] _params) internal returns(address proposalOut) 
+	function doAction(bytes32 _permissionId, address _target, address _origin, string _methodSig, bytes32[] _params) internal returns(address proposalOut) 
 	{
 		if(dao.isCanDoAction(msg.sender, _permissionId)){
 			emit GenericCaller_DoActionDirectly(_permissionId, _target, _origin, _methodSig);
@@ -104,8 +104,8 @@ contract GenericCaller is DaoClient, Ownable {
 		votingParams[keccak256(_permissionId)] = params;
 	}
 
-	function createVoting(string _permissionId, IProposal _proposal, address _origin)internal returns(IVoting){
-		VotingParams memory vp = votingParams[keccak256(_permissionId)];
+	function createVoting(bytes32 _permissionIdHash, IProposal _proposal, address _origin)internal returns(IVoting){
+		VotingParams memory vp = votingParams[_permissionIdHash];
 
 		if(VotingType.Voting1p1v==vp.votingType){
 			return new Voting_1p1v(dao, _proposal, _origin, 

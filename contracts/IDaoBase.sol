@@ -31,7 +31,7 @@ interface IDaoBase {
 	function allowActionByAddress(string _what, address _a) external;
 	function allowActionByAnyMemberOfGroup(string _what, string _groupName) external;
 
-	function isCanDoAction(address _a, string _permissionName)external constant returns(bool);
+	function isCanDoAction(address _a, bytes32 _permissionName)external constant returns(bool);
 
 // Tokens
 	// ???? TODO: needed
@@ -56,7 +56,13 @@ interface IDaoBase {
 contract DaoClient is IDaoObserver {
 	IDaoBase dao;
 
-   modifier isCanDo(string _what){
+	bytes32 constant public MANAGE_GROUPS = keccak256("manageGroups");
+	bytes32 constant public ISSUE_TOKENS = keccak256("issueTokens");
+	bytes32 constant public ADD_NEW_PROPOSAL = keccak256("addNewProposal");
+	bytes32 constant public BURN_TOKENS = keccak256("burnTokens");
+	bytes32 constant public UPGRADE_DAO_CONTRACT = keccak256("upgradeDaoContract");
+
+	modifier isCanDo(bytes32 _what){
 		require(dao.isCanDoAction(msg.sender, _what)); 
 		_; 
 	}

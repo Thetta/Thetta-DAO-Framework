@@ -94,7 +94,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
    */
 
-   modifier isCanDo(string _what){
+   modifier isCanDo(bytes32 _what){
 		require(dao.isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
@@ -267,7 +267,7 @@ contract WeiTask is WeiGenericTask {
 	}
 
 	// callable by any Employee of the current DaoBase or Owner
-	function startTask(address _employee) public isCanDo("startTask") {
+	function startTask(address _employee) public isCanDo(START_TASK) {
 		require(_getCurrentState()==State.Init || _getCurrentState()==State.PrePaid);
 
 		if(_getCurrentState()==State.Init){
@@ -293,7 +293,7 @@ contract WeiBounty is WeiGenericTask {
 	}
 
 	// callable by anyone
-	function startTask() public isCanDo("startBounty") {
+	function startTask() public isCanDo(START_BOUNTY) {
 		require(_getCurrentState()==State.PrePaid);
 		startTime = now;
 		employee = msg.sender;
