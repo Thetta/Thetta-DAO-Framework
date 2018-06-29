@@ -45,16 +45,16 @@ contract('DaoBase', (accounts) => {
 		await store.transferOwnership(daoBase.address);
 
 		// Set permissions:
-		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-		await daoBase.allowActionByAnyMemberOfGroup("startTask","Employees");
-		await daoBase.allowActionByAnyMemberOfGroup("startBounty","Employees");
-		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
-		await daoBase.allowActionByAnyMemberOfGroup("burnTokens", "Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(daoBase.ADD_NEW_PROPOSAL,"Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(daoBase.START_TASK,"Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(daoBase.START_BOUNTY,"Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(daoBase.MODIFY_MONEY_SCHEME,"Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(daoBase.BURN_TOKENS, "Employees");
 
-		await daoBase.allowActionByVoting("manageGroups", token.address);
-		await daoBase.allowActionByVoting("addNewTask", token.address);
-		await daoBase.allowActionByVoting("issueTokens", token.address);
-		await daoBase.allowActionByVoting("upgradeDaoContract", token.address);
+		await daoBase.allowActionByVoting(daoBase.MANAGE_GROUPS, token.address);
+		await daoBase.allowActionByVoting(daoBase.ADD_NEW_TASK, token.address);
+		await daoBase.allowActionByVoting(daoBase.ISSUE_TOKENS, token.address);
+		await daoBase.allowActionByVoting(daoBase.UPGRADE_DAO_CONTRACT, token.address);
 	});
 
 	it('should set everything correctly',async() => {
@@ -64,40 +64,40 @@ contract('DaoBase', (accounts) => {
 		const isMember2 = await daoBase.isGroupMember("Employees", employee1);
 		assert.equal(isMember2,false,'Permission should be set correctly');
 
-		const isCan = await store.isCanDoByGroupMember(KECCAK256("addNewProposal"), creator);
+		const isCan = await store.isCanDoByGroupMember(KECCAK256(daoBase.ADD_NEW_PROPOSAL), creator);
 		assert.equal(isCan,true,'Any employee should be able to add new proposal');
 
-		const isCan2 = await daoBase.isCanDoAction(creator, "addNewProposal");
+		const isCan2 = await daoBase.isCanDoAction(creator, daoBase.ADD_NEW_PROPOSAL);
 		assert.equal(isCan2,true,'Creator should be able to call addNewProposal directly');
 	});
 
 	it('should return correct permissions for an outsider',async() => {
-		const isCanDo1 = await daoBase.isCanDoAction(outsider,"addNewProposal");
-		const isCanDo2 = await daoBase.isCanDoAction(outsider,"startTask");
-		const isCanDo3 = await daoBase.isCanDoAction(outsider,"startBounty");
+		const isCanDo1 = await daoBase.isCanDoAction(outsider,daoBase.ADD_NEW_PROPOSAL);
+		const isCanDo2 = await daoBase.isCanDoAction(outsider,daoBase.START_TASK);
+		const isCanDo3 = await daoBase.isCanDoAction(outsider,daoBase.START_BOUNTY);
 		assert.strictEqual(isCanDo1,false,'Outsider should not be able to do that ');
 		assert.strictEqual(isCanDo2,false,'Outsider should not be able to do that ');
 		assert.strictEqual(isCanDo3,false,'Outsider should not be able to do that ');
 
-		const isCanDo4 = await daoBase.isCanDoAction(outsider,"manageGroups");
-		const isCanDo5 = await daoBase.isCanDoAction(outsider,"addNewTask");
-		const isCanDo6 = await daoBase.isCanDoAction(outsider,"issueTokens");
+		const isCanDo4 = await daoBase.isCanDoAction(outsider,daoBase.MANAGE_GROUPS);
+		const isCanDo5 = await daoBase.isCanDoAction(outsider,daoBase.ADD_NEW_TASK);
+		const isCanDo6 = await daoBase.isCanDoAction(outsider,daoBase.ISSUE_TOKENS);
 		assert.strictEqual(isCanDo4,false,'Outsider should not be able to do that because he is in majority');
 		assert.strictEqual(isCanDo5,false,'Outsider should not be able to do that because he is in majority');
 		assert.strictEqual(isCanDo6,false,'Outsider should not be able to do that because he is in majority');
 	});
 
 	it('should return correct permissions for creator',async() => {
-		const isCanDo1 = await daoBase.isCanDoAction(creator,"addNewProposal");
-		const isCanDo2 = await daoBase.isCanDoAction(creator,"startTask");
-		const isCanDo3 = await daoBase.isCanDoAction(creator,"startBounty");
+		const isCanDo1 = await daoBase.isCanDoAction(creator,daoBase.ADD_NEW_PROPOSAL);
+		const isCanDo2 = await daoBase.isCanDoAction(creator,daoBase.START_TASK);
+		const isCanDo3 = await daoBase.isCanDoAction(creator,daoBase.START_BOUNTY);
 		assert.strictEqual(isCanDo1,true,'Creator should be able to do that ');
 		assert.strictEqual(isCanDo2,true,'Creator should be able to do that ');
 		assert.strictEqual(isCanDo3,true,'Creator should be able to do that ');
 
-		const isCanDo4 = await daoBase.isCanDoAction(creator,"manageGroups");
-		const isCanDo5 = await daoBase.isCanDoAction(creator,"addNewTask");
-		const isCanDo6 = await daoBase.isCanDoAction(creator,"issueTokens");
+		const isCanDo4 = await daoBase.isCanDoAction(creator,daoBase.MANAGE_GROUPS);
+		const isCanDo5 = await daoBase.isCanDoAction(creator,daoBase.ADD_NEW_TASK);
+		const isCanDo6 = await daoBase.isCanDoAction(creator,daoBase.ISSUE_TOKENS);
 		assert.strictEqual(isCanDo4,true,'Creator should be able to do that because he is in majority');
 		assert.strictEqual(isCanDo5,true,'Creator should be able to do that because he is in majority');
 		assert.strictEqual(isCanDo6,true,'Creator should be able to do that because he is in majority');

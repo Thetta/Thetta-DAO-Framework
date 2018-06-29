@@ -14,6 +14,7 @@ import "./utils/GenericCaller.sol";
  * Please see 'tests' folder for example.
 */
 contract DaoBaseAuto is GenericCaller {
+
 	constructor(IDaoBase _dao)public
 		GenericCaller(_dao)
 	{

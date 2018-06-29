@@ -208,28 +208,28 @@ contract('Moneyflow', (accounts) => {
 
 		// add creator as first employee
 		await store.addGroupMember(KECCAK256("Employees"), creator);
-		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
+		await store.allowActionByAddress(KECCAK256(daoBase.MANAGE_GROUPS),creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
 
 		// manually setup the Default organization 
-		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(daoBase.ADD_NEW_PROPOSAL,"Employees");
 		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
 		await daoBase.allowActionByAnyMemberOfGroup("setRootWeiReceiver","Employees");
 
 		await daoBase.allowActionByAnyMemberOfGroup("openGate","Employees");
 		await daoBase.allowActionByAnyMemberOfGroup("closeGate","Employees");
-
+	
 		// this is a list of actions that require voting
-		await daoBase.allowActionByVoting("manageGroups", token.address);
-		await daoBase.allowActionByVoting("addNewTask", token.address);
-		await daoBase.allowActionByVoting("issueTokens", token.address);
+		await daoBase.allowActionByVoting(daoBase.MANAGE_GROUPS, token.address);
+		await daoBase.allowActionByVoting(daoBase.ADD_NEW_TASK, token.address);
+		await daoBase.allowActionByVoting(daoBase.ISSUE_TOKENS, token.address);
 
 		// THIS permission IS VERY DANGEROUS!!!
 		// allow creator to get donations from the Moneyflow 
-		await daoBase.allowActionByAddress("withdrawDonations", creator);
+		await daoBase.allowActionByAddress(daoBase.WITHDRAW_DONATIONS, creator);
 
 		moneyflowInstance = await MoneyFlow.new(daoBase.address);
 

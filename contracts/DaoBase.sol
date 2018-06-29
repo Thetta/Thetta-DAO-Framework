@@ -27,7 +27,11 @@ contract DaoBase is IDaoBase, Ownable {
 	bytes32 constant public BURN_TOKENS = keccak256("burnTokens");
 	bytes32 constant public UPGRADE_DAO_CONTRACT = keccak256("upgradeDaoContract");
 	bytes32 constant public ADD_NEW_TASK = keccak256("addNewTask");
-
+	bytes32 constant public START_TASK = keccak256("startTask");
+	bytes32 constant public START_BOUNTY = keccak256("startBounty");
+	bytes32 constant public MODIFY_MONEY_SCHEME = keccak256("modifyMoneyscheme");
+	bytes32 constant public WITHDRAW_DONATIONS = keccak256("withdrawDonations");
+	bytes32 constant public SET_ROOT_WEI_RECEIVER = keccak256("setRootWeiReceiver");
 
 	event DaoBase_UpgradeDaoContract(address _new);
 	event DaoBase_AddGroupMember(string _groupName, address _a);
@@ -135,12 +139,11 @@ contract DaoBase is IDaoBase, Ownable {
 	 * 4. deny
 	*/
 
-	function isCanDoAction(address _a, bytes32 _permissionName) external constant returns(bool){
-		return _isCanDoAction(_a, _permissionName);
+	function isCanDoAction(address _a, bytes32 _permissionNameHash) external constant returns(bool){
+		return _isCanDoAction(_a, _permissionNameHash);
 	}
 
 	function _isCanDoAction(address _a, bytes32 _permissionNameHash) internal constant returns(bool){
-
 		// 0 - is can do by address?
 		if(store.isCanDoByAddress(_permissionNameHash, _a)){
 			return true;
