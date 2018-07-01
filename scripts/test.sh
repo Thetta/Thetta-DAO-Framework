@@ -24,4 +24,4 @@ else
 fi
 
 # truffle migrate
-truffle test
+truffle test $1
