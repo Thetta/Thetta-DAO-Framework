@@ -21,18 +21,18 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 contract DaoBase is IDaoBase, Ownable {
 	DaoStorage public store;
 
-	bytes32  public MANAGE_GROUPS = keccak256("manageGroups");
-	bytes32  public ISSUE_TOKENS = keccak256("issueTokens");
-	bytes32  public ADD_NEW_PROPOSAL = keccak256("addNewProposal");
-	bytes32  public BURN_TOKENS = keccak256("burnTokens");
-	bytes32  public UPGRADE_DAO_CONTRACT = keccak256("upgradeDaoContract");
-	bytes32  public ADD_NEW_TASK = keccak256("addNewTask");
-	bytes32  public START_TASK = keccak256("startTask");
-	bytes32  public START_BOUNTY = keccak256("startBounty");
-	bytes32  public MODIFY_MONEY_SCHEME = keccak256("modifyMoneyscheme");
-	bytes32  public WITHDRAW_DONATIONS = keccak256("withdrawDonations");
-	bytes32  public SET_ROOT_WEI_RECEIVER = keccak256("setRootWeiReceiver");
-	bytes32  public ADD_NEW_EMPLOYEE = keccak256("addNewEmployee");
+	bytes32 constant public MANAGE_GROUPS = keccak256("manageGroups");
+	bytes32 constant public ISSUE_TOKENS = keccak256("issueTokens");
+	bytes32 constant public ADD_NEW_PROPOSAL = keccak256("addNewProposal");
+	bytes32 constant public BURN_TOKENS = keccak256("burnTokens");
+	bytes32 constant public UPGRADE_DAO_CONTRACT = keccak256("upgradeDaoContract");
+	bytes32 constant public ADD_NEW_TASK = keccak256("addNewTask");
+	bytes32 constant public START_TASK = keccak256("startTask");
+	bytes32 constant public START_BOUNTY = keccak256("startBounty");
+	bytes32 constant public MODIFY_MONEY_SCHEME = keccak256("modifyMoneyscheme");
+	bytes32 constant public WITHDRAW_DONATIONS = keccak256("withdrawDonations");
+	bytes32 constant public SET_ROOT_WEI_RECEIVER = keccak256("setRootWeiReceiver");
+	bytes32 constant public ADD_NEW_EMPLOYEE = keccak256("addNewEmployee");
 
 	event DaoBase_UpgradeDaoContract(address _new);
 	event DaoBase_AddGroupMember(string _groupName, address _a);

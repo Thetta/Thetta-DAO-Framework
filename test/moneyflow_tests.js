@@ -204,7 +204,6 @@ contract('Moneyflow', (accounts) => {
 	let withdrawDonations;
 	let setRootWeiReceiver;
 	let burnTokens;
-	let addNewEmployee;
 	
 	let money = web3.toWei(0.001, "ether");
 
@@ -301,9 +300,8 @@ contract('Moneyflow', (accounts) => {
 
 		const isEnableFlushTo = true;
 		let fund = await WeiFund.new(creator,isEnableFlushTo,10000);
-		console.log("before");
 		await moneyflowInstance.setRootWeiReceiver(fund.address);
-		console.log("after");
+
 		const revEndpoint2 = await moneyflowInstance.getRevenueEndpoint();
 		assert.equal(revEndpoint2,fund.address,'Endpoint should be non zero now');
 
@@ -500,6 +498,7 @@ contract('Moneyflow', (accounts) => {
 		let dividends = 2500;
 
 		let struct = await createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+
 		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);
 		await totalAndMinNeedsAsserts(splitterParams, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await structureAsserts(splitterParams);
@@ -509,6 +508,7 @@ contract('Moneyflow', (accounts) => {
 		let balances = await getBalances(struct);
 		await balancesAsserts(balances, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await splitterBalancesAsserts(balances, money, 0, 0, 0, 0, 0, 0, 0);
+
 	});
 
 	it('should process money with a scheme just like in the paper: 75/25 others, send EQUAL to minNeed',async() => {

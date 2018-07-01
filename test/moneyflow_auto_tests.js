@@ -261,10 +261,10 @@ contract('MoneyflowAuto', (accounts) => {
 		assert.equal(isCanDoAction2, true, 'Now employee should have permissions to run setRootWeiReceiver action');
 
 		const wae = await WeiAbsoluteExpense.new(1000);
-		console.log("before");
+
 		// checking action direct call (without voting)
 		await aacInstance.setRootWeiReceiverAuto(wae.address, { from:employee1});
-		console.log("after");
+
 		// check proposals after action called
 		const proposalsCount = await daoBase.getProposalsCount();
 		assert.equal(proposalsCount, 0, 'No proposals should be added');

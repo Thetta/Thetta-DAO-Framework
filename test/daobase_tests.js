@@ -229,16 +229,14 @@ contract('DaoBase', (accounts) => {
 		const money = 1000000000;
 		const dea = await moneyflowInstance.getDonationEndpoint(); 
 		const donationEndpoint = await IWeiReceiver.at(dea);
-		console.log("Step0")
 		await donationEndpoint.processFunds(money, { from: creator, value: money, gasPrice: 0});
 
 		let donationBalance = await web3.eth.getBalance(donationEndpoint.address);
 		assert.equal(donationBalance.toNumber(),money, 'all money at donation point now');
-		console.log("Step1")
+
 		// withdraw
 		let outBalance = await web3.eth.getBalance(outsider);
 		await moneyflowInstance.withdrawDonationsTo(outsider,{from:creator, gas:100000, gasPrice: 0});
-		console.log("Step2")
 		let outBalance2 = await web3.eth.getBalance(outsider);
 		let balanceDelta = outBalance2.toNumber() - outBalance.toNumber();
 

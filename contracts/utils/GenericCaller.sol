@@ -90,7 +90,7 @@ contract GenericCaller is DaoClient, Ownable {
 		}
 	}
 
-	function setVotingParams(string _permissionId, uint _votingType, 
+	function setVotingParams(bytes32 _permissionIdHash, uint _votingType, 
 		bytes32 _param1, bytes32 _param2, 
 		bytes32 _param3, bytes32 _param4, bytes32 _param5) public onlyOwner {
 		VotingParams memory params;
@@ -101,7 +101,7 @@ contract GenericCaller is DaoClient, Ownable {
 		params.param4 = _param4;
 		params.param5 = _param5;
 
-		votingParams[keccak256(_permissionId)] = params;
+		votingParams[_permissionIdHash] = params;
 	}
 
 	function createVoting(bytes32 _permissionIdHash, IProposal _proposal, address _origin)internal returns(IVoting){

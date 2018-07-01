@@ -200,7 +200,6 @@ contract('DaoBaseAuto', (accounts) => {
 
 		const proposalsCount1 = await daoBase.getProposalsCount();
 		assert.equal(proposalsCount1,0,'No proposals should be added');
-		console.log("STEP0");
 		// add new employee1
 		await daoBase.addGroupMember("Employees",employee1);
 		await daoBase.addGroupMember("Employees",employee2);
@@ -208,13 +207,11 @@ contract('DaoBaseAuto', (accounts) => {
 
 		const isEmployeeAdded = await daoBase.isGroupMember("Employees",employee1);
 		assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
-		console.log("STEP1");
 		// employee1 is NOT in the majority
 		const isCanDo1 = await daoBase.isCanDoAction(employee1,issueTokens);
 		assert.strictEqual(isCanDo1,false,'employee1 is NOT in the majority, so can issue token only with voting');
 		const isCanDo2 = await daoBase.isCanDoAction(employee1,addNewProposal);
 		assert.strictEqual(isCanDo2,true,'employee1 can add new vote');
-		console.log("STEP2");
 		const balance1 = await token.balanceOf(employee1);
 		assert.notEqual(balance1.toNumber(),1000,'employee1 balance is 1000');
 
@@ -222,10 +219,8 @@ contract('DaoBaseAuto', (accounts) => {
 		assert.strictEqual(isCanDo3,true,'aacInstance can issue tokens');
 		const isCanDo4 = await daoBase.isCanDoAction(aacInstance.address,addNewProposal);
 		assert.strictEqual(isCanDo4,true,'aacInstance can addNewProposal');
-		console.log("STEP3");
 		// new proposal should be added
 		await aacInstance.issueTokensAuto(token.address,employee1,1200,{from: employee1, gas:10000000, gasPrice:0});
-		console.log("STEP4");
 		// STOP!!!
 		//assert.equal(0,1,'STOP'); 
 
