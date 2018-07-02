@@ -4,23 +4,23 @@
 trap cleanup EXIT
 
 cleanup() {
-  # Kill the testrpc instance that we started (if we started one).
-  if [ -n "$testrpc_pid" ]; then
-    kill -9 $testrpc_pid
+  # Kill the ganachecli instance that we started (if we started one).
+  if [ -n "$ganachecli_pid" ]; then
+    kill -9 $ganachecli_pid
   fi
 }
 
-testrpc_running() {
+ganachecli_running() {
   nc -z localhost 8570
 }
 
-if testrpc_running; then
-  echo "Using existing testrpc-sc instance"
+if ganachecli_running; then
+  echo "Using existing ganache-cli instance"
 else
-  echo "Starting testrpc-sc to generate coverage"
-  ./node_modules/.bin/testrpc --gasLimit 0xfffffffffff --port 8570 \
+  echo "Starting ganache-cli to generate coverage"
+  ./node_modules/ganache-cli/build/cli.node.js --gasLimit 0xfffffffffff --port 8570 \
   > /dev/null &
-  testrpc_pid=$!
+  ganachecli_pid=$!
 fi
 
 SOLIDITY_COVERAGE=true ./node_modules/.bin/solidity-coverage

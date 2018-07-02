@@ -16,8 +16,11 @@ contract WeiFund is WeiRelativeExpense {
 	address public output;		// will not be able to change that later!
 	bool public allowFlushTo = true;
 
+	event WeiFund_FlushTo(address _to, uint _balance);
+	event WeiFund_Flush(address _to, uint _balance);
+
 	constructor(address _output, bool _allowFlushTo, uint _percentsDiv100Needed) public 
-		WeiRelativeExpense(_percentsDiv100Needed)	
+		WeiRelativeExpense(_percentsDiv100Needed)
 	{
 		output = _output;
 		allowFlushTo = _allowFlushTo;
@@ -26,6 +29,7 @@ contract WeiFund is WeiRelativeExpense {
 	// Process funds, send it to the Output
 	function flushTo(address _to) external onlyOwner {
 		require(allowFlushTo);		// this operation can be prohibited
+		emit WeiFund_FlushTo(_to, address(this).balance);
 		_to.transfer(address(this).balance);
 	}
 
@@ -35,6 +39,7 @@ contract WeiFund is WeiRelativeExpense {
 
 		// TODO: check for vulnerabilities
 		isMoneyReceived = false;
+		emit WeiFund_FlushTo(output, address(this).balance);
 		output.transfer(address(this).balance);
 	}
 

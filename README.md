@@ -1,12 +1,20 @@
-# Thetta DAO Framework 
-**"OpenZeppelin for DAOs"**
+[ ![Codeship Status for Thetta/SmartContracts](https://app.codeship.com/projects/f1b38150-b26e-0135-0584-462fcae7d1c8/status?branch=master)](https://app.codeship.com/projects/258076)
+[![](https://tokei.rs/b1/github/Thetta/Thetta-DAO-Framework)](https://github.com/Thetta/Thetta-DAO-Framework)
+
+[![NPM](https://nodei.co/npm/@thetta/core.png?mini=true)](https://npmjs.org/package/@thetta/core)
+
+***
+
+<p align="center">
+  <img alt="Thetta logo" src="https://i.imgsafe.org/15/15604a1c64.png" height="250" />
+  <h3 align="center">Thetta DAO Framework</h3>
+  <p align="center">"OpenZeppelin for DAOs"</p>
+</p>
+
+***
 
 Thetta DAO Framework is a DAO Framework that will help you to create your own DAO on top of it.
 Code is modular, so you can use different subsystems almost independently.
-
-[ ![Codeship Status for Thetta/SmartContracts](https://app.codeship.com/projects/f1b38150-b26e-0135-0584-462fcae7d1c8/status?branch=master)](https://app.codeship.com/projects/258076)
-
-## Simplified Design scheme
 
 ![Thetta DAO Framework design](https://i.imgsafe.org/f9/f97822d1fe.png)
 
@@ -15,6 +23,13 @@ Code is modular, so you can use different subsystems almost independently.
 1. [Overview](https://docs.google.com/document/d/1VG0-zY9Jn6FA21IJuVEt2voDQkBQN6B_uyKZWjb9hSM/edit?usp=sharing)
 1. [Documentation for developers](https://docs.google.com/document/d/1wFuN57WEuK7BxZ24GrPL3Di_YqUoD25ORVitDHKQ7cU/edit?usp=sharing)
 1. [HOW TO Build and Test](DEVELOPMENT.md)
+1. [HOW TO Contribute](CONTRIBUTING.md)
+
+## Branches 
+
+1. **master** is for releases only
+1. **dev** is for testing 
+1. **dev2** is for development
 
 ## The Community
 

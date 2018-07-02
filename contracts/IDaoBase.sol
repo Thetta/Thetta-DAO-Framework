@@ -72,7 +72,7 @@ contract DaoClient is IDaoObserver {
 	 * @param _newAddress New controller.
 	 */
 	function onUpgrade(address _newAddress) external {
-		require(msg.sender==address(dao));	
+		require(msg.sender==address(dao));
 
 		dao = IDaoBase(_newAddress);
 
