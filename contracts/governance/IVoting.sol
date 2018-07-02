@@ -10,7 +10,7 @@ interface IVoting {
 	// _tokenAmount -> if this voting type DOES NOT use tokens -> set to any value (e.g., 0);
 	// will execute action automatically if the voting is finished 
 	function vote(bool _yes, uint _tokenAmount) external;
-	
+
 	// stop the voting
 	function cancelVoting() external;
 
@@ -37,7 +37,7 @@ interface IVoting {
 	// 1 - time elapsed 
 	// 2 - all these conditions should be met:
 	//		2.1 - isFinished() 
-	//		2.2 - is quorum reached 	
+	//		2.2 - is quorum reached 
 	function isYes()external view returns(bool);
 }
 

@@ -6,8 +6,6 @@ import "./ether/WeiSplitter.sol";
 import "./ether/WeiExpense.sol";
 import "./ether/WeiFund.sol";
 
-import "../governance/Voting.sol";
-
 import "../IDaoBase.sol";
 
 /**
@@ -49,43 +47,47 @@ contract DefaultMoneyflowScheme is DaoClient {
 	{
 		require(0x0!=_fundOutput);
 
-		root = new WeiTopDownSplitter("root");
+		// root = new WeiTopDownSplitter("root");
 
-		spends = new WeiUnsortedSplitter("spends");
-		bonuses = new WeiUnsortedSplitter("bonuses");
-		rest = new WeiUnsortedSplitter("rest");
+		// spends = new WeiUnsortedSplitter("spends");
+		// bonuses = new WeiUnsortedSplitter("bonuses");
+		// rest = new WeiUnsortedSplitter("rest");
 
-		salaries = new WeiUnsortedSplitter("salaries");
-		other = new WeiUnsortedSplitter("other");
-		tasks = new WeiUnsortedSplitter("tasks");
+		// salaries = new WeiUnsortedSplitter("salaries");
+		// other = new WeiUnsortedSplitter("other");
+		// tasks = new WeiUnsortedSplitter("tasks");
 
-		// use .setPercents() to change 
-		reserveFund = new WeiFund(_fundOutput, true, _percentsReserve);
+		// // // use .setPercents() to change 
+		// reserveFund = new WeiFund(_fundOutput, true, _percentsReserve);
 
-		// use .setPercents() to change 
-		dividendsFund = new WeiFund(_fundOutput, true, _dividendsReserve);
+		// // use .setPercents() to change 
+		// dividendsFund = new WeiFund(_fundOutput, true, _dividendsReserve);
 
-		spends.addChild(salaries);
-		spends.addChild(other);
-		spends.addChild(tasks);
+		// spends.addChild(salaries);
+		// spends.addChild(other);
+		// spends.addChild(tasks);
 
-		// This contract is itself a top down (Root) splitter
-		// just call a 'processFunds(uint _currentFlow)' method and it will
-		root.addChild(spends);
-		root.addChild(bonuses);
-		root.addChild(rest);
+		// // This contract is itself a top down (Root) splitter
+		// // just call a 'processFunds(uint _currentFlow)' method and it will
+		// root.addChild(spends);
+		// root.addChild(bonuses);
+		// root.addChild(rest);
 
-		rest.addChild(reserveFund);
-		rest.addChild(dividendsFund);
+		// rest.addChild(reserveFund);
+		// rest.addChild(dividendsFund);
 	}
 
 	function getRootReceiver()public constant returns(IWeiReceiver){
 		return root;
 	}
 
+	function deployRoot()public{
+		root = new WeiTopDownSplitter("root");
+	}
+
 ////////////////////////////////////////////////////////////////
 	// use MoneyflowAuto to add new task with voting! 
-	/*function addNewTask(IWeiReceiver _wr) public isCanDo("addNewTask") {
+	function addNewTask(IWeiReceiver _wr) public isCanDo("addNewTask") {
 		// 1 - add new task immediately
 		//tasks.addChild(_wr);
 	}
@@ -127,12 +129,12 @@ contract DefaultMoneyflowScheme is DaoClient {
 	// TODO: Currently dividens fund is just another type of Reserve fund (because DividendFund is not implemented yet) 
 	function flushDividendsFundTo(address _to) public isCanDo("flushDividendsFundTo"){
 		// TODO:
-	}*/
+	}
 }
 
 // TODO:
 contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
-	/*function DefaultMoneyflowSchemeWithUnpackers(
+	function DefaultMoneyflowSchemeWithUnpackers(
 			IDaoBase _dao, 
 			address _fundOutput, 
 			uint _percentsReserve, 
@@ -145,7 +147,7 @@ contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
 	function addNewTaskGeneric(bytes32[] _params) public {
 		IWeiReceiver _iwr = IWeiReceiver(address(_params[0]));
 		addNewTask(_iwr);
-	}*/
+	}
 
 	// TODO: add unpackers for all methods of the Scheme
 }

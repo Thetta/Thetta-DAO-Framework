@@ -14,8 +14,8 @@ contract Pausable is Manageable {
 	bool paused = true;
 
 // Events:
-	event PauseEvent();
-	event UnpauseEvent();
+	event Pausable_Pause();
+	event Pausable_Unpause();
 
 // Modifiers:
 	modifier whenContractNotPaused() {
@@ -34,7 +34,7 @@ contract Pausable is Manageable {
 	*/
 	function pauseContract() public onlyAllowedManager('pause_contract') whenContractNotPaused {
 		paused = true;
-		emit PauseEvent();
+		emit Pausable_Pause();
 	}
 
 	/**
@@ -42,7 +42,7 @@ contract Pausable is Manageable {
 	*/
 	function unpauseContract() public onlyAllowedManager('unpause_contract') whenContractPaused {
 		paused = false;
-		emit UnpauseEvent();
+		emit Pausable_Unpause();
 	}
 
 	/**
