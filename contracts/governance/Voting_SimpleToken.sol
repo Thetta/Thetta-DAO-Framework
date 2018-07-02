@@ -167,7 +167,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		return _getVotingStats();
 	}
 
-	function _getVotingStats() internal constant returns(uint yesResults, uint noResults, uint votersTotal){
+	function _getVotingStats() internal returns(uint yesResults, uint noResults, uint votersTotal){
 		yesResults = 0;
 		noResults = 0;
 		votersTotal = erc20Token.totalSupply();
