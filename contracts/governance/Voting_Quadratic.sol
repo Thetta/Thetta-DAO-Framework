@@ -15,7 +15,7 @@ contract Voting_Quadratic is Voting_SimpleToken {
 	}
 
 
-	function _getVotingStats() internal returns(uint yesResults, uint noResults, uint votersTotal){
+	function _getVotingStats() internal constant returns(uint yesResults, uint noResults, uint votersTotal){
 		yesResults = 0;
 		noResults = 0;
 		votersTotal = erc20Token.totalSupply();

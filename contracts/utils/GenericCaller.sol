@@ -120,8 +120,8 @@ contract GenericCaller is DaoClient, Ownable {
 			return new Voting_SimpleToken(dao, _proposal, _origin, 
 				uint(vp.param1), 
 				uint(vp.param3), 
-				uint(vp.param3), 
-				address(vp.param4));
+				uint(vp.param4), 
+				address(vp.param5));
 		}
 
 
