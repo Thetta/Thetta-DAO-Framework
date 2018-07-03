@@ -114,7 +114,7 @@ contract GenericCaller is DaoClient, Ownable {
 				bytes32ToString(vp.param2), 
 				uint(vp.param3), 
 				uint(vp.param4));
-		}else
+		}
 
 		if(VotingType.VotingSimpleToken==vp.votingType){
 			return new Voting_SimpleToken(dao, _proposal, _origin, 
@@ -123,6 +123,15 @@ contract GenericCaller is DaoClient, Ownable {
 				uint(vp.param4), 
 				address(vp.param5));
 		}
+
+		// Why doesn't work???
+		/*if(VotingType.VotingQuadratic==vp.votingType){
+			return new Voting_Quadratic(dao, _proposal, _origin, 
+				uint(vp.param1), 
+				uint(vp.param3), 
+				uint(vp.param4), 
+				address(vp.param5));
+		}*/ 
 
 
 		// TODO: add other implementations
