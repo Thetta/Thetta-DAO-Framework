@@ -91,11 +91,11 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		await token.mint(employee4, 1);
 		// await token.mint(employee5, 1);
 
-		let store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
-		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let store = await DaoStorage.new([token.address],{ from: creator });
+		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 
-		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
+		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
 
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
