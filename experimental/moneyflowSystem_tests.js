@@ -52,7 +52,7 @@ global.contract('Gas measurements', (accounts)=> {
 	});
 
 	// 0->•abs
-	describe('one node Moneyflows', function(){
+	describe('One node Moneyflows', function(){
 		global.it('Should send money to one-node moneyflow (abs expense)', async()=> {
 			var moneyflowBasis = await MoneyflowBasis.new();
 			await moneyflowBasis.setNode(1, //uint _nodeId,
@@ -345,17 +345,193 @@ global.contract('Gas measurements', (accounts)=> {
 			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:1e18});
 			var info = await moneyflowBasis.getNodeInfo2(1);
 			global.assert.equal(info[5],3e18); //1node balance should be 1 eth
-		});		
+		});	
+
+		global.it('Should send money to one-node moneyflow (abs expense) then reject money, then flushNodeBalanceTo, then reject money again', async()=> {
+			var moneyflowBasis = await MoneyflowBasis.new();
+			await moneyflowBasis.setNode(1, //uint _nodeId,
+				[],[], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+				false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+				1e18, false, '0x0',  // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+				false, false) 		 // bool _isDynamic,         bool _isTokenType)
+
+			var info = await moneyflowBasis.getNodeInfo2(1);
+			global.assert.equal(info[5],0); // 1node balance should be 0
+
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:1e18});
+			var info = await moneyflowBasis.getNodeInfo2(1);
+			global.assert.equal(info[5],1e18); //1node balance should be 1 eth
+
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:1e18}).should.be.rejectedWith('revert');
+			
+			var balance1 = await web3.eth.getBalance(employee1);
+			await moneyflowBasis.flushNodeBalanceTo(1, employee1);
+			var balance2 = await web3.eth.getBalance(employee1);
+			var info = await moneyflowBasis.getNodeInfo2(1);
+			global.assert.equal(info[5],0); // 1node balance should be 0	
+
+			global.assert.equal(balance2.toNumber() - balance1.toNumber(), 1e18);			
+
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:1e18}).should.be.rejectedWith('revert');
+		});
 	});
 
-/*
-	0-> rel self output
+	describe('Multinode Moneyflows', function(){
+		global.it('Should send money to three-node moneyflow (abs expense) then withdraw all', async()=> {
+			var moneyflowBasis = await MoneyflowBasis.new();
+			await moneyflowBasis.setNode(1, //uint _nodeId,
+				[2],[100], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+				false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+				1e18, false, '0x0',  // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+				false, false) 		 // bool _isDynamic,         bool _isTokenType)
 
+			await moneyflowBasis.setNode(2, //uint _nodeId,
+				[3],[100], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+				false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+				2e18, false, '0x0',  // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+				false, false) 		 // bool _isDynamic,         bool _isTokenType)
+
+			await moneyflowBasis.setNode(3, //uint _nodeId,
+				[],[], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+				false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+				4e18, false, '0x0',  // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+				false, false) 		 // bool _isDynamic,         bool _isTokenType)
+
+			var info = await moneyflowBasis.getNodeInfo2(1);
+			global.assert.equal(info[5],0); // 1node balance should be 0
+
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:7e18});
+			var info = await moneyflowBasis.getNodeInfo2(1);
+			global.assert.equal(info[5],1e18); //1node balance should be 1 eth
+
+			var balance1 = await web3.eth.getBalance(employee1);
+			await moneyflowBasis.flushNodeBalanceTo(3, employee1);
+			var balance2 = await web3.eth.getBalance(employee1);
+			var info = await moneyflowBasis.getNodeInfo2(3);
+			global.assert.equal(info[5],0); // 1node balance should be 0	
+			global.assert.equal(balance2.toNumber() - balance1.toNumber(), 4e18);	
+
+			var balance1 = await web3.eth.getBalance(employee1);
+			await moneyflowBasis.flushNodeBalanceTo(2, employee1);
+			var balance2 = await web3.eth.getBalance(employee1);
+			var info = await moneyflowBasis.getNodeInfo2(2);
+			global.assert.equal(info[5],0); // 1node balance should be 0	
+			global.assert.equal(balance2.toNumber() - balance1.toNumber(), 2e18);	
+
+			var balance1 = await web3.eth.getBalance(employee1);
+			await moneyflowBasis.flushNodeBalanceTo(1, employee1);
+			var balance2 = await web3.eth.getBalance(employee1);
+			var info = await moneyflowBasis.getNodeInfo2(1);
+			global.assert.equal(info[5],0); // 1node balance should be 0	
+			global.assert.equal(balance2.toNumber() - balance1.toNumber(), 1e18);	
+
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:1e18}).should.be.rejectedWith('revert');
+		});
+
+		global.it('Should send money to three-node moneyflow (abs-rel-abs expense) then withdraw all', async()=> {
+			var moneyflowBasis = await MoneyflowBasis.new();
+			await moneyflowBasis.setNode(1, //uint _nodeId,
+				[2],[100], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+				false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+				1e10, false, '0x0',  // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+				false, false) 		 // bool _isDynamic,         bool _isTokenType)
+
+			await moneyflowBasis.setNode(2, //uint _nodeId,
+				[2,3],[50,50], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+				false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+				0, false, '0x0',  // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+				false, false) 		 // bool _isDynamic,         bool _isTokenType)
+
+			await moneyflowBasis.setNode(3, //uint _nodeId,
+				[],[], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+				false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+				4e10, false, '0x0',  // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+				false, false) 		 // bool _isDynamic,         bool _isTokenType)
+		
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:9e10});
+			global.assert.equal(await moneyflowBasis.getNodeBalance(1), 1e10);
+			global.assert.equal(await moneyflowBasis.getNodeBalance(2), 4e10);
+			global.assert.equal(await moneyflowBasis.getNodeBalance(3), 4e10);
+
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:1e10}).should.be.rejectedWith('revert');
+		});
+		global.it('Should send money to three-node moneyflow (abs-rel-abs expense) then withdraw all (same as prev but multi transactions and 75/25 splitter)', async()=> {
+			var moneyflowBasis = await MoneyflowBasis.new();
+			await moneyflowBasis.setNode(1, //uint _nodeId,
+				[2],[100], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+				false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+				1e10, false, '0x0',  // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+				false, false) 		 // bool _isDynamic,         bool _isTokenType)
+
+			await moneyflowBasis.setNode(2, //uint _nodeId,
+				[2,3],[75,25], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+				false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+				0, false, '0x0',  // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+				false, false) 		 // bool _isDynamic,         bool _isTokenType)
+
+			await moneyflowBasis.setNode(3, //uint _nodeId,
+				[],[], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+				false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+				4e10, false, '0x0',  // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+				false, false) 		 // bool _isDynamic,         bool _isTokenType)
+		
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:3e10});
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:3e10});
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:3e10});
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:3e10});
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:3e10});
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:2e10});
+
+			global.assert.equal(await moneyflowBasis.getNodeBalance(1), 1e10);
+			global.assert.equal(await moneyflowBasis.getNodeBalance(2), 12e10);
+			global.assert.equal(await moneyflowBasis.getNodeBalance(3), 4e10);
+
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:1e10}).should.be.rejectedWith('revert');
+		});
+		
+		global.it('Should split money in spliiter + 3 abs expense moneyflow', async()=> {
+			var moneyflowBasis = await MoneyflowBasis.new();
+			await moneyflowBasis.setNode(1, //uint _nodeId,
+				[2,3,4],[25,25,50], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+				false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+				0, false, '0x0',  // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+				false, false) 		 // bool _isDynamic,         bool _isTokenType)
+
+			await moneyflowBasis.setNode(2, //uint _nodeId,
+				[],[], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+				false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+				2e10, false, '0x0',  // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+				false, false) 		 // bool _isDynamic,         bool _isTokenType)
+
+			await moneyflowBasis.setNode(3, //uint _nodeId,
+				[],[], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+				false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+				2e10, false, '0x0',  // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+				false, false) 		 // bool _isDynamic,         bool _isTokenType)
+
+			await moneyflowBasis.setNode(4, //uint _nodeId,
+				[],[], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+				false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+				4e10, false, '0x0',  // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+				false, false) 		 // bool _isDynamic,         bool _isTokenType)
+
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:2e10});
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:2e10});
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:2e10});
+			await moneyflowBasis.sendAmountToMoneyflow({from:creator, value:2e10});
+
+			global.assert.equal(await moneyflowBasis.getNodeBalance(2), 2e10);
+			global.assert.equal(await moneyflowBasis.getNodeBalance(3), 2e10);
+			global.assert.equal(await moneyflowBasis.getNodeBalance(4), 4e10);
+		});
+
+
+	});
+
+/*   0-> rel self output
 	0-> abs-> rel-> abs
+	0-> abs-> abs-> abs-> rel   */
 
-	0-> abs-> abs-> abs-> rel
-
-*/
 
 
 });

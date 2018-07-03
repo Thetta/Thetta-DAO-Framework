@@ -48,10 +48,10 @@ contract MoneyflowBasis is Ownable{
 	}
 
 	function setNode(uint _nodeId,
-			uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
-			bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
-			uint _neededAmount,      bool _isAutoWithdraw, address _output, 
-			bool _isDynamic,         bool _isTokenType) public onlyOwner {
+		uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+		bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+		uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+		bool _isDynamic,         bool _isTokenType) public onlyOwner {
 
 		require(_outputNodeIds.length==_outputParts.length);
 		require(_nodeId!=0);
@@ -110,50 +110,75 @@ contract MoneyflowBasis is Ownable{
 		}
 	}
 
-	function getSelfNeededAmount(uint _nodeId, uint _nodeFlow, uint _value) public view returns(uint need) {
-		emit console('dateFundsFullyReceived_left', uint64(now)-nodes[_nodeId].dateFundsFullyReceived);
-		emit console('dateFundsFullyReceived_right', nodes[_nodeId].periodHours*3600*1000);
-		emit console('dateFundsFullyReceived', nodes[_nodeId].dateFundsFullyReceived);
+	function getSelfNeededAmount(uint _nodeId, uint _nodeFlow) public view returns(uint need) {
+		// _value is only need for relative dynamic weiExpence
+		// emit console('dateFundsFullyReceived_left', uint64(now)-nodes[_nodeId].dateFundsFullyReceived);
+		// emit console('dateFundsFullyReceived_right', nodes[_nodeId].periodHours*3600*1000);
+		// emit console('dateFundsFullyReceived', nodes[_nodeId].dateFundsFullyReceived);
 
-		emit console('getSelfNeededAmount balance', nodes[_nodeId].balance);
-		emit console('getSelfNeededAmount need', nodes[_nodeId].neededAmount);
-		emit console('getSelfNeededAmount now', now);
+		// emit console('getSelfNeededAmount balance', nodes[_nodeId].balance);
+		// emit console('getSelfNeededAmount need', nodes[_nodeId].neededAmount);
+		// emit console('getSelfNeededAmount now', now);
 
 		if((nodes[_nodeId].isPeriodic) && (now-nodes[_nodeId].dateFundsFullyReceived<nodes[_nodeId].periodHours*3600*1000)){
 			need = 0;
-			emit console('option', 1);
+			// emit console('option', 1);
 
 		}else if((nodes[_nodeId].isPeriodic) && (0==nodes[_nodeId].dateFundsFullyReceived)){
 			need = nodes[_nodeId].neededAmount;			
-			emit console('option', 2);
+			// emit console('option', 2);
 
 		}else if(nodes[_nodeId].isDynamic){
 			need = IWeiReceiver(nodes[_nodeId].output).getTotalWeiNeeded(_nodeFlow);
-			emit console('option', 3);
+			// emit console('option', 3);
 
 		}else if((0!=nodes[_nodeId].dateFundsFullyReceived)&&(!nodes[_nodeId].isPeriodic)){
 			need = 0;
-			emit console('option', 4);
+			// emit console('option', 4);
 
 		}else if((nodes[_nodeId].neededAmount >= nodes[_nodeId].balance)&&(!nodes[_nodeId].isPeriodic)){
 			need = nodes[_nodeId].neededAmount - nodes[_nodeId].balance;
-			emit console('option', 5);
+			// emit console('option', 5);
 
 		}else if((nodes[_nodeId].isPeriodic) && (now-nodes[_nodeId].dateFundsFullyReceived>nodes[_nodeId].periodHours*3600*1000) && (nodes[_nodeId].dateFundsFullyReceived!=0)){
-	// && (_getDebtMultiplier(_nodeId)*nodes[_nodeId].neededAmount > nodes[_nodeId].balanceOnDateFundsFullyReceived)
+	
 			need = _getDebtMultiplier(_nodeId)*nodes[_nodeId].neededAmount + nodes[_nodeId].balanceOnDateFundsFullyReceived - nodes[_nodeId].balance;
-			emit console('option', 6);
+			// emit console('option', 6);
 
-			emit console('_getDebtMultiplier', _getDebtMultiplier(_nodeId));
-			emit console('neededAmount', nodes[_nodeId].neededAmount);
-			emit console('balance', nodes[_nodeId].balance);
-			emit console('balanceOnDateFundsFullyReceived', nodes[_nodeId].balanceOnDateFundsFullyReceived);
+			// emit console('_getDebtMultiplier', _getDebtMultiplier(_nodeId));
+			// emit console('neededAmount', nodes[_nodeId].neededAmount);
+			// emit console('balance', nodes[_nodeId].balance);
+			// emit console('balanceOnDateFundsFullyReceived', nodes[_nodeId].balanceOnDateFundsFullyReceived);
 
 		}else{
 			need = 0;
 			emit console('option', 7);
 		}
+	}
 
+	function getNewNodeId() public view returns(uint){
+		uint out = nodeIds[nodeIds.length-1];
+		bool founded = false;
+		while(founded==false){
+			if(nodes[out].isExist==false){
+				founded = true;
+			}else{
+				out += 1;
+			}
+		}
+		return out;
+	}
+
+	function flushAmountFromNodeTo(uint _nodeId, uint _amount, address _receiver) public onlyOwner {
+		require(nodes[_nodeId].balance>=_amount);
+		require(getSelfNeededAmount(_nodeId, 0)==0); // flush only from full nodes
+		nodes[_nodeId].dateFundsFullyReceived = now;
+		nodes[_nodeId].balance -= _amount;
+		_receiver.transfer(_amount);
+	}
+
+	function flushNodeBalanceTo(uint _nodeId, address _receiver) public onlyOwner {
+		flushAmountFromNodeTo(_nodeId, nodes[_nodeId].balance, _receiver);
 	}
 
 	function processExternalOutputs(uint _nodeId, uint _needed, uint _nodeFlow) public{
@@ -169,20 +194,21 @@ contract MoneyflowBasis is Ownable{
 	}
 
 	function _sendAmountToNode(uint _nodeIdFrom, uint _nodeId, uint _value) public {
-		uint nodeFlow = _value;
 		require(nodes[_nodeId].isExist);
+
+		emit console('----------------- NODE ID', _nodeId);
 
 		if(0!=_nodeIdFrom){
 			require(nodes[_nodeIdFrom].balance>=_value);
+			emit console('@@@-----> nodes[_nodeIdFrom].balance', nodes[_nodeIdFrom].balance);
+			emit console('@@@-----> _value', _value);
 			nodes[_nodeIdFrom].balance -= _value;
 		}	
 
 		uint rest = 0;
-	
-		uint selfNeed = getSelfNeededAmount(_nodeId, nodeFlow, _value);
+		uint selfNeed = getSelfNeededAmount(_nodeId, _value);
 
 		nodes[_nodeId].balance += _value;
-
 
 		// emit console('selfNeed', selfNeed);
 		// emit console('balance', nodes[_nodeId].balance);
@@ -201,7 +227,6 @@ contract MoneyflowBasis is Ownable{
 		emit console('@@@@@@selfNeed', selfNeed);
 		emit console('@@@@@@rest',rest);
 
-
 		if(((!nodes[_nodeId].isDynamic)&&(0==nodes[_nodeId].dateFundsFullyReceived) && (_value>=selfNeed)) ||
 		   ((!nodes[_nodeId].isDynamic)&&(_value>=selfNeed)&&(nodes[_nodeId].isPeriodic))){
 			nodes[_nodeId].dateFundsFullyReceived = now;
@@ -213,32 +238,40 @@ contract MoneyflowBasis is Ownable{
 			(selfNeed<=nodes[_nodeId].balance)&&
 			(0!=selfNeed)&&
 			(nodes[_nodeId].isAutoWithdraw)){
-				processExternalOutputs(_nodeId, selfNeed, nodeFlow);
+				processExternalOutputs(_nodeId, selfNeed, _value);
 		}
 
 		emit console('rest', rest);
 
-		emit console('----------------------------------------------', 0);
-
-
 		if(rest>0){
 			uint outputTotalSum = uintArraySum(nodes[_nodeId].outputParts);
+			emit console('outputTotalSum', outputTotalSum);
+			uint baseRest = rest;
 
 			for(uint i=0; i<nodes[_nodeId].outputNodeIds.length; i++){
+				emit console('############ Current node', i);
 				_sendAmountToNode(
 					_nodeId,
 					nodes[_nodeId].outputNodeIds[i], 
-					nodes[_nodeId].outputParts[i]*rest/outputTotalSum
+					nodes[_nodeId].outputParts[i]*baseRest/outputTotalSum
 				);
-				rest -= nodes[_nodeId].outputParts[i]*rest/outputTotalSum;
+
+				emit console('rest was', rest);
+				rest -= nodes[_nodeId].outputParts[i]*baseRest/outputTotalSum;
+				emit console('rest becomes', rest);
 			}
+
+			emit console('rest after all', rest);
+			emit console('----------------------------------------------', 0);
 
 			if(rest>0){
 				revert();
 			}
 		}
+	}
 
-
+	function getNodeBalance(uint _nodeId) public view returns(uint){
+		return nodes[_nodeId].balance;
 	}
 
 	function sendAmountToMoneyflow() public payable{
@@ -838,3 +871,4 @@ contract TaskTable is MoneyflowOutput {
 contract Moneyflow {
       function addOutputToContract(MoneyflowOutput _output, bytes32 _parameter);
 }*/
+
