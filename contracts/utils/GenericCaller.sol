@@ -4,7 +4,6 @@ import "../IDaoBase.sol";
 
 import "../governance/Voting_1p1v.sol";
 import "../governance/Voting_SimpleToken.sol";
-import "../governance/Voting_Quadratic.sol";
 import "../governance/Proposals.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -121,17 +120,18 @@ contract GenericCaller is DaoClient, Ownable {
 				uint(vp.param1), 
 				uint(vp.param3), 
 				uint(vp.param4), 
-				address(vp.param5));
+				address(vp.param5),
+				false);
 		}
 
-		// Why doesn't work???
-		/*if(VotingType.VotingQuadratic==vp.votingType){
-			return new Voting_Quadratic(dao, _proposal, _origin, 
+		if(VotingType.VotingQuadratic==vp.votingType){
+			return new Voting_SimpleToken(dao, _proposal, _origin, 
 				uint(vp.param1), 
 				uint(vp.param3), 
 				uint(vp.param4), 
-				address(vp.param5));
-		}*/ 
+				address(vp.param5),
+				true);
+		}
 
 
 		// TODO: add other implementations

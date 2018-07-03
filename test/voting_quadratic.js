@@ -10,7 +10,7 @@ var InformalProposal = artifacts.require("./InformalProposal");
 
 var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 
-var Voting_Quadratic = artifacts.require("./Voting_Quadratic");
+var Voting_SimpleToken = artifacts.require("./Voting_SimpleToken");
 var IProposal = artifacts.require("./IProposal");
 
 var CheckExceptions = require('./utils/checkexceptions');
@@ -83,24 +83,23 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 
 	beforeEach(async() => {
 
-		token = await StdDaoToken.new("StdToken","STDT",18);
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000);
 		await token.mint(creator, 25);
 		await token.mint(employee1, 11);
 		await token.mint(employee2, 9);
 		await token.mint(employee3, 4);
 		await token.mint(employee4, 16);
 		// await token.mint(employee5, 1);
-		console.log("step1");
+		
 		let store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
-		console.log("step2");
+
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		console.log("step3");
+
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
-		console.log("step4");
 
 		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 800000000});
 
-		console.log("step5");
+
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 		await store.allowActionByAddress(KECCAK256("issueTokens"),creator);
@@ -129,16 +128,6 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		// await daoBase.addGroupMember("Employees", creator);
 	});
 
-	it('0. should create new voting', async()=>{
-		let isGroupMember = await daoBase.isGroupMember('Employees', employee1);
-		assert.equal(isGroupMember,true, 'Creator is ein the group');
-		let voting = await Voting_Quadratic.new(daoBase.address, employee1, employee1, 60, 51, 71, token.address);
-		let quorumPercent = await voting.quorumPercent();
-		let consensusPercent = await voting.consensusPercent();
-		assert.equal(quorumPercent.toNumber(), 51, 'quorumPercent should be 51'); 
-		assert.equal(consensusPercent.toNumber(), 71, 'consensusPercent should be 51'); 
-	});
-
 	it('1.1. Q Scenario: 5 employees, 5/5 voted yes, params(100,100) => isYes==false',async() => {
 		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_QUADRATIC, UintToToBytes32(0), fromUtf8(""), UintToToBytes32(100), UintToToBytes32(100), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
@@ -147,7 +136,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_Quadratic.at(votingAddress);
+		const voting = await Voting_SimpleToken.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -192,7 +181,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_Quadratic.at(votingAddress);
+		const voting = await Voting_SimpleToken.at(votingAddress);
 
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
@@ -215,7 +204,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_Quadratic.at(votingAddress);
+		const voting = await Voting_SimpleToken.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -265,7 +254,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_Quadratic.at(votingAddress);
+		const voting = await Voting_SimpleToken.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -310,7 +299,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_Quadratic.at(votingAddress);
+		const voting = await Voting_SimpleToken.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -355,7 +344,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_Quadratic.at(votingAddress);
+		const voting = await Voting_SimpleToken.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -384,7 +373,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_Quadratic.at(votingAddress);
+		const voting = await Voting_SimpleToken.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
