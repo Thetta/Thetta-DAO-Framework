@@ -33,7 +33,7 @@ contract MoneyflowBasis is Ownable{
 		uint dateFundsFullyReceived;
 		uint balanceOnDateFundsFullyReceived;
 		uint balance;
-		bool isExist;	
+		bool isExist;
 	}
 
 	event console(string op, uint param);
@@ -120,7 +120,10 @@ contract MoneyflowBasis is Ownable{
 		// emit console('getSelfNeededAmount need', nodes[_nodeId].neededAmount);
 		// emit console('getSelfNeededAmount now', now);
 
-		if((nodes[_nodeId].isPeriodic) && (now-nodes[_nodeId].dateFundsFullyReceived<nodes[_nodeId].periodHours*3600*1000)){
+		if(!nodes[_nodeId].isActive){
+			need = 0;
+
+		}else if((nodes[_nodeId].isPeriodic) && (now-nodes[_nodeId].dateFundsFullyReceived<nodes[_nodeId].periodHours*3600*1000)){
 			need = 0;
 			// emit console('option', 1);
 
@@ -141,7 +144,6 @@ contract MoneyflowBasis is Ownable{
 			// emit console('option', 5);
 
 		}else if((nodes[_nodeId].isPeriodic) && (now-nodes[_nodeId].dateFundsFullyReceived>nodes[_nodeId].periodHours*3600*1000) && (nodes[_nodeId].dateFundsFullyReceived!=0)){
-	
 			need = _getDebtMultiplier(_nodeId)*nodes[_nodeId].neededAmount + nodes[_nodeId].balanceOnDateFundsFullyReceived - nodes[_nodeId].balance;
 			// emit console('option', 6);
 
@@ -275,17 +277,84 @@ contract MoneyflowBasis is Ownable{
 	}
 
 	function sendAmountToMoneyflow() public payable{
+		// zero-node represents an outside world
+		// first-node is an entry point
 		_sendAmountToNode(0, 1, msg.value);
 	}
 
 	function() public payable{
-		// zero-node represents an outside world
-		// first-node is an entry point
-		_sendAmountToNode(0, 1, msg.value);
 	}	
 }
 
 
+contract MoneyflowTable is MoneyflowBasis {
+	function createUnsortedSplitter() public onlyOwner returns(uint){
+		uint nodeId = getNewNodeId();
+		setNode(nodeId,
+			[],[], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+			false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+			0, false, '0x0',     // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+			false, false);       // bool _isDynamic,         bool _isTokenType
+	 
+		return nodeId;
+	}
+
+	function createTopdownSplitter() public onlyOwner returns(uint){
+		uint nodeId = getNewNodeId();
+		setNode(nodeId,
+			[],[], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+			false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+			0, false, '0x0',     // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+			false, false);       // bool _isDynamic,         bool _isTokenType
+	 
+		return nodeId;
+	}
+
+	function createAbsoluteExpense(uint _neededAmount) public onlyOwner returns(uint){
+		uint nodeId = getNewNodeId();
+		setNode(nodeId,
+			[],[], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+			false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+			0, false, '0x0',     // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+			false, false);       // bool _isDynamic,         bool _isTokenType
+	 
+		return nodeId;
+	}
+
+	function createRelativeExpense(uint _percent) public onlyOwner returns(uint){
+		uint nodeId = getNewNodeId();
+		setNode(nodeId,
+			[nodeId], [100], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+			false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+			0, false, '0x0',     // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+			false, false);       // bool _isDynamic,         bool _isTokenType
+	 
+		return nodeId;
+	}
+
+	function createAbsoluteExpenseWithPeriod(uint _neededAmount, uint _periodHours, bool _isAccumulateDebt) public onlyOwner returns(uint){
+		uint nodeId = getNewNodeId();
+		setNode(nodeId,
+			[],[], true,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+			_isAccumulateDebt, true, _periodHours,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+			_neededAmount, false, '0x0',     // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+			false, false);       // bool _isDynamic,         bool _isTokenType
+	 
+		return nodeId;
+	}
+
+	function createRelativeExpenseWithPeriod(uint _percent, uint _periodHours, bool _isAccumulateDebt) public onlyOwner returns(uint){
+		uint nodeId = getNewNodeId();
+		setNode(nodeId,
+			[nodeId], [100], true,      // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
+			_isAccumulateDebt, true, _periodHours,  // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
+			0, false, '0x0',            // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
+			false, false);              // bool _isDynamic,         bool _isTokenType
+	 
+		return nodeId;
+	}
+
+}
 
 /*contract MoneyflowSystemBasis is Ownable{
 	mapping (uint => Node) public nodes;
