@@ -24,6 +24,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 	uint64 genesis;
 	uint public quorumPercent;
 	uint public consensusPercent;
+	bool public isQuadraticVoting;
 	ERC20Basic erc20Token;
 
 	mapping (address=>bool) addressVotedAlready;
@@ -52,7 +53,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 
 	constructor(IDaoBase _dao, IProposal _proposal, 
 		address _origin, uint _minutesToVote,
-		uint _quorumPercent, uint _consensusPercent, address _tokenAddress) public 
+		uint _quorumPercent, uint _consensusPercent, address _tokenAddress, bool _isQuadraticVoting) public 
 	{
 		require((_quorumPercent<=100)&&(_quorumPercent>0));
 		require((_consensusPercent<=100)&&(_consensusPercent>0));
@@ -62,6 +63,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		minutesToVote = _minutesToVote;
 		quorumPercent = _quorumPercent;
 		consensusPercent = _consensusPercent;
+		isQuadraticVoting = _isQuadraticVoting;
 		erc20Token = ERC20Basic(_tokenAddress);
 		genesis = uint64(now);
 
@@ -171,13 +173,32 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		yesResults = 0;
 		noResults = 0;
 		votersTotal = erc20Token.totalSupply();
-		for(uint i=0; i<tokenVotesArray.length; ++i){
-			if(tokenVotesArray[i].vote){
-				yesResults+= tokenVotesArray[i].tokenAmount;
-			}else{
-				noResults+= tokenVotesArray[i].tokenAmount;
+		if(isQuadraticVoting){
+			for(uint i=0; i<tokenVotesArray.length; ++i){
+				if(tokenVotesArray[i].vote){
+					yesResults+= sqrt(tokenVotesArray[i].tokenAmount);
+				}else{
+					noResults+= sqrt(tokenVotesArray[i].tokenAmount);
+				}
+			}
+		} else {
+			for(uint j=0; j<tokenVotesArray.length; ++j){
+				if(tokenVotesArray[j].vote){
+					yesResults+= tokenVotesArray[j].tokenAmount;
+				}else{
+					noResults+= tokenVotesArray[j].tokenAmount;
+				}
 			}
 		}
 		return;
+	}
+
+	function sqrt(uint x) internal returns (uint y) {
+		uint z = (x + 1) / 2;
+		y = x;
+		while (z < y) {
+			y = z;
+			z = (x / z + z) / 2;
+		}
 	}
 }

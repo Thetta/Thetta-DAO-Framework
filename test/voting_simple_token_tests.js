@@ -83,7 +83,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 
 	beforeEach(async() => {
 
-		token = await StdDaoToken.new("StdToken","STDT",18);
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000);
 		await token.mint(creator, 1);
 		await token.mint(employee1, 1);
 		await token.mint(employee2, 1);
@@ -124,11 +124,11 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		await daoBase.addGroupMember("Employees", employee4);
 		// await daoBase.addGroupMember("Employees", creator);
 	});
-
+	
 	it('0. should create new voting', async()=>{
 		let isGroupMember = await daoBase.isGroupMember('Employees', employee1);
 		assert.equal(isGroupMember,true, 'Creator is ein the group');
-		let voting = await Voting_SimpleToken.new(daoBase.address, employee1, employee1, 60, 51, 71, token.address);
+		let voting = await Voting_SimpleToken.new(daoBase.address, employee1, employee1, 60, 51, 71, token.address, false);
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
 		assert.equal(quorumPercent.toNumber(), 51, 'quorumPercent should be 51'); 
