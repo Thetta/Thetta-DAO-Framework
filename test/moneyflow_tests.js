@@ -448,7 +448,7 @@ contract('Moneyflow', (accounts) => {
 		let th = await Salaries.processFunds(3300*money, {value:3300*money, from:creator, gasPrice:0});
 	});
 
-	/*it('should process money with a scheme just like in the paper: 75/25 others, send MORE than minNeed; ',async() => {
+	it('should process money with a scheme just like in the paper: 75/25 others, send MORE than minNeed; ',async() => {
 		const CURRENT_INPUT = 30900;
 		let e1 = 1000;
 		let e2 = 1500;
@@ -477,7 +477,7 @@ contract('Moneyflow', (accounts) => {
 		await balancesAsserts(balances, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await splitterBalancesAsserts(balances, money, 0, 0, 0, 0, 0, 0, 0);
 
-	});*/
+	});
 
 	it('should process money with a scheme just like in the paper: 75/25 others, send EQUAL to minNeed',async() => {
 		const CURRENT_INPUT = 5900;
@@ -542,7 +542,7 @@ contract('Moneyflow', (accounts) => {
 		);
 	});
 
-	/*it('should process money with a scheme just like in the paper: 10/15 others, send MORE than minNeed; ',async() => {
+	it('should process money with a scheme just like in the paper: 10/15 others, send MORE than minNeed; ',async() => {
 		const CURRENT_INPUT = 20900;
 		let e1 = 1000;
 		let e2 = 1500;
@@ -568,7 +568,7 @@ contract('Moneyflow', (accounts) => {
 		let balances = await getBalances(struct);
 		await balancesAsserts(balances, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await splitterBalancesAsserts(balances, money, 10800, 0, 0, 0, 0, 0, 0);
-	});*/
+	});
 
 	it('should process money with a scheme just like in the paper: 10/15 others, send EQUAL to minNeed; ',async() => {
 		const CURRENT_INPUT = 5900;
