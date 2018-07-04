@@ -96,6 +96,9 @@ contract DaoBase is IDaoBase, Ownable {
 	function isGroupMember(string _groupName,address _a)external constant returns(bool) {
 		return store.isGroupMember(keccak256(_groupName), _a);
 	}
+	function getMemberByIndex(string _groupName, uint _index) external view returns (address) {
+		return store.getMemberByIndex(keccak256(_groupName), _index);
+	}
 
 // Actions:
 	function allowActionByShareholder(string _what, address _tokenAddress) external isCanDo("manageGroups"){

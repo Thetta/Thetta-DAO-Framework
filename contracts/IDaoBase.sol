@@ -24,6 +24,7 @@ interface IDaoBase {
 	function removeGroupMember(string _groupName, address _a) external;
 	function getMembersCount(string _groupName) external constant returns(uint);
 	function isGroupMember(string _groupName,address _a)external constant returns(bool);
+	function getMemberByIndex(string _groupName, uint _index) external view returns (address);
 
 // Permissions
 	function allowActionByShareholder(string _what, address _tokenAddress) external;
