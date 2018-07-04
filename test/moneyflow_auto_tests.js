@@ -61,14 +61,8 @@ contract('MoneyflowAuto', (accounts) => {
 	let manageGroups;
 	let addNewProposal;
 	let upgradeDaoContract;
-	let addNewTask;
-	let startTask;
-	let startBounty;
-	let modifyMoneyscheme;
 	let withdrawDonations;
 	let setRootWeiReceiver;
-	let burnTokens;
-	let addNewEmployee;
 
 	let token;
 	let daoBase;
@@ -95,8 +89,6 @@ contract('MoneyflowAuto', (accounts) => {
 		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
 
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
-		
-		burnTokens = await daoBase.BURN_TOKENS();
 
 		withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
 
@@ -147,7 +139,7 @@ contract('MoneyflowAuto', (accounts) => {
 		// get the donations 
 		let pointBalance = await web3.eth.getBalance(output);
 		// this will call the action directly!
-		await aacInstance.withdrawDonationsToAuto(output, {from:creator, gas:100000});
+		await aacInstance.withdrawDonationsToAuto(output, { from:creator });
 		const proposalsCount1 = await daoBase.getProposalsCount();
 		assert.equal(proposalsCount1,0,'No proposals should be added');
 

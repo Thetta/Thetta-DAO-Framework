@@ -71,14 +71,9 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 	let issueTokens;
 	let manageGroups;
 	let addNewProposal;
-	let upgradeDaoContract;
-	let addNewTask;
 	let startTask;
-	let startBounty;
-	let modifyMoneyscheme;
 	let withdrawDonations;
 	let setRootWeiReceiver;
-	let burnTokens;
 
 	let money = web3.toWei(0.001, "ether");
 	let VOTING_TYPE_1P1V = 1;
@@ -88,16 +83,14 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000);
 		await token.mint(creator, 1000);
 
-		let store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
-		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let store = await DaoStorage.new([token.address],{ from: creator });
+		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
 		
 		issueTokens = await daoBase.ISSUE_TOKENS();
 		
 		manageGroups = await daoBase.MANAGE_GROUPS();
-		
-		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
 
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
 		
