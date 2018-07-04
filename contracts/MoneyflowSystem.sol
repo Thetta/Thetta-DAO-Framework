@@ -47,7 +47,7 @@ contract MoneyflowBasis is Ownable{
 		return S;
 	}
 
-	function setNode(uint _nodeId,
+	function setNode(uint _nodeId, // type and param  for higher lvl abstractions
 		uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
 		bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
 		uint _neededAmount,      bool _isAutoWithdraw, address _output, 
@@ -287,30 +287,20 @@ contract MoneyflowBasis is Ownable{
 }
 
 
-contract MoneyflowTable is MoneyflowBasis {
-	// function createUnsortedSplitter() public onlyOwner returns(uint){
-	// 	uint nodeId = getNewNodeId();
-	// 	setNode(nodeId,
-	// 		[],[], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
-	// 		false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
-	// 		0, false, 0x0,     // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
-	// 		false, false);       // bool _isDynamic,         bool _isTokenType
-	 
-	// 	return nodeId;
-	// }
+/*contract MoneyflowTable is MoneyflowBasis {
+	//TYPES: 
+	// 0 - AbsoluteExpense
+	// 1 - RelativeExpense
+	// 2 - UnsortedSplitter
+	// 3 - TopdownSplitter
+	enum Types {
+		AbsoluteExpense,
+		RelativeExpense,
+		UnsortedSplitter,
+		TopdownSplitter
+	}
 
-	// function createTopdownSplitter() public onlyOwner returns(uint){
-	// 	uint nodeId = getNewNodeId();
-	// 	setNode(nodeId,
-	// 		[],[], false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
-	// 		false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
-	// 		0, false, 0x0,     // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
-	// 		false, false);       // bool _isDynamic,         bool _isTokenType
-	 
-	// 	return nodeId;
-	// }
-
-	function createAbsoluteExpense(uint _neededAmount) public onlyOwner returns(uint){
+	function createEmptyNode() public onlyOwner returns(uint){
 		uint nodeId = getNewNodeId();
 		uint256[] outputs;
 		uint256[] parts;
@@ -318,24 +308,37 @@ contract MoneyflowTable is MoneyflowBasis {
 			outputs, parts, false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
 			false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
 			0, false, 0x0,     // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
-			false, false);       // bool _isDynamic,         bool _isTokenType
+			false, false, 0, 0);       // bool _isDynamic,         bool _isTokenType, uint _type, uint _param
 	 
 		return nodeId;
 	}
 
-	function createRelativeExpense(uint _percent) public onlyOwner returns(uint){
-		uint nodeId = getNewNodeId();
-		uint256[] outputs;
-		outputs.push(nodeId);
-		uint256[] parts;
-		parts.push(100);
-		setNode(nodeId,
-			outputs, parts, false,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
-			false, true, 0,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
-			0, false, 0x0,     // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
-			false, false);       // bool _isDynamic,         bool _isTokenType
-	 
+	function createFund() public onlyOwner returns(uint){
+		uint nodeId = createEmptyNode();
+		nodes[nodeId].outputs.push(nodeId);
+		nodes[nodeId].parts.push(100);
 		return nodeId;
+	}
+
+	function createAbsoluteExpense(uint _neededAmount) public onlyOwner returns(uint){
+		uint nodeId = createEmptyNode();
+		nodes[nodeId].neededAmount = _neededAmount;
+		return nodeId;
+	}
+
+	function createRelativeExpense(uint _percent) public onlyOwner returns(uint){
+		uint nodeId = createFund();
+		nodes[nodeId].type = _percent;		
+		nodes[nodeId].param = _percent;
+	}
+
+	function createUnsortedSplitter() public onlyOwner returns(uint){
+		uint nodeId = createEmptyNode();
+		return nodeId;
+	}
+
+	function createTopdownSplitter() public onlyOwner returns(uint){
+		return createEmptyNode();
 	}
 
 	function createAbsoluteExpenseWithPeriod(uint _neededAmount, uint _periodHours, bool _isAccumulateDebt) public onlyOwner returns(uint){
@@ -346,7 +349,7 @@ contract MoneyflowTable is MoneyflowBasis {
 			outputs, parts, true,        // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
 			_isAccumulateDebt, true, _periodHours,      // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
 			_neededAmount, false, 0x0,     // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
-			false, false);       // bool _isDynamic,         bool _isTokenType
+			false, false, 0, 0);       // bool _isDynamic,         bool _isTokenType, uint _type, uint _param
 	 
 		return nodeId;
 	}
@@ -361,9 +364,35 @@ contract MoneyflowTable is MoneyflowBasis {
 			outputs, parts, true,      // uint[] _outputNodeIds,   uint[] _outputParts,  bool _isPeriodic, 
 			_isAccumulateDebt, true, _periodHours,  // bool _isAccumulateDebt,  bool _isActive,       uint _periodHours, 
 			0, false, 0x0,            // uint _neededAmount,      bool _isAutoWithdraw, address _output, 
-			false, false);              // bool _isDynamic,         bool _isTokenType
+			false, false, 1, 0);              // bool _isDynamic,         bool _isTokenType, uint _type, uint _param
 	 
 		return nodeId;
+	}
+
+	function addRelExpenceToUnsortedSplitter(uint _chld, uint _spl) public onlyOwner {
+		//last element for abs expense
+		nodes[_spl].nodeIds[nodes[_spl].nodeIds.length-1] = _chld; // push new element to previous absExpenseOutput
+		nodes[_spl].outputParts[nodes[_spl].outputParts.length-1] = nodes[_chld].param; // push new element to previous absExpenseOutput
+
+		require(uintArraySum(nodes[_spl].outputParts)<=100);
+
+		uint absExpenseOutput = 100 - uintArraySum(nodes[_spl].outputParts);
+
+		if(absExpenseOutput>0){
+			nodes[_spl].nodeIds.push(_chld); // push new element to previous absExpenseOutput
+			nodes[_spl].outputParts.push(nodes[_chld].param); // push new element to previous absExpenseOutput
+		}
+	}
+
+	function addAbsExpenceToUnsortedSplitter(uint _chld, uint _spl) public onlyOwner {
+		uint absExpenseOutput = 100 - uintArraySum(nodes[_spl].outputParts);
+		require(absExpenseOutput>0);
+		uint[] nodeIds = nodes[_spl].nodeIds;
+		if(nodes[nodeIds[nodeIds.length-1]].type == )
+	}
+
+	function getMinWeiNeeded(uint _nodeId) public view returns(uint){
+		if(nodes[_nodeId])
 	}
 
 	function sendAmountToMoneyflow() public payable{
@@ -388,7 +417,7 @@ contract MoneyflowTable is MoneyflowBasis {
 		// getSelfNeededAmount(uint _nodeId, uint _nodeFlow)
 	}
 
-}
+}*/
 
 /*contract MoneyflowSystemBasis is Ownable{
 	mapping (uint => Node) public nodes;
