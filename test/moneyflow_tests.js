@@ -215,8 +215,8 @@ contract('Moneyflow', (accounts) => {
 	beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000000000000000000000);
 		await token.mint(creator, 1000, {gasPrice: 0});
-		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator, gasPrice: 0});
-		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator, gasPrice: 0});
+		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
+		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
 		
 		await daoBase.ISSUE_TOKENS().then(result => {
 			issueTokens = result;
