@@ -1,4 +1,4 @@
-const CheckExceptions = require('./utils/checkexceptions');
+require('chai').use(require('chai-as-promised')).should();
 
 const DaoStorage = artifacts.require("./DaoStorage");
 const StdDaoToken = artifacts.require("./StdDaoToken");
@@ -25,16 +25,12 @@ contract("DaoStorage", (accounts) => {
 		});
 
 		it("on invalid group name throws", async () => {
-			await CheckExceptions.checkContractThrows(
-				store.getMemberByIndex, ["INVALID_GROUP", 0]
-			);
+			await store.getMemberByIndex("INVALID_GROUP", 0).should.be.rejectedWith("revert");
 		});
 
 		it("on invalid index throws", async () => {
 			await store.addGroupMember("ANY_GROUP", userAddress);
-			await CheckExceptions.checkContractThrows(
-				store.getMemberByIndex, ["ANY_GROUP", 1]
-			);
+			await store.getMemberByIndex("ANY_GROUP", 1).should.be.rejectedWith("revert");
 		});
 	});
 
