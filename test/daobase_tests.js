@@ -51,7 +51,7 @@ contract('DaoBase', (accounts) => {
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
-		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 40000000, from: creator});
+		daoBase = await DaoBaseWithUnpackers.new(store.address,{from: creator});
 		
 		issueTokens = await daoBase.ISSUE_TOKENS();
 		

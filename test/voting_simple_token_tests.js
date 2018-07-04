@@ -101,7 +101,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		let store = await DaoStorage.new([token.address],{ from: creator });
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
-		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
+		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator});
 		
 		issueTokens = await daoBase.ISSUE_TOKENS();
 		

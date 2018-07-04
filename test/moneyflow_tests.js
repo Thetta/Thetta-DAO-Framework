@@ -218,8 +218,8 @@ contract('Moneyflow', (accounts) => {
 
 		await token.mint(creator, 1000);
 
-		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
-		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
+		store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBase.new(store.address,{from: creator});
 		
 		
 		issueTokens = await daoBase.ISSUE_TOKENS();
