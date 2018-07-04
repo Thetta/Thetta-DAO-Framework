@@ -7,7 +7,7 @@ module.exports = {
 			host: "localhost",
 			port: 8555,
 			network_id: "*", // Match any network id
-			gas: 7000000
+			gas: 10000000
 		},
 
 		coverage: {

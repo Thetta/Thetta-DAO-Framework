@@ -500,6 +500,7 @@ contract('Moneyflow', (accounts) => {
 		let struct = await createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 
 		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);
+
 		await totalAndMinNeedsAsserts(splitterParams, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await structureAsserts(splitterParams);
 
@@ -529,6 +530,7 @@ contract('Moneyflow', (accounts) => {
 
 		let struct = await createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);
+
 		await totalAndMinNeedsAsserts(splitterParams, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await structureAsserts(splitterParams);
 
