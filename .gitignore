@@ -10,4 +10,8 @@ build/*
 # nodejs modules
 node_modules/*
 
+# coverage
+coverage/*
+coverage.json
+
 .jsapi.json

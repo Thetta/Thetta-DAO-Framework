@@ -82,4 +82,5 @@ contract StdDaoToken is MintableToken, PausableToken, DetailedERC20 {
 	}
 
 
+
 }

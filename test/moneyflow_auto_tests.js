@@ -132,9 +132,10 @@ contract('MoneyflowAuto', (accounts) => {
 			addNewEmployee = result;
 		});
 		
+
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 
-		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
+		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
 
 		///////////////////////////////////////////////////
 		// SEE THIS? set voting type for the action!
@@ -185,7 +186,7 @@ contract('MoneyflowAuto', (accounts) => {
 		// get the donations 
 		let pointBalance = await web3.eth.getBalance(output);
 		// this will call the action directly!
-		await aacInstance.withdrawDonationsToAuto(output, {from:creator, gas:100000});
+		await aacInstance.withdrawDonationsToAuto(output, { from:creator });
 		const proposalsCount1 = await daoBase.getProposalsCount();
 		assert.equal(proposalsCount1,0,'No proposals should be added');
 

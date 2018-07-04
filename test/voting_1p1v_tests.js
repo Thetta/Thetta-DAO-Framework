@@ -89,8 +89,8 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000);
 		await token.mint(creator, 1000);
 
-		let store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
-		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let store = await DaoStorage.new([token.address],{ from: creator });
+		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 		
 		await daoBase.ISSUE_TOKENS().then(result => {
@@ -137,7 +137,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 			burnTokens = result;
 		});
 
-		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
+		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
 
 		// SEE THIS? set voting type for the action!
 		const VOTING_TYPE_1P1V = 1;
