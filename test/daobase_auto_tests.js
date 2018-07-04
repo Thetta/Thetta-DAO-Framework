@@ -71,8 +71,8 @@ contract('DaoBaseAuto', (accounts) => {
 		await token.mint(employee2, 600);
 		await token.mint(employee3, 600);
 
-		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
-		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		store = await DaoStorage.new([token.address],{ from: creator });
+		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
 		aacInstance = await DaoBaseAuto.new(daoBase.address, {from: creator});
 
 		///////////////////////////////////////////////////
@@ -171,7 +171,7 @@ contract('DaoBaseAuto', (accounts) => {
 		assert.strictEqual(isCanDo4,true,'aacInstance can addNewProposal');
 
 		// new proposal should be added 
-		await aacInstance.issueTokensAuto(token.address,employee1,1200,{from: employee1, gas:10000000, gasPrice:0});
+		await aacInstance.issueTokensAuto(token.address,employee1,1200,{from: employee1, gasPrice:0});
 
 		// STOP!!!
 		//assert.equal(0,1,'STOP'); 
@@ -305,7 +305,7 @@ contract('DaoBaseAuto', (accounts) => {
 		await daoBase.allowActionByAddress("upgradeDaoContract", aacInstance.address);
 
 		// should be able to upgrde microcompany directly without voting (creator is in majority!)
-		let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
 		await aacInstance.upgradeDaoContractAuto(daoBaseNew.address,{from: employee1});
 
 		const pa = await daoBase.getProposalAtIndex(0);

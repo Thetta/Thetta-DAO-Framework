@@ -32,13 +32,13 @@ contract('DaoBase', (accounts) => {
 	beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000);
 		await token.mint(creator, 1000);
-		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
+		store = await DaoStorage.new([token.address],{from: creator});
 
 		// add creator as first employee
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
-		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
+		daoBase = await DaoBaseWithUnpackers.new(store.address,{from: creator});
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
@@ -145,8 +145,8 @@ contract('DaoBase', (accounts) => {
 		assert.equal(a1,daoBase.address,'Ownership should be set');
 
 		// UPGRADE!
-		let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
-		await daoBase.upgradeDaoContract(daoBaseNew.address, {gas: 10000000, from: creator});
+		let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+		await daoBase.upgradeDaoContract(daoBaseNew.address, { from: creator });
 
 		let a2 = await token.owner();
 		assert.equal(a2,daoBaseNew.address,'Ownership should be transferred');
@@ -180,7 +180,7 @@ contract('DaoBase', (accounts) => {
 
 		// withdraw
 		let outBalance = await web3.eth.getBalance(outsider);
-		await moneyflowInstance.withdrawDonationsTo(outsider,{from:creator, gas:100000, gasPrice: 0});
+		await moneyflowInstance.withdrawDonationsTo(outsider,{from:creator, gasPrice: 0});
 
 		let outBalance2 = await web3.eth.getBalance(outsider);
 		let balanceDelta = outBalance2.toNumber() - outBalance.toNumber();
