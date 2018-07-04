@@ -42,6 +42,9 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	FallbackToWeiReceiver donationF2WR;
 	FallbackToWeiReceiver revenueF2WR;
 
+	bytes32 constant public WITHDRAW_DONATIONS = keccak256("withdrawDonations");
+	bytes32 constant public SET_ROOT_WEI_RECEIVER = keccak256("setRootWeiReceiver");
+
 	event MoneyFlow_WithdrawDonations(address _by, address _to, uint _balance);
 	event MoneyFlow_SetRootWeiReceiver(address _sender, address _receiver);
 

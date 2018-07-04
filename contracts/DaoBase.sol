@@ -21,19 +21,6 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 contract DaoBase is IDaoBase, Ownable {
 	DaoStorage public store;
 
-	bytes32 constant public MANAGE_GROUPS = keccak256("manageGroups");
-	bytes32 constant public ISSUE_TOKENS = keccak256("issueTokens");
-	bytes32 constant public ADD_NEW_PROPOSAL = keccak256("addNewProposal");
-	bytes32 constant public BURN_TOKENS = keccak256("burnTokens");
-	bytes32 constant public UPGRADE_DAO_CONTRACT = keccak256("upgradeDaoContract");
-	bytes32 constant public ADD_NEW_TASK = keccak256("addNewTask");
-	bytes32 constant public START_TASK = keccak256("startTask");
-	bytes32 constant public START_BOUNTY = keccak256("startBounty");
-	bytes32 constant public MODIFY_MONEY_SCHEME = keccak256("modifyMoneyscheme");
-	bytes32 constant public WITHDRAW_DONATIONS = keccak256("withdrawDonations");
-	bytes32 constant public SET_ROOT_WEI_RECEIVER = keccak256("setRootWeiReceiver");
-	bytes32 constant public ADD_NEW_EMPLOYEE = keccak256("addNewEmployee");
-
 	event DaoBase_UpgradeDaoContract(address _new);
 	event DaoBase_AddGroupMember(string _groupName, address _a);
 	event DaoBase_RemoveGroupMember(address _new);
@@ -44,6 +31,12 @@ contract DaoBase is IDaoBase, Ownable {
 	event DaoBase_AddNewProposal(address _proposal);
 	event DaoBase_IssueTokens(address _tokenAddress, address _to, uint _amount);
 	event DaoBase_BurnTokens(address _tokenAddress, address _who, uint _amount);
+
+	bytes32 constant public ISSUE_TOKENS = keccak256("issueTokens");
+	bytes32 constant public MANAGE_GROUPS = keccak256("manageGroups");
+	bytes32 constant public ADD_NEW_PROPOSAL = keccak256("addNewProposal");
+	bytes32 constant public BURN_TOKENS = keccak256("burnTokens");
+	bytes32 constant public UPGRADE_DAO_CONTRACT = keccak256("upgradeDaoContract");
 
 	constructor(DaoStorage _store) public {
 		store = _store;

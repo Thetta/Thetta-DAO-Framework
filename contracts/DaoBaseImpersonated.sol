@@ -11,6 +11,9 @@ import "zeppelin-solidity/contracts/ECRecovery.sol";
  * @dev This is a convenient wrapper that is used by the contract below (see DaoBaseImpersonated). Do not use it directly.
 */
 contract ImpersonationCaller is DaoClient {
+
+	bytes32 constant public ISSUE_TOKENS = keccak256("issueTokens");
+	
 	constructor(IDaoBase _dao) public DaoClient(_dao) {
 
 	}

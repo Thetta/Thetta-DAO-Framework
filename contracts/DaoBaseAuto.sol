@@ -15,6 +15,10 @@ import "./utils/GenericCaller.sol";
 */
 contract DaoBaseAuto is GenericCaller {
 
+	bytes32 constant public MANAGE_GROUPS = keccak256("manageGroups");
+	bytes32 constant public ISSUE_TOKENS = keccak256("issueTokens");
+	bytes32 constant public UPGRADE_DAO_CONTRACT = keccak256("upgradeDaoContract");
+
 	constructor(IDaoBase _dao)public
 		GenericCaller(_dao)
 	{

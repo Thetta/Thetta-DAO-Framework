@@ -79,7 +79,6 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 	let withdrawDonations;
 	let setRootWeiReceiver;
 	let burnTokens;
-	let addNewEmployee;
 
 	let money = web3.toWei(0.001, "ether");
 	let VOTING_TYPE_1P1V = 1;
@@ -92,52 +91,21 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		let store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
-		
-		await daoBase.ISSUE_TOKENS().then(result => {
-			issueTokens = result;
-		});
-		
-		await daoBase.MANAGE_GROUPS().then(result => {
-			manageGroups = result;
-		});
-		
-		await daoBase.ADD_NEW_PROPOSAL().then(result => {
-			addNewProposal = result;
-		});
-		
-		await daoBase.UPGRADE_DAO_CONTRACT().then(result => {
-			upgradeDaoContract = result;
-		});
-		
-		await daoBase.ADD_NEW_TASK().then(result => {
-			addNewTask = result;
-		});
-		
-		await daoBase.START_TASK().then(result => {
-			startTask = result;
-		});
-		
-		await daoBase.START_BOUNTY().then(result => {
-			startBounty = result;
-		});
-		
-		await daoBase.MODIFY_MONEY_SCHEME().then(result => {
-			modifyMoneyscheme = result;
-		});
-		
-		await daoBase.WITHDRAW_DONATIONS().then(result => {
-			withdrawDonations = result;
-		});
-		
-		await daoBase.SET_ROOT_WEI_RECEIVER().then(result => {
-			setRootWeiReceiver = result;
-		});
-		
-		await daoBase.BURN_TOKENS().then(result => {
-			burnTokens = result;
-		});
-
 		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
+		
+		issueTokens = await daoBase.ISSUE_TOKENS();
+		
+		manageGroups = await daoBase.MANAGE_GROUPS();
+		
+		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
+
+		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
+		
+		burnTokens = await daoBase.BURN_TOKENS();
+
+		withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
+
+		setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
 		// SEE THIS? set voting type for the action!
 		const VOTING_TYPE_1P1V = 1;

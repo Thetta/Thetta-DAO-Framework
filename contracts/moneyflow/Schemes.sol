@@ -40,6 +40,10 @@ contract DefaultMoneyflowScheme is DaoClient {
 	WeiFund reserveFund;
 	WeiFund dividendsFund;
 
+	bytes32 constant public ADD_NEW_TASK = keccak256("addNewTask");
+	bytes32 constant public MODIFY_MONEY_SCHEME = keccak256("modifyMoneyscheme");
+	bytes32 constant public FLUSH_RESERVE_FUND_TO = keccak256("flushReserveFundTo");
+
 /////
 	constructor(IDaoBase _dao, address _fundOutput, 
 		uint _percentsReserve, uint _dividendsReserve) public 

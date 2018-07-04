@@ -84,57 +84,23 @@ contract('MoneyflowAuto', (accounts) => {
 		let store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		
-		await daoBase.ISSUE_TOKENS().then(result => {
-			issueTokens = result;
-		});
-		
-		await daoBase.MANAGE_GROUPS().then(result => {
-			manageGroups = result;
-		});
-		
-		await daoBase.ADD_NEW_PROPOSAL().then(result => {
-			addNewProposal = result;
-		});
-		
-		await daoBase.UPGRADE_DAO_CONTRACT().then(result => {
-			upgradeDaoContract = result;
-		});
-		
-		await daoBase.ADD_NEW_TASK().then(result => {
-			addNewTask = result;
-		});
-		
-		await daoBase.START_TASK().then(result => {
-			startTask = result;
-		});
-		
-		await daoBase.START_BOUNTY().then(result => {
-			startBounty = result;
-		});
-		
-		await daoBase.MODIFY_MONEY_SCHEME().then(result => {
-			modifyMoneyscheme = result;
-		});
-		
-		await daoBase.WITHDRAW_DONATIONS().then(result => {
-			withdrawDonations = result;
-		});
-		
-		await daoBase.SET_ROOT_WEI_RECEIVER().then(result => {
-			setRootWeiReceiver = result;
-		});
-		
-		await daoBase.BURN_TOKENS().then(result => {
-			burnTokens = result;
-		});
-		
-		await daoBase.ADD_NEW_EMPLOYEE().then(result => {
-			addNewEmployee = result;
-		});
-		
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 
 		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator, gas: 10000000});
+
+		issueTokens = await daoBase.ISSUE_TOKENS();
+		
+		manageGroups = await daoBase.MANAGE_GROUPS();
+		
+		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
+
+		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
+		
+		burnTokens = await daoBase.BURN_TOKENS();
+
+		withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
+
+		setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
 		///////////////////////////////////////////////////
 		// SEE THIS? set voting type for the action!
@@ -154,8 +120,6 @@ contract('MoneyflowAuto', (accounts) => {
 		await daoBase.addGroupMember("Employees", employee1);
 		await daoBase.addGroupMember("Employees", employee2);
 
-		await daoBase.allowActionByAnyMemberOfGroup(addNewEmployee,"Employees");
-		await daoBase.allowActionByAnyMemberOfGroup(modifyMoneyscheme,"Employees");
 		await daoBase.allowActionByAddress(issueTokens, creator);
 		await daoBase.allowActionByVoting(withdrawDonations, token.address);
 
@@ -163,9 +127,7 @@ contract('MoneyflowAuto', (accounts) => {
 		await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
 		// these actions required if AAC will call this actions DIRECTLY (without voting)
 		await daoBase.allowActionByAddress(withdrawDonations, aacInstance.address);
-		await daoBase.allowActionByAddress(addNewTask, aacInstance.address);
 		await daoBase.allowActionByAddress(setRootWeiReceiver, aacInstance.address);
-		await daoBase.allowActionByAddress(modifyMoneyscheme, aacInstance.address);
 	});
 
 	it('should allow to get donations using AAC (direct call)',async() => {
@@ -248,8 +210,6 @@ contract('MoneyflowAuto', (accounts) => {
 	});
 
 	it('should allow to set root receiver using AAC (direct call)',async() => {
-		// check permissions (permissions must be blocked)
-		await daoBase.allowActionByAddress(modifyMoneyscheme, aacInstance.address);
 
 		const isCanDoAction = await daoBase.isCanDoAction(employee1, setRootWeiReceiver);
 		assert.equal(isCanDoAction, false, 'Employee should not have permissions to run setRootWeiReceiver action');

@@ -87,46 +87,16 @@ contract('DaoBaseAuto', (accounts) => {
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{gas: 10000000, from: creator});
 		aacInstance = await DaoBaseAuto.new(daoBase.address, {from: creator});
 		
-		await daoBase.ISSUE_TOKENS().then(result => {
-			issueTokens = result;
-		});
+		issueTokens = await aacInstance.ISSUE_TOKENS();
 		
-		await daoBase.MANAGE_GROUPS().then(result => {
-			manageGroups = result;
-		});
+		manageGroups = await aacInstance.MANAGE_GROUPS();
 		
-		await daoBase.ADD_NEW_PROPOSAL().then(result => {
-			addNewProposal = result;
-		});
-		
-		await daoBase.UPGRADE_DAO_CONTRACT().then(result => {
-			upgradeDaoContract = result;
-		});
-		
-		await daoBase.ADD_NEW_TASK().then(result => {
-			addNewTask = result;
-		});
-		
-		await daoBase.START_TASK().then(result => {
-			startTask = result;
-		});
-		
-		await daoBase.START_BOUNTY().then(result => {
-			startBounty = result;
-		});
-		
-		await daoBase.MODIFY_MONEY_SCHEME().then(result => {
-			modifyMoneyscheme = result;
-		});
-		
-		await daoBase.WITHDRAW_DONATIONS().then(result => {
-			withdrawDonations = result;
-		});
-		
-		await daoBase.SET_ROOT_WEI_RECEIVER().then(result => {
-			setRootWeiReceiver = result;
-		});
+		upgradeDaoContract = await aacInstance.UPGRADE_DAO_CONTRACT();
 
+		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
+		
+		burnTokens = await daoBase.BURN_TOKENS();
+		
 		///////////////////////////////////////////////////
 		// SEE THIS? set voting type for the action!
 		const VOTING_TYPE_1P1V = 1;
@@ -348,7 +318,6 @@ contract('DaoBaseAuto', (accounts) => {
 		await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
 		// these actions required if AAC will call this actions DIRECTLY (without voting)
 		await daoBase.allowActionByAddress(manageGroups, aacInstance.address);
-		await daoBase.allowActionByAddress(addNewTask, aacInstance.address);
 		await daoBase.allowActionByAddress(issueTokens, aacInstance.address);
 		await daoBase.allowActionByAddress(upgradeDaoContract, aacInstance.address);
 

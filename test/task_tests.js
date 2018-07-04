@@ -69,49 +69,13 @@ contract('Tasks', (accounts) => {
 		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
 		
-		await daoBase.ISSUE_TOKENS().then(result => {
-			issueTokens = result;
-		});
+		issueTokens = await daoBase.ISSUE_TOKENS();
 		
-		await daoBase.MANAGE_GROUPS().then(result => {
-			manageGroups = result;
-		});
+		manageGroups = await daoBase.MANAGE_GROUPS();
 		
-		await daoBase.ADD_NEW_PROPOSAL().then(result => {
-			addNewProposal = result;
-		});
-		
-		await daoBase.UPGRADE_DAO_CONTRACT().then(result => {
-			upgradeDaoContract = result;
-		});
-		
-		await daoBase.ADD_NEW_TASK().then(result => {
-			addNewTask = result;
-		});
-		
-		await daoBase.START_TASK().then(result => {
-			startTask = result;
-		});
-		
-		await daoBase.START_BOUNTY().then(result => {
-			startBounty = result;
-		});
-		
-		await daoBase.MODIFY_MONEY_SCHEME().then(result => {
-			modifyMoneyscheme = result;
-		});
-		
-		await daoBase.WITHDRAW_DONATIONS().then(result => {
-			withdrawDonations = result;
-		});
-		
-		await daoBase.SET_ROOT_WEI_RECEIVER().then(result => {
-			setRootWeiReceiver = result;
-		});
-		
-		await daoBase.BURN_TOKENS().then(result => {
-			burnTokens = result;
-		});
+		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
+
+		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
 
 
 		// add creator as first employee
@@ -124,13 +88,9 @@ contract('Tasks', (accounts) => {
 		await store.transferOwnership(daoBase.address);
 
 		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
-		await daoBase.allowActionByAnyMemberOfGroup(startTask,"Employees");
-
-		await daoBase.allowActionByAddress(startBounty,employee1);
 
 		// this is a list of actions that require voting
 		await daoBase.allowActionByVoting(manageGroups,token.address);
-		await daoBase.allowActionByVoting(addNewTask,token.address);
 		await daoBase.allowActionByVoting(issueTokens,token.address);
 	});
 
@@ -165,6 +125,10 @@ contract('Tasks', (accounts) => {
 			{gas: 10000000, from: creator}
 		);
 
+		startTask = await task.START_TASK();
+		console.log("1");
+		await daoBase.allowActionByAnyMemberOfGroup(startTask,"Employees");
+		console.log("2");
 		// should not become "InProgress" before "Prepaid"
 		th = await CheckExceptions.checkContractThrows(task.startTask,
 			[employee1, {gas: 10000000, from: employee1}]
@@ -289,6 +253,9 @@ contract('Tasks', (accounts) => {
 			{gas: 10000000, from: creator}
 		);
 
+		startTask = await task.START_TASK();
+		await daoBase.allowActionByAnyMemberOfGroup(startTask,"Employees");
+
 		// should become "InProgress" after employee have started task
 		var th = await task.startTask(employee1, {gasPrice:0});
 		var status = await task.getCurrentState();
@@ -381,6 +348,9 @@ contract('Tasks', (accounts) => {
 			{gas: 10000000, from: creator}
 		);
 
+		startTask = await task.START_TASK();
+		await daoBase.allowActionByAnyMemberOfGroup(startTask,"Employees");
+
 		firstEmployeeBalance = await web3.eth.getBalance(employee1);
 
 		// should become "InProgress" after employee have started task
@@ -470,6 +440,9 @@ contract('Tasks', (accounts) => {
 			{gas: 10000000, from: creator}
 		);
 
+		startTask = await task.START_TASK();
+		await daoBase.allowActionByAnyMemberOfGroup(startTask,"Employees");
+
 		// should become "InProgress" after employee have started task
 		var th = await task.startTask(employee1, {gasPrice:0});
 		var status = await task.getCurrentState();
@@ -555,6 +528,10 @@ contract('Tasks', (accounts) => {
 			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
+
+		startTask = await task.START_TASK();
+		await daoBase.allowActionByAnyMemberOfGroup(startTask,"Employees");
+
 		await increaseTimeTo(duration.hours(3))
 		// should become "Cancelled"
 		th = await task.cancell({from:creator});
@@ -584,6 +561,9 @@ contract('Tasks', (accounts) => {
 			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
+
+		startTask = await task.START_TASK();
+		await daoBase.allowActionByAnyMemberOfGroup(startTask,"Employees");
 
 		// should become "PrePaid" after transfer 1 ETH
 		var status = await task.getCurrentState();
@@ -654,6 +634,9 @@ contract('Tasks', (accounts) => {
 			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
+
+		startBounty = await bounty.START_BOUNTY();
+		await daoBase.allowActionByAddress(startBounty,employee1);
 
 		// should not become "InProgress" before "Prepaid"
 		th = await CheckExceptions.checkContractThrows(bounty.startTask,
@@ -838,6 +821,9 @@ contract('Tasks', (accounts) => {
 			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
+			startTask = await task.START_TASK();
+			await daoBase.allowActionByAnyMemberOfGroup(startTask,"Employees");
+
 			var status = await task.getCurrentState();
 			assert.strictEqual(status.toNumber(),0);
 
@@ -928,6 +914,8 @@ contract('Tasks', (accounts) => {
 			timeToCancell,
 			{gas: 10000000, from: creator}
 		);
+			startTask = await task.START_TASK();
+			await daoBase.allowActionByAnyMemberOfGroup(startTask,"Employees");
 
 			var status = await task.getCurrentState();
 			assert.strictEqual(status.toNumber(),0);

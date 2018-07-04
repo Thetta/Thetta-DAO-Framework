@@ -18,6 +18,9 @@ import "../utils/GenericCaller.sol";
 contract MoneyflowAuto is GenericCaller {
 	IMoneyflow mf;
 
+	bytes32 constant public WITHDRAW_DONATIONS = keccak256("withdrawDonations");
+	bytes32 constant public SET_ROOT_WEI_RECEIVER = keccak256("setRootWeiReceiver");
+
 	constructor(IDaoBase _dao, IMoneyflow _mf)public 
 		GenericCaller(_dao)
 	{

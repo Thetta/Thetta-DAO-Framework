@@ -214,53 +214,26 @@ contract('Moneyflow', (accounts) => {
 
 	beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000000000000000000000);
-		await token.mint(creator, 1000, {gasPrice: 0});
+		await token.mint(creator, 1000);
 		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
 		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
 		
-		await daoBase.ISSUE_TOKENS().then(result => {
-			issueTokens = result;
-		});
 		
-		await daoBase.MANAGE_GROUPS().then(result => {
-			manageGroups = result;
-		});
+		issueTokens = await daoBase.ISSUE_TOKENS();
 		
-		await daoBase.ADD_NEW_PROPOSAL().then(result => {
-			addNewProposal = result;
-		});
+		manageGroups = await daoBase.MANAGE_GROUPS();
 		
-		await daoBase.UPGRADE_DAO_CONTRACT().then(result => {
-			upgradeDaoContract = result;
-		});
+		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
+
+		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
 		
-		await daoBase.ADD_NEW_TASK().then(result => {
-			addNewTask = result;
-		});
-		
-		await daoBase.START_TASK().then(result => {
-			startTask = result;
-		});
-		
-		await daoBase.START_BOUNTY().then(result => {
-			startBounty = result;
-		});
-		
-		await daoBase.MODIFY_MONEY_SCHEME().then(result => {
-			modifyMoneyscheme = result;
-		});
-		
-		await daoBase.WITHDRAW_DONATIONS().then(result => {
-			withdrawDonations = result;
-		});
-		
-		await daoBase.SET_ROOT_WEI_RECEIVER().then(result => {
-			setRootWeiReceiver = result;
-		});
-		
-		await daoBase.BURN_TOKENS().then(result => {
-			burnTokens = result;
-		});
+		burnTokens = await daoBase.BURN_TOKENS();
+
+		moneyflowInstance = await MoneyFlow.new(daoBase.address);
+
+		withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
+
+		setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
 		// add creator as first employee
 		await store.addGroupMember(KECCAK256("Employees"), creator);
@@ -272,22 +245,13 @@ contract('Moneyflow', (accounts) => {
 
 		// manually setup the Default organization 
 		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
-		await daoBase.allowActionByAnyMemberOfGroup(modifyMoneyscheme,"Employees");
 		await daoBase.allowActionByAnyMemberOfGroup(setRootWeiReceiver,"Employees");
-
-		await daoBase.allowActionByAnyMemberOfGroup(KECCAK256("openGate"),"Employees");
-		await daoBase.allowActionByAnyMemberOfGroup(KECCAK256("closeGate"),"Employees");
 	
 		// this is a list of actions that require voting
 		await daoBase.allowActionByVoting(manageGroups, token.address);
-		await daoBase.allowActionByVoting(addNewTask, token.address);
 		await daoBase.allowActionByVoting(issueTokens, token.address);
 
-		// THIS permission IS VERY DANGEROUS!!!
-		// allow creator to get donations from the Moneyflow 
 		await daoBase.allowActionByAddress(withdrawDonations, creator);
-
-		moneyflowInstance = await MoneyFlow.new(daoBase.address);
 
 		// moneyflow will not create Proposals in this case 
 		//await daoBase.allowActionByAddress("addNewProposal", moneyflowInstance.address);
