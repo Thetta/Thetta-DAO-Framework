@@ -6,12 +6,11 @@ import "./IDaoBase.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract MoneyflowTable is IWeiReceiver, Ownable{
-
+contract MoneyflowTable is Ownable{//is IWeiReceiver,
+	uint public elementsCount = 0;
 	enum ElementTypes {
 		AbsoluteExpense,
 		RelativeExpense,
-
 		TopdownSplitter,
 		UnsortedSplitter
 	}
@@ -20,9 +19,7 @@ contract MoneyflowTable is IWeiReceiver, Ownable{
 	mapping(uint=>Expense) Expenses;
 	mapping(uint=>Splitter) Splitters;
 
-
 	struct Expense {
-		bool isExist;
 		uint neededAmount;
 		uint neededPercentsMul100;
 		
@@ -35,7 +32,6 @@ contract MoneyflowTable is IWeiReceiver, Ownable{
 		uint momentReceived;
 		bool isMoneyReceived;
 		bool isOpen;
-
 		uint balance;
 	}
 
@@ -114,26 +110,53 @@ contract MoneyflowTable is IWeiReceiver, Ownable{
 		require(_isNeedsMoney(_eId));
 		require(_amount==_getTotalWeiNeeded(_eId, _currentFlow));
 		Expenses[_eId].momentReceived = uint(now);
-		Expenses[_eId].balance = _amount;
+		Expenses[_eId].balance += _amount;
 	}
 
 	function _getMinWeiNeeded(uint _eId)internal view returns(uint) {
-		if(Splitters[_eId].isOpen){
-			return _getMinWeiNeededSplitter(_eId);
+		if((Splitters[_eId].isOpen)&&(ElementTypes.TopdownSplitter==elementsType[_eId])){
+			return _getMinWeiNeededTopdownSplitter(_eId);
+	
+		}else if((Splitters[_eId].isOpen)&&(ElementTypes.UnsortedSplitter==elementsType[_eId])){
+			return _getMinWeiNeededUnsortedSplitter(_eId);
+
 		}else if(Expenses[_eId].isOpen){
 			return _getMinWeiNeededExpense(_eId);
+
 		}else {
 			return 0;
 		}
 	}
 
-	function _getMinWeiNeededSplitter(uint _eId)internal view returns(uint) {
-		uint total = 0;
+	function _getMinWeiNeededUnsortedSplitter(uint _eId) internal view returns(uint) {
+		uint absSum = 0;
+		uint percentsMul100ReverseSum = 10000;
+
 		for(uint i=0; i<Splitters[_eId].outputs.length; ++i){
-			uint needed = _getMinWeiNeeded(Splitters[_eId].outputs[i]);
-			total = total + needed;
+			if(ElementTypes.RelativeExpense==elementsType[Splitters[_eId].outputs[i]]){
+				percentsMul100ReverseSum -= Expenses[Splitters[_eId].outputs[i]].neededPercentsMul100;
+			}else{
+				absSum += _getMinWeiNeeded(Splitters[_eId].outputs[i]);
+			}
 		}
-		return total;
+
+		if(percentsMul100ReverseSum==0){
+			return 0;
+		}else{
+			return 10000*absSum/percentsMul100ReverseSum;
+		}
+	}
+
+	function _getMinWeiNeededTopdownSplitter(uint _eId)internal view returns(uint) {
+		uint out = 0;
+		for(uint i=Splitters[_eId].outputs.length; i>0; --i){
+			if(ElementTypes.RelativeExpense==elementsType[Splitters[_eId].outputs[i]]){
+				out = 10000 * out / Expenses[Splitters[_eId].outputs[i]].neededPercentsMul100;
+			}else{
+				out += _getMinWeiNeeded(Splitters[_eId].outputs[i]);
+			}
+		}
+		return out;
 	}
 
 	function _getMinWeiNeededExpense(uint _eId)internal view returns(uint) {
@@ -190,6 +213,10 @@ contract MoneyflowTable is IWeiReceiver, Ownable{
 		}
 	}
 
+	function getElementBalance(uint _eId)external view returns(uint) {
+		return Expenses[_eId].balance;
+	}
+
 
 	// -------------------- EXTERNAL IWEIRECEIVER FUNCTIONS -------------------- for all table
 
@@ -205,28 +232,112 @@ contract MoneyflowTable is IWeiReceiver, Ownable{
 		return _getMinWeiNeeded(0);
 	}
 
-	function getTotalWeiNeeded(uint _currentFlow)external view returns(uint) {
+	function getTotalWeiNeeded()external view returns(uint) {
 		return _getMinWeiNeeded(0);
 	}
 
 	// -------------------- EXTERNAL SCHEME FUNCTIONS -------------------- 
-	/*
-	function addRelativeExpense()external returns(uint){}
-	function addRelativeExpense()external returns(uint){}
 
-	function addTopdownSplitter()external returns(uint){}
-	function addUnsortedSplitter()external returns(uint){}
+	function addAbsoluteExpense(uint _neededAmount, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)external returns(uint){
+		Expenses[elementsCount] = Expense(
+			_neededAmount, 0,
+			_periodHours, _isPeriodic, _isAccumulateDebt, _output,
+			0, false, true, 0
+		);
+		elementsType[elementsCount] = ElementTypes.AbsoluteExpense;
+		elementsCount += 1;
+		return elementsCount-1;
+	}
 
+	function addRelativeExpense(uint _neededPercentsMul100, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)external returns(uint){		
+		Expenses[elementsCount] = Expense(
+			0, _neededPercentsMul100,
+			_periodHours, _isPeriodic, _isAccumulateDebt, _output,
+			0, false, true, 0
+		);	
+		elementsType[elementsCount] = ElementTypes.RelativeExpense;
+		elementsCount += 1;	
+		return elementsCount-1;
+	}
+
+	function addTopdownSplitter()external returns(uint){
+		elementsType[elementsCount] = ElementTypes.TopdownSplitter;	
+		uint[] memory emptyOutputs;
+		Splitters[elementsCount] = Splitter(true, emptyOutputs);
+		elementsCount += 1;
+		return 0;
+	}
+
+	function addUnsortedSplitter()external returns(uint){
+		elementsType[elementsCount] = ElementTypes.UnsortedSplitter;
+		uint[] memory emptyOutputs;
+		Splitters[elementsCount] = Splitter(true, emptyOutputs);
+		elementsCount += 1;
+		return elementsCount-1;
+	}
+
+	function addChild(uint _splitterId, uint _childId)external{
+		// add require`s
+		Splitters[_splitterId].outputs.push(_childId);
+	}
 
 	// -------------------- EXTERNAL CONTROL FUNCTIONS -------------------- 
 	
-	function openElement()external {}
-	function closeElement()external {}
+	function openElement(uint _eId) external {
+		if((ElementTypes.AbsoluteExpense==elementsType[_eId])||
+		(ElementTypes.RelativeExpense==elementsType[_eId])){
+			Expenses[_eId].isOpen = true;
 
-	function withdrawFundsFromElement(uint _eId)external {}*/
+		}else if((ElementTypes.UnsortedSplitter==elementsType[_eId])||
+		(ElementTypes.TopdownSplitter==elementsType[_eId])){
+			Splitters[_eId].isOpen = true;
 
+		}else{
+			revert();
+		}
+	}
+
+	function closeElement(uint _eId)external {
+		if((ElementTypes.AbsoluteExpense==elementsType[_eId])||
+		   (ElementTypes.RelativeExpense==elementsType[_eId])){
+				Expenses[_eId].isOpen = false;
+		}else if((ElementTypes.UnsortedSplitter==elementsType[_eId])||
+		         (ElementTypes.TopdownSplitter==elementsType[_eId])){
+			Splitters[_eId].isOpen = false;
+		}else{
+			revert();
+		}		
+	}
+
+	function isOpen(uint _eId) external view returns(bool){
+		if((ElementTypes.AbsoluteExpense==elementsType[_eId])||
+		   (ElementTypes.RelativeExpense==elementsType[_eId])){
+				return Expenses[_eId].isOpen;
+		}else if((ElementTypes.UnsortedSplitter==elementsType[_eId])||
+		         (ElementTypes.TopdownSplitter==elementsType[_eId])){
+			return Splitters[_eId].isOpen;
+		}else{
+			revert();
+		}	
+	}
+
+	function getChildrenCount(uint _eId)external view returns(uint){
+		require((ElementTypes.UnsortedSplitter==elementsType[_eId])||(ElementTypes.TopdownSplitter==elementsType[_eId]));
+		return Splitters[_eId].outputs.length;
+	}
+
+	function getChildId(uint _eId, uint _index)external view returns(uint){
+		require((ElementTypes.UnsortedSplitter==elementsType[_eId])||(ElementTypes.TopdownSplitter==elementsType[_eId]));
+		require(Splitters[_eId].outputs.length>_index);
+		return Splitters[_eId].outputs[_index];
+	}
+
+	function withdrawFundsFromElement(uint _eId)external {
+		require((ElementTypes.AbsoluteExpense==elementsType[_eId])||(ElementTypes.RelativeExpense==elementsType[_eId]));
+		Expenses[_eId].output.processFunds.value(Expenses[_eId].balance)(Expenses[_eId].balance);
+		Expenses[_eId].balance = 0;
+	}
 
 	function() external {
 	}
-
 }
