@@ -24,6 +24,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 	uint64 genesis;
 	uint public quorumPercent;
 	uint public consensusPercent;
+	uint public votingID;
 	bool public isQuadraticVoting;
 	StdDaoToken stdDaoToken;
 
@@ -65,6 +66,8 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		consensusPercent = _consensusPercent;
 		isQuadraticVoting = _isQuadraticVoting;
 		stdDaoToken = StdDaoToken(_tokenAddress);
+		votingID = stdDaoToken.startNewVoting();
+
 		genesis = uint64(now);
 
 		internalVote(_origin, true);
@@ -138,7 +141,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 	}
 
 	function internalVote(address _who, bool _yes) internal {
-		uint tokenBalance = stdDaoToken.balanceOfForVotings(_who);
+		uint tokenBalance = stdDaoToken.getBalanceAtVoting(votingID, _who);
 
 		require(!addressVotedAlready[_who]);
 

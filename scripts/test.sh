@@ -24,4 +24,4 @@ else
 fi
 
 # truffle migrate
-truffle test $1
+truffle test ./test/voting_simple_token_tests.js
