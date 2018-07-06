@@ -702,4 +702,30 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 	});
+
+	it('check that we are not including transfers of tokens during voting',async() => {
+
+		let employee4Balance = await token.balanceOf(employee4);
+		let employee5Balance = await token.balanceOf(employee5);
+
+		assert.equal(employee4Balance.toNumber(), 1);
+		assert.equal(employee5Balance.toNumber(), 0);
+
+		await token.startVoting();
+
+		await token.transfer(employee5, 1, {from: employee4});
+
+		employee4Balance = await token.balanceOf(employee4);
+		employee5Balance = await token.balanceOf(employee5);
+
+		let employee4VotingBalance = await token.balanceOfForVotings(employee4);
+		let employee5VotingBalance = await token.balanceOfForVotings(employee5);
+
+		assert.equal(employee4Balance.toNumber(), 0);
+		assert.equal(employee5Balance.toNumber(), 1);	
+
+		assert.equal(employee4VotingBalance.toNumber(), 1);
+		assert.equal(employee5VotingBalance.toNumber(), 0);	
+
+	});
 });

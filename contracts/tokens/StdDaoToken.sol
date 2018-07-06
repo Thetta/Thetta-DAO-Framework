@@ -26,6 +26,10 @@ contract StdDaoToken is MintableToken, PausableToken, DetailedERC20 {
 	bool isMintable;
 	bool isBurnable;
 	bool isPausable;
+	bool isVotingPeriod = false;
+
+	mapping (address => uint) public balancesForVotingPeriod;
+	
 
 	event Burn(address indexed burner, uint256 value);
 
@@ -54,10 +58,62 @@ contract StdDaoToken is MintableToken, PausableToken, DetailedERC20 {
 		isPausable = _isPausable;
 	}
 
+	function startVoting() public {
+		require (!isVotingPeriod);
+		isVotingPeriod = true;
+	}
+
+	function finishVoting() public {
+		require (isVotingPeriod);
+		isVotingPeriod = false;
+	}
+	
+
+	function transfer(address _to, uint256 _value) public whenNotPaused returns (bool) {
+		require(_to != address(0));
+		require(_value <= balances[msg.sender]);
+
+		if(!isVotingPeriod){
+			balancesForVotingPeriod[msg.sender] = balancesForVotingPeriod[msg.sender].sub(_value);
+			balancesForVotingPeriod[_to] = balancesForVotingPeriod[_to].add(_value);
+		}
+
+		balances[msg.sender] = balances[msg.sender].sub(_value);
+		balances[_to] = balances[_to].add(_value);
+		emit Transfer(msg.sender, _to, _value);
+		return true;
+	}
+
+	function transferFrom(address _from, address _to, uint256 _value) public whenNotPaused returns (bool) {
+		require(_to != address(0));
+		require(_value <= balances[_from]);
+		require(_value <= allowed[_from][msg.sender]);
+
+		if(!isVotingPeriod){
+			balancesForVotingPeriod[_from] = balancesForVotingPeriod[_from].sub(_value);
+			balancesForVotingPeriod[_to] = balancesForVotingPeriod[_to].add(_value);
+		}
+
+		balances[_from] = balances[_from].sub(_value);
+		balances[_to] = balances[_to].add(_value);
+		allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
+		emit Transfer(_from, _to, _value);
+		return true;
+	}
+
+	function balanceOfForVotings(address _owner) public view returns (uint256) {
+		if(isVotingPeriod){
+			return balancesForVotingPeriod[_owner];
+		}
+		return balances[_owner];
+	}
+
 	// this is BurnableToken method
 	function burn(address _who, uint256 _value) isBurnable_ onlyOwner public{
 		require(_value <= balances[_who]);
-
+		if(!isVotingPeriod){
+			balancesForVotingPeriod[_who] = balancesForVotingPeriod[_who].sub(_value);
+		}
 		balances[_who] = balances[_who].sub(_value);
 		totalSupply_ = totalSupply_.sub(_value);
 		emit Burn(_who, _value);
@@ -67,6 +123,9 @@ contract StdDaoToken is MintableToken, PausableToken, DetailedERC20 {
 	// this is an override of MintableToken method with cap
 	function mint(address _to, uint256 _amount) isMintable_ onlyOwner public returns(bool){
 		require(totalSupply_.add(_amount) <= cap);
+		if(!isVotingPeriod){
+			balancesForVotingPeriod[_to] = balancesForVotingPeriod[_to].add(_amount);
+		}
 		super.mint(_to, _amount);
 		return true;
 	}
