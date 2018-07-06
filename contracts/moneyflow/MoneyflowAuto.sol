@@ -18,6 +18,9 @@ import "../utils/GenericCaller.sol";
 contract MoneyflowAuto is GenericCaller {
 	IMoneyflow mf;
 
+	bytes32 constant public WITHDRAW_DONATIONS = keccak256("withdrawDonations");
+	bytes32 constant public SET_ROOT_WEI_RECEIVER = keccak256("setRootWeiReceiver");
+
 	constructor(IDaoBase _dao, IMoneyflow _mf)public 
 		GenericCaller(_dao)
 	{
@@ -39,13 +42,13 @@ contract MoneyflowAuto is GenericCaller {
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(address(_wt));
 
-		return doAction("setRootWeiReceiver", mf, msg.sender,"setRootWeiReceiverGeneric(bytes32[])",params);
+		return doAction(SET_ROOT_WEI_RECEIVER, mf, msg.sender,"setRootWeiReceiverGeneric(bytes32[])",params);
 	}
 
 	function withdrawDonationsToAuto(address _wt) public returns(address voteOut){
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(_wt);
 
-		return doAction("withdrawDonations", mf, msg.sender,"withdrawDonationsToGeneric(bytes32[])",params);
+		return doAction(WITHDRAW_DONATIONS, mf, msg.sender,"withdrawDonationsToGeneric(bytes32[])",params);
 	}
 }

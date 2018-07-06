@@ -74,6 +74,13 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	let daoBase;
 	let moneyflowInstance;
 	let aacInstance;
+	
+	let issueTokens;
+	let manageGroups;
+	let addNewProposal;
+	let addNewTask;
+	let withdrawDonations;
+	let setRootWeiReceiver;
 
 	let money = web3.toWei(0.001, "ether");
 
@@ -94,28 +101,37 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		let store = await DaoStorage.new([token.address],{ from: creator });
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
+		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator});
+		
+		issueTokens = await daoBase.ISSUE_TOKENS();
+		
+		manageGroups = await daoBase.MANAGE_GROUPS();
 
-		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
+		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
+
+		withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
+
+		setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
 		await store.addGroupMember(KECCAK256("Employees"), creator);
-		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
-		await store.allowActionByAddress(KECCAK256("issueTokens"),creator);
+		await store.allowActionByAddress(manageGroups,creator);
+		await store.allowActionByAddress(issueTokens,creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
 
 		// AAC requires special permissions
-		await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
-		await daoBase.allowActionByAddress("withdrawDonations", aacInstance.address);
-		await daoBase.allowActionByAddress("setRootWeiReceiver", aacInstance.address);
+		await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
+		await daoBase.allowActionByAddress(withdrawDonations, aacInstance.address);
+		await daoBase.allowActionByAddress(setRootWeiReceiver, aacInstance.address);
 
 		// do not forget to transfer ownership
-		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
 
-		await daoBase.allowActionByVoting("manageGroups", token.address);
-		await daoBase.allowActionByVoting("issueTokens", token.address);
-		await daoBase.allowActionByVoting("addNewProposal", token.address);
+		await daoBase.allowActionByVoting(manageGroups, token.address);
+		await daoBase.allowActionByVoting(issueTokens, token.address);
+		await daoBase.allowActionByVoting(addNewProposal, token.address);
 
 		// check permissions (permissions must be blocked)
 		await daoBase.addGroupMember("Employees", employee1);
@@ -136,7 +152,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.1. Q Scenario: 5 employees, 5/5 voted yes, params(100,100) => isYes==true',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8(""), UintToToBytes32(100), UintToToBytes32(100), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8(""), UintToToBytes32(100), UintToToBytes32(100), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -181,7 +197,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.2. Q Scenario: 5 employees, 1/5 voted yes, params(10,100) => isYes==true',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(10), UintToToBytes32(100), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(10), UintToToBytes32(100), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -204,7 +220,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.3. Q Scenario: 5 employees, 1/5 voted yes, 4/5 voted no, params(100,10) => isYes==true',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(10), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(10), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -254,7 +270,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.4. Q Scenario: 5 employees, 1/5 voted yes, 4/5 voted no, params(100,20) => isYes==true',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(20), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(20), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -299,7 +315,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.5. Q Scenario: 5 employees, 1/5 voted yes, 4/5 voted no, params(100,21) => isYes==false',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(21), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(21), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -344,7 +360,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.6. Q Scenario: 5 employees, 1/5 voted yes, 2/5 voted no, params(50,50) => isYes==false',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -373,7 +389,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.7. Q Scenario: 5 employees, 2/5 voted yes, 1/5 voted no, params(50,50) => isYes==true',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -402,7 +418,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.8. T Scenario: 5 employees, 2/5 voted yes, 1/5 voted no, params(50,50) => isYes==true',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -433,7 +449,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.9. T Scenario: no yes yes, params(100,20) => isYes==false',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(20), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(20), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -462,7 +478,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.10. T Scenario: no no no yes yes, params(100,20) => isYes==true',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(20), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(20), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -494,7 +510,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.11. T Scenario: yes no no yes, params(50,50) => isYes==true',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -535,7 +551,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.12. T Scenario: yes, params(20,20) => isYes==true',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(20), UintToToBytes32(20), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(20), UintToToBytes32(20), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -558,7 +574,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.13. T Scenario: yes yes no no, params(51,51) => isYes==false',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(51), UintToToBytes32(51), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(51), UintToToBytes32(51), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -586,7 +602,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.14. T Scenario: yes, params(21,21) => isYes==false',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(21), UintToToBytes32(21), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(21), UintToToBytes32(21), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -609,7 +625,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.15. T Scenario: yes no, params(21,21) => isYes==false',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(21), UintToToBytes32(51), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(21), UintToToBytes32(51), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -634,7 +650,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.16. Q Scenario: creator have 11/15 tokens, (50,50) => isYes==true',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
 		await daoBase.issueTokens(token.address, creator, 10);
 
 		let totalSupply = await token.totalSupply();
@@ -659,7 +675,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.17. Q Scenario: creator have 1/15 tokens, employee1 have 10 and vote no, (50,50) => isYes==false',async() => {
-		await aacInstance.setVotingParams("setRootWeiReceiver", VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
 		await daoBase.issueTokens(token.address, employee1, 10);
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:creator});
