@@ -115,10 +115,7 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 			}
 		}
 
-		balances[msg.sender] = balances[msg.sender].sub(_value);
-		balances[_to] = balances[_to].add(_value);
-		emit Transfer(msg.sender, _to, _value);
-		return true;
+		return super.transfer(_to, _value);
 	}
 
 	function transferFrom(address _from, address _to, uint256 _value) public whenNotPaused returns (bool) {
@@ -141,11 +138,7 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 			}
 		}
 
-		balances[_from] = balances[_from].sub(_value);
-		balances[_to] = balances[_to].add(_value);
-		allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
-		emit Transfer(_from, _to, _value);
-		return true;
+		return super.transferFrom(_from, _to, _value);
 	}
 
 	function getBalanceAtVoting(uint _votingID, address _owner) public view returns (uint256) {

@@ -15,6 +15,13 @@ var IProposal = artifacts.require("./IProposal");
 
 var CheckExceptions = require('./utils/checkexceptions');
 
+const BigNumber = web3.BigNumber;
+
+require('chai')
+  .use(require('chai-as-promised'))
+  .use(require('chai-bignumber')(BigNumber))
+  .should();
+
 function KECCAK256 (x){
 	return web3.sha3(x);
 }
@@ -716,13 +723,19 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const events = tx.logs.filter(l => l.event == 'VotingCreated');
 		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
+		let employee4VotingBalance = await token.getBalanceAtVoting(votingID, employee4);
+		let employee5VotingBalance = await token.getBalanceAtVoting(votingID, employee5);
+
+		assert.equal(employee4VotingBalance.toNumber(), 1);
+		assert.equal(employee5VotingBalance.toNumber(), 0);
+
 		await token.transfer(employee5, 1, {from: employee4});
 
 		employee4Balance = await token.balanceOf(employee4);
 		employee5Balance = await token.balanceOf(employee5);
 
-		let employee4VotingBalance = await token.getBalanceAtVoting(votingID, employee4);
-		let employee5VotingBalance = await token.getBalanceAtVoting(votingID, employee5);
+		employee4VotingBalance = await token.getBalanceAtVoting(votingID, employee4);
+		employee5VotingBalance = await token.getBalanceAtVoting(votingID, employee5);
 
 		assert.equal(employee4Balance.toNumber(), 0);
 		assert.equal(employee5Balance.toNumber(), 1);	
@@ -753,14 +766,20 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const events = tx.logs.filter(l => l.event == 'VotingCreated');
 		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
+		let employee4VotingBalance = await token.getBalanceAtVoting(votingID, employee4);
+		let employee5VotingBalance = await token.getBalanceAtVoting(votingID, employee5);
+
+		assert.equal(employee4VotingBalance.toNumber(), 1);
+		assert.equal(employee5VotingBalance.toNumber(), 0);
+
 		await token.approve(employee4, 1, {from: employee4});
 		await token.transferFrom(employee4, employee5, 1, {from: employee4});
 
 		employee4Balance = await token.balanceOf(employee4);
 		employee5Balance = await token.balanceOf(employee5);
 
-		let employee4VotingBalance = await token.getBalanceAtVoting(votingID, employee4);
-		let employee5VotingBalance = await token.getBalanceAtVoting(votingID, employee5);
+		employee4VotingBalance = await token.getBalanceAtVoting(votingID, employee4);
+		employee5VotingBalance = await token.getBalanceAtVoting(votingID, employee5);
 
 		assert.equal(employee4Balance.toNumber(), 0);
 		assert.equal(employee5Balance.toNumber(), 1);	
@@ -775,6 +794,70 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 
 		assert.equal(employee4VotingBalance.toNumber(), 0);
 		assert.equal(employee5VotingBalance.toNumber(), 1);
+
+	});
+
+	it('check finishVoting throws revert() when wrong VotingID',async() => {
+
+		let employee4Balance = await token.balanceOf(employee4);
+		let employee5Balance = await token.balanceOf(employee5);
+
+		assert.equal(employee4Balance.toNumber(), 1);
+		assert.equal(employee5Balance.toNumber(), 0);
+
+		const tx = await token.startNewVoting();
+
+		const events = tx.logs.filter(l => l.event == 'VotingCreated');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
+		let employee4VotingBalance = await token.getBalanceAtVoting(votingID, employee4);
+		let employee5VotingBalance = await token.getBalanceAtVoting(votingID, employee5);
+
+		assert.equal(employee4VotingBalance.toNumber(), 1);
+		assert.equal(employee5VotingBalance.toNumber(), 0);
+
+		await token.approve(employee4, 1, {from: employee4});
+		await token.transferFrom(employee4, employee5, 1, {from: employee4});
+
+		employee4Balance = await token.balanceOf(employee4);
+		employee5Balance = await token.balanceOf(employee5);
+
+		employee4VotingBalance = await token.getBalanceAtVoting(votingID, employee4);
+		employee5VotingBalance = await token.getBalanceAtVoting(votingID, employee5);
+
+		assert.equal(employee4Balance.toNumber(), 0);
+		assert.equal(employee5Balance.toNumber(), 1);	
+
+		assert.equal(employee4VotingBalance.toNumber(), 1);
+		assert.equal(employee5VotingBalance.toNumber(), 0);
+
+		await token.finishVoting(75).should.be.rejectedWith('revert');
+
+	});
+
+	it('check that we can not create > 20 votings separatly',async() => {
+
+		await token.startNewVoting();//1
+		await token.startNewVoting();//2
+		await token.startNewVoting();//3
+		await token.startNewVoting();//4
+		await token.startNewVoting();//5
+		await token.startNewVoting();//6
+		await token.startNewVoting();//7
+		await token.startNewVoting();//8
+		await token.startNewVoting();//9
+		await token.startNewVoting();//10
+		await token.startNewVoting();//11
+		await token.startNewVoting();//12
+		await token.startNewVoting();//13
+		await token.startNewVoting();//14
+		await token.startNewVoting();//15
+		await token.startNewVoting();//16
+		await token.startNewVoting();//17
+		await token.startNewVoting();//18
+		await token.startNewVoting();//19
+		await token.startNewVoting();//20
+		await token.startNewVoting().should.be.rejectedWith('revert'); //should be revert();
 
 	});
 
