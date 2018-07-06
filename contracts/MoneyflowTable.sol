@@ -14,6 +14,9 @@ contract MoneyflowTable is Ownable{//is IWeiReceiver,
 		TopdownSplitter,
 		UnsortedSplitter
 	}
+	event elementAdded(uint _eId, ElementTypes _eType);
+	event consoleUint(string _event, uint _val);
+	event consoleBool(string _event, bool _val);
 
 	mapping(uint=>ElementTypes) elementsType;
 	mapping(uint=>Expense) Expenses;
@@ -114,16 +117,24 @@ contract MoneyflowTable is Ownable{//is IWeiReceiver,
 	}
 
 	function _getMinWeiNeeded(uint _eId)internal view returns(uint) {
+		emit consoleUint('--------------- EID', _eId);
+		emit consoleBool('Is topdown', ElementTypes.TopdownSplitter==elementsType[_eId]);
+		emit consoleBool('Is unsorted', ElementTypes.UnsortedSplitter==elementsType[_eId]);
+		emit consoleBool('Is opened splitter', Splitters[_eId].isOpen);
 		if((Splitters[_eId].isOpen)&&(ElementTypes.TopdownSplitter==elementsType[_eId])){
+			emit consoleUint('_getMinWeiNeeded', 1);
 			return _getMinWeiNeededTopdownSplitter(_eId);
 	
 		}else if((Splitters[_eId].isOpen)&&(ElementTypes.UnsortedSplitter==elementsType[_eId])){
+			emit consoleUint('_getMinWeiNeeded', 2);
 			return _getMinWeiNeededUnsortedSplitter(_eId);
 
 		}else if(Expenses[_eId].isOpen){
+			emit consoleUint('_getMinWeiNeeded', 3);
 			return _getMinWeiNeededExpense(_eId);
 
 		}else {
+			emit consoleUint('_getMinWeiNeeded', 4);
 			return 0;
 		}
 	}
@@ -149,7 +160,9 @@ contract MoneyflowTable is Ownable{//is IWeiReceiver,
 
 	function _getMinWeiNeededTopdownSplitter(uint _eId)internal view returns(uint) {
 		uint out = 0;
-		for(uint i=Splitters[_eId].outputs.length; i>0; --i){
+		for(uint j=0; j<Splitters[_eId].outputs.length; ++j){
+			uint i = Splitters[_eId].outputs.length - j - 1;
+			emit consoleUint('iteration', i);
 			if(ElementTypes.RelativeExpense==elementsType[Splitters[_eId].outputs[i]]){
 				out = 10000 * out / Expenses[Splitters[_eId].outputs[i]].neededPercentsMul100;
 			}else{
@@ -232,48 +245,48 @@ contract MoneyflowTable is Ownable{//is IWeiReceiver,
 		return _getMinWeiNeeded(0);
 	}
 
-	function getTotalWeiNeeded()external view returns(uint) {
-		return _getMinWeiNeeded(0);
+	function getTotalWeiNeeded(uint _currentFlow)external view returns(uint) {
+		return _getTotalWeiNeeded(0, _currentFlow);
 	}
 
 	// -------------------- EXTERNAL SCHEME FUNCTIONS -------------------- 
 
-	function addAbsoluteExpense(uint _neededAmount, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)external returns(uint){
+	function addAbsoluteExpense(uint _neededAmount, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)external {
 		Expenses[elementsCount] = Expense(
 			_neededAmount, 0,
 			_periodHours, _isPeriodic, _isAccumulateDebt, _output,
 			0, false, true, 0
 		);
 		elementsType[elementsCount] = ElementTypes.AbsoluteExpense;
+		emit elementAdded(elementsCount, ElementTypes.AbsoluteExpense);
 		elementsCount += 1;
-		return elementsCount-1;
 	}
 
-	function addRelativeExpense(uint _neededPercentsMul100, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)external returns(uint){		
+	function addRelativeExpense(uint _neededPercentsMul100, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)external {		
 		Expenses[elementsCount] = Expense(
 			0, _neededPercentsMul100,
 			_periodHours, _isPeriodic, _isAccumulateDebt, _output,
 			0, false, true, 0
 		);	
 		elementsType[elementsCount] = ElementTypes.RelativeExpense;
+		emit elementAdded(elementsCount, ElementTypes.RelativeExpense);
 		elementsCount += 1;	
-		return elementsCount-1;
 	}
 
-	function addTopdownSplitter()external returns(uint){
+	function addTopdownSplitter()external {
+		uint[] memory emptyOutputs;
+		Splitters[elementsCount] = Splitter(true, emptyOutputs);
 		elementsType[elementsCount] = ElementTypes.TopdownSplitter;	
-		uint[] memory emptyOutputs;
-		Splitters[elementsCount] = Splitter(true, emptyOutputs);
+		emit elementAdded(elementsCount, ElementTypes.TopdownSplitter);
 		elementsCount += 1;
-		return 0;
 	}
 
-	function addUnsortedSplitter()external returns(uint){
-		elementsType[elementsCount] = ElementTypes.UnsortedSplitter;
+	function addUnsortedSplitter()external {
 		uint[] memory emptyOutputs;
 		Splitters[elementsCount] = Splitter(true, emptyOutputs);
+		elementsType[elementsCount] = ElementTypes.UnsortedSplitter;
+		emit elementAdded(elementsCount, ElementTypes.UnsortedSplitter);
 		elementsCount += 1;
-		return elementsCount-1;
 	}
 
 	function addChild(uint _splitterId, uint _childId)external{
