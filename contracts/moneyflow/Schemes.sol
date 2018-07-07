@@ -40,6 +40,10 @@ contract DefaultMoneyflowScheme is DaoClient {
 	WeiFund reserveFund;
 	WeiFund dividendsFund;
 
+	bytes32 constant public ADD_NEW_TASK = keccak256("addNewTask");
+	bytes32 constant public MODIFY_MONEY_SCHEME = keccak256("modifyMoneyscheme");
+	bytes32 constant public FLUSH_RESERVE_FUND_TO = keccak256("flushReserveFundTo");
+
 /////
 	constructor(IDaoBase _dao, address _fundOutput, 
 		uint _percentsReserve, uint _dividendsReserve) public 
@@ -87,14 +91,14 @@ contract DefaultMoneyflowScheme is DaoClient {
 
 ////////////////////////////////////////////////////////////////
 	// use MoneyflowAuto to add new task with voting! 
-	function addNewTask(IWeiReceiver _wr) public isCanDo("addNewTask") {
+	function addNewTask(IWeiReceiver _wr) public isCanDo(ADD_NEW_TASK) {
 		// 1 - add new task immediately
 		//tasks.addChild(_wr);
 	}
 
 	// if _employee is not in the flow -> will add new WeiAbsoluteExpense
 	// if _employee is already in the flow -> will update the needed amount, i.e. call setNeededWei()
-	function setSalaryForEmployee(address _employee, uint _weiPerMonth) public isCanDo("modifyMoneyscheme") {
+	function setSalaryForEmployee(address _employee, uint _weiPerMonth) public isCanDo(MODIFY_MONEY_SCHEME) {
 		// TODO: is voting required? Move voting to MoneyflowAuto!
 
 		// TODO: implement
@@ -108,7 +112,7 @@ contract DefaultMoneyflowScheme is DaoClient {
 		// 2 - modify or add 
 	}
 
-	function setBonusForEmployee(address _employee, uint _bonusPercentsPerMonth) public isCanDo("modifyMoneyscheme") {
+	function setBonusForEmployee(address _employee, uint _bonusPercentsPerMonth) public isCanDo(MODIFY_MONEY_SCHEME) {
 		// TODO: is voting required? Move voting to MoneyflowAuto!
 
 		// TODO: implement
@@ -116,18 +120,18 @@ contract DefaultMoneyflowScheme is DaoClient {
 
 	// to "remove" the spend -> set (_weiPerMonth==0)
 	// this method WILL NOT really remove the item!
-	function setOtherSpend(string _name, uint _weiPerMonth) public isCanDo("modifyMoneyscheme") {
+	function setOtherSpend(string _name, uint _weiPerMonth) public isCanDo(MODIFY_MONEY_SCHEME) {
 		// TODO: is voting required? Move voting to MoneyflowAuto!
 
 		// TODO: implement
 	}
 
-	function flushReseveFundTo(address _to) public isCanDo("flushReserveFundTo"){
+	function flushReseveFundTo(address _to) public isCanDo(FLUSH_RESERVE_FUND_TO){
 		// TODO:
 	}
 
 	// TODO: Currently dividens fund is just another type of Reserve fund (because DividendFund is not implemented yet) 
-	function flushDividendsFundTo(address _to) public isCanDo("flushDividendsFundTo"){
+	function flushDividendsFundTo(address _to) public isCanDo(FLUSH_RESERVE_FUND_TO){
 		// TODO:
 	}
 }

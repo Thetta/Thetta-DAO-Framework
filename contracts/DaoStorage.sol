@@ -53,6 +53,13 @@ contract DaoStorageGroups is Ownable {
 		removeGroupFromMemberGroups(_groupHash, _member);
 	}
 
+	function getMemberByIndex(bytes32 _groupHash, uint _index) public view returns(address) {
+		require(groupToAddresses[_groupHash].length > 0);
+		require(groupToAddresses[_groupHash].length - 1 >= _index);
+
+		return groupToAddresses[_groupHash][_index];
+	}
+
 	function getIndexOfAddress(address _item, address[] array)internal pure returns(uint){
 		for(uint j=0; j<array.length; ++j){
 			if(array[j]==_item){

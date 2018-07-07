@@ -94,7 +94,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
    */
 
-   modifier isCanDo(string _what){
+   modifier isCanDo(bytes32 _what){
 		require(dao.isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
@@ -261,13 +261,16 @@ contract WeiGenericTask is WeiAbsoluteExpense {
  * @dev Can be prepaid or postpaid. 
 */
 contract WeiTask is WeiGenericTask {
+
+	bytes32 constant public START_TASK = keccak256("startTask");
+
 	constructor(IDaoBase _dao, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) public 
 		WeiGenericTask(_dao, _caption, _desc, _isPostpaid, _isDonation, _neededWei, _deadlineTime, _timeToCancell) 
 	{
 	}
 
 	// callable by any Employee of the current DaoBase or Owner
-	function startTask(address _employee) public isCanDo("startTask") {
+	function startTask(address _employee) public isCanDo(START_TASK) {
 		require(_getCurrentState()==State.Init || _getCurrentState()==State.PrePaid);
 
 		if(_getCurrentState()==State.Init){
@@ -287,13 +290,16 @@ contract WeiTask is WeiGenericTask {
  * That is why bounty is always prepaid 
 */
 contract WeiBounty is WeiGenericTask {
+
+	bytes32 constant public START_BOUNTY = keccak256("startBounty");
+	
 	constructor(IDaoBase _dao, string _caption, string _desc, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) public 
 		WeiGenericTask(_dao, _caption, _desc, false, false, _neededWei, _deadlineTime, _timeToCancell) 
 	{
 	}
 
 	// callable by anyone
-	function startTask() public isCanDo("startBounty") {
+	function startTask() public isCanDo(START_BOUNTY) {
 		require(_getCurrentState()==State.PrePaid);
 		startTime = now;
 		employee = msg.sender;
