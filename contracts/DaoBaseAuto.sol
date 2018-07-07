@@ -14,6 +14,11 @@ import "./utils/GenericCaller.sol";
  * Please see 'tests' folder for example.
 */
 contract DaoBaseAuto is GenericCaller {
+
+	bytes32 constant public MANAGE_GROUPS = keccak256("manageGroups");
+	bytes32 constant public ISSUE_TOKENS = keccak256("issueTokens");
+	bytes32 constant public UPGRADE_DAO_CONTRACT = keccak256("upgradeDaoContract");
+
 	constructor(IDaoBase _dao)public
 		GenericCaller(_dao)
 	{
@@ -24,7 +29,7 @@ contract DaoBaseAuto is GenericCaller {
 		params[0] = bytes32(keccak256(_group));
 		params[1] = bytes32(_a);
 
-	   return doAction("manageGroups", dao, msg.sender,"addGroupMemberGeneric(bytes32[])",params);
+	   return doAction(MANAGE_GROUPS, dao, msg.sender,"addGroupMemberGeneric(bytes32[])",params);
 	}
 
 	function issueTokensAuto(address _token, address _to, uint _amount) public returns(address proposalOut){
@@ -33,14 +38,14 @@ contract DaoBaseAuto is GenericCaller {
 		params[1] = bytes32(_to);
 		params[2] = bytes32(_amount);
 
-	   return doAction("issueTokens", dao, msg.sender,"issueTokensGeneric(bytes32[])",params);
+	   return doAction(ISSUE_TOKENS, dao, msg.sender,"issueTokensGeneric(bytes32[])",params);
 	}
 
 	function upgradeDaoContractAuto(address _newMc) public returns(address proposalOut){
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(_newMc);
 
-		return doAction("upgradeDaoContract", dao, msg.sender,"upgradeDaoContractGeneric(bytes32[])",params);
+		return doAction(UPGRADE_DAO_CONTRACT, dao, msg.sender,"upgradeDaoContractGeneric(bytes32[])",params);
 	}
 
 	// TODO: add other methods:

@@ -11,6 +11,9 @@ import "zeppelin-solidity/contracts/ECRecovery.sol";
  * @dev This is a convenient wrapper that is used by the contract below (see DaoBaseImpersonated). Do not use it directly.
 */
 contract ImpersonationCaller is DaoClient {
+
+	bytes32 constant public ISSUE_TOKENS = keccak256("issueTokens");
+	
 	constructor(IDaoBase _dao) public DaoClient(_dao) {
 
 	}
@@ -21,7 +24,7 @@ contract ImpersonationCaller is DaoClient {
    * @param _sig bytes signature, the signature is generated using web3.eth.sign()
    */
 	function doActionOnBehalfOf(bytes32 _hash, bytes _sig, 
-										 string _action, string _methodSig, bytes32[] _params) internal {
+										 bytes32 _action, string _methodSig, bytes32[] _params) internal {
 
 		// 1 - get the address of the client
 		address client = ECRecovery.recover(_hash, _sig);
@@ -64,7 +67,7 @@ contract DaoBaseImpersonated is ImpersonationCaller {
 		params[1] = bytes32(_to);
 		params[2] = bytes32(_amount);
 
-	   return doActionOnBehalfOf(_hash, _sig, "issueTokens", "issueTokensGeneric(bytes32[])", params);
+	   return doActionOnBehalfOf(_hash, _sig, ISSUE_TOKENS, "issueTokensGeneric(bytes32[])", params);
 	}
 
 	// TODO: add other methods:

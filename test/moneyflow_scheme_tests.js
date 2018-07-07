@@ -34,13 +34,13 @@ contract('Scheme', (accounts) => {
 	beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000);
 		await token.mint(creator, 1000);
-		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
-		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
+		store = await DaoStorage.new([token.address],{ from: creator });
+		daoBase = await DaoBase.new(store.address,{ from: creator });
 		// await web3.eth.sendTransaction({from:creator, to:employee1, amount:990000000000000000000})
 		// 50/50 between reserve fund and dividends 
 
 		var b1 = await web3.eth.getBalance(creator);
-		moneyflowScheme = await DefaultMoneyflowSchemeWithUnpackers.new(daoBase.address, output, 5000, 5000, {from: creator, gas:100000000, gasPrice:1});
+		moneyflowScheme = await DefaultMoneyflowSchemeWithUnpackers.new(daoBase.address, output, 5000, 5000, {from: creator, gasPrice:1});
 		// await WeiTopDownSplitter.new('abc', {from: creator, gasPrice:1});
 		var b2 = await web3.eth.getBalance(creator);
 

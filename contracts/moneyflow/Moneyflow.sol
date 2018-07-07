@@ -42,6 +42,9 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	FallbackToWeiReceiver donationF2WR;
 	FallbackToWeiReceiver revenueF2WR;
 
+	bytes32 constant public WITHDRAW_DONATIONS = keccak256("withdrawDonations");
+	bytes32 constant public SET_ROOT_WEI_RECEIVER = keccak256("setRootWeiReceiver");
+
 	event MoneyFlow_WithdrawDonations(address _by, address _to, uint _balance);
 	event MoneyFlow_SetRootWeiReceiver(address _sender, address _receiver);
 
@@ -55,7 +58,7 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 
 // IMoneyflow:
 	// will withdraw donations
-	function withdrawDonationsTo(address _out) external isCanDo("withdrawDonations"){
+	function withdrawDonationsTo(address _out) external isCanDo(WITHDRAW_DONATIONS){
 		_withdrawDonationsTo(_out);
 	}
 
@@ -93,7 +96,7 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 // WeiReceivers:
 	// receiver can be a splitter, fund or event task
 	// _receiver can be 0x0!
-	function setRootWeiReceiver(IWeiReceiver _receiver) external isCanDo("setRootWeiReceiver"){
+	function setRootWeiReceiver(IWeiReceiver _receiver) external isCanDo(SET_ROOT_WEI_RECEIVER){
 		_setRootWeiReceiver(_receiver);
 	}
 
