@@ -4,9 +4,9 @@ import '../IDaoBase.sol';
 
 import './IVoting.sol';
 import './IProposal.sol';
+import '../tokens/StdDaoToken.sol';
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
-import "zeppelin-solidity/contracts/token/ERC20/ERC20Basic.sol";
 
 /**
  * @title Voting_SimpleToken 
@@ -24,8 +24,9 @@ contract Voting_SimpleToken is IVoting, Ownable {
 	uint64 genesis;
 	uint public quorumPercent;
 	uint public consensusPercent;
+	uint public votingID;
 	bool public isQuadraticVoting;
-	ERC20Basic erc20Token;
+	StdDaoToken stdDaoToken;
 
 	mapping (address=>bool) addressVotedAlready;
 
@@ -64,7 +65,9 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		quorumPercent = _quorumPercent;
 		consensusPercent = _consensusPercent;
 		isQuadraticVoting = _isQuadraticVoting;
-		erc20Token = ERC20Basic(_tokenAddress);
+		stdDaoToken = StdDaoToken(_tokenAddress);
+		votingID = stdDaoToken.startNewVoting();
+
 		genesis = uint64(now);
 
 		internalVote(_origin, true);
@@ -138,7 +141,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 	}
 
 	function internalVote(address _who, bool _yes) internal {
-		uint tokenBalance = erc20Token.balanceOf(_who);
+		uint tokenBalance = stdDaoToken.getBalanceAtVoting(votingID, _who);
 
 		require(!addressVotedAlready[_who]);
 
@@ -172,7 +175,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 	function _getVotingStats() internal constant returns(uint yesResults, uint noResults, uint votersTotal){
 		yesResults = 0;
 		noResults = 0;
-		votersTotal = erc20Token.totalSupply();
+		votersTotal = stdDaoToken.totalSupply();
 		if(isQuadraticVoting){
 			for(uint i=0; i<tokenVotesArray.length; ++i){
 				if(tokenVotesArray[i].vote){
