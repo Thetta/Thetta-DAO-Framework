@@ -39,6 +39,9 @@ Our thanks go to these people:
 1. [@AnthonyAkentiev](https://github.com/AnthonyAkentiev) - Smart Contracts development
 1. [@Kirill Guzenko](https://github.com/enkogu) - Smart Contracts development
 1. [@Max](https://github.com/mosg) - Smart Contracts development 
+1. [@Rostyslav](https://github.com/RostyslavBortman) - Smart Contracts development 
+1. [@Vladimir](https://github.com/ryzhak) - Smart Contracts development 
+1. [@Mike](https://github.com/Mikelle) - Smart Contracts development 
 
 ## Disclaimer 
 
