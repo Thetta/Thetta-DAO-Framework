@@ -60,14 +60,14 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 	const employee5 = accounts[5];
 
 	const outsider  = accounts[6];
-	const output    = accounts[7]; 
+	const output    = accounts[7];
 
 	let r2;
 	let token;
 	let daoBase;
 	let moneyflowInstance;
 	let aacInstance;
-	
+
 	let issueTokens;
 	let manageGroups;
 	let addNewProposal;
@@ -87,13 +87,13 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator});
-		
+
 		issueTokens = await daoBase.ISSUE_TOKENS();
-		
+
 		manageGroups = await daoBase.MANAGE_GROUPS();
 
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
-		
+
 		burnTokens = await daoBase.BURN_TOKENS();
 
 		withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
@@ -137,9 +137,9 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
 		let groupName = await voting.groupName();
-		assert.equal(quorumPercent.toNumber(), 51, 'quorumPercent should be 51'); 
-		assert.equal(consensusPercent.toNumber(), 71, 'consensusPercent should be 51'); 
-		assert.equal(groupName, "Employees", 'groupName should be Employees'); 
+		assert.equal(quorumPercent.toNumber(), 51, 'quorumPercent should be 51');
+		assert.equal(consensusPercent.toNumber(), 71, 'consensusPercent should be 51');
+		assert.equal(groupName, "Employees", 'groupName should be Employees');
 	})
 
 	it('should create and use 1p1v voting while members change',async() => {
@@ -147,7 +147,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		let proposal = await InformalProposal.new('Take the money and run again', {from:creator});
 		let voting = await Voting_1p1v.new(daoBase.address, proposal.address, creator, 0, "Employees", 51, 90, {from:creator});
 
-		// vote by first, check results  (getVotingStats, isFinished, isYes, etc) 
+		// vote by first, check results  (getVotingStats, isFinished, isYes, etc)
 		await voting.vote(true,0,{from:employee1});
 
 		var r2 = await voting.getVotingStats();
@@ -156,7 +156,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.equal(r2[2].toNumber(),6,'creator + 5 employee');
 
 		await daoBase.removeGroupMember("Employees", employee1, {from:creator});
-		// remove 2nd employee from the group 
+		// remove 2nd employee from the group
 
 		var r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');			// 1 already voted (who started the voting)
@@ -169,8 +169,9 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		assert.equal(r2[1].toNumber(),0,'no');
 
-		await CheckExceptions.checkContractThrows(
-			voting.vote, [true,0,{from:employee2}]);
+		// await CheckExceptions.checkContractThrows(
+		// 	voting.vote, [true,0,{from:employee2}]);
+		await voting.vote(true, 0, {from: employee2}).should.be.rejectedWith('revert');
 
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
@@ -182,9 +183,9 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		await daoBase.removeGroupMember("Employees", employee3, {from:creator});
 
 		// WARNING:
-		// if voting is finished -> even if we remove some employees from the group 
+		// if voting is finished -> even if we remove some employees from the group
 		// the voting results should not be changed!!!
-		// 
+		//
 		// BUT the 'getVotingStats()' will return different results
 		var emps = await daoBase.getMembersCount("Employees");
 		assert.equal(4, emps, '4 employees');
@@ -255,8 +256,8 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
-		assert.equal(quorumPercent.toNumber(), 10, 'quorumPercent should be 10'); 
-		assert.equal(consensusPercent.toNumber(), 100, 'consensusPercent should be 100'); 
+		assert.equal(quorumPercent.toNumber(), 10, 'quorumPercent should be 10');
+		assert.equal(consensusPercent.toNumber(), 100, 'consensusPercent should be 100');
 
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
@@ -280,8 +281,8 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
-		assert.equal(quorumPercent.toNumber(), 100, 'quorumPercent should be 100'); 
-		assert.equal(consensusPercent.toNumber(), 10, 'consensusPercent should be 10'); 
+		assert.equal(quorumPercent.toNumber(), 100, 'quorumPercent should be 100');
+		assert.equal(consensusPercent.toNumber(), 10, 'consensusPercent should be 10');
 
 		await voting.vote(false,0,{from:employee2});
 		r2 = await voting.getVotingStats();
@@ -485,7 +486,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isYes(),false,'Voting is not finished');
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [3600 * 25 * 1000],
 			id: new Date().getTime()
@@ -514,7 +515,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [3600 * 1 * 1000],
 			id: new Date().getTime()
@@ -545,7 +546,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [3600 * 1 * 1000],
 			id: new Date().getTime()
@@ -572,7 +573,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		await voting.vote(false,0,{from:employee3});
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [1800 * 1 * 1000],
 			id: new Date().getTime()
@@ -587,7 +588,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [1800 * 1 * 1000],
 			id: new Date().getTime()
@@ -610,7 +611,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [3600 * 1 * 1000],
 			id: new Date().getTime()
@@ -637,7 +638,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		await voting.vote(true,0,{from:employee4});
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [3600 * 1 * 1000],
 			id: new Date().getTime()
@@ -661,7 +662,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [3600 * 1 * 1000],
 			id: new Date().getTime()
@@ -686,7 +687,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		await voting.vote(false,0,{from:employee2});
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [3600 * 1 * 1000],
 			id: new Date().getTime()
