@@ -8,8 +8,6 @@ var MoneyFlow = artifacts.require("./MoneyFlow");
 var IWeiReceiver = artifacts.require("./IWeiReceiver");
 var IProposal = artifacts.require("./IProposal");
 
-var CheckExceptions = require('./utils/checkexceptions');
-
 function KECCAK256 (x){
 	return web3.sha3(x);
 }

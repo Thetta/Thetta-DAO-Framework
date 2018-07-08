@@ -7,8 +7,6 @@ var DaoBaseAuto = artifacts.require("./DaoBaseAuto");
 var IVoting = artifacts.require("./IVoting");
 var IProposal = artifacts.require("./IProposal");
 
-var CheckExceptions = require('./utils/checkexceptions');
-
 function KECCAK256 (x){
 	return web3.sha3(x);
 }
@@ -163,11 +161,8 @@ contract('DaoBaseAuto', (accounts) => {
 		await daoBase.allowActionByAddress(upgradeDaoContract, aacInstance.address);
 
 		// even creator cant issue token directly!
-    // currently wrong value of arguments
-		await CheckExceptions.checkContractThrows(daoBase.issueTokens.sendTransaction,
-			[employee1, 1500 ,{ from: creator}],
-			'Even creator cant issue tokens');
-    // await daoBase.issueTokens.sendTransaction(employee1, 1500, {from:creator}).should.be.rejectedWith('revert');
+		// Even creator cant issue tokens
+    await daoBase.issueTokens.sendTransaction(token.address, employee1, 1500, {from:creator}).should.be.rejectedWith('revert');
 
 		const proposalsCount1 = await daoBase.getProposalsCount();
 		assert.equal(proposalsCount1,0,'No proposals should be added');

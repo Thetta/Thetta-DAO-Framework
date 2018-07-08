@@ -13,8 +13,6 @@ var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 var Voting_1p1v = artifacts.require("./Voting_1p1v");
 var IProposal = artifacts.require("./IProposal");
 
-var CheckExceptions = require('./utils/checkexceptions');
-
 function KECCAK256 (x){
 	return web3.sha3(x);
 }
@@ -169,8 +167,6 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		assert.equal(r2[1].toNumber(),0,'no');
 
-		// await CheckExceptions.checkContractThrows(
-		// 	voting.vote, [true,0,{from:employee2}]);
 		await voting.vote(true, 0, {from: employee2}).should.be.rejectedWith('revert');
 
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');

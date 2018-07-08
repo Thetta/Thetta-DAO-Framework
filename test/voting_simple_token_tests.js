@@ -13,8 +13,6 @@ var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 var Voting_SimpleToken = artifacts.require("./Voting_SimpleToken");
 var IProposal = artifacts.require("./IProposal");
 
-var CheckExceptions = require('./utils/checkexceptions');
-
 const BigNumber = web3.BigNumber;
 
 require('chai')
@@ -74,14 +72,14 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	const employee5 = accounts[5];
 
 	const outsider  = accounts[6];
-	const output    = accounts[7]; 
+	const output    = accounts[7];
 
 	let r2;
 	let token;
 	let daoBase;
 	let moneyflowInstance;
 	let aacInstance;
-	
+
 	let issueTokens;
 	let manageGroups;
 	let addNewProposal;
@@ -109,9 +107,9 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator});
-		
+
 		issueTokens = await daoBase.ISSUE_TOKENS();
-		
+
 		manageGroups = await daoBase.MANAGE_GROUPS();
 
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
@@ -147,15 +145,15 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		await daoBase.addGroupMember("Employees", employee4);
 		// await daoBase.addGroupMember("Employees", creator);
 	});
-	
+
 	it('0. should create new voting', async()=>{
 		let isGroupMember = await daoBase.isGroupMember('Employees', employee1);
 		assert.equal(isGroupMember,true, 'Creator is ein the group');
 		let voting = await Voting_SimpleToken.new(daoBase.address, employee1, employee1, 60, 51, 71, token.address, false);
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
-		assert.equal(quorumPercent.toNumber(), 51, 'quorumPercent should be 51'); 
-		assert.equal(consensusPercent.toNumber(), 71, 'consensusPercent should be 51'); 
+		assert.equal(quorumPercent.toNumber(), 51, 'quorumPercent should be 51');
+		assert.equal(consensusPercent.toNumber(), 71, 'consensusPercent should be 51');
 	});
 
 	it('1.1. Q Scenario: 5 employees, 5/5 voted yes, params(100,100) => isYes==true',async() => {
@@ -215,8 +213,8 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
-		assert.equal(quorumPercent.toNumber(), 10, 'quorumPercent should be 10'); 
-		assert.equal(consensusPercent.toNumber(), 100, 'consensusPercent should be 100'); 
+		assert.equal(quorumPercent.toNumber(), 10, 'quorumPercent should be 10');
+		assert.equal(consensusPercent.toNumber(), 100, 'consensusPercent should be 100');
 
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
@@ -240,8 +238,8 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
-		assert.equal(quorumPercent.toNumber(), 100, 'quorumPercent should be 100'); 
-		assert.equal(consensusPercent.toNumber(), 10, 'consensusPercent should be 10'); 
+		assert.equal(quorumPercent.toNumber(), 100, 'quorumPercent should be 100');
+		assert.equal(consensusPercent.toNumber(), 10, 'consensusPercent should be 10');
 
 		await voting.vote(false,0,{from:employee2});
 		r2 = await voting.getVotingStats();
@@ -445,7 +443,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isYes(),false,'Voting is not finished');
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [3600 * 25 * 1000],
 			id: new Date().getTime()
@@ -474,7 +472,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [3600 * 1 * 1000],
 			id: new Date().getTime()
@@ -505,7 +503,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [3600 * 1 * 1000],
 			id: new Date().getTime()
@@ -532,7 +530,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		await voting.vote(false,0,{from:employee3});
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [1800 * 1 * 1000],
 			id: new Date().getTime()
@@ -547,7 +545,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [1800 * 1 * 1000],
 			id: new Date().getTime()
@@ -570,7 +568,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [3600 * 1 * 1000],
 			id: new Date().getTime()
@@ -597,7 +595,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		await voting.vote(true,0,{from:employee4});
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [3600 * 1 * 1000],
 			id: new Date().getTime()
@@ -621,7 +619,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [3600 * 1 * 1000],
 			id: new Date().getTime()
@@ -646,7 +644,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		await voting.vote(false,0,{from:employee2});
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [3600 * 1 * 1000],
 			id: new Date().getTime()
@@ -738,7 +736,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		employee5VotingBalance = await token.getBalanceAtVoting(votingID, employee5);
 
 		assert.equal(employee4Balance.toNumber(), 0);
-		assert.equal(employee5Balance.toNumber(), 1);	
+		assert.equal(employee5Balance.toNumber(), 1);
 
 		assert.equal(employee4VotingBalance.toNumber(), 1);
 		assert.equal(employee5VotingBalance.toNumber(), 0);
@@ -782,7 +780,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		employee5VotingBalance = await token.getBalanceAtVoting(votingID, employee5);
 
 		assert.equal(employee4Balance.toNumber(), 0);
-		assert.equal(employee5Balance.toNumber(), 1);	
+		assert.equal(employee5Balance.toNumber(), 1);
 
 		assert.equal(employee4VotingBalance.toNumber(), 1);
 		assert.equal(employee5VotingBalance.toNumber(), 0);
@@ -826,7 +824,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		employee5VotingBalance = await token.getBalanceAtVoting(votingID, employee5);
 
 		assert.equal(employee4Balance.toNumber(), 0);
-		assert.equal(employee5Balance.toNumber(), 1);	
+		assert.equal(employee5Balance.toNumber(), 1);
 
 		assert.equal(employee4VotingBalance.toNumber(), 1);
 		assert.equal(employee5VotingBalance.toNumber(), 0);

@@ -8,8 +8,6 @@ var DaoBase = artifacts.require("./DaoBase");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 
-var CheckExceptions = require('./utils/checkexceptions');
-
 function KECCAK256 (x){
 	return web3.sha3(x);
 }
