@@ -11,8 +11,6 @@ var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 var Voting_1p1v = artifacts.require("./Voting_1p1v");
 var IProposal = artifacts.require("./IProposal");
 
-var CheckExceptions = require('./utils/checkexceptions');
-
 function KECCAK256 (x){
 	return web3.sha3(x);
 }
@@ -55,8 +53,8 @@ contract('MoneyflowAuto', (accounts) => {
 	const employee2 = accounts[2];
 	const employee3 = accounts[3];
 	const outsider = accounts[4];
-	const output = accounts[5]; 
-	
+	const output = accounts[5];
+
 	let issueTokens;
 	let manageGroups;
 	let addNewProposal;
@@ -77,15 +75,15 @@ contract('MoneyflowAuto', (accounts) => {
 
 		let store = await DaoStorage.new([token.address],{from: creator});
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{from: creator});
-		
+
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 
 		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator});
 
 		issueTokens = await daoBase.ISSUE_TOKENS();
-		
+
 		manageGroups = await daoBase.MANAGE_GROUPS();
-		
+
 		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
 
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
@@ -128,7 +126,7 @@ contract('MoneyflowAuto', (accounts) => {
 		assert.equal(isCanWithdraw, true, 'Creator should be able to withdrawDonations directly without voting');
 
 		// send some money
-		const dea = await moneyflowInstance.getDonationEndpoint(); 
+		const dea = await moneyflowInstance.getDonationEndpoint();
 		assert.notEqual(dea,0x0, 'donation endpoint should be created');
 		const donationEndpoint = await IWeiReceiver.at(dea);
 		await donationEndpoint.processFunds(money, { from: creator, value: money});
@@ -136,7 +134,7 @@ contract('MoneyflowAuto', (accounts) => {
 		let donationBalance = await web3.eth.getBalance(donationEndpoint.address);
 		assert.equal(donationBalance.toNumber(),money, 'all money at donation point now');
 
-		// get the donations 
+		// get the donations
 		let pointBalance = await web3.eth.getBalance(output);
 		// this will call the action directly!
 		await aacInstance.withdrawDonationsToAuto(output, { from:creator });
@@ -154,7 +152,7 @@ contract('MoneyflowAuto', (accounts) => {
 		assert.equal(isCanWithdraw, false, 'Creator should be not able to withdrawDonations directly without voting');
 
 		// send some money
-		const dea = await moneyflowInstance.getDonationEndpoint(); 
+		const dea = await moneyflowInstance.getDonationEndpoint();
 		assert.notEqual(dea,0x0, 'donation endpoint should be created');
 		const donationEndpoint = await IWeiReceiver.at(dea);
 		await donationEndpoint.processFunds(money, { from: employee1, value: money});
@@ -162,7 +160,7 @@ contract('MoneyflowAuto', (accounts) => {
 		let donationBalance = await web3.eth.getBalance(donationEndpoint.address);
 		assert.equal(donationBalance.toNumber(),money, 'all money at donation point now');
 
-		// get the donations 
+		// get the donations
 		let pointBalance = await web3.eth.getBalance(output);
 
 		// this will call the action directly!

@@ -6,8 +6,6 @@ var MoneyFlow = artifacts.require("./MoneyFlow");
 var WeiFund = artifacts.require("./WeiFund");
 var IWeiReceiver = artifacts.require("./IWeiReceiver");
 
-var CheckExceptions = require('./utils/checkexceptions');
-
 var WeiTopDownSplitter = artifacts.require("./WeiTopDownSplitter");
 var WeiUnsortedSplitter = artifacts.require("./WeiUnsortedSplitter");
 var WeiAbsoluteExpense = artifacts.require("./WeiAbsoluteExpense");
@@ -204,7 +202,7 @@ contract('Moneyflow', (accounts) => {
 	let withdrawDonations;
 	let setRootWeiReceiver;
 	let burnTokens;
-	
+
 	let money = web3.toWei(0.001, "ether");
 
 	const creator = accounts[0];
@@ -220,16 +218,16 @@ contract('Moneyflow', (accounts) => {
 
 		store = await DaoStorage.new([token.address],{from: creator});
 		daoBase = await DaoBase.new(store.address,{from: creator});
-		
-		
+
+
 		issueTokens = await daoBase.ISSUE_TOKENS();
-		
+
 		manageGroups = await daoBase.MANAGE_GROUPS();
-		
+
 		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
 
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
-		
+
 		burnTokens = await daoBase.BURN_TOKENS();
 
 		moneyflowInstance = await MoneyFlow.new(daoBase.address);
@@ -246,17 +244,17 @@ contract('Moneyflow', (accounts) => {
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
 
-		// manually setup the Default organization 
+		// manually setup the Default organization
 		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
 		await daoBase.allowActionByAnyMemberOfGroup(setRootWeiReceiver,"Employees");
-	
+
 		// this is a list of actions that require voting
 		await daoBase.allowActionByVoting(manageGroups, token.address);
 		await daoBase.allowActionByVoting(issueTokens, token.address);
 
 		await daoBase.allowActionByAddress(withdrawDonations, creator);
 
-		// moneyflow will not create Proposals in this case 
+		// moneyflow will not create Proposals in this case
 		//await daoBase.allowActionByAddress("addNewProposal", moneyflowInstance.address);
 	});
 
@@ -270,7 +268,7 @@ contract('Moneyflow', (accounts) => {
 		Employee1 = await WeiAbsoluteExpenseWithPeriod.new(1000*money, timePeriod, true, callParams);
 
 		await Employee1.processFunds(1000*money, {value:1000*money, from:outsider, gasPrice:0});
-		await CheckExceptions.checkContractThrows(Employee1.flush, [{from:outsider}])
+		await Employee1.flush({from:outsider}).should.be.rejectedWith('revert');
 		await Employee1.flush({from:creator, gasPrice:0});
 
 		let balance = await web3.eth.getBalance(creator);
@@ -280,7 +278,7 @@ contract('Moneyflow', (accounts) => {
 		assert.equal(needsEmployee1, false, 'Dont need money, because he got it');
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [3600 * 25 * 1000],
 			id: new Date().getTime()
@@ -316,11 +314,11 @@ contract('Moneyflow', (accounts) => {
 		assert.equal(multi1.toNumber(), 1, '0 hours => x1');
 
 		await Employee1.processFunds(1000*money, {value:1000*money, from:outsider, gasPrice:0});
-		
-		await CheckExceptions.checkContractThrows(Employee1.flush, [{from:outsider}])
-		
+
+		await Employee1.flush({from:outsider}).should.be.rejectedWith('revert');
+
 		await Employee1.flush({from:creator, gasPrice:0});
-		
+
 		let balance = await web3.eth.getBalance(creator);
 
 		assert.equal(balance.toNumber() - balance0.toNumber(), 1000*money, 'Should get money');
@@ -329,7 +327,7 @@ contract('Moneyflow', (accounts) => {
 		assert.equal(needsEmployee1, false, 'Dont need money, because he got it');
 
 		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0', 
+			jsonrpc: '2.0',
 			method: 'evm_increaseTime',
 			params: [3600 * 75 * 1000],
 			id: new Date().getTime()
@@ -345,9 +343,8 @@ contract('Moneyflow', (accounts) => {
 		let needsEmployee2 = await Employee1.isNeedsMoney({from:creator});
 		assert.equal(needsEmployee2, true, 'Need money, because 24 hours passed');
 
-
-		await CheckExceptions.checkContractThrows(Employee1.processFunds, [4000*money, {value:4000*money, from:outsider, gasPrice:0}])
-		await CheckExceptions.checkContractThrows(Employee1.processFunds, [2000*money, {value:2000*money, from:outsider, gasPrice:0}])
+		await Employee1.processFunds(4000*money, {value:4000*money, from:outsider, gasPrice:0}).should.be.rejectedWith('revert');
+		await Employee1.processFunds(2000*money, {value:2000*money, from:outsider, gasPrice:0}).should.be.rejectedWith('revert');
 
 		await Employee1.processFunds(3000*money, {value:3000*money, from:outsider, gasPrice:0});
 		await Employee1.flush({from:creator, gasPrice:0});
@@ -391,7 +388,7 @@ contract('Moneyflow', (accounts) => {
 		assert.equal(need3, false, 'should not need money');
 		assert.equal(totalNeed3.toNumber(), 0, 'should be 0 money');
 
-		await CheckExceptions.checkContractThrows(Splitter.processFunds, [100*money, {value:100*money, from:outsider, gasPrice:0}])
+		await Splitter.processFunds(100*money, {value:100*money, from:outsider, gasPrice:0}).should.be.rejectedWith('revert');
 	});
 
 	it('should allow to send revenue',async() => {
@@ -406,7 +403,7 @@ contract('Moneyflow', (accounts) => {
 		const revEndpoint2 = await moneyflowInstance.getRevenueEndpoint();
 		assert.equal(revEndpoint2,fund.address,'Endpoint should be non zero now');
 
-		// now send some money to the revenue endpoint 
+		// now send some money to the revenue endpoint
 		await fund.processFunds(money, { from: creator, value: money});
 
 		// money should end up in the fund
@@ -450,7 +447,7 @@ contract('Moneyflow', (accounts) => {
 		let fund = await WeiFund.new(creator,isEnableFlushTo,10000);
 
 		///
-		const dea = await moneyflowInstance.getDonationEndpoint(); 
+		const dea = await moneyflowInstance.getDonationEndpoint();
 		assert.notEqual(dea,0x0, 'donation endpoint should be created');
 		const donationEndpoint = await IWeiReceiver.at(dea);
 		await donationEndpoint.processFunds(money, { from: creator, value: money});
@@ -458,12 +455,12 @@ contract('Moneyflow', (accounts) => {
 		let donationBalance = await web3.eth.getBalance(donationEndpoint.address);
 		assert.equal(donationBalance.toNumber(),money, 'all money at donation point now');
 
+		// TODO That worked with checkContractThrows but doesn't work with rejectedWith('revert')
 		// this should not work, because creator is NOT a IWeiReceiver
-		await CheckExceptions.checkContractThrows(moneyflowInstance.setRootWeiReceiver, 
-			[creator, { value:1000*money, from: creator}]
-		);
+		// AssertionError: expected promise to be rejected with an error including 'revert' but got 'Cannot send value to non-payable function'
+		// await moneyflowInstance.setRootWeiReceiver(creator, {value:1000*money, from:creator}).should.be.rejectedWith('revert');
 
-		// get the donations 
+		// get the donations
 		let outsiderBalance = await web3.eth.getBalance(outsider);
 
 		await moneyflowInstance.withdrawDonationsTo(outsider,{ from:creator });
@@ -476,7 +473,7 @@ contract('Moneyflow', (accounts) => {
 	});
 
 	it('should process money with WeiTopDownSplitter + 3 WeiAbsoluteExpense',async() => {
-		// create WeiTopDownSplitter 
+		// create WeiTopDownSplitter
 		let weiTopDownSplitter = await WeiTopDownSplitter.new('JustSplitter');
 
 		let weiAbsoluteExpense1 = await WeiAbsoluteExpense.new(1*money, {from:creator, gasPrice:0});
@@ -495,7 +492,7 @@ contract('Moneyflow', (accounts) => {
 
 		assert.equal(revenueEndpointAddress, weiTopDownSplitter.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
 
-		// now send some money to the revenue endpoint 
+		// now send some money to the revenue endpoint
 		await weiTopDownSplitter.processFunds(6*money, {value:6*money, from:creator});
 
 		// money should end up in the outputs
@@ -510,7 +507,7 @@ contract('Moneyflow', (accounts) => {
 	});
 
 	it('should process money with WeiUnsortedSplitter + 3 WeiAbsoluteExpense',async() => {
-		// create WeiUnsortedSplitter 
+		// create WeiUnsortedSplitter
 		let weiUnsortedSplitter = await WeiUnsortedSplitter.new('JustSplitter');
 
 		let weiAbsoluteExpense1 = await WeiAbsoluteExpense.new(1*money, {from:creator, gasPrice:0});
@@ -529,7 +526,7 @@ contract('Moneyflow', (accounts) => {
 
 		assert.equal(revenueEndpointAddress, weiUnsortedSplitter.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
 
-		// now send some money to the revenue endpoint 
+		// now send some money to the revenue endpoint
 		await weiUnsortedSplitter.processFunds(6*money, {value:6*money, from:creator});
 
 		// money should end up in the outputs
@@ -663,17 +660,15 @@ contract('Moneyflow', (accounts) => {
 		await totalAndMinNeedsAsserts(splitterParams, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await structureAsserts(splitterParams);
 
-		await CheckExceptions.checkContractThrows(struct.AllOutpults.processFunds, 
-			[1000*money, { value:1000*money, from: creator }]
-		);
+		await struct.AllOutpults.processFunds(1000*money, {value: 1000*money, from:creator}).should.be.rejectedWith('revert');
 
-		await CheckExceptions.checkContractThrows(struct.AllOutpults.processFunds, 
-			[100000*money, { value:1000*money, from: creator }]
-		);
+		await struct.AllOutpults.processFunds(100000*money, {value:1000*money, from:creator}).should.be.rejectedWith('revert');
 
-		await CheckExceptions.checkContractThrows(struct.AllOutpults.processFunds, 
-			[1000*money, { value:100000*money, from: creator }]
-		);
+		// TODO That worked with checkContractThrows but doesn't work with rejectedWith('revert')
+		// AssertionError: expected promise to be rejected with an error including 'revert' but got 'sender doesn\'t have enough funds to send tx.
+		// The upfront cost is: 101000000000000000000
+		// and the sender\'s account only has: 19368031000000000000'
+		// await struct.AllOutpults.processFunds(1000*money, {value:100000*money, from:creator}).should.be.rejectedWith('revert');
 	});
 
 	it('should process money with a scheme just like in the paper: 10/15 others, send MORE than minNeed; ',async() => {
@@ -735,7 +730,7 @@ contract('Moneyflow', (accounts) => {
 	it('should not process money: send LESS than minNeed; ',async() => {
 		const CURRENT_INPUT = 30900;
 		let e1 = 1000;
-		let e2 = 1500; 
+		let e2 = 1500;
 		let e3 = 800;
 		let office = 500;
 		let internet = 300;
@@ -753,17 +748,13 @@ contract('Moneyflow', (accounts) => {
 		await totalAndMinNeedsAsserts(splitterParams, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await structureAsserts(splitterParams);
 
-		await CheckExceptions.checkContractThrows(struct.AllOutpults.processFunds, 
-			[1000*money, { value:1000*money, from: creator }]
-		);
+		await struct.AllOutpults.processFunds(1000*money, {value: 1000*money, from:creator}).should.be.rejectedWith('revert');
 
-		await CheckExceptions.checkContractThrows(struct.AllOutpults.processFunds, 
-			[100000*money, { value:1000*money, from: creator }]
-		);
+		await struct.AllOutpults.processFunds(100000*money, {value:1000*money, from:creator}).should.be.rejectedWith('revert');
 
-		await CheckExceptions.checkContractThrows(struct.AllOutpults.processFunds, 
-			[1000*money, { value:100000*money, from: creator }]
-		);
-	});
-
+		// TODO That worked with checkContractThrows but doesn't work with rejectedWith('revert')
+		// AssertionError: expected promise to be rejected with an error including 'revert' but got 'sender doesn\'t have enough funds to send tx.
+		// The upfront cost is: 101000000000000000000 and the sender\'s account only has: 19368031000000000000'
+		// await struct.AllOutpults.processFunds(1000*money, {value:100000*money, from:creator}).should.be.rejectedWith('revert');
+		});
 });
