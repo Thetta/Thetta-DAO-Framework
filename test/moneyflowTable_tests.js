@@ -292,7 +292,6 @@ global.contract('MoneyflowTable tests', (accounts) => {
 
 		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
 		global.assert.equal(absoluteExpense3Balance.toNumber(),3*neededAmount, 'resource point received money from splitter');
-		// global.assert.equal(true,false);
 	});
 
 	global.it('should process money with WeiUnsortedSplitter + 3 WeiAbsoluteExpense',async() => {
