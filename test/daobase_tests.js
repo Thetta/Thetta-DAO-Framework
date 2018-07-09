@@ -163,11 +163,10 @@ contract('DaoBase', (accounts) => {
 		const isEmployeeAdded = await daoBaseNew.isGroupMember("Employees",employee1);
 		assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
 
-		// Should not add new employee to old MC'
+		// Should not add new employee to old MC
 		await daoBase.addGroupMember("Employees", employee2, {from: creator}).should.be.rejectedWith('revert');
-
 		// Should not issue tokens through MC
-    await daoBase.issueTokens(token.address, employee2, 100, {from: creator}).should.be.rejectedWith('revert');
+		await daoBase.issueTokens(token.address, employee2, 100, {from: creator}).should.be.rejectedWith('revert');
 
 		// now try to withdraw donations with new mc
 		const money = 1000000000;
@@ -199,8 +198,8 @@ contract('DaoBase', (accounts) => {
 		await daoBase.addGroupMember("Employees", employee2);
 		await daoBase.addGroupMember("Employees", employee3);
 
-    //Shouldnt add again
-    await daoBase.addGroupMember("Employees", employee3).should.be.rejectedWith('revert');
+		// Shouldnt add again
+		await daoBase.addGroupMember("Employees", employee3).should.be.rejectedWith('revert');
 
 		assert.strictEqual(await daoBase.isGroupMember("Employees", employee1),
 			true, 'Should be in the group');
@@ -229,12 +228,12 @@ contract('DaoBase', (accounts) => {
 	});
 
 	it('should not either burn or mint tokens',async() => {
-    await token.burn(creator, 1000, {from:creator}).should.be.rejectedWith('revert');
-    await token.burn(creator, 1000, {from:employee1}).should.be.rejectedWith('revert');
-    await token.burn(creator, 1000, {from:outsider}).should.be.rejectedWith('revert');
-    await token.mint(creator, 1000, {from:creator}).should.be.rejectedWith('revert');
-    await token.mint(creator, 1000, {from:employee1}).should.be.rejectedWith('revert');
-    await token.mint(creator, 1000, {from:outsider}).should.be.rejectedWith('revert');
+		await token.burn(creator, 1000, {from:creator}).should.be.rejectedWith('revert');
+		await token.burn(creator, 1000, {from:employee1}).should.be.rejectedWith('revert');
+		await token.burn(creator, 1000, {from:outsider}).should.be.rejectedWith('revert');
+		await token.mint(creator, 1000, {from:creator}).should.be.rejectedWith('revert');
+		await token.mint(creator, 1000, {from:employee1}).should.be.rejectedWith('revert');
+		await token.mint(creator, 1000, {from:outsider}).should.be.rejectedWith('revert');
 	});
 });
 

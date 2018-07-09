@@ -268,7 +268,7 @@ contract('Moneyflow', (accounts) => {
 		Employee1 = await WeiAbsoluteExpenseWithPeriod.new(1000*money, timePeriod, true, callParams);
 
 		await Employee1.processFunds(1000*money, {value:1000*money, from:outsider, gasPrice:0});
-    await Employee1.flush({from:outsider}).should.be.rejectedWith('revert');
+		await Employee1.flush({from:outsider}).should.be.rejectedWith('revert');
 		await Employee1.flush({from:creator, gasPrice:0});
 
 		let balance = await web3.eth.getBalance(creator);
@@ -315,7 +315,7 @@ contract('Moneyflow', (accounts) => {
 
 		await Employee1.processFunds(1000*money, {value:1000*money, from:outsider, gasPrice:0});
 
-    await Employee1.flush({from:outsider}).should.be.rejectedWith('revert');
+		await Employee1.flush({from:outsider}).should.be.rejectedWith('revert');
 
 		await Employee1.flush({from:creator, gasPrice:0});
 
@@ -344,7 +344,7 @@ contract('Moneyflow', (accounts) => {
 		assert.equal(needsEmployee2, true, 'Need money, because 24 hours passed');
 
 		await Employee1.processFunds(4000*money, {value:4000*money, from:outsider, gasPrice:0}).should.be.rejectedWith('revert');
-    await Employee1.processFunds(2000*money, {value:2000*money, from:outsider, gasPrice:0}).should.be.rejectedWith('revert');
+		await Employee1.processFunds(2000*money, {value:2000*money, from:outsider, gasPrice:0}).should.be.rejectedWith('revert');
 
 		await Employee1.processFunds(3000*money, {value:3000*money, from:outsider, gasPrice:0});
 		await Employee1.flush({from:creator, gasPrice:0});
@@ -388,7 +388,7 @@ contract('Moneyflow', (accounts) => {
 		assert.equal(need3, false, 'should not need money');
 		assert.equal(totalNeed3.toNumber(), 0, 'should be 0 money');
 
-    await Splitter.processFunds(100*money, {value:100*money, from:outsider, gasPrice:0}).should.be.rejectedWith('revert');
+		await Splitter.processFunds(100*money, {value:100*money, from:outsider, gasPrice:0}).should.be.rejectedWith('revert');
 	});
 
 	it('should allow to send revenue',async() => {
@@ -457,7 +457,7 @@ contract('Moneyflow', (accounts) => {
 
 		// TODO That worked with checkContractThrows but doesn't work with rejectedWith('revert')
 		// this should not work, because creator is NOT a IWeiReceiver
-    // AssertionError: expected promise to be rejected with an error including 'revert' but got 'Cannot send value to non-payable function'
+		// AssertionError: expected promise to be rejected with an error including 'revert' but got 'Cannot send value to non-payable function'
 		// await moneyflowInstance.setRootWeiReceiver(creator, {value:1000*money, from:creator}).should.be.rejectedWith('revert');
 
 		// get the donations
@@ -662,13 +662,13 @@ contract('Moneyflow', (accounts) => {
 
 		await struct.AllOutpults.processFunds(1000*money, {value: 1000*money, from:creator}).should.be.rejectedWith('revert');
 
-    await struct.AllOutpults.processFunds(100000*money, {value:1000*money, from:creator}).should.be.rejectedWith('revert');
+		await struct.AllOutpults.processFunds(100000*money, {value:1000*money, from:creator}).should.be.rejectedWith('revert');
 
-    // TODO That worked with checkContractThrows but doesn't work with rejectedWith('revert')
-    // AssertionError: expected promise to be rejected with an error including 'revert' but got 'sender doesn\'t have enough funds to send tx.
-    // The upfront cost is: 101000000000000000000
-    // and the sender\'s account only has: 19368031000000000000'
-    // await struct.AllOutpults.processFunds(1000*money, {value:100000*money, from:creator}).should.be.rejectedWith('revert');
+		// TODO That worked with checkContractThrows but doesn't work with rejectedWith('revert')
+		// AssertionError: expected promise to be rejected with an error including 'revert' but got 'sender doesn\'t have enough funds to send tx.
+		// The upfront cost is: 101000000000000000000
+		// and the sender\'s account only has: 19368031000000000000'
+		// await struct.AllOutpults.processFunds(1000*money, {value:100000*money, from:creator}).should.be.rejectedWith('revert');
 	});
 
 	it('should process money with a scheme just like in the paper: 10/15 others, send MORE than minNeed; ',async() => {
@@ -748,14 +748,13 @@ contract('Moneyflow', (accounts) => {
 		await totalAndMinNeedsAsserts(splitterParams, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		await structureAsserts(splitterParams);
 
-    await struct.AllOutpults.processFunds(1000*money, {value: 1000*money, from:creator}).should.be.rejectedWith('revert');
+		await struct.AllOutpults.processFunds(1000*money, {value: 1000*money, from:creator}).should.be.rejectedWith('revert');
 
-    await struct.AllOutpults.processFunds(100000*money, {value:1000*money, from:creator}).should.be.rejectedWith('revert');
+		await struct.AllOutpults.processFunds(100000*money, {value:1000*money, from:creator}).should.be.rejectedWith('revert');
 
-    // TODO That worked with checkContractThrows but doesn't work with rejectedWith('revert')
-    // AssertionError: expected promise to be rejected with an error including 'revert' but got 'sender doesn\'t have enough funds to send tx.
-    // The upfront cost is: 101000000000000000000 and the sender\'s account only has: 19368031000000000000'
-    // await struct.AllOutpults.processFunds(1000*money, {value:100000*money, from:creator}).should.be.rejectedWith('revert');
-  });
-
+		// TODO That worked with checkContractThrows but doesn't work with rejectedWith('revert')
+		// AssertionError: expected promise to be rejected with an error including 'revert' but got 'sender doesn\'t have enough funds to send tx.
+		// The upfront cost is: 101000000000000000000 and the sender\'s account only has: 19368031000000000000'
+		// await struct.AllOutpults.processFunds(1000*money, {value:100000*money, from:creator}).should.be.rejectedWith('revert');
+		});
 });
