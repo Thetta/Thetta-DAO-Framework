@@ -1,10 +1,11 @@
 module.exports = {
-	//port: 6545,
-	//testrpcOptions: '-p 6545 -u 0x54fd80d6ae7584d8e9a19fe1df43f04e5282cc43',
-	//dir: './secretDirectory',
-	
+	port: 8570,
 	norpc: true,
 	testCommand: 'node --max-old-space-size=4096 ../node_modules/.bin/truffle test --network coverage',
 	copyPackages: ['zeppelin-solidity'],
-	skipFiles: []
+	skipFiles: [
+        'moneyflow/erc20/Erc20Expense.sol',
+        'moneyflow/erc20/Erc20Fund.sol',
+        'moneyflow/erc20/Erc20Splitter.sol'
+    ]
 };

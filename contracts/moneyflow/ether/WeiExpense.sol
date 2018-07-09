@@ -49,7 +49,7 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	function _processFunds(uint _currentFlow) internal{
 		require(_isNeedsMoney());
 
-		require(msg.value==_getTotalWeiNeeded(_currentFlow));
+		require(msg.value == _getTotalWeiNeeded(_currentFlow));
 
 		// TODO: why not working without if????
 		if(isPeriodic){ 

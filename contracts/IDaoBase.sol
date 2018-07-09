@@ -24,14 +24,15 @@ interface IDaoBase {
 	function removeGroupMember(string _groupName, address _a) external;
 	function getMembersCount(string _groupName) external constant returns(uint);
 	function isGroupMember(string _groupName,address _a)external constant returns(bool);
+	function getMemberByIndex(string _groupName, uint _index) external view returns (address);
 
 // Permissions
-	function allowActionByShareholder(string _what, address _tokenAddress) external;
-	function allowActionByVoting(string _what, address _tokenAddress) external;
-	function allowActionByAddress(string _what, address _a) external;
-	function allowActionByAnyMemberOfGroup(string _what, string _groupName) external;
+	function allowActionByShareholder(bytes32 _what, address _tokenAddress) external;
+	function allowActionByVoting(bytes32 _what, address _tokenAddress) external;
+	function allowActionByAddress(bytes32 _what, address _a) external;
+	function allowActionByAnyMemberOfGroup(bytes32 _what, string _groupName) external;
 
-	function isCanDoAction(address _a, string _permissionName)external constant returns(bool);
+	function isCanDoAction(address _a, bytes32 _permissionName)external constant returns(bool);
 
 // Tokens
 	// ???? TODO: needed
@@ -56,7 +57,7 @@ interface IDaoBase {
 contract DaoClient is IDaoObserver {
 	IDaoBase dao;
 
-   modifier isCanDo(string _what){
+	modifier isCanDo(bytes32 _what){
 		require(dao.isCanDoAction(msg.sender, _what)); 
 		_; 
 	}
