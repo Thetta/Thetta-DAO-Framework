@@ -26,7 +26,7 @@ contract DaoBaseAuto is GenericCaller {
 
 	function addGroupMemberAuto(string _group, address _a) public returns(address proposalOut){
 		bytes32[] memory params = new bytes32[](2);
-		params[0] = bytes32(keccak256(_group));
+		params[0] = bytes32(keccak256(abi.encodePacked(_group)));
 		params[1] = bytes32(_a);
 
 	   return doAction(MANAGE_GROUPS, dao, msg.sender,"addGroupMemberGeneric(bytes32[])",params);
