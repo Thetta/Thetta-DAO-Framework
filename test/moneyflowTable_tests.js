@@ -34,56 +34,57 @@ function KECCAK256 (x){
 	return web3.sha3(x);
 }
 
-/*async function createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends){
-	var callParams = {from:creator, gasPrice:0}
+async function createStructure(money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends){
 	var o = {};
 
-	o.AllOutpults = await WeiTopDownSplitter.new('AllOutpults', callParams);
-		o.Spends = await WeiUnsortedSplitter.new('Spends', callParams);
-			o.Salaries = await WeiUnsortedSplitter.new('Salaries', callParams);
-				o.Employee1 = await WeiAbsoluteExpense.new(e1*money, callParams);
-				o.Employee2 = await WeiAbsoluteExpense.new(e2*money, callParams);
-				o.Employee3 = await WeiAbsoluteExpense.new(e3*money, callParams);
-			o.Other = await WeiUnsortedSplitter.new('Other', callParams);
-				o.Office = await WeiAbsoluteExpense.new(office*money, callParams);
-				o.Internet = await WeiAbsoluteExpense.new(internet*money, callParams);
-			o.Tasks = await WeiUnsortedSplitter.new('Tasks', callParams);
-				o.Task1 = await WeiAbsoluteExpense.new(t1*money, callParams);
-				o.Task2 = await WeiAbsoluteExpense.new(t2*money, callParams);
-				o.Task3 = await WeiAbsoluteExpense.new(t3*money, callParams);
-		o.Bonuses = await WeiUnsortedSplitter.new('Bonuses', callParams);
-			o.Bonus1 = await WeiRelativeExpense.new(b1, callParams);
-			o.Bonus2 = await WeiRelativeExpense.new(b2, callParams);
-			o.Bonus3 = await WeiRelativeExpense.new(b3, callParams);
-		o.Rest = await WeiUnsortedSplitter.new('Rest', callParams);
-			o.ReserveFund = await WeiFund.new(creator, false, reserve, callParams);
-			o.DividendsFund = await WeiFund.new(creator, false, dividends, callParams);
+	o.moneyflowTable = await MoneyflowTable.new();
 
-	// CONNECTIONS
-	await o.AllOutpults.addChild(o.Spends.address, callParams);
-		await o.Spends.addChild(o.Salaries.address, callParams);
-			await o.Salaries.addChild(o.Employee1.address, callParams);
-			await o.Salaries.addChild(o.Employee2.address, callParams);
-			await o.Salaries.addChild(o.Employee3.address, callParams);
-		await o.Spends.addChild(o.Other.address, callParams);
-			await o.Other.addChild(o.Office.address, callParams);
-			await o.Other.addChild(o.Internet.address, callParams);
-		await o.Spends.addChild(o.Tasks.address, callParams);
-			await o.Tasks.addChild(o.Task1.address, callParams);
-			await o.Tasks.addChild(o.Task2.address, callParams);
-			await o.Tasks.addChild(o.Task3.address, callParams);
-	await o.AllOutpults.addChild(o.Bonuses.address, callParams);
-		await o.Bonuses.addChild(o.Bonus1.address, callParams);
-		await o.Bonuses.addChild(o.Bonus2.address, callParams);
-		await o.Bonuses.addChild(o.Bonus3.address, callParams);
-	await o.AllOutpults.addChild(o.Rest.address, callParams);
-		await o.Rest.addChild(o.ReserveFund.address, callParams);
-		await o.Rest.addChild(o.DividendsFund.address, callParams);
+	o.AllOutpultsId = getEId(await o.moneyflowTable.addTopdownSplitter());
+		o.SpendsId = getEId(await o.moneyflowTable.addUnsortedSplitter());
+			o.SalariesId = getEId(await o.moneyflowTable.addUnsortedSplitter());
+				o.Employee1Id = getEId(await o.moneyflowTable.addAbsoluteExpense(e1*money, false, false, 0, '0x0'));
+				o.Employee2Id = getEId(await o.moneyflowTable.addAbsoluteExpense(e2*money, false, false, 0, '0x0'));
+				o.Employee3Id = getEId(await o.moneyflowTable.addAbsoluteExpense(e3*money, false, false, 0, '0x0'));			
+			o.OtherId = getEId(await o.moneyflowTable.addUnsortedSplitter());
+				o.OfficeId = getEId(await o.moneyflowTable.addAbsoluteExpense(office*money, false, false, 0, '0x0'));
+				o.InternetId = getEId(await o.moneyflowTable.addAbsoluteExpense(internet*money, false, false, 0, '0x0'));
+			o.TasksId = getEId(await o.moneyflowTable.addUnsortedSplitter());
+				o.Task1Id = getEId(await o.moneyflowTable.addAbsoluteExpense(t1*money, false, false, 0, '0x0'));
+				o.Task2Id = getEId(await o.moneyflowTable.addAbsoluteExpense(t2*money, false, false, 0, '0x0'));
+				o.Task3Id = getEId(await o.moneyflowTable.addAbsoluteExpense(t3*money, false, false, 0, '0x0'));
+			o.BonusesId = getEId(await o.moneyflowTable.addUnsortedSplitter());
+				o.Bonus1Id = getEId(await o.moneyflowTable.addRelativeExpense(b1, false, false, 0, '0x0'));
+				o.Bonus2Id = getEId(await o.moneyflowTable.addRelativeExpense(b2, false, false, 0, '0x0'));
+				o.Bonus3Id = getEId(await o.moneyflowTable.addRelativeExpense(b3, false, false, 0, '0x0'));
+			o.RestId = getEId(await o.moneyflowTable.addUnsortedSplitter());
+				o.DividendsFundId = getEId(await o.moneyflowTable.addRelativeExpense(dividends, true, false, 0, '0x0'));
+				o.ReserveFundId = getEId(await o.moneyflowTable.addRelativeExpense(reserve, true, false, 0, '0x0'));
+
+	
+	await o.moneyflowTable.addChild(o.AllOutpultsId, o.SpendsId);
+		await o.moneyflowTable.addChild(o.SpendsId, o.SalariesId);
+			await o.moneyflowTable.addChild(o.SalariesId, o.Employee1Id);
+			await o.moneyflowTable.addChild(o.SalariesId, o.Employee2Id);
+			await o.moneyflowTable.addChild(o.SalariesId, o.Employee3Id);
+		await o.moneyflowTable.addChild(o.SpendsId, o.OtherId);
+			await o.moneyflowTable.addChild(o.OtherId, o.OfficeId);
+			await o.moneyflowTable.addChild(o.OtherId, o.InternetId);
+		await o.moneyflowTable.addChild(o.SpendsId, o.TasksId);
+			await o.moneyflowTable.addChild(o.TasksId, o.Task1Id);
+			await o.moneyflowTable.addChild(o.TasksId, o.Task2Id);
+			await o.moneyflowTable.addChild(o.TasksId, o.Task3Id);
+	await o.moneyflowTable.addChild(o.AllOutpultsId, o.BonusesId);
+		await o.moneyflowTable.addChild(o.BonusesId, o.Bonus1Id);
+		await o.moneyflowTable.addChild(o.BonusesId, o.Bonus2Id);
+		await o.moneyflowTable.addChild(o.BonusesId, o.Bonus3Id);
+	await o.moneyflowTable.addChild(o.AllOutpultsId, o.RestId);
+		await o.moneyflowTable.addChild(o.RestId, o.ReserveFundId);
+		await o.moneyflowTable.addChild(o.RestId, o.DividendsFundId);
 
 	return o;
 }
 
-async function totalAndMinNeedsAsserts(i, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends){
+async function totalAndMinNeedsAsserts(money, i, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends){
 	var totalSpend = e1+e2+e3 + t1+t2+t3 + office+internet;
 	var bonusesSpendPercent = (CURRENT_INPUT - totalSpend)/10000;
 	var fundsPercent = (CURRENT_INPUT-totalSpend-bonusesSpendPercent*(b1+b2+b3))/10000;
@@ -100,6 +101,8 @@ async function totalAndMinNeedsAsserts(i, CURRENT_INPUT, money, e1, e2, e3, offi
 	global.assert.equal(i.OtherMinNeed.toNumber()/money, office+internet, `Other min Need should be ${office+internet}`);
 	global.assert.equal(i.TasksTotalNeed.toNumber()/money, t1+t2+t3, `Tasks Total Need should be ${t1+t2+t3}`);
 	global.assert.equal(i.TasksMinNeed.toNumber()/money, t1+t2+t3, `Tasks min Need should be ${t1+t2+t3}`);
+	console.log('i.BonusesTotalNeed.toNumber()/money:', i.BonusesTotalNeed.toNumber()/money)
+	console.log('(b1+b2+b3)*CURRENT_INPUT/10000:', (b1+b2+b3)*CURRENT_INPUT/10000)
 	global.assert.equal(i.BonusesTotalNeed.toNumber()/money, (b1+b2+b3)*CURRENT_INPUT/10000, `Bonuses Total Need should be ${(b1+b2+b3)*CURRENT_INPUT/10000}`);
 	global.assert.equal(i.BonusesMinNeed.toNumber()/money, 0, `Bonuses min Need should be ${0}`);
 	global.assert.equal(i.RestTotalNeed.toNumber()/money, (reserve+dividends)*CURRENT_INPUT/10000, `Rest Total Need should be ${(reserve+dividends)*CURRENT_INPUT/10000}`);
@@ -109,53 +112,53 @@ async function totalAndMinNeedsAsserts(i, CURRENT_INPUT, money, e1, e2, e3, offi
 
 async function getBalances(i){
 	var o = {};
-	o.Employee1Balance = await web3.eth.getBalance(i.Employee1.address);
-	o.Employee2Balance = await web3.eth.getBalance(i.Employee2.address);
-	o.Employee3Balance = await web3.eth.getBalance(i.Employee3.address);
-	o.OfficeBalance = await web3.eth.getBalance(i.Office.address);
-	o.InternetBalance = await web3.eth.getBalance(i.Internet.address);
-	o.Task1Balance = await web3.eth.getBalance(i.Task1.address);
-	o.Task2Balance = await web3.eth.getBalance(i.Task2.address);
-	o.Task3Balance = await web3.eth.getBalance(i.Task3.address);
-	o.Reserve3Balance = await web3.eth.getBalance(i.ReserveFund.address);
-	o.Dividends3Balance = await web3.eth.getBalance(i.DividendsFund.address);
-	o.Bonus1Balance = await web3.eth.getBalance(i.Bonus1.address);
-	o.Bonus2Balance = await web3.eth.getBalance(i.Bonus2.address);
-	o.Bonus3Balance = await web3.eth.getBalance(i.Bonus3.address);
-	o.AllOutpultsBalance = await web3.eth.getBalance(i.AllOutpults.address);
-	o.SpendsBalance = await web3.eth.getBalance(i.Spends.address);
-	o.SalariesBalance = await web3.eth.getBalance(i.Salaries.address);
-	o.OtherBalance = await web3.eth.getBalance(i.Other.address);
-	o.TasksBalance = await web3.eth.getBalance(i.Tasks.address);
-	o.BonusesBalance = await web3.eth.getBalance(i.Bonuses.address);
-	o.RestBalance = await web3.eth.getBalance(i.Rest.address);
+	o.Employee1Balance = await i.moneyflowTable.getElementBalance(i.Employee1Id);
+	o.Employee2Balance = await i.moneyflowTable.getElementBalance(i.Employee2Id);
+	o.Employee3Balance = await i.moneyflowTable.getElementBalance(i.Employee3Id);
+	o.OfficeBalance = await i.moneyflowTable.getElementBalance(i.OfficeId);
+	o.InternetBalance = await i.moneyflowTable.getElementBalance(i.InternetId);
+	o.Task1Balance = await i.moneyflowTable.getElementBalance(i.Task1Id);
+	o.Task2Balance = await i.moneyflowTable.getElementBalance(i.Task2Id);
+	o.Task3Balance = await i.moneyflowTable.getElementBalance(i.Task3Id);
+	o.Reserve3Balance = await i.moneyflowTable.getElementBalance(i.ReserveFundId);
+	o.Dividends3Balance = await i.moneyflowTable.getElementBalance(i.DividendsFundId);
+	o.Bonus1Balance = await i.moneyflowTable.getElementBalance(i.Bonus1Id);
+	o.Bonus2Balance = await i.moneyflowTable.getElementBalance(i.Bonus2Id);
+	o.Bonus3Balance = await i.moneyflowTable.getElementBalance(i.Bonus3Id);
+	o.AllOutpultsBalance = await i.moneyflowTable.getElementBalance(i.AllOutpultsId);
+	o.SpendsBalance = await i.moneyflowTable.getElementBalance(i.SpendsId);
+	o.SalariesBalance = await i.moneyflowTable.getElementBalance(i.SalariesId);
+	o.OtherBalance = await i.moneyflowTable.getElementBalance(i.OtherId);
+	o.TasksBalance = await i.moneyflowTable.getElementBalance(i.TasksId);
+	o.BonusesBalance = await i.moneyflowTable.getElementBalance(i.BonusesId);
+	o.RestBalance = await i.moneyflowTable.getElementBalance(i.RestId);
 
 	return o;
 }
 
-async function getSplitterParams(i, CURRENT_INPUT, money, creator){
+async function getSplitterParams(money, i, CURRENT_INPUT){
 	var o = {}
-	o.AllOutpultsTotalNeed = await i.AllOutpults.getTotalWeiNeeded(CURRENT_INPUT*money, {from:creator});
-	o.AllOutpultsMinNeed = await i.AllOutpults.getMinWeiNeeded();
-	o.AllOutpultsChildrenCount = await i.AllOutpults.getChildrenCount();
-	o.SpendsTotalNeed = await i.Spends.getTotalWeiNeeded(CURRENT_INPUT*money, {from:creator});
-	o.SpendsMinNeed = await i.Spends.getMinWeiNeeded();
-	o.SpendsChildrenCount = await i.Spends.getChildrenCount();
-	o.SalariesTotalNeed = await i.Salaries.getTotalWeiNeeded(CURRENT_INPUT*money, {from:creator});
-	o.SalariesMinNeed = await i.Salaries.getMinWeiNeeded();
-	o.SalariesChildrenCount = await i.Salaries.getChildrenCount();
-	o.OtherTotalNeed = await i.Other.getTotalWeiNeeded(CURRENT_INPUT*money, {from:creator});
-	o.OtherMinNeed = await i.Other.getMinWeiNeeded();
-	o.OtherChildrenCount = await i.Other.getChildrenCount();
-	o.TasksTotalNeed = await i.Tasks.getTotalWeiNeeded(CURRENT_INPUT*money, {from:creator});
-	o.TasksMinNeed = await i.Tasks.getMinWeiNeeded();
-	o.TasksChildrenCount = await i.Tasks.getChildrenCount();
-	o.BonusesTotalNeed = await i.Bonuses.getTotalWeiNeeded(CURRENT_INPUT*money, {from:creator});
-	o.BonusesMinNeed = await i.Bonuses.getMinWeiNeeded();
-	o.BonusesChildrenCount = await i.Bonuses.getChildrenCount();
-	o.RestTotalNeed = await i.Rest.getTotalWeiNeeded(CURRENT_INPUT*money, {from:creator});
-	o.RestMinNeed = await i.Rest.getMinWeiNeeded();
-	o.RestChildrenCount = await i.Rest.getChildrenCount();
+	o.AllOutpultsTotalNeed = await i.moneyflowTable._getTotalWeiNeeded(i.AllOutpultsId, CURRENT_INPUT*money);
+	o.AllOutpultsMinNeed = await i.moneyflowTable._getMinWeiNeeded(i.AllOutpultsId);
+	o.AllOutpultsChildrenCount = await i.moneyflowTable.getChildrenCount(i.AllOutpultsId);
+	o.SpendsTotalNeed = await i.moneyflowTable._getTotalWeiNeeded(i.SpendsId, CURRENT_INPUT*money);
+	o.SpendsMinNeed = await i.moneyflowTable._getMinWeiNeeded(i.SpendsId);
+	o.SpendsChildrenCount = await i.moneyflowTable.getChildrenCount(i.SpendsId);
+	o.SalariesTotalNeed = await i.moneyflowTable._getTotalWeiNeeded(i.SalariesId, CURRENT_INPUT*money);
+	o.SalariesMinNeed = await i.moneyflowTable._getMinWeiNeeded(i.SalariesId);
+	o.SalariesChildrenCount = await i.moneyflowTable.getChildrenCount(i.SalariesId);
+	o.OtherTotalNeed = await i.moneyflowTable._getTotalWeiNeeded(i.OtherId, CURRENT_INPUT*money);
+	o.OtherMinNeed = await i.moneyflowTable._getMinWeiNeeded(i.OtherId);
+	o.OtherChildrenCount = await i.moneyflowTable.getChildrenCount(i.OtherId);
+	o.TasksTotalNeed = await i.moneyflowTable._getTotalWeiNeeded(i.TasksId, CURRENT_INPUT*money);
+	o.TasksMinNeed = await i.moneyflowTable._getMinWeiNeeded(i.TasksId);
+	o.TasksChildrenCount = await i.moneyflowTable.getChildrenCount(i.TasksId);
+	o.BonusesTotalNeed = await i.moneyflowTable._getTotalWeiNeeded(i.BonusesId, CURRENT_INPUT*money);
+	o.BonusesMinNeed = await i.moneyflowTable._getMinWeiNeeded(i.BonusesId);
+	o.BonusesChildrenCount = await i.moneyflowTable.getChildrenCount(i.BonusesId);
+	o.RestTotalNeed = await i.moneyflowTable._getTotalWeiNeeded(i.RestId, CURRENT_INPUT*money);
+	o.RestMinNeed = await i.moneyflowTable._getMinWeiNeeded(i.RestId);
+	o.RestChildrenCount = await i.moneyflowTable.getChildrenCount(i.RestId);
 
 	return o;
 }
@@ -170,7 +173,7 @@ async function structureAsserts(i){
 	global.assert.equal(i.RestChildrenCount.toNumber(), 2, 'Children count should be 2');
 }
 
-async function balancesAsserts(i, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends){
+async function balancesAsserts(money, i, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends){
 	var totalSpend = e1+e2+e3 + t1+t2+t3 + office+internet;
 	var bonusesSpendPercent = (CURRENT_INPUT - totalSpend)/10000;
 	var fundsPercent = (CURRENT_INPUT-totalSpend-bonusesSpendPercent*(b1+b2+b3))/10000;
@@ -183,32 +186,18 @@ async function balancesAsserts(i, CURRENT_INPUT, money, e1, e2, e3, office, inte
 	global.assert.equal(i.Task1Balance.toNumber()/money, t1, `Task1 balance should be ${t1} money`);
 	global.assert.equal(i.Task2Balance.toNumber()/money, t2, `Task2 balance should be ${t2} money`);
 	global.assert.equal(i.Task3Balance.toNumber()/money, t3, `Task3 balance should be ${t3} money`);
-
 	global.assert.equal(i.Bonus1Balance.toNumber()/money, bonusesSpendPercent*b1, `Bonus1 balance should be ${bonusesSpendPercent*b1} money`);
 	global.assert.equal(i.Bonus2Balance.toNumber()/money, bonusesSpendPercent*b2, `Bonus2 balance should be ${bonusesSpendPercent*b2} money`);
 	global.assert.equal(i.Bonus3Balance.toNumber()/money, bonusesSpendPercent*b3, `Bonus3 balance should be ${bonusesSpendPercent*b3} money`);
-
 	global.assert.equal(i.Reserve3Balance.toNumber()/money, fundsPercent*reserve, `Reserve3 balance should be ${fundsPercent*reserve} money`);
 	global.assert.equal(i.Dividends3Balance.toNumber()/money, fundsPercent*dividends, `Dividends3 balance should be ${fundsPercent*dividends} money`);
 }
-
-async function splitterBalancesAsserts(i, money, allOutpultsBalance, spendsBalance, salariesBalance, otherBalance, tasksBalance, bonusesBalance, restBalance){
-	global.assert.equal(i.AllOutpultsBalance.toNumber()/money, allOutpultsBalance, `AllOutpults balance should be ${allOutpultsBalance} money`);
-	global.assert.equal(i.SpendsBalance.toNumber()/money, spendsBalance, `Spends balance should be ${spendsBalance} money`);
-	global.assert.equal(i.SalariesBalance.toNumber()/money, salariesBalance, `Salaries balance should be ${salariesBalance} money`);
-	global.assert.equal(i.OtherBalance.toNumber()/money, otherBalance, `Other balance should be ${otherBalance} money`);
-	global.assert.equal(i.TasksBalance.toNumber()/money, tasksBalance, `Tasks balance should be ${tasksBalance} money`);
-	global.assert.equal(i.BonusesBalance.toNumber()/money, bonusesBalance, `Bonuses balance should be ${bonusesBalance} money`);
-	global.assert.equal(i.RestBalance.toNumber()/money, restBalance, `Rest balance should be ${restBalance} money`);
-}*/
 
 global.contract('MoneyflowTable tests', (accounts) => {
 	var token;
 	var store;
 	var daoBase;
 	var moneyflowInstance;
-
-	var money = web3.toWei(0.001, "ether");
 
 	var neededAmount = 1e15;
 	var isPeriodic = false;
@@ -253,6 +242,7 @@ global.contract('MoneyflowTable tests', (accounts) => {
 	});
 
 	global.it('Gas measurements',async() => {
+
 		var b1 = web3.eth.getBalance(creator);
 		let moneyflowTable = await MoneyflowTable.new({gasPrice:1});
 		var b2 = web3.eth.getBalance(creator);
@@ -345,53 +335,170 @@ global.contract('MoneyflowTable tests', (accounts) => {
 		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
 		global.assert.equal(absoluteExpense3Balance.toNumber(),3*neededAmount, 'resource point received money from splitter');
 	});
-
-	/*global.it('should process money in structure o-> o-> o-o-o',async() => {
-		let moneyflowTable = await MoneyflowTable.new();
-		let unsortedSplitterId  = await moneyflowTable.elementsCount();
-		await moneyflowTable.addTopdownSplitter();
-		let AbsoluteExpense1Id  = await moneyflowTable.elementsCount();
-		await moneyflowTable.addAbsoluteExpense(neededAmount, isPeriodic, isAccumulateDebt, periodHours, output);
-		let AbsoluteExpense2Id  = await moneyflowTable.elementsCount();
-		await moneyflowTable.addAbsoluteExpense(2*neededAmount, isPeriodic, isAccumulateDebt, periodHours, output);
-		let AbsoluteExpense3Id  = await moneyflowTable.elementsCount();
-		await moneyflowTable.addAbsoluteExpense(3*neededAmount, isPeriodic, isAccumulateDebt, periodHours, output);
 	
-		var AllOutpults = await WeiTopDownSplitter.new('AllOutpults', {from:creator, gasPrice:0});
-		var Salaries = await WeiUnsortedSplitter.new('Salaries', {from:creator, gasPrice:0});
+	global.it('should process money with a scheme just like in the paper: 75/25 others, send MORE than minNeed; ',async() => {
+		const money = web3.toWei(0.0001, "ether");
+		const CURRENT_INPUT = 30900;
+		let e1 = 1000;
+		let e2 = 1500;
+		let e3 = 800;
+		let office = 500;
+		let internet = 300;
+		let t1 = 500;
+		let t2 = 300;
+		let t3 = 1000;
+		let b1 = 100;
+		let b2 = 100;
+		let b3 = 200;
+		let reserve = 7500;
+		let dividends = 2500;
 
-		var Employee1 = await WeiAbsoluteExpense.new(1000*money, {from:creator, gasPrice:0});
-		var Employee2 = await WeiAbsoluteExpense.new(1500*money, {from:creator, gasPrice:0});
-		var Employee3 = await WeiAbsoluteExpense.new(800*money, {from:creator, gasPrice:0});
+		let struct = await createStructure(money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		let splitterParams = await getSplitterParams(money, struct, CURRENT_INPUT, creator);
+		await totalAndMinNeedsAsserts(money, splitterParams, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		await structureAsserts(splitterParams);
 
-		await AllOutpults.addChild(Salaries.address, {from:creator, gas:1000000, gasPrice:0});
+		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money, gasPrice:0});
 
-		await Salaries.addChild(Employee1.address, {from:creator, gas:1000000, gasPrice:0});
-		await Salaries.addChild(Employee2.address, {from:creator, gas:1000000, gasPrice:0});
-		await Salaries.addChild(Employee3.address, {from:creator, gas:1000000, gasPrice:0});
+		let balances = await getBalances(struct);
+		await balancesAsserts(money, balances, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+	});
 
-		var Employee1Needs = await Employee1.getTotalWeiNeeded(3300*money);
-			global.assert.equal(Employee1Needs.toNumber()/money, 1000, 'Employee1 Needs 1000 money' );
-		var Employee2Needs = await Employee2.getTotalWeiNeeded(3300*money);
-			global.assert.equal(Employee2Needs.toNumber()/money, 1500, 'Employee1 Needs 1500 money' );
-		var Employee3Needs = await Employee3.getTotalWeiNeeded(3300*money);
-			global.assert.equal(Employee3Needs.toNumber()/money, 800, 'Employee1 Needs 800 money' );
+	global.it('should process money with a scheme just like in the paper: 75/25 others, send EQUAL to minNeed',async() => {
+		const money = web3.toWei(0.0001, "ether");
+		const CURRENT_INPUT = 5900;
+		let e1 = 1000;
+		let e2 = 1500;
+		let e3 = 800;
+		let office = 500;
+		let internet = 300;
+		let t1 = 500;
+		let t2 = 300;
+		let t3 = 1000;
+		let b1 = 100;
+		let b2 = 100;
+		let b3 = 200;
+		let reserve = 7500;
+		let dividends = 2500;
 
-		var SalariesNeeds = await Salaries.getTotalWeiNeeded(3300*money);
-			global.assert.equal(SalariesNeeds.toNumber()/money, 3300, 'Salaries Needs 3300 money' );
+		let struct = await createStructure(money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		let splitterParams = await getSplitterParams(money, struct, CURRENT_INPUT, creator);
+		await totalAndMinNeedsAsserts(money, splitterParams, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		await structureAsserts(splitterParams);
 
-		var SalariesMinNeeds = await Salaries.getMinWeiNeeded();
-			global.assert.equal(SalariesNeeds.toNumber()/money, 3300, 'Salaries min Needs 3300 money' );
+		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money, gasPrice:0});
 
-		var AllOutpultsNeeds = await AllOutpults.getTotalWeiNeeded(3300*money);
-			global.assert.equal(AllOutpultsNeeds.toNumber()/money, 3300, 'AllOutpults Needs 3300 money' );
-		var MinOutpultsNeeds = await AllOutpults.getMinWeiNeeded();
-			global.assert.equal(AllOutpultsNeeds.toNumber()/money, 3300, 'AllOutpults Needs min 3300 money' );
-		var OutputChildrenCount = await AllOutpults.getChildrenCount();
-			global.assert.equal(OutputChildrenCount.toNumber(), 1, 'OutputChildrenCount should be 1');
-		var SalariesChildrenCount = await Salaries.getChildrenCount();
-			global.assert.equal(SalariesChildrenCount.toNumber(), 3, 'SalariesChildrenCount should be 3');
+		let balances = await getBalances(struct);
+		await balancesAsserts(money, balances, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, 0, 0, 0, 0, 0);
+	});
 
-		var th = await Salaries.processFunds(3300*money, {value:3300*money, from:creator, gas:1000000, gasPrice:0});
-	});*/
+	global.it('should not process money: send LESS than minNeed',async() => {
+		const money = web3.toWei(0.0001, "ether");
+		const CURRENT_INPUT = 5900;
+		let e1 = 1000;
+		let e2 = 1500;
+		let e3 = 800;
+		let office = 500;
+		let internet = 300;
+		let t1 = 500;
+		let t2 = 300;
+		let t3 = 1000;
+		let b1 = 100;
+		let b2 = 100;
+		let b3 = 200;
+		let reserve = 7500;
+		let dividends = 2500;
+
+		let struct = await createStructure(money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		let splitterParams = await getSplitterParams(money, struct, CURRENT_INPUT, creator);
+		await totalAndMinNeedsAsserts(money, splitterParams, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		await structureAsserts(splitterParams);
+
+		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money/100, {value:CURRENT_INPUT*money, gasPrice:0}).should.be.rejectedWith('revert');
+		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money/100, gasPrice:0}).should.be.rejectedWith('revert');
+		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money/100, {value:CURRENT_INPUT*money, gasPrice:0}).should.be.rejectedWith('revert');
+	});
+
+	global.it('should process money with a scheme just like in the paper: 10/15 others, send MORE than minNeed; ',async() => {
+		const money = web3.toWei(0.0001, "ether");
+		const CURRENT_INPUT = 20900;
+		let e1 = 1000;
+		let e2 = 1500;
+		let e3 = 800;
+		let office = 500;
+		let internet = 300;
+		let t1 = 500;
+		let t2 = 300;
+		let t3 = 1000;
+		let b1 = 100;
+		let b2 = 100;
+		let b3 = 200;
+		let reserve = 1000;
+		let dividends = 1500;
+
+		let struct = await createStructure(money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		let splitterParams = await getSplitterParams(money, struct, CURRENT_INPUT, creator);
+		await totalAndMinNeedsAsserts(money, splitterParams, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		await structureAsserts(splitterParams);
+
+		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money,  gasPrice:0});
+
+		let balances = await getBalances(struct);
+		await balancesAsserts(money, balances, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+	});
+
+	global.it('should process money with a scheme just like in the paper: 10/15 others, send EQUAL to minNeed; ',async() => {
+		const money = web3.toWei(0.0001, "ether");		
+		const CURRENT_INPUT = 5900;
+		let e1 = 1000;
+		let e2 = 1500;
+		let e3 = 800;
+		let office = 500;
+		let internet = 300;
+		let t1 = 500;
+		let t2 = 300;
+		let t3 = 1000;
+		let b1 = 100;
+		let b2 = 100;
+		let b3 = 200;
+		let reserve = 1000;
+		let dividends = 1500;
+
+		let struct = await createStructure(money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		let splitterParams = await getSplitterParams(money, struct, CURRENT_INPUT, creator);
+		await totalAndMinNeedsAsserts(money, splitterParams, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		await structureAsserts(splitterParams);
+
+		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money, gasPrice:0});
+
+		let balances = await getBalances(struct);
+		await balancesAsserts(money, balances, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, 0, 0, 0, 0, 0);
+	});
+
+	global.it('should not process money: send LESS than minNeed; ',async() => {
+		const money = web3.toWei(0.0001, "ether");
+		const CURRENT_INPUT = 30900;
+		let e1 = 1000;
+		let e2 = 1500; 
+		let e3 = 800;
+		let office = 500;
+		let internet = 300;
+		let t1 = 500;
+		let t2 = 300;
+		let t3 = 1000;
+		let b1 = 100;
+		let b2 = 100;
+		let b3 = 200;
+		let reserve = 1000;
+		let dividends = 1500;
+
+		let struct = await createStructure(money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		let splitterParams = await getSplitterParams(money, struct, CURRENT_INPUT, creator);
+		await totalAndMinNeedsAsserts(money, splitterParams, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		await structureAsserts(splitterParams);
+
+		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money/100, {value:CURRENT_INPUT*money, gasPrice:0}).should.be.rejectedWith('revert');
+		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money/100, gasPrice:0}).should.be.rejectedWith('revert');
+		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money/100, {value:CURRENT_INPUT*money, gasPrice:0}).should.be.rejectedWith('revert');
+	});	
 });
