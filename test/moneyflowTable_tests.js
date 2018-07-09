@@ -101,8 +101,6 @@ async function totalAndMinNeedsAsserts(money, i, CURRENT_INPUT, e1, e2, e3, offi
 	global.assert.equal(i.OtherMinNeed.toNumber()/money, office+internet, `Other min Need should be ${office+internet}`);
 	global.assert.equal(i.TasksTotalNeed.toNumber()/money, t1+t2+t3, `Tasks Total Need should be ${t1+t2+t3}`);
 	global.assert.equal(i.TasksMinNeed.toNumber()/money, t1+t2+t3, `Tasks min Need should be ${t1+t2+t3}`);
-	console.log('i.BonusesTotalNeed.toNumber()/money:', i.BonusesTotalNeed.toNumber()/money)
-	console.log('(b1+b2+b3)*CURRENT_INPUT/10000:', (b1+b2+b3)*CURRENT_INPUT/10000)
 	global.assert.equal(i.BonusesTotalNeed.toNumber()/money, (b1+b2+b3)*CURRENT_INPUT/10000, `Bonuses Total Need should be ${(b1+b2+b3)*CURRENT_INPUT/10000}`);
 	global.assert.equal(i.BonusesMinNeed.toNumber()/money, 0, `Bonuses min Need should be ${0}`);
 	global.assert.equal(i.RestTotalNeed.toNumber()/money, (reserve+dividends)*CURRENT_INPUT/10000, `Rest Total Need should be ${(reserve+dividends)*CURRENT_INPUT/10000}`);
@@ -242,7 +240,6 @@ global.contract('MoneyflowTable tests', (accounts) => {
 	});
 
 	global.it('Gas measurements',async() => {
-
 		var b1 = web3.eth.getBalance(creator);
 		let moneyflowTable = await MoneyflowTable.new({gasPrice:1});
 		var b2 = web3.eth.getBalance(creator);
@@ -254,7 +251,6 @@ global.contract('MoneyflowTable tests', (accounts) => {
 		console.log('moneyflowTable:', b1.toNumber() - b2.toNumber());
 		console.log('splitter:', b2.toNumber() - b3.toNumber());
 		console.log('expense:', b3.toNumber() - b4.toNumber());
-
 	});
 
 	// 0->•abs
@@ -335,7 +331,47 @@ global.contract('MoneyflowTable tests', (accounts) => {
 		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
 		global.assert.equal(absoluteExpense3Balance.toNumber(),3*neededAmount, 'resource point received money from splitter');
 	});
+
+
+	global.it('should process money with WeiTopDownSplitter + 2 WeiAbsoluteExpense + WeiRelativeExpense',async() => {
+		let moneyflowTable = await MoneyflowTable.new();
+
+		let topDownSplitterId = getEId(await moneyflowTable.addTopdownSplitter());			
+		let AbsoluteExpense1Id = getEId(await moneyflowTable.addAbsoluteExpense(neededAmount, isPeriodic, isAccumulateDebt, periodHours, output));
+		let RelativeExpense1Id = getEId(await moneyflowTable.addRelativeExpense(5000, isPeriodic, isAccumulateDebt, periodHours, output));
+		let AbsoluteExpense3Id = getEId(await moneyflowTable.addAbsoluteExpense(neededAmount, isPeriodic, isAccumulateDebt, periodHours, output));
+
+		// add 3 WeiAbsoluteExpense outputs to the splitter
+		await moneyflowTable.addChild(topDownSplitterId, AbsoluteExpense1Id);
+		await moneyflowTable.addChild(topDownSplitterId, RelativeExpense1Id);
+		await moneyflowTable.addChild(topDownSplitterId, AbsoluteExpense3Id);
+
+		// add WeiTopDownSplitter to the moneyflow
+		await moneyflowInstance.setRootWeiReceiver(moneyflowTable.address);
+
+		var revenueEndpointAddress = await moneyflowInstance.getRevenueEndpoint();
+
+		global.assert.equal(revenueEndpointAddress, moneyflowTable.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
 	
+	 	let totalNeed = await moneyflowTable.getTotalWeiNeeded(3*neededAmount);
+		global.assert.equal(totalNeed.toNumber(), 3*neededAmount);
+		let minNeed = await moneyflowTable.getMinWeiNeeded();
+		global.assert.equal(minNeed.toNumber(), 3*neededAmount);
+
+		// now send some money to the revenue endpoint 
+		await moneyflowTable.processFunds(3*neededAmount, {value:3*neededAmount, from:creator});
+
+		// money should end up in the outputs
+		var absoluteExpense1Balance = await moneyflowTable.getElementBalance(AbsoluteExpense1Id);
+		global.assert.equal(absoluteExpense1Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
+
+		var relativeExpense2Balance = await moneyflowTable.getElementBalance(RelativeExpense1Id);
+		global.assert.equal(relativeExpense2Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
+
+		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
+		global.assert.equal(absoluteExpense3Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
+	});
+
 	global.it('should process money with a scheme just like in the paper: 75/25 others, send MORE than minNeed; ',async() => {
 		const money = web3.toWei(0.0001, "ether");
 		const CURRENT_INPUT = 30900;
@@ -500,5 +536,5 @@ global.contract('MoneyflowTable tests', (accounts) => {
 		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money/100, {value:CURRENT_INPUT*money, gasPrice:0}).should.be.rejectedWith('revert');
 		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money/100, gasPrice:0}).should.be.rejectedWith('revert');
 		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money/100, {value:CURRENT_INPUT*money, gasPrice:0}).should.be.rejectedWith('revert');
-	});	
+	});
 });
