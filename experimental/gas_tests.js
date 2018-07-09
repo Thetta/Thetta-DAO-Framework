@@ -7,8 +7,8 @@ var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 var MoneyFlow = artifacts.require("./MoneyFlow");
 var IWeiReceiver = artifacts.require("./IWeiReceiver");
 var IProposal = artifacts.require("./IProposal");
-// var DaoBaseTest = artifacts.require("./DaoBaseTest");
-// var DaoBaseWithUnpackersTest = artifacts.require("./DaoBaseWithUnpackersTest");
+// var DaoBaseTest = artifacts.require("./DaoBaseTest"); 
+// var DaoBaseWithUnpackersTest = artifacts.require("./DaoBaseWithUnpackersTest"); 
 var Splitter = artifacts.require("./Splitter");
 var SplitterSimple = artifacts.require("./SplitterSimple");
 var MoneyflowCentral = artifacts.require("./MoneyflowCentral");
@@ -19,6 +19,9 @@ var SplitterStorage = artifacts.require("./SplitterStorage");
 var SplitterMain = artifacts.require("./SplitterMain");
 var WeiTopDownSplitter = artifacts.require("./WeiTopDownSplitter");
 var WeiUnsortedSplitter = artifacts.require("./WeiUnsortedSplitter");
+
+
+var CheckExceptions = require('./utils/checkexceptions');
 
 function KECCAK256 (x){
 	return web3.sha3(x);
@@ -40,7 +43,7 @@ global.contract('Gas measurements', (accounts) => {
 	global.beforeEach(async() => {
 	});
 
-	global.it('Should estimate gas for WeiTopDownSplitter',async() => {
+	/*global.it('Should estimate gas for WeiTopDownSplitter',async() => {
 		var b1 = await web3.eth.getBalance(creator);
 		var td = await WeiTopDownSplitter.new('a',{from: creator, gasPrice:1})
 		var b2 = await web3.eth.getBalance(creator);
@@ -72,7 +75,7 @@ global.contract('Gas measurements', (accounts) => {
 		console.log('WeiUnsortedSplitter 2:', b2.toNumber() - b3.toNumber());
 		console.log('WeiUnsortedSplitter 3:', b3.toNumber() - b4.toNumber());
 		console.log('WeiUnsortedSplitter 4:', b4.toNumber() - b5.toNumber());
-	});
+	});	
 
 	global.it('Should estimate gas for MoneyflowCentral',async() => {
 		var b1 = await web3.eth.getBalance(creator);
@@ -83,18 +86,18 @@ global.contract('Gas measurements', (accounts) => {
 		var b3 = await web3.eth.getBalance(creator);
 		await moneyflowCentral.setNewOutput(1, employee1, {from: creator, gasPrice:1});
 		var b4 = await web3.eth.getBalance(creator);
-
+		
 		console.log('Estimate gas setNewOutput:', await moneyflowCentral.setNewOutput.estimateGas(2, employee2, {from: creator, gasPrice:1}));
 		await moneyflowCentral.setNewOutput(2, employee2, {from: creator, gasPrice:1});
-
+		
 		var b5 = await web3.eth.getBalance(creator);
 		console.log('MoneyflowCentral: contract ', b1.toNumber() - b2.toNumber());
 		console.log('MoneyflowCentral: setNewNode', b2.toNumber() - b3.toNumber());
 		console.log('MoneyflowCentral: setNewOutput', b3.toNumber() - b4.toNumber());
-		console.log('MoneyflowCentral: setNewOutput', b4.toNumber() - b5.toNumber());
+		console.log('MoneyflowCentral: setNewOutput', b4.toNumber() - b5.toNumber());	
 	});
 
-	/*global.it('Should estimate gas for MoneyflowCentral2',async() => {
+	global.it('Should estimate gas for MoneyflowCentral2',async() => {
 		var b1 = await web3.eth.getBalance(creator);
 		moneyflowCentral = await MoneyflowCentral2.new({from: creator, gasPrice:1});
 		var b2 = await web3.eth.getBalance(creator);
@@ -108,8 +111,8 @@ global.contract('Gas measurements', (accounts) => {
 		console.log('Estimate gas setMoneyflowNode:', await moneyflowCentral.setMoneyflowNode.estimateGas(0, [1,2], 0, true, '0x0', {from: creator, gasPrice:1}));
 		console.log('MoneyflowCentral2: setNewNode', b2.toNumber() - b3.toNumber());
 		console.log('MoneyflowCentral2: setNewOutput', b3.toNumber() - b4.toNumber());
-		console.log('MoneyflowCentral2: setNewOutput', b4.toNumber() - b5.toNumber());
-	});*/
+		console.log('MoneyflowCentral2: setNewOutput', b4.toNumber() - b5.toNumber());	
+	});	
 
 	global.it('Should estimate gas for SplitterSimple',async() => {
 		var b1 = await web3.eth.getBalance(creator);
@@ -124,7 +127,7 @@ global.contract('Gas measurements', (accounts) => {
 		await SplitterSimple.new([employee2, employee3, employee4, employee5], {from: creator, gasPrice:1})
 		var b6 = await web3.eth.getBalance(creator);
 		await SplitterSimple.new([employee1, employee2, employee3, employee4, employee5], {from: creator, gasPrice:1})
-		var b7 = await web3.eth.getBalance(creator);
+		var b7 = await web3.eth.getBalance(creator);		
 		console.log('SplitterSimple gas (first deploy):', b1.toNumber() - b2.toNumber());
 		console.log('SplitterSimple gas (1 child):', b2.toNumber() - b3.toNumber());
 		console.log('SplitterSimple gas (2 children):', b3.toNumber() - b4.toNumber());
@@ -133,7 +136,7 @@ global.contract('Gas measurements', (accounts) => {
 		console.log('SplitterSimple gas (5 children):', b6.toNumber() - b7.toNumber());
 	});
 
-	/*global.it('Should estimate gas for Splitter with Lib',async() => {
+	global.it('Should estimate gas for Splitter with Lib',async() => {
 		var b1 = await web3.eth.getBalance(creator);
 		await Splitter.new('a', {from: creator, gasPrice:1})
 		var b2 = await web3.eth.getBalance(creator);
@@ -146,14 +149,14 @@ global.contract('Gas measurements', (accounts) => {
 		await Splitter.new('a', {from: creator, gasPrice:1})
 		var b6 = await web3.eth.getBalance(creator);
 		await Splitter.new('a', {from: creator, gasPrice:1})
-		var b7 = await web3.eth.getBalance(creator);
+		var b7 = await web3.eth.getBalance(creator);		
 		console.log('Splitter gas :', b1.toNumber() - b2.toNumber());
 		console.log('Splitter gas :', b2.toNumber() - b3.toNumber());
 		console.log('Splitter gas :', b3.toNumber() - b4.toNumber());
 		console.log('Splitter gas :', b4.toNumber() - b5.toNumber());
 		console.log('Splitter gas :', b5.toNumber() - b6.toNumber());
 		console.log('Splitter gas :', b6.toNumber() - b7.toNumber());
-	});*/
+	});
 
 	global.it('Should estimate gas for SplitterStorage + SplitterMain',async() => {
 		var b1 = await web3.eth.getBalance(creator);
@@ -180,7 +183,7 @@ global.contract('Gas measurements', (accounts) => {
 	});
 
 
-	/*global.it('Should estimate gas for daoBase',async() => {
+	global.it('Should estimate gas for daoBase',async() => {
 		token1 = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token1.mint(creator, 1000);
 		store1 = await DaoStorage.new([token1.address],{gas: 10000000, from: creator});
