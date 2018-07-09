@@ -73,14 +73,17 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 		if(!_isOpen()){
 			return 0;
 		}
-
-		uint total = 0;
-		for(uint i=0; i<childrenCount; ++i){
+		uint out = 0;
+		for(uint j=0; j<childrenCount; ++j){
+			uint i = childrenCount - j - 1;
 			IWeiReceiver c = IWeiReceiver(children[i]);
-			uint needed = c.getMinWeiNeeded();
-			total = total + needed;
+			if(c.getPercentsMul100()>0){
+				out = 10000 * out / c.getPercentsMul100();
+			}else{
+				out += c.getMinWeiNeeded();
+			}
 		}
-		return total;
+		return out;		
 	}
 
 	function getTotalWeiNeeded(uint _inputWei)external view returns(uint){

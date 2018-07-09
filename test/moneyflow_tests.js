@@ -17,6 +17,12 @@ function KECCAK256 (x){
 	return web3.sha3(x);
 }
 
+require('chai')
+  .use(require('chai-as-promised'))
+  .use(require('chai-bignumber')(web3.BigNumber))
+  .should();
+
+
 async function createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends){
 	let callParams = {from:creator, gasPrice:0}
 	let o = {};
@@ -505,6 +511,44 @@ contract('Moneyflow', (accounts) => {
 		let weiAbsoluteExpense3Balance = await web3.eth.getBalance(weiAbsoluteExpense3.address);
 		assert.equal(weiAbsoluteExpense3Balance.toNumber(),3*money, 'resource point received money from splitter');
 	});
+
+	it('should process money with WeiTopDownSplitter + 2 WeiAbsoluteExpense + WeiRelativeExpense',async() => {
+		// create WeiTopDownSplitter
+		let weiTopDownSplitter = await WeiTopDownSplitter.new('JustSplitter');
+
+		let weiAbsoluteExpense1 = await WeiAbsoluteExpense.new(money, {from:creator, gasPrice:0});
+		let weiRelativeExpense1 = await WeiRelativeExpense.new(5000, {from:creator, gasPrice:0});
+		let weiAbsoluteExpense3 = await WeiAbsoluteExpense.new(money, {from:creator, gasPrice:0});
+
+		// // add 3 WeiAbsoluteExpense outputs to the splitter
+		await weiTopDownSplitter.addChild(weiAbsoluteExpense1.address);
+		await weiTopDownSplitter.addChild(weiRelativeExpense1.address);
+		await weiTopDownSplitter.addChild(weiAbsoluteExpense3.address);
+
+		// add WeiTopDownSplitter to the moneyflow
+		await moneyflowInstance.setRootWeiReceiver(weiTopDownSplitter.address);
+
+		let revenueEndpointAddress = await moneyflowInstance.getRevenueEndpoint();
+
+		assert.equal(revenueEndpointAddress, weiTopDownSplitter.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
+
+		// now send some money to the revenue endpoint
+
+		let minNeed = await weiTopDownSplitter.getMinWeiNeeded();
+		assert.equal(minNeed, 3*money);
+
+		await weiTopDownSplitter.processFunds(3*money, {value:3*money, from:creator});
+
+		// money should end up in the outputs
+		let weiAbsoluteExpense1Balance = await web3.eth.getBalance(weiAbsoluteExpense1.address);
+		assert.equal(weiAbsoluteExpense1Balance.toNumber(),money, 'resource point received money from splitter');
+
+		let weiRelativeExpense1Balance = await web3.eth.getBalance(weiRelativeExpense1.address);
+		assert.equal(weiRelativeExpense1Balance.toNumber(),money, 'resource point received money from splitter');
+
+		let weiAbsoluteExpense3Balance = await web3.eth.getBalance(weiAbsoluteExpense3.address);
+		assert.equal(weiAbsoluteExpense3Balance.toNumber(),money, 'resource point received money from splitter');
+	});	
 
 	it('should process money with WeiUnsortedSplitter + 3 WeiAbsoluteExpense',async() => {
 		// create WeiUnsortedSplitter
