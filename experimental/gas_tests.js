@@ -1,4 +1,4 @@
-var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
+/*var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
@@ -43,7 +43,7 @@ global.contract('Gas measurements', (accounts) => {
 	global.beforeEach(async() => {
 	});
 
-	/*global.it('Should estimate gas for WeiTopDownSplitter',async() => {
+	global.it('Should estimate gas for WeiTopDownSplitter',async() => {
 		var b1 = await web3.eth.getBalance(creator);
 		var td = await WeiTopDownSplitter.new('a',{from: creator, gasPrice:1})
 		var b2 = await web3.eth.getBalance(creator);
@@ -256,6 +256,7 @@ global.contract('Gas measurements', (accounts) => {
 
 		console.log('Old:', c1.toNumber()-c2.toNumber(), 'New:', c2.toNumber()-c3.toNumber());
 		// global.assert.equal(true,false);
-	});*/
+	});
 });
 
+*/
