@@ -155,7 +155,7 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 	}
 
 	// this is an override of MintableToken method with cap
-	function mint(address _to, uint256 _amount) canMint onlyOwner public returns(bool){
+	function mintFor(address _to, uint256 _amount) canMint onlyOwner public returns(bool){
 
 		require(totalSupply_.add(_amount) <= cap);
 
