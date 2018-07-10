@@ -196,7 +196,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		return;
 	}
 
-	function sqrt(uint x) internal returns (uint y) {
+	function sqrt(uint x) internal pure returns (uint y) {
 		uint z = (x + 1) / 2;
 		y = x;
 		while (z < y) {
