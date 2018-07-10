@@ -54,6 +54,23 @@ require('chai')
 		});
 		});
 
+		describe('isHolder()', function () {
+		     
+		it('should pass for coveralls', async function () {
+			this.token = await StdDaoToken.new("StdToken","STDT",18, true, false, ETH);
+			await this.token.mintFor(web3.eth.accounts[0], 1000);
+			await this.token.mintFor(web3.eth.accounts[0], 1000);
+			this.token.balanceOf(web3.eth.accounts[0]).then(result => {
+				assert.equal(result.toNumber(), 2000);
+			});
+			await this.token.transfer(web3.eth.accounts[1],100);
+			await this.token.transfer(web3.eth.accounts[1],100);
+			this.token.balanceOf(web3.eth.accounts[1]).then(result => {
+				assert.equal(result.toNumber(), 200);
+			});
+		});
+		});
+
 		describe('burnFor()', function () {
 			    
 		it('should fail due to not owner call', async function () {

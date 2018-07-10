@@ -41,8 +41,6 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 
 	event VotingCreated(address indexed _address, uint _votingID);
 
-	event Burn(address indexed burner, uint256 value);
-
 	modifier isBurnable_() { 
 		require (isBurnable); 
 		_; 
