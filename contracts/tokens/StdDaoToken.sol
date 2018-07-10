@@ -24,7 +24,6 @@ import "./ITokenVotingSupport.sol";
 contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, DetailedERC20{
 
 	uint256 public cap;
-	bool isMintable;
 	bool isBurnable;
 	bool isPausable;
 	bool isVotingPeriod = false;
@@ -39,11 +38,6 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 
 	event Burn(address indexed burner, uint256 value);
 
-	modifier isMintable_() { 
-		require (isMintable); 
-		_;
-	}
-
 	modifier isBurnable_() { 
 		require (isBurnable); 
 		_; 
@@ -54,12 +48,11 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 		_; 
 	}
 	
-	constructor(string _name, string _symbol, uint8 _decimals, bool _isMintable, bool _isBurnable, bool _isPausable, uint256 _cap) public
+	constructor(string _name, string _symbol, uint8 _decimals, bool _isBurnable, bool _isPausable, uint256 _cap) public
 		DetailedERC20(_name, _symbol, _decimals)
 	{
 		require(_cap > 0);
 		cap = _cap;
-		isMintable = _isMintable;
 		isBurnable = _isBurnable;
 		isPausable = _isPausable;
 	}
@@ -166,7 +159,7 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 	}
 
 	// this is an override of MintableToken method with cap
-	function mint(address _to, uint256 _amount) isMintable_ onlyOwner public returns(bool){
+	function mint(address _to, uint256 _amount) canMint onlyOwner public returns(bool){
 		require(totalSupply_.add(_amount) <= cap);
 		for(uint i = 0; i < 20; i++){
 			if(!isVotingInProgress[i]){

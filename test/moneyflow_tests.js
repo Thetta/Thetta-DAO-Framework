@@ -212,7 +212,7 @@ contract('Moneyflow', (accounts) => {
 
 	beforeEach(async() => {
 
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000000000000000000000);
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000000000000000000000);
 
 		await token.mint(creator, 1000, {gasPrice: 0});
 
