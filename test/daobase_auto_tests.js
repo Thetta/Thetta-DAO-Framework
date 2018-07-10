@@ -76,12 +76,12 @@ contract('DaoBaseAuto', (accounts) => {
 
 	beforeEach(async() => {
 
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000);
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
 
-		await token.mint(creator, 1000);
-		await token.mint(employee1, 600);
-		await token.mint(employee2, 600);
-		await token.mint(employee3, 600);
+		await token.mintFor(creator, 1000);
+		await token.mintFor(employee1, 600);
+		await token.mintFor(employee2, 600);
+		await token.mintFor(employee3, 600);
 
 		store = await DaoStorage.new([token.address],{ from: creator });
 

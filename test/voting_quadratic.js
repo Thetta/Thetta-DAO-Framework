@@ -86,13 +86,12 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 	const VOTING_TYPE_QUADRATIC = 3;
 
 	beforeEach(async() => {
-
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000);
-		await token.mint(creator, 25);
-		await token.mint(employee1, 11);
-		await token.mint(employee2, 9);
-		await token.mint(employee3, 4);
-		await token.mint(employee4, 16);
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+		await token.mintFor(creator, 25);
+		await token.mintFor(employee1, 11);
+		await token.mintFor(employee2, 9);
+		await token.mintFor(employee3, 4);
+		await token.mintFor(employee4, 16);
 		// await token.mint(employee5, 1);
 
 		let store = await DaoStorage.new([token.address],{ from: creator });
