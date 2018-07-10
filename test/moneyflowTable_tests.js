@@ -209,34 +209,39 @@ global.contract('MoneyflowTable tests', (accounts) => {
 	const outsider = accounts[3];
 
 	global.beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
-		await token.mint(creator, 1000);
-		store = await DaoStorage.new([token.address],{gas: 10000000, from: creator});
-		daoBase = await DaoBase.new(store.address,{gas: 10000000, from: creator});
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000000000000000000000);
+
+		await token.mint(creator, 1000, {gasPrice: 0});
+
+		store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBase.new(store.address,{from: creator});
+
+		issueTokens = await daoBase.ISSUE_TOKENS();
+		manageGroups = await daoBase.MANAGE_GROUPS();
+		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
+		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
+		burnTokens = await daoBase.BURN_TOKENS();
+		moneyflowInstance = await MoneyFlow.new(daoBase.address);
+		withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
+		setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
 		// add creator as first employee
 		await store.addGroupMember(KECCAK256("Employees"), creator);
-		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
+		await store.allowActionByAddress(manageGroups,creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
 
-		// manually setup the Default organization 
-		await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-		await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
-		await daoBase.allowActionByAnyMemberOfGroup("setRootWeiReceiver","Employees");
-
-		await daoBase.allowActionByAnyMemberOfGroup("openGate","Employees");
-		await daoBase.allowActionByAnyMemberOfGroup("closeGate","Employees");
+		// manually setup the Default organization
+		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(setRootWeiReceiver,"Employees");
 
 		// this is a list of actions that require voting
-		await daoBase.allowActionByVoting("manageGroups", token.address);
-		await daoBase.allowActionByVoting("addNewTask", token.address);
-		await daoBase.allowActionByVoting("issueTokens", token.address);
+		await daoBase.allowActionByVoting(manageGroups, token.address);
+		await daoBase.allowActionByVoting(issueTokens, token.address);
 
-		await daoBase.allowActionByAddress("withdrawDonations", creator);
-		moneyflowInstance = await MoneyFlow.new(daoBase.address,{from: creator});
+		await daoBase.allowActionByAddress(withdrawDonations, creator);
 	});
 
 	global.it('Gas measurements',async() => {
