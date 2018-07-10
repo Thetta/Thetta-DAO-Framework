@@ -10,7 +10,7 @@ pragma solidity ^0.4.22;
  *	  contract StdDaoToken {}; 
  *   StdDaoToken token;
  *
- *	  token.mint(ADDRESS_A, 100);
+ *	  token.mintFor(ADDRESS_A, 100);
  *   assert.equal(token.balanceOf(ADDRESS_A), 100);
  *   assert.equal(token.balanceOf(ADDRESS_B), 0);
  *

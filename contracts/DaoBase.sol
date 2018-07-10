@@ -16,7 +16,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  * It will transfer ownership only during upgrade
  *
  * 2. Currently DaoBase works only with StdDaoToken. It does not support working with 
- * plain ERC20 tokens because we need some extra features like mint(), burn() and transferOwnership()
+ * plain ERC20 tokens because we need some extra features like mintFor(), burnFor() and transferOwnership()
 */
 contract DaoBase is IDaoBase, Ownable {
 	DaoStorage public store;
@@ -212,7 +212,7 @@ contract DaoBase is IDaoBase, Ownable {
 			if(store.getAllTokenAddresses()[i]==_tokenAddress){
 				// WARNING:
 				// token ownership should be transferred to the current DaoBase to do that!!!
-				store.getAllTokenAddresses()[i].mint(_to, _amount);
+				store.getAllTokenAddresses()[i].mintFor(_to, _amount);
 				return;
 			}
 		}
@@ -228,7 +228,7 @@ contract DaoBase is IDaoBase, Ownable {
 			if(store.getAllTokenAddresses()[i]==_tokenAddress){
 				// WARNING:
 				// token ownership should be transferred to the current DaoBase to do that!!!
-				store.getAllTokenAddresses()[i].burn(_who, _amount);
+				store.getAllTokenAddresses()[i].burnFor(_who, _amount);
 				return;
 			}
 		}

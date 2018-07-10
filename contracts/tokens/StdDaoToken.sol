@@ -1,6 +1,7 @@
 pragma solidity ^0.4.22;
 
 import "zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
+import "zeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -18,13 +19,13 @@ import "./ITokenVotingSupport.sol";
  *
  * Non ERC20:
  *		transferOwnership()
- *		mint()
- *		burn()
+ *		mintFor()
+ *		burnFor()
  *    startNewVoting()
  *    finishVoting()
  *    getBalanceAtVoting() 
 */
-contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, DetailedERC20 {
+contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotingSupport, DetailedERC20 {
 	uint256 public cap;
 	bool isMintable;
 	bool isBurnable;
@@ -38,8 +39,6 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 	mapping (uint => mapping (address => uint256)) balancesAtVoting;
 
 	event VotingCreated(address indexed _address, uint _votingID);
-
-	event Burn(address indexed burner, uint256 value);
 
 	modifier isMintable_() { 
 		require (isMintable); 
@@ -146,9 +145,9 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 		return balancesAtVoting[_votingID][_owner];
 	}
 
-	// this is BurnableToken method
-	function burn(address _who, uint256 _value) isBurnable_ onlyOwner public{
-		require(_value <= balances[_who]);
+	function burnFor(address _who, uint256 _value) isBurnable_ onlyOwner public{
+		super._burn(_who, _value);
+
 		for(uint i = 0; i < 20; i++){
 			if(!isVotingInProgress[i]){
 				balancesAtVoting[i][_who] = balancesAtVoting[i][_who].sub(_value);
@@ -160,14 +159,10 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 				numElements[i] = numElements[i].add(1);
 			}
 		}
-		balances[_who] = balances[_who].sub(_value);
-		totalSupply_ = totalSupply_.sub(_value);
-		emit Burn(_who, _value);
-		emit Transfer(_who, address(0), _value);
 	}
 
 	// this is an override of MintableToken method with cap
-	function mint(address _to, uint256 _amount) isMintable_ onlyOwner public returns(bool){
+	function mintFor(address _to, uint256 _amount) isMintable_ onlyOwner public returns(bool){
 		require(totalSupply_.add(_amount) <= cap);
 
 		for(uint i = 0; i < 20; i++){
@@ -181,8 +176,8 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 				numElements[i] = numElements[i].add(1);
 			}
 		}
-		super.mint(_to, _amount);
-		return true;
+
+		return super.mint(_to, _amount);
 	}
 
 	// this is an override of PausableToken method
