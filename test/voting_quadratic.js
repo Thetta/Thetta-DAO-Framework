@@ -138,7 +138,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		// await daoBase.addGroupMember("Employees", creator);
 	});
 
-	it('1.1. Q Scenario: 5 employees, 5/5 voted yes, params(100,100) => isYes==false',async() => {
+	it('1.1. Q Scenario: 5 employees, 5/5 voted yes, params(100,100) => isYes==true',async() => {
 		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_QUADRATIC, UintToToBytes32(0), fromUtf8(""), UintToToBytes32(100), UintToToBytes32(100), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -179,11 +179,11 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.equal(r2[0].toNumber(),17,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 	});
 
-	it('1.2. Q Scenario: 5 employees, 1/5 voted yes, params(10,100) => isYes==false',async() => {
+	it('1.2. Q Scenario: 5 employees, 1/5 voted yes, params(10,100) => isYes==true',async() => {
 		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_QUADRATIC, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(10), UintToToBytes32(100), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -202,11 +202,11 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should not be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting should not be finished');
+		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 	});
 
-	it('1.3. Q Scenario: 5 employees, 1/5 voted yes, 4/5 voted no, params(100,10) => isYes==false',async() => {
+	it('1.3. Q Scenario: 5 employees, 1/5 voted yes, 4/5 voted no, params(100,10) => isYes==true',async() => {
 		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_QUADRATIC, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(10), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -252,8 +252,8 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),14,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should not be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting should not be finished');
+		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 	});
 
 	it('1.4. Q Scenario: 5 employees, 1/5 voted yes, 4/5 voted no, params(100,20) => isYes==false',async() => {
@@ -297,7 +297,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),14,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 	});
 
@@ -342,7 +342,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),14,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
+		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 	});
 

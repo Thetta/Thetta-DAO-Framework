@@ -28,6 +28,7 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 	bool isBurnable;
 	bool isPausable;
 	bool isVotingPeriod = false;
+	address[] public holders;
 
 	mapping (uint => address[]) updates;
 	mapping (uint => uint) numElements;
@@ -40,7 +41,7 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 	event Burn(address indexed burner, uint256 value);
 
 	modifier isMintable_() { 
-		require (isMintable); 
+		require (isMintable);
 		_;
 	}
 
@@ -62,6 +63,7 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 		isMintable = _isMintable;
 		isBurnable = _isBurnable;
 		isPausable = _isPausable;
+		holders.push(this);
 	}
 
 	function startNewVoting() public returns(uint) {
@@ -114,7 +116,7 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 				numElements[i] = numElements[i].add(1);
 			}
 		}
-
+		holders.push(_to);
 		return super.transfer(_to, _value);
 	}
 
@@ -137,13 +139,22 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 				numElements[i] = numElements[i].add(1);
 			}
 		}
-
+		holders.push(_to);
 		return super.transferFrom(_from, _to, _value);
 	}
 
 	function getBalanceAtVoting(uint _votingID, address _owner) public view returns (uint256) {
 		return balancesAtVoting[_votingID][_owner];
 	}
+
+	function getVotingTotalForQuadraticVoting() public view returns(uint){
+		uint votersTotal = 0;
+		for(uint k=0; k<holders.length; k++){
+			votersTotal += sqrt(this.balanceOf(holders[k]));
+		}
+		return votersTotal;
+	}
+	
 
 	// this is BurnableToken method
 	function burn(address _who, uint256 _value) isBurnable_ onlyOwner public{
@@ -179,6 +190,7 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 				numElements[i] = numElements[i].add(1);
 			}
 		}
+		holders.push(_to);
 		super.mint(_to, _amount);
 		return true;
 	}
@@ -193,6 +205,13 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 		super.unpause();
 	}
 
-
+	function sqrt(uint x) internal pure returns (uint y) {
+		uint z = (x + 1) / 2;
+		y = x;
+		while (z < y) {
+			y = z;
+			z = (x / z + z) / 2;
+		}
+	}
 
 }
