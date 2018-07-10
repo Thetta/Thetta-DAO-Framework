@@ -29,6 +29,7 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 	bool isPausable;
 	bool isVotingPeriod = false;
 	address[] public holders;
+	mapping (address => bool) isHolder;
 
 	mapping (uint => address[]) updates;
 	mapping (uint => uint) numElements;
@@ -116,7 +117,10 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 				numElements[i] = numElements[i].add(1);
 			}
 		}
-		holders.push(_to);
+		if(!isHolder[_to]){
+			holders.push(_to);
+			isHolder[_to] = true;
+		}
 		return super.transfer(_to, _value);
 	}
 
@@ -139,7 +143,10 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 				numElements[i] = numElements[i].add(1);
 			}
 		}
-		holders.push(_to);
+		if(!isHolder[_to]){
+			holders.push(_to);
+			isHolder[_to] = true;
+		}
 		return super.transferFrom(_from, _to, _value);
 	}
 
@@ -190,7 +197,10 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 				numElements[i] = numElements[i].add(1);
 			}
 		}
-		holders.push(_to);
+		if(!isHolder[_to]){
+			holders.push(_to);
+			isHolder[_to] = true;
+		}
 		super.mint(_to, _amount);
 		return true;
 	}
