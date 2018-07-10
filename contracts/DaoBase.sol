@@ -32,11 +32,11 @@ contract DaoBase is IDaoBase, Ownable {
 	event DaoBase_IssueTokens(address _tokenAddress, address _to, uint _amount);
 	event DaoBase_BurnTokens(address _tokenAddress, address _who, uint _amount);
 
-	bytes32 constant public ISSUE_TOKENS = keccak256("issueTokens");
-	bytes32 constant public MANAGE_GROUPS = keccak256("manageGroups");
-	bytes32 constant public ADD_NEW_PROPOSAL = keccak256("addNewProposal");
-	bytes32 constant public BURN_TOKENS = keccak256("burnTokens");
-	bytes32 constant public UPGRADE_DAO_CONTRACT = keccak256("upgradeDaoContract");
+	bytes32 public ISSUE_TOKENS = keccak256(abi.encodePacked("issueTokens"));
+	bytes32 public MANAGE_GROUPS = keccak256(abi.encodePacked("manageGroups"));
+	bytes32 public ADD_NEW_PROPOSAL = keccak256(abi.encodePacked("addNewProposal"));
+	bytes32 public BURN_TOKENS = keccak256(abi.encodePacked("burnTokens"));
+	bytes32 public UPGRADE_DAO_CONTRACT = keccak256(abi.encodePacked("upgradeDaoContract"));
 
 	constructor(DaoStorage _store) public {
 		store = _store;
@@ -86,24 +86,24 @@ contract DaoBase is IDaoBase, Ownable {
 
 // Groups:
 	function getMembersCount(string _groupName) external constant returns(uint){
-		return store.getMembersCount(keccak256(_groupName));
+		return store.getMembersCount(keccak256(abi.encodePacked(_groupName)));
 	}
 	function addGroupMember(string _groupName, address _a) external isCanDo(MANAGE_GROUPS) {
 		emit DaoBase_AddGroupMember(_groupName, _a);
-		store.addGroupMember(keccak256(_groupName), _a);
+		store.addGroupMember(keccak256(abi.encodePacked(_groupName)), _a);
 	}
 	function getGroupMembers(string _groupName) external constant returns(address[]){
-		return store.getGroupMembers(keccak256(_groupName));
+		return store.getGroupMembers(keccak256(abi.encodePacked(_groupName)));
 	}
 	function removeGroupMember(string _groupName, address _a) external isCanDo(MANAGE_GROUPS){
 		emit DaoBase_RemoveGroupMember(_a);
-		store.removeGroupMember(keccak256(_groupName), _a);
+		store.removeGroupMember(keccak256(abi.encodePacked(_groupName)), _a);
 	}
 	function isGroupMember(string _groupName,address _a)external constant returns(bool) {
-		return store.isGroupMember(keccak256(_groupName), _a);
+		return store.isGroupMember(keccak256(abi.encodePacked(_groupName)), _a);
 	}
 	function getMemberByIndex(string _groupName, uint _index) external view returns (address) {
-		return store.getMemberByIndex(keccak256(_groupName), _index);
+		return store.getMemberByIndex(keccak256(abi.encodePacked(_groupName)), _index);
 	}
 
 // Actions:
@@ -121,7 +121,7 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 	function allowActionByAnyMemberOfGroup(bytes32 _what, string _groupName) external isCanDo(MANAGE_GROUPS){
 		emit DaoBase_AllowActionByAnyMemberOfGroup(_what, _groupName);
-		store.allowActionByAnyMemberOfGroup(_what, keccak256(_groupName));
+		store.allowActionByAnyMemberOfGroup(_what, keccak256(abi.encodePacked(_groupName)));
 	}
 
 	/**
