@@ -54,7 +54,7 @@ contract('Tasks', (accounts) => {
 	});
 
 	beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000);
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
 		await token.mintFor(creator, 1000);
 
 		store = await DaoStorage.new([token.address],{from: creator});

@@ -12,7 +12,7 @@ contract("DaoStorage", (accounts) => {
 	let token;
 
 	beforeEach(async () => {
-		token = await StdDaoToken.new("StdToken", "STDT", 18, true, true, true, 1000000000);
+		token = await StdDaoToken.new("StdToken", "STDT", 18, true, true, 1000000000);
 		store = await DaoStorage.new([token.address], { from: creatorAddress });
 	});
 

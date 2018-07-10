@@ -211,7 +211,7 @@ contract('Moneyflow', (accounts) => {
 	const outsider = accounts[3];
 
 	beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000000000000000000000);
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000000000000000000000);
 
 		await token.mintFor(creator, 1000, {gasPrice: 0});
 

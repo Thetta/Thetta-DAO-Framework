@@ -94,7 +94,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	const VOTING_TYPE_SIMPLE_TOKEN = 2;
 
 	beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000);
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
 		await token.mintFor(creator, 1);
 		await token.mintFor(employee1, 1);
 		await token.mintFor(employee2, 1);
