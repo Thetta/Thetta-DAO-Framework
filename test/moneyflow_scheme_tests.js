@@ -33,8 +33,9 @@ contract('Scheme', (accounts) => {
 
 	beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
-		await token.mint(creator, 1000);
-		store = await DaoStorage.new([token.address],{ from: creator });
+		await token.mintFor(creator, 1000);
+
+    store = await DaoStorage.new([token.address],{ from: creator });
 		daoBase = await DaoBase.new(store.address,{ from: creator });
 		// await web3.eth.sendTransaction({from:creator, to:employee1, amount:990000000000000000000})
 		// 50/50 between reserve fund and dividends 

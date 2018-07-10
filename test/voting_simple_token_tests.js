@@ -94,14 +94,13 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	const VOTING_TYPE_SIMPLE_TOKEN = 2;
 
 	beforeEach(async() => {
-
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
-		await token.mint(creator, 1);
-		await token.mint(employee1, 1);
-		await token.mint(employee2, 1);
-		await token.mint(employee3, 1);
-		await token.mint(employee4, 1);
-		// await token.mint(employee5, 1);
+		await token.mintFor(creator, 1);
+		await token.mintFor(employee1, 1);
+		await token.mintFor(employee2, 1);
+		await token.mintFor(employee3, 1);
+		await token.mintFor(employee4, 1);
+		// await token.mintFor(employee5, 1);
 
 		let store = await DaoStorage.new([token.address],{ from: creator });
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });

@@ -41,8 +41,7 @@ contract('DaoBase', (accounts) => {
 
 	beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
-		await token.mint(creator, 1000);
-
+		await token.mintFor(creator, 1000);
 		store = await DaoStorage.new([token.address],{from: creator});
 
 		// add creator as first employee
@@ -228,12 +227,12 @@ contract('DaoBase', (accounts) => {
 	});
 
 	it('should not either burn or mint tokens',async() => {
-		await token.burn(creator, 1000, {from:creator}).should.be.rejectedWith('revert');
-		await token.burn(creator, 1000, {from:employee1}).should.be.rejectedWith('revert');
-		await token.burn(creator, 1000, {from:outsider}).should.be.rejectedWith('revert');
-		await token.mint(creator, 1000, {from:creator}).should.be.rejectedWith('revert');
-		await token.mint(creator, 1000, {from:employee1}).should.be.rejectedWith('revert');
-		await token.mint(creator, 1000, {from:outsider}).should.be.rejectedWith('revert');
+		await token.burnFor(creator, 1000, {from:creator}).should.be.rejectedWith('revert');
+		await token.burnFor(creator, 1000, {from:employee1}).should.be.rejectedWith('revert');
+		await token.burnFor(creator, 1000, {from:outsider}).should.be.rejectedWith('revert');
+		await token.mintFor(creator, 1000, {from:creator}).should.be.rejectedWith('revert');
+		await token.mintFor(creator, 1000, {from:employee1}).should.be.rejectedWith('revert');
+		await token.mintFor(creator, 1000, {from:outsider}).should.be.rejectedWith('revert');
 	});
 });
 
