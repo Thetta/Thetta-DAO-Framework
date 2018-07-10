@@ -135,7 +135,6 @@ contract DaoBase is IDaoBase, Ownable {
 	 *    b. caller is voting and it is succeeded -> allow
 	 * 4. deny
 	*/
-
 	function isCanDoAction(address _a, bytes32 _permissionNameHash) external constant returns(bool){
 		return _isCanDoAction(_a, _permissionNameHash);
 	}

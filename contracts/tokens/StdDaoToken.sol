@@ -20,9 +20,11 @@ import "./ITokenVotingSupport.sol";
  *		transferOwnership()
  *		mint()
  *		burn()
+ *    startNewVoting()
+ *    finishVoting()
+ *    getBalanceAtVoting() 
 */
-contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, DetailedERC20{
-
+contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, DetailedERC20 {
 	uint256 public cap;
 	bool isMintable;
 	bool isBurnable;
@@ -80,7 +82,6 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 		isVotingInProgress[_votingID] = false;
 
 		require (numElements[_votingID] == updates[_votingID].length);
-		
 
 		for(uint i = 0; i <= numElements[_votingID]; i++){
 			if(numElements[i] == updates[_votingID].length) {
@@ -168,6 +169,7 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 	// this is an override of MintableToken method with cap
 	function mint(address _to, uint256 _amount) isMintable_ onlyOwner public returns(bool){
 		require(totalSupply_.add(_amount) <= cap);
+
 		for(uint i = 0; i < 20; i++){
 			if(!isVotingInProgress[i]){
 				balancesAtVoting[i][_to] = balancesAtVoting[i][_to].add(_amount);
@@ -192,7 +194,4 @@ contract StdDaoToken is MintableToken, PausableToken, ITokenVotingSupport, Detai
 	function unpause() isPausable_ onlyOwner  public{
 		super.unpause();
 	}
-
-
-
 }
