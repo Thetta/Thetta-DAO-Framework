@@ -56,7 +56,7 @@ require('chai')
 
 		describe('isHolder()', function () {
 		     
-		it('should pass for coveralls', async function () {
+		it('should pass', async function () {
 			this.token = await StdDaoToken.new("StdToken","STDT",18, true, false, ETH);
 			await this.token.mintFor(web3.eth.accounts[0], 1000);
 			await this.token.mintFor(web3.eth.accounts[0], 1000);
@@ -68,6 +68,11 @@ require('chai')
 			this.token.balanceOf(web3.eth.accounts[1]).then(result => {
 				assert.equal(result.toNumber(), 200);
 			});
+			let account1 = this.token.holders(1);
+			let account2 = this.token.holders(2);
+			assert.notEqual(account1, account2);
+			
+			this.token.holders(3).should.be.rejectedWith('invalid opcode');
 		});
 		});
 
