@@ -58,4 +58,3 @@ contract DaoBaseAuto is GenericCaller {
 	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public isCanDo("manageGroups"){
    */
 }
-

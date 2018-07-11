@@ -30,6 +30,8 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 	bool isBurnable;
 	bool isPausable;
 	bool isVotingPeriod = false;
+	address[] public holders;
+	mapping (address => bool) isHolder;
 
 	mapping (uint => address[]) updates;
 	mapping (uint => uint) numElements;
@@ -56,6 +58,7 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 		cap = _cap;
 		isBurnable = _isBurnable;
 		isPausable = _isPausable;
+		holders.push(this);
 	}
 
 	function startNewVoting() public returns(uint) {
@@ -107,7 +110,10 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 				numElements[i] = numElements[i].add(1);
 			}
 		}
-
+		if(!isHolder[_to]){
+			holders.push(_to);
+			isHolder[_to] = true;
+		}
 		return super.transfer(_to, _value);
 	}
 
@@ -130,7 +136,10 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 				numElements[i] = numElements[i].add(1);
 			}
 		}
-
+		if(!isHolder[_to]){
+			holders.push(_to);
+			isHolder[_to] = true;
+		}
 		return super.transferFrom(_from, _to, _value);
 	}
 
@@ -138,6 +147,15 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 		return balancesAtVoting[_votingID][_owner];
 	}
 
+
+	function getVotingTotalForQuadraticVoting() public view returns(uint){
+		uint votersTotal = 0;
+		for(uint k=0; k<holders.length; k++){
+			votersTotal += sqrt(this.balanceOf(holders[k]));
+		}
+		return votersTotal;
+	}
+	
 	function burnFor(address _who, uint256 _value) isBurnable_ onlyOwner public{
 		super._burn(_who, _value);
 
@@ -170,8 +188,12 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 				numElements[i] = numElements[i].add(1);
 			}
 		}
-
+		if(!isHolder[_to]){
+			holders.push(_to);
+			isHolder[_to] = true;
+		}
 		return super.mint(_to, _amount);
+
 	}
 
 	// this is an override of PausableToken method
@@ -183,4 +205,14 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 	function unpause() isPausable_ onlyOwner  public{
 		super.unpause();
 	}
+
+	function sqrt(uint x) internal pure returns (uint y) {
+		uint z = (x + 1) / 2;
+		y = x;
+		while (z < y) {
+			y = z;
+			z = (x / z + z) / 2;
+		}
+	}
+
 }
