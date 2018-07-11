@@ -53,7 +53,7 @@ contract SplitterBase is ISplitter, Ownable {
 	}
 	function addChild(address _newChild) external onlyOwner {
 		emit SplitterBase_AddChild(_newChild);
-		children[childrenCount] = _newChild;	
+		children[childrenCount] = _newChild;
 		childrenCount = childrenCount + 1;	
 	}
 }
@@ -73,14 +73,16 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 		if(!_isOpen()){
 			return 0;
 		}
-
-		uint total = 0;
-		for(uint i=0; i<childrenCount; ++i){
-			IWeiReceiver c = IWeiReceiver(children[i]);
-			uint needed = c.getMinWeiNeeded();
-			total = total + needed;
+		uint out = 0;
+		for(uint j=childrenCount; j>0; --j){
+			IWeiReceiver c = IWeiReceiver(children[j-1]);
+			if(c.getPercentsMul100()>0){
+				out = 10000 * out / c.getPercentsMul100();
+			}else{
+				out += c.getMinWeiNeeded();
+			}
 		}
-		return total;
+		return out;		
 	}
 
 	function getTotalWeiNeeded(uint _inputWei)external view returns(uint){

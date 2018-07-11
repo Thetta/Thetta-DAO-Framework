@@ -23,7 +23,7 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	event WeiExpense_Flush(address _owner, uint _balance);
 	event WeiExpense_SetNeededWei(uint _neededWei);
 	event WeiExpense_SetPercents(uint _percentsMul100);
-	event WeiWxpense_ProcessFunds(address _sender, uint _value, uint _currentFlow);
+	event WeiExpense_ProcessFunds(address _sender, uint _value, uint _currentFlow);
 
 	/**
 	* @dev Constructor
@@ -42,7 +42,7 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	}
 
 	function processFunds(uint _currentFlow) external payable{
-		emit WeiWxpense_ProcessFunds(msg.sender, msg.value, _currentFlow);
+		emit WeiExpense_ProcessFunds(msg.sender, msg.value, _currentFlow);
 		_processFunds(_currentFlow);
 	}
 
