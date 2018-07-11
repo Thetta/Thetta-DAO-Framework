@@ -186,11 +186,11 @@ global.contract('Gas measurements', (accounts) => {
 	global.it('Should estimate gas for daoBase',async() => {
 		token1 = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token1.mint(creator, 1000);
-		store1 = await DaoStorage.new([token1.address],{gas: 10000000, from: creator});
+		store1 = await DaoStorage.new([token1.address]);
 
 		token2 = await StdDaoToken.new("StdToken","STDT",18,{from: creator});
 		await token2.mint(creator, 1000);
-		store2 = await DaoStorage.new([token2.address],{gas: 10000000, from: creator});
+		store2 = await DaoStorage.new([token2.address]);
 
 		// add creator as first employee
 		await store1.addGroupMember(KECCAK256("Employees"), creator);
@@ -203,9 +203,9 @@ global.contract('Gas measurements', (accounts) => {
 		//emplooyee now have 10 ETH
 
 		var b1 = await web3.eth.getBalance(employee1);
-		// var daoBaseOld = await DaoBaseWithUnpackersTest.new(store1.address,{gas: 10000000, from: employee1, gasPrice:1});
+		// var daoBaseOld = await DaoBaseWithUnpackersTest.new(store1.address,{from: employee1, gasPrice:1});
 		var b2 = await web3.eth.getBalance(employee1);
-		// var daoBaseNew = await DaoBaseWithUnpackers.new(store2.address,{gas: 10000000, from: employee1, gasPrice:1});
+		// var daoBaseNew = await DaoBaseWithUnpackers.new(store2.address,{from: employee1, gasPrice:1});
 		var b3 = await web3.eth.getBalance(employee1);
 
 		await token1.transferOwnership(daoBaseOld.address);

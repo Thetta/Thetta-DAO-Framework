@@ -17,7 +17,7 @@ var WeiRelativeExpense = artifacts.require("./WeiRelativeExpense");
 var WeiAbsoluteExpenseWithPeriod = artifacts.require("./WeiAbsoluteExpenseWithPeriod");
 var WeiRelativeExpenseWithPeriod = artifacts.require("./WeiRelativeExpenseWithPeriod");
 
-var getEId=o=> o.logs.filter(l => l.event == 'elementAdded')[0].args._eId.toNumber();
+var getEId=o=> o.logs.filter(l => l.event == 'ElementAdded')[0].args._eId.toNumber();
 
 function KECCAK256 (x){
 	return web3.sha3(x);
@@ -136,26 +136,26 @@ async function getBalances(i){
 
 async function getSplitterParams(money, i, CURRENT_INPUT){
 	var o = {}
-	o.AllOutpultsTotalNeed = await i.moneyflowTable._getTotalWeiNeeded(i.AllOutpultsId, CURRENT_INPUT*money);
-	o.AllOutpultsMinNeed = await i.moneyflowTable._getMinWeiNeeded(i.AllOutpultsId);
+	o.AllOutpultsTotalNeed = await i.moneyflowTable.getTotalWeiNeededForElement(i.AllOutpultsId, CURRENT_INPUT*money);
+	o.AllOutpultsMinNeed = await i.moneyflowTable.getMinWeiNeededForElement(i.AllOutpultsId);
 	o.AllOutpultsChildrenCount = await i.moneyflowTable.getChildrenCount(i.AllOutpultsId);
-	o.SpendsTotalNeed = await i.moneyflowTable._getTotalWeiNeeded(i.SpendsId, CURRENT_INPUT*money);
-	o.SpendsMinNeed = await i.moneyflowTable._getMinWeiNeeded(i.SpendsId);
+	o.SpendsTotalNeed = await i.moneyflowTable.getTotalWeiNeededForElement(i.SpendsId, CURRENT_INPUT*money);
+	o.SpendsMinNeed = await i.moneyflowTable.getMinWeiNeededForElement(i.SpendsId);
 	o.SpendsChildrenCount = await i.moneyflowTable.getChildrenCount(i.SpendsId);
-	o.SalariesTotalNeed = await i.moneyflowTable._getTotalWeiNeeded(i.SalariesId, CURRENT_INPUT*money);
-	o.SalariesMinNeed = await i.moneyflowTable._getMinWeiNeeded(i.SalariesId);
+	o.SalariesTotalNeed = await i.moneyflowTable.getTotalWeiNeededForElement(i.SalariesId, CURRENT_INPUT*money);
+	o.SalariesMinNeed = await i.moneyflowTable.getMinWeiNeededForElement(i.SalariesId);
 	o.SalariesChildrenCount = await i.moneyflowTable.getChildrenCount(i.SalariesId);
-	o.OtherTotalNeed = await i.moneyflowTable._getTotalWeiNeeded(i.OtherId, CURRENT_INPUT*money);
-	o.OtherMinNeed = await i.moneyflowTable._getMinWeiNeeded(i.OtherId);
+	o.OtherTotalNeed = await i.moneyflowTable.getTotalWeiNeededForElement(i.OtherId, CURRENT_INPUT*money);
+	o.OtherMinNeed = await i.moneyflowTable.getMinWeiNeededForElement(i.OtherId);
 	o.OtherChildrenCount = await i.moneyflowTable.getChildrenCount(i.OtherId);
-	o.TasksTotalNeed = await i.moneyflowTable._getTotalWeiNeeded(i.TasksId, CURRENT_INPUT*money);
-	o.TasksMinNeed = await i.moneyflowTable._getMinWeiNeeded(i.TasksId);
+	o.TasksTotalNeed = await i.moneyflowTable.getTotalWeiNeededForElement(i.TasksId, CURRENT_INPUT*money);
+	o.TasksMinNeed = await i.moneyflowTable.getMinWeiNeededForElement(i.TasksId);
 	o.TasksChildrenCount = await i.moneyflowTable.getChildrenCount(i.TasksId);
-	o.BonusesTotalNeed = await i.moneyflowTable._getTotalWeiNeeded(i.BonusesId, CURRENT_INPUT*money);
-	o.BonusesMinNeed = await i.moneyflowTable._getMinWeiNeeded(i.BonusesId);
+	o.BonusesTotalNeed = await i.moneyflowTable.getTotalWeiNeededForElement(i.BonusesId, CURRENT_INPUT*money);
+	o.BonusesMinNeed = await i.moneyflowTable.getMinWeiNeededForElement(i.BonusesId);
 	o.BonusesChildrenCount = await i.moneyflowTable.getChildrenCount(i.BonusesId);
-	o.RestTotalNeed = await i.moneyflowTable._getTotalWeiNeeded(i.RestId, CURRENT_INPUT*money);
-	o.RestMinNeed = await i.moneyflowTable._getMinWeiNeeded(i.RestId);
+	o.RestTotalNeed = await i.moneyflowTable.getTotalWeiNeededForElement(i.RestId, CURRENT_INPUT*money);
+	o.RestMinNeed = await i.moneyflowTable.getMinWeiNeededForElement(i.RestId);
 	o.RestChildrenCount = await i.moneyflowTable.getChildrenCount(i.RestId);
 
 	return o;

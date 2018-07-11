@@ -74,9 +74,8 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 			return 0;
 		}
 		uint out = 0;
-		for(uint j=0; j<childrenCount; ++j){
-			uint i = childrenCount - j - 1;
-			IWeiReceiver c = IWeiReceiver(children[i]);
+		for(uint j=childrenCount; j>0; --j){
+			IWeiReceiver c = IWeiReceiver(children[j-1]);
 			if(c.getPercentsMul100()>0){
 				out = 10000 * out / c.getPercentsMul100();
 			}else{
