@@ -197,13 +197,22 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 			return 0;
 		}
 
-		uint total = 0;
+		uint absSum = 0;
+		uint percentsMul100ReverseSum = 10000;
+
 		for(uint i=0; i<childrenCount; ++i){
-			IWeiReceiver c = IWeiReceiver(children[i]);
-			uint needed = c.getMinWeiNeeded();
-			total = total + needed;
+			if(0!=IWeiReceiver(children[i]).getPercentsMul100()){
+				percentsMul100ReverseSum -= IWeiReceiver(children[i]).getPercentsMul100();
+			}else{
+				absSum += IWeiReceiver(children[i]).getMinWeiNeeded();
+			}
 		}
-		return total;
+
+		if(percentsMul100ReverseSum==0){
+			return 0;
+		}else{
+			return 10000*absSum/percentsMul100ReverseSum;
+		}		
 	}
 
 	function getTotalWeiNeeded(uint _inputWei)external view returns(uint){
