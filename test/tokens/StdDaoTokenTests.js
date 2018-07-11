@@ -184,13 +184,52 @@ require('chai')
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
 				await this.token.transfer(employee5, 1, {from: employee4});
+
+				employee4Balance = await this.token.balanceOf(employee4);
+				employee5Balance = await this.token.balanceOf(employee5);
+
+				assert.equal(employee4Balance.toNumber(), 0);
+				assert.equal(employee5Balance.toNumber(), 1);
+
 				await this.token.finishVoting(votingID);
+
+				employee4Balance = await this.token.balanceOf(employee4);
+				employee5Balance = await this.token.balanceOf(employee5);
+
+				assert.equal(employee4Balance.toNumber(), 0);
+				assert.equal(employee5Balance.toNumber(), 1);
 
 				employee4VotingBalance = await this.token.getBalanceAtVoting(votingID, employee4);
 				employee5VotingBalance = await this.token.getBalanceAtVoting(votingID, employee5);
 
 				assert.equal(employee4VotingBalance.toNumber(), 0);
 				assert.equal(employee5VotingBalance.toNumber(), 1);
+			});
+
+			it('should preserve balances after voting is ended and transfer is called',async() => {
+				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
+				await this.token.mintFor(employee4, 1);
+
+				const tx = await this.token.startNewVoting();
+				const events = tx.logs.filter(l => l.event == 'VotingCreated');
+				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
+				await this.token.finishVoting(votingID);
+
+				await this.token.transfer(employee5, 1, {from: employee4});
+
+				employee4Balance = await this.token.balanceOf(employee4);
+				employee5Balance = await this.token.balanceOf(employee5);
+
+				assert.equal(employee4Balance.toNumber(), 0);
+				assert.equal(employee5Balance.toNumber(), 1);
+
+				employee4VotingBalance = await this.token.getBalanceAtVoting(votingID, employee4);
+				employee5VotingBalance = await this.token.getBalanceAtVoting(votingID, employee5);
+
+				// TODO: not working!
+				assert.equal(employee4VotingBalance.toNumber(), 1);
+				assert.equal(employee5VotingBalance.toNumber(), 0);
 			});
 
 			it('should preserve balances after voting is started and transferFrom is called',async() => {
