@@ -2,7 +2,7 @@ pragma solidity ^0.4.21;
 
 import "./IMoneyflow.sol";
 
-import "./ether/Weiexpense.sol";
+import "./ether/WeiExpense.sol";
 
 import "../IDaoBase.sol";
 
