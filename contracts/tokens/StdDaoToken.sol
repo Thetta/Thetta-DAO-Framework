@@ -144,6 +144,7 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 	}
 
 	function getBalanceAtVoting(uint _votingID, address _owner) public view returns (uint256) {
+		require(isVotingInProgress[_votingID]);
 		return balancesAtVoting[_votingID][_owner];
 	}
 
