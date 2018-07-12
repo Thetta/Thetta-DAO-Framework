@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.21;
 
 import "../IMoneyflow.sol";
 
@@ -12,6 +12,121 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  * @dev WeiFund stores funds until 'flush' is called (pull model)
  * This is a terminal item, that has no children.
 */
+
+contract NewWeiFund is IWeiReceiver, IDestination, Ownable {//
+	using SafeMath for uint;
+
+	uint neededWei;
+	uint totalWeiReceived;
+	uint momentReceived;
+	uint balanceOnMomentReceived;
+	uint momentCreated;
+
+	bool isPeriodic;
+	bool isAccumulateDebt;
+	uint periodHours;
+
+	event WeiFund_FlushTo(address _to, uint _balance);
+	event consoleUint(string a, uint b);
+
+	constructor(uint _neededWei, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours) public {
+		require(!((_isAccumulateDebt)&&(_periodHours==0)));
+		require(!(!(_isPeriodic)&&(_periodHours!=0)));
+		require(!((_isAccumulateDebt)&&(!_isPeriodic)));
+		require(_neededWei!=0);
+		neededWei = _neededWei;
+		isPeriodic = _isPeriodic;
+		isAccumulateDebt = _isAccumulateDebt;
+		periodHours = _periodHours;
+		momentCreated = now;
+	}
+
+	function getTotalFundNeededAmount()external view returns(uint){
+		return neededWei;
+	}
+
+	function _getTotalWeiNeeded(uint _inputWei)internal view returns(uint){
+		uint need;
+		emit consoleUint('_getDebtMultiplier()*neededWei', _getDebtMultiplier()*neededWei);
+		emit consoleUint('totalWeiReceived', totalWeiReceived);
+		emit consoleUint('_getDebtMultiplier()*neededWei - totalWeiReceived', _getDebtMultiplier()*neededWei - totalWeiReceived);
+		if(_getDebtMultiplier()*neededWei > totalWeiReceived){
+			need = _getDebtMultiplier()*neededWei - totalWeiReceived;	
+		}else{
+			need = 0;
+		}
+
+		emit consoleUint('need', need);
+		emit consoleUint('_inputWei', _inputWei);
+		if(need<=_inputWei){
+			return need;
+		}else{
+			return _inputWei;
+		}
+	}
+
+	function getDebtMultiplier()external view returns(uint){
+		return _getDebtMultiplier();
+	}
+
+	function _getDebtMultiplier()internal view returns(uint){
+
+		if((isPeriodic)&&(!isAccumulateDebt)&&( (now - momentReceived) / (periodHours * 3600 * 1000) >=1)){
+			return (balanceOnMomentReceived/neededWei) + 1;
+		} else if((isPeriodic)&&(isAccumulateDebt)){
+			return 1 + ((now - momentCreated) / (periodHours * 3600 * 1000));
+		}else{
+			return 1;
+		}
+	}
+
+	// -------------- IWeiReceiver
+
+	function processFunds(uint _currentFlow) external payable{
+		// emit consoleUint('_getDebtMultiplier', _getDebtMultiplier());
+		require(totalWeiReceived+msg.value<=_getDebtMultiplier()*neededWei); // protect from extra money
+		require(msg.value==_currentFlow);	
+		totalWeiReceived += msg.value;
+		if(_getTotalWeiNeeded(_currentFlow)==0){
+			momentReceived = now;
+			balanceOnMomentReceived = totalWeiReceived;
+		}	
+	}
+
+	function getTotalWeiNeeded(uint _inputWei)external view returns(uint){
+		return _getTotalWeiNeeded(_inputWei);
+	}
+
+	function getMinWeiNeeded()external view returns(uint){
+		return 0;
+	}
+
+	function getPercentsMul100() view external returns(uint){
+		return 0;
+	}
+	function isNeedsMoney()external view returns(bool){
+		return _getDebtMultiplier()*neededWei > totalWeiReceived;
+	}
+
+	// -------------- IDestination
+
+	function flushTo(address _to) external onlyOwner {
+		emit WeiFund_FlushTo(_to, this.balance);
+		_to.transfer(this.balance);
+	}
+
+	function flush() external onlyOwner {
+		emit WeiFund_FlushTo(owner, this.balance);
+		owner.transfer(this.balance);
+	}	
+
+	function() external{
+
+	}
+}
+
+
+
 contract WeiFund is WeiRelativeExpense {
 	address public output;		// will not be able to change that later!
 	bool public allowFlushTo = true;
@@ -48,107 +163,3 @@ contract WeiFund is WeiRelativeExpense {
 		return true;
 	}
 }
-
-/*contract ConditionalFund is WeiExpense {
-	address output;  // will not be able to change that later!
-	address nextTargetOutput;
-	bool public allowFlushTo = true;
-	bool isAutoWithdraw;
-	bool isPeriodic;
-	
-	uint periodHours;
-	uint neededAmount;
-
-	uint momentReceived;
-	uint balanceOnMomentReceived;
-
-	event WeiFund_FlushTo(address _to, uint _balance);
-	event WeiFund_Flush(address _to, uint _balance);
-
-	constructor(uint _neededAmount, address _output, bool _isAutoWithdraw, address _nextTargetOutput, bool _allowFlushTo,  bool _isPeriodic, uint _periodHours) public 
-		WeiExpense(_neededAmount, 0, _periodHours, false, _isPeriodic)
-	{
-		output = _output;
-		allowFlushTo = _allowFlushTo;
-		isAutoWithdraw = _isAutoWithdraw;
-		nextTargetOutput = _nextTargetOutput;
-		isPeriodic = _isPeriodic;
-		periodHours = _periodHours;
-		neededAmount = _neededAmount;
-	}
-
-	// Process funds, send it to the Output
-	function flushTo(address _to) external onlyOwner {
-		require(allowFlushTo);		// this operation can be prohibited
-		emit WeiFund_FlushTo(_to, address(this).balance);
-		_to.transfer(address(this).balance);
-	}
-
-	// Process funds, send it to the Output
-	function flush() external onlyOwner {
-		// TODO: check for vulnerabilities
-		// isMoneyReceived = false;
-		emit WeiFund_FlushTo(output, address(this).balance);
-		output.transfer(address(this).balance);
-	}	
-
-	function getTotalWeiNeeded()external view returns(uint){
-		return _getTotalWeiNeeded(this.balance);
-	}
-
-	function _getTotalWeiNeeded(uint balance)internal view returns(uint){
-		uint need = 0;
-
-		if((isPeriodic) && (now-momentReceived<periodHours*3600*1000)){
-			need = 0;
-
-		}else if((isPeriodic) && (0==momentReceived)){
-			need = neededAmount;			
-
-		}else if((0!=momentReceived)&&(!isPeriodic)){
-			need = 0;
-
-		}else if((neededAmount >= balance)&&(!isPeriodic)){
-			need = neededAmount - balance;
-
-		}else if((isPeriodic) && (now-momentReceived>periodHours*3600*1000) && (momentReceived!=0)){
-			need = _getDebtMultiplier()*neededAmount + balanceOnMomentReceived - balance;
-
-		}else{
-			need = 0;
-		}
-
-		return need;
-	}
-
-	function _processFunds(uint _currentFlow) internal{
-		uint rest = 0;
-		uint selfNeed = _getTotalWeiNeeded(this.balance - _currentFlow);
-
-		if(_currentFlow>selfNeed){
-			rest = _currentFlow - selfNeed;
-		}
-
-		if(((0==momentReceived) && (_currentFlow>=selfNeed)) ||
-		   ((_currentFlow>=selfNeed)&&(isPeriodic))){
-			momentReceived = now;
-			balanceOnMomentReceived = this.balance;
-		}
-
-		if((rest>0)||(_getTotalWeiNeeded(this.balance)==0)){
-			if(isAutoWithdraw){
-				output.transfer(this.balance);
-			}else{
-				IWeiReceiver(nextTargetOutput).processFunds.value(rest)(rest);
-			}
-		}
-	}
-
-	function _getMinWeiNeeded()internal view returns(uint){
-		return 0;
-	}
-
-	function isNeedsMoney()external view returns(bool){ // fund always needs money!
-		return true;
-	}
-}*/

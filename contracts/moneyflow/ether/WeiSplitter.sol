@@ -69,7 +69,13 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 
 // IWeiReceiver:
 	// calculate only absolute outputs, but do not take into account the Percents
+
+
 	function getMinWeiNeeded()external view returns(uint){
+		return _getMinWeiNeeded();
+	}
+
+	function _getMinWeiNeeded()internal view returns(uint){	
 		if(!_isOpen()){
 			return 0;
 		}
@@ -156,7 +162,7 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 		// transfer below will throw if not enough money?
 		require(amount>=_getTotalWeiNeeded(_currentFlow));
 		// ???
-		//require(amount>=getMinWeiNeeded());
+		// require(amount>=_getMinWeiNeeded());
 
 		// DO NOT SEND LESS!
 		// DO NOT SEND MORE!
@@ -167,13 +173,15 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 			// send money. can throw!
 			// we sent needed money but specifying TOTAL amount of flow
 			// this help relative Splitters to calculate how to split money
-			c.processFunds.value(needed)(amount);
+			if(needed>0){
+				c.processFunds.value(needed)(amount);
 
-			// this should be reduced because next child can get only 'amount minus what prev. child got'
-			if(amount>=needed){
-				amount = amount - needed;
-			}else{
-				amount = 0;
+				// this should be reduced because next child can get only 'amount minus what prev. child got'
+				if(amount>=needed){
+					amount = amount - needed;
+				}else{
+					amount = 0;
+				}
 			}
 		}
 	}
@@ -283,7 +291,9 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 			// send money. can throw!
 			// we sent needed money but specifying TOTAL amount of flow
 			// this help relative Splitters to calculate how to split money
-			c.processFunds.value(needed)(_currentFlow);
+			if(needed>0){
+				c.processFunds.value(needed)(_currentFlow);
+			}
 		}
 	}
 
