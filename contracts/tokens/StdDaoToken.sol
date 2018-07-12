@@ -92,13 +92,13 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 		require(_value <= balances[msg.sender]);
 
 		for(uint i = 0; i < 20; i++){
-			bool res = checkConditions(i, _to);
+			bool res = isNeedToUpdateBalancesMap(i, _to);
 			if(res){
 				votings[i].voters[_to].balance = balances[_to];
 				votings[i].isChanged[_to] = true;
 				votings[i].voters[_to].lastUpdateTime = now;
 			}
-			res = checkConditions(i, msg.sender);
+			res = isNeedToUpdateBalancesMap(i, msg.sender);
 			if(res){
 				votings[i].voters[msg.sender].balance = balances[msg.sender];
 				votings[i].isChanged[msg.sender] = true;
@@ -118,13 +118,13 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 		require(_value <= allowed[_from][msg.sender]);
 
 		for(uint i = 0; i < 20; i++){
-			bool res = checkConditions(i, _to);
+			bool res = isNeedToUpdateBalancesMap(i, _to);
 			if(res){
 				votings[i].voters[_to].balance = balances[_to];
 				votings[i].isChanged[_to] = true;
 				votings[i].voters[_to].lastUpdateTime = now;
 			} 
-			res = checkConditions(i, _from); 
+			res = isNeedToUpdateBalancesMap(i, _from); 
 			if(res){
 				votings[i].voters[_from].balance = balances[_from];
 				votings[i].isChanged[_from] = true;
@@ -158,7 +158,7 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 	function burnFor(address _who, uint256 _value) isBurnable_ onlyOwner public{
 
 		for(uint i = 0; i < 20; i++){
-			bool res = checkConditions(i, _who);
+			bool res = isNeedToUpdateBalancesMap(i, _who);
 			if(res){
 				votings[i].voters[_who].balance = balances[_who];
 				votings[i].isChanged[_who] = true;
@@ -174,7 +174,7 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 		require(totalSupply_.add(_amount) <= cap);
 
 		for(uint i = 0; i < 20; i++){
-			bool res = checkConditions(i, _to);
+			bool res = isNeedToUpdateBalancesMap(i, _to);
 			if(res){
 				votings[i].voters[_to].balance = balances[_to];
 				votings[i].isChanged[_to] = true;
@@ -208,7 +208,7 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 		}
 	}
 
-	function checkVotingAndAddressStatus(uint _votingID, address _to) internal returns(bool) {
+	function isNeedToUpdateBalancesMap(uint _votingID, address _to) internal returns(bool) {
 		return (votings[_votingID].isVotingInProgress && !votings[_votingID].isChanged[_to]) || (votings[_votingID].isVotingInProgress && votings[_votingID].isChanged[_to] && votings[_votingID].voters[_to].lastUpdateTime<votings[_votingID].votingStartTime);
 	}
 	
