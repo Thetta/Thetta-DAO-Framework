@@ -208,7 +208,7 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 		}
 	}
 
-	function checkConditions(uint _votingID, address _to) internal returns(bool) {
+	function checkVotingAndAddressStatus(uint _votingID, address _to) internal returns(bool) {
 		return (votings[_votingID].isVotingInProgress && !votings[_votingID].isChanged[_to]) || (votings[_votingID].isVotingInProgress && votings[_votingID].isChanged[_to] && votings[_votingID].voters[_to].lastUpdateTime<votings[_votingID].votingStartTime);
 	}
 	
