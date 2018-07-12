@@ -37,12 +37,16 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
         uint lastUpdateTime;
     }
 
+	struct Voting {
+	    mapping (address => Voter) voters;
+	    mapping (address => bool) isChanged;
+	    
+	    bool isVotingInProgress;
+	    uint votingStartTime;
+	}
+
+	mapping (uint => Voting) votings;
 	mapping (address => bool) isHolder;
-	mapping (address => bool) isChanged;
-	mapping (uint => mapping (address => Voter)) voters;
-	
-	mapping (uint => bool) isVotingInProgress;
-	mapping (uint => uint) votingStartTime;
 
 	event VotingCreated(address indexed _address, uint _votingID);
 
@@ -68,9 +72,9 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 
 	function startNewVoting() public returns(uint) {
 		for(uint i = 0; i < 20; i++){
-			if(!isVotingInProgress[i]){
-				isVotingInProgress[i] = true;
-				votingStartTime[i] = now;
+			if(!votings[i].isVotingInProgress){
+				votings[i].isVotingInProgress = true;
+				votings[i].votingStartTime = now;
 				emit VotingCreated(msg.sender, i);
 				return i;
 			}
@@ -79,8 +83,8 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 	}
 
 	function finishVoting(uint _votingID) public {
-		require (isVotingInProgress[_votingID]);
-		isVotingInProgress[_votingID] = false;
+		require (votings[_votingID].isVotingInProgress);
+		votings[_votingID].isVotingInProgress = false;
 	}
 	
 	function transfer(address _to, uint256 _value) public whenNotPaused returns (bool) {
@@ -88,15 +92,17 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 		require(_value <= balances[msg.sender]);
 
 		for(uint i = 0; i < 20; i++){
-			if((isVotingInProgress[i] && !isChanged[_to]) || (isVotingInProgress[i] && isChanged[_to] && voters[i][_to].lastUpdateTime<votingStartTime[i])){
-				voters[i][_to].balance = balances[_to];
-				isChanged[_to] = true;
-				voters[i][_to].lastUpdateTime = now;
-			} 
-			if((isVotingInProgress[i] && !isChanged[msg.sender]) || (isVotingInProgress[i] && isChanged[msg.sender] && voters[i][msg.sender].lastUpdateTime<votingStartTime[i])){
-				voters[i][msg.sender].balance = balances[msg.sender];
-				isChanged[msg.sender] = true;
-				voters[i][msg.sender].lastUpdateTime = now;
+			bool res = checkConditions(i, _to);
+			if(res){
+				votings[i].voters[_to].balance = balances[_to];
+				votings[i].isChanged[_to] = true;
+				votings[i].voters[_to].lastUpdateTime = now;
+			}
+			res = checkConditions(i, msg.sender);
+			if(res){
+				votings[i].voters[msg.sender].balance = balances[msg.sender];
+				votings[i].isChanged[msg.sender] = true;
+				votings[i].voters[msg.sender].lastUpdateTime = now;
 			}
 		}
 		if(!isHolder[_to]){
@@ -112,15 +118,17 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 		require(_value <= allowed[_from][msg.sender]);
 
 		for(uint i = 0; i < 20; i++){
-			if((isVotingInProgress[i] && !isChanged[_to]) || (isVotingInProgress[i] && isChanged[_to] && voters[i][_to].lastUpdateTime<votingStartTime[i])){
-				voters[i][_to].balance = balances[_to];
-				isChanged[_to] = true;
-				voters[i][_from].lastUpdateTime = now;
+			bool res = checkConditions(i, _to);
+			if(res){
+				votings[i].voters[_to].balance = balances[_to];
+				votings[i].isChanged[_to] = true;
+				votings[i].voters[_to].lastUpdateTime = now;
 			} 
-			if((isVotingInProgress[i] && !isChanged[_from]) || (isVotingInProgress[i] && isChanged[_from] && voters[i][_from].lastUpdateTime<votingStartTime[i])){
-				voters[i][_from].balance = balances[_from];
-				isChanged[_from] = true;
-				voters[i][_from].lastUpdateTime = now;
+			res = checkConditions(i, _from); 
+			if(res){
+				votings[i].voters[_from].balance = balances[_from];
+				votings[i].isChanged[_from] = true;
+				votings[i].voters[_from].lastUpdateTime = now;
 			}
 		}
 		if(!isHolder[_to]){
@@ -131,11 +139,11 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 	}
 
 	function getBalanceAtVoting(uint _votingID, address _owner) public view returns (uint256) {
-		require(isVotingInProgress[_votingID]);
-		if(!isChanged[_owner]){
+		require(votings[_votingID].isVotingInProgress);
+		if(!votings[_votingID].isChanged[_owner]){
 			return balances[_owner];
 		}
-		return voters[_votingID][_owner].balance;
+		return votings[_votingID].voters[_owner].balance;
 	}
 
 
@@ -150,11 +158,12 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 	function burnFor(address _who, uint256 _value) isBurnable_ onlyOwner public{
 
 		for(uint i = 0; i < 20; i++){
-			if((isVotingInProgress[i] && !isChanged[_who]) || (isVotingInProgress[i] && isChanged[_who] && voters[i][_who].lastUpdateTime<votingStartTime[i])){
-				voters[i][_who].balance = balances[_who];
-				isChanged[_who] = true;
-				voters[i][_who].lastUpdateTime = now;
-			} 
+			bool res = checkConditions(i, _who);
+			if(res){
+				votings[i].voters[_who].balance = balances[_who];
+				votings[i].isChanged[_who] = true;
+				votings[i].voters[_who].lastUpdateTime = now;
+			}
 		}
 		super._burn(_who, _value);
 	}
@@ -165,11 +174,12 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 		require(totalSupply_.add(_amount) <= cap);
 
 		for(uint i = 0; i < 20; i++){
-			if((isVotingInProgress[i] && !isChanged[_to]) || (isVotingInProgress[i] && isChanged[_to] && voters[i][_to].lastUpdateTime<votingStartTime[i])){
-				voters[i][_to].balance = balances[_to];
-				isChanged[_to] = true;
-				voters[i][_to].lastUpdateTime = now;
-			} 
+			bool res = checkConditions(i, _to);
+			if(res){
+				votings[i].voters[_to].balance = balances[_to];
+				votings[i].isChanged[_to] = true;
+				votings[i].voters[_to].lastUpdateTime = now;
+			}
 		}
 		if(!isHolder[_to]){
 			holders.push(_to);
@@ -197,5 +207,10 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 			z = (x / z + z) / 2;
 		}
 	}
+
+	function checkConditions(uint _votingID, address _to) internal returns(bool) {
+		return (votings[_votingID].isVotingInProgress && !votings[_votingID].isChanged[_to]) || (votings[_votingID].isVotingInProgress && votings[_votingID].isChanged[_to] && votings[_votingID].voters[_to].lastUpdateTime<votings[_votingID].votingStartTime);
+	}
+	
 
 }
