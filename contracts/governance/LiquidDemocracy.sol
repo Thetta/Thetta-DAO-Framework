@@ -13,7 +13,7 @@ contract DelegationTable is IDelegationTable {
 	struct Delegator {
 		mapping (address => uint) tokensForVotingFromAddress;
 		mapping (address => bool) isDelegatedForFrom;
-		mapping (address => bool) isDelegatedFor;
+		mapping (address => bool) isDelegatorFor;
 		uint delegatorsAmount;
 		uint delegatedForAmount;
 		uint tokensForVoting;
@@ -24,7 +24,7 @@ contract DelegationTable is IDelegationTable {
 	mapping (address => Delegator) delegations;
 
 	constructor(address _votingToken){
-		votingToken = _votingToken;
+		votingToken = StdDaoToken(_votingToken);
 	}
 
 	function delegateMyVoiceTo(address _to, uint _tokenAmount) external {
@@ -66,5 +66,8 @@ contract DelegationTable is IDelegationTable {
 
 // TODO:
 contract LiquidVoting is IVoting {
+
+
+
 
 }
