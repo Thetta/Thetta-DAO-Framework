@@ -148,7 +148,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	it('0. should create new voting', async()=>{
 		let isGroupMember = await daoBase.isGroupMember('Employees', employee1);
 		assert.equal(isGroupMember,true, 'Creator is ein the group');
-		let voting = await Voting_SimpleToken.new(daoBase.address, employee1, employee1, 60, 51, 71, token.address, false);
+		let voting = await Voting_SimpleToken.new(daoBase.address, employee1, employee1, 60, 51, 71, token.address);
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
 		assert.equal(quorumPercent.toNumber(), 51, 'quorumPercent should be 51');

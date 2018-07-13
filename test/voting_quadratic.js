@@ -10,7 +10,7 @@ var InformalProposal = artifacts.require("./InformalProposal");
 
 var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 
-var Voting_SimpleToken = artifacts.require("./Voting_SimpleToken");
+var Voting_Quadratic = artifacts.require("./Voting_Quadratic");
 var IProposal = artifacts.require("./IProposal");
 
 function KECCAK256 (x){
@@ -145,7 +145,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_SimpleToken.at(votingAddress);
+		const voting = await Voting_Quadratic.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -190,7 +190,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_SimpleToken.at(votingAddress);
+		const voting = await Voting_Quadratic.at(votingAddress);
 
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
@@ -213,7 +213,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_SimpleToken.at(votingAddress);
+		const voting = await Voting_Quadratic.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -263,7 +263,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_SimpleToken.at(votingAddress);
+		const voting = await Voting_Quadratic.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -308,7 +308,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_SimpleToken.at(votingAddress);
+		const voting = await Voting_Quadratic.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -353,7 +353,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_SimpleToken.at(votingAddress);
+		const voting = await Voting_Quadratic.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -382,7 +382,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_SimpleToken.at(votingAddress);
+		const voting = await Voting_Quadratic.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
