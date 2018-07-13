@@ -66,8 +66,6 @@ contract('ConditionalFund', (accounts) => {
 		assert.equal(minNeed.toNumber(), 0);
 		assert.equal(isNeed, true);
 
-		await fund.processFunds(1e17, {value:3e17}).should.be.rejectedWith('revert');
-		await fund.processFunds(3e17, {value:1e17}).should.be.rejectedWith('revert');
 		await fund.processFunds(3e17, {value:3e17, from:creator});
 		await fund.processFunds(3e17, {value:3e17, from:employee1});
 
@@ -250,38 +248,45 @@ contract('ConditionalFund', (accounts) => {
 		assert.equal(isNeed, true);
 
 		await splitter.processFunds(0.01e18,{value:0.01e18});
-		// await splitter.processFunds(0.03e18,{value:0.01e18});
-		// await splitter.processFunds(0.08e18,{value:0.01e18});
 
+		assert.equal(0.01, (await web3.eth.getBalance(milestone1.address)).toNumber()/1e18);
+		assert.equal(0, (await web3.eth.getBalance(milestone2.address)).toNumber()/1e18);
+		assert.equal(0, (await web3.eth.getBalance(milestone3.address)).toNumber()/1e18);
+		await splitter.processFunds(0.03e18,{value:0.03e18});
 
-// ---------- НАДО ПЕРЕДЕЛАТЬ В СПЛИТТЕРЕ ----------
+		assert.equal(0.04, (await web3.eth.getBalance(milestone1.address)).toNumber()/1e18);
+		assert.equal(0, (await web3.eth.getBalance(milestone2.address)).toNumber()/1e18);
+		assert.equal(0, (await web3.eth.getBalance(milestone3.address)).toNumber()/1e18);		
+		await splitter.processFunds(0.08e18,{value:0.08e18});
 
-													// for(uint i=0; i<childrenCount; ++i){
-													// 	IWeiReceiver c = IWeiReceiver(children[i]);
-													// 	uint needed = c.getTotalWeiNeeded(_currentFlow);
+		assert.equal(0.1, (await web3.eth.getBalance(milestone1.address)).toNumber()/1e18);
+		assert.equal(0.02, (await web3.eth.getBalance(milestone2.address)).toNumber()/1e18);
+		assert.equal(0, (await web3.eth.getBalance(milestone3.address)).toNumber()/1e18);		
 
-													// 	// send money. can throw!
-													// 	// we sent needed money but specifying TOTAL amount of flow
-													// 	// this help relative Splitters to calculate how to split money
-													// 	c.processFunds.value(needed)(_currentFlow);
-													// }
+		var totalNeed = await splitter.getTotalWeiNeeded(0.88e18);
+		var minNeed = await splitter.getMinWeiNeeded();
+		var isNeed = await splitter.isNeedsMoney();
+		assert.equal(totalNeed.toNumber(), 0.88e18);
+		assert.equal(minNeed.toNumber(), 0);
+		assert.equal(isNeed, true);	
 
-		// var totalNeed = await splitter.getTotalWeiNeeded(0);
-		// var minNeed = await splitter.getMinWeiNeeded();
-		// var isNeed = await splitter.isNeedsMoney();
-		// assert.equal(totalNeed.toNumber(), 0.88e18);
-		// assert.equal(minNeed.toNumber(), 0);
-		// assert.equal(isNeed, true);	
+		await splitter.processFunds(0.4e18,{value:0.4e18});
 
-		// await splitter.processFunds(0.4e18,{value:0.4e18});
-		// await splitter.processFunds(0.48e18,{value:0.48e18});
+		assert.equal(0.1, (await web3.eth.getBalance(milestone1.address)).toNumber()/1e18);
+		assert.equal(0.2, (await web3.eth.getBalance(milestone2.address)).toNumber()/1e18);
+		assert.equal(0.22, (await web3.eth.getBalance(milestone3.address)).toNumber()/1e18);				
 
-		// var totalNeed = await splitter.getTotalWeiNeeded(0);
-		// var minNeed = await splitter.getMinWeiNeeded();
-		// var isNeed = await splitter.isNeedsMoney();
-		// assert.equal(totalNeed.toNumber(), 0);
-		// assert.equal(minNeed.toNumber(), 0);
-		// assert.equal(isNeed, false);	
+		await splitter.processFunds(0.48e18,{value:0.48e18});
+
+		assert.equal(0.1, (await web3.eth.getBalance(milestone1.address)).toNumber()/1e18);
+		assert.equal(0.2, (await web3.eth.getBalance(milestone2.address)).toNumber()/1e18);
+		assert.equal(0.7, (await web3.eth.getBalance(milestone3.address)).toNumber()/1e18);		
+
+		var totalNeed = await splitter.getTotalWeiNeeded(0);
+		var minNeed = await splitter.getMinWeiNeeded();
+		var isNeed = await splitter.isNeedsMoney();
+		assert.equal(totalNeed.toNumber(), 0);
+		assert.equal(minNeed.toNumber(), 0);
 	});
 });
 

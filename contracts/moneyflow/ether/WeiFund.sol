@@ -47,9 +47,6 @@ contract NewWeiFund is IWeiReceiver, IDestination, Ownable {//
 
 	function _getTotalWeiNeeded(uint _inputWei)internal view returns(uint){
 		uint need;
-		emit consoleUint('_getDebtMultiplier()*neededWei', _getDebtMultiplier()*neededWei);
-		emit consoleUint('totalWeiReceived', totalWeiReceived);
-		emit consoleUint('_getDebtMultiplier()*neededWei - totalWeiReceived', _getDebtMultiplier()*neededWei - totalWeiReceived);
 		if(_getDebtMultiplier()*neededWei > totalWeiReceived){
 			need = _getDebtMultiplier()*neededWei - totalWeiReceived;	
 		}else{
@@ -85,9 +82,10 @@ contract NewWeiFund is IWeiReceiver, IDestination, Ownable {//
 	function processFunds(uint _currentFlow) external payable{
 		// emit consoleUint('_getDebtMultiplier', _getDebtMultiplier());
 		require(totalWeiReceived+msg.value<=_getDebtMultiplier()*neededWei); // protect from extra money
-		require(msg.value==_currentFlow);	
+		// require(msg.value==_currentFlow);
 		totalWeiReceived += msg.value;
-		if(_getTotalWeiNeeded(_currentFlow)==0){
+		if(_getTotalWeiNeeded(msg.value)==0){
+			emit consoleUint('totalWeiReceived', 0);
 			momentReceived = now;
 			balanceOnMomentReceived = totalWeiReceived;
 		}	
