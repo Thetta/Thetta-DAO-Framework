@@ -287,7 +287,79 @@ contract('ConditionalFund', (accounts) => {
 		var isNeed = await splitter.isNeedsMoney();
 		assert.equal(totalNeed.toNumber(), 0);
 		assert.equal(minNeed.toNumber(), 0);
+
+		await splitter.processFunds(0.5e18,{value:0.5e18}).should.be.rejectedWith('revert');
 	});
+
+	it('Should implement roadmap pattern with funds (-> abs-abs-abs-rel100%)',async() => {
+		let splitter = await WeiTopDownSplitter.new('Splitter');
+
+		let milestone1 = await NewWeiFund.new(0.1e18, false, false, 0);
+		let milestone2 = await NewWeiFund.new(0.2e18, false, false, 0);
+		let milestone3 = await NewWeiFund.new(0.7e18, false, false, 0);
+		let stabFund = await WeiRelativeExpenseWithPeriod.new(10000, 0, false);
+		await splitter.addChild(milestone1.address);
+		await splitter.addChild(milestone2.address);
+		await splitter.addChild(milestone3.address);
+		await splitter.addChild(stabFund.address);
+
+		var totalNeed = await splitter.getTotalWeiNeeded(1e18);
+		var minNeed = await splitter.getMinWeiNeeded();
+		var isNeed = await splitter.isNeedsMoney();
+		assert.equal(totalNeed.toNumber(), 1e18);
+		assert.equal(minNeed.toNumber(), 0);
+		assert.equal(isNeed, true);
+
+		await splitter.processFunds(0.01e18,{value:0.01e18});
+
+		assert.equal(0.01, (await web3.eth.getBalance(milestone1.address)).toNumber()/1e18);
+		assert.equal(0, (await web3.eth.getBalance(milestone2.address)).toNumber()/1e18);
+		assert.equal(0, (await web3.eth.getBalance(milestone3.address)).toNumber()/1e18);
+		await splitter.processFunds(0.03e18,{value:0.03e18});
+
+		assert.equal(0.04, (await web3.eth.getBalance(milestone1.address)).toNumber()/1e18);
+		assert.equal(0, (await web3.eth.getBalance(milestone2.address)).toNumber()/1e18);
+		assert.equal(0, (await web3.eth.getBalance(milestone3.address)).toNumber()/1e18);		
+		await splitter.processFunds(0.08e18,{value:0.08e18});
+
+		assert.equal(0.1, (await web3.eth.getBalance(milestone1.address)).toNumber()/1e18);
+		assert.equal(0.02, (await web3.eth.getBalance(milestone2.address)).toNumber()/1e18);
+		assert.equal(0, (await web3.eth.getBalance(milestone3.address)).toNumber()/1e18);		
+
+		var totalNeed = await splitter.getTotalWeiNeeded(0.88e18);
+		var minNeed = await splitter.getMinWeiNeeded();
+		var isNeed = await splitter.isNeedsMoney();
+		assert.equal(totalNeed.toNumber(), 0.88e18);
+		assert.equal(minNeed.toNumber(), 0);
+		assert.equal(isNeed, true);	
+
+		await splitter.processFunds(0.4e18,{value:0.4e18});
+
+		assert.equal(0.1, (await web3.eth.getBalance(milestone1.address)).toNumber()/1e18);
+		assert.equal(0.2, (await web3.eth.getBalance(milestone2.address)).toNumber()/1e18);
+		assert.equal(0.22, (await web3.eth.getBalance(milestone3.address)).toNumber()/1e18);
+
+		await splitter.processFunds(0.48e18,{value:0.48e18});
+
+		assert.equal(0.1, (await web3.eth.getBalance(milestone1.address)).toNumber()/1e18);
+		assert.equal(0.2, (await web3.eth.getBalance(milestone2.address)).toNumber()/1e18);
+		assert.equal(0.7, (await web3.eth.getBalance(milestone3.address)).toNumber()/1e18);
+
+		var totalNeed = await splitter.getTotalWeiNeeded(0);
+		var minNeed = await splitter.getMinWeiNeeded();
+		var isNeed = await splitter.isNeedsMoney();
+		assert.equal(totalNeed.toNumber(), 0);
+		assert.equal(minNeed.toNumber(), 0);
+
+		await splitter.processFunds(0.3e18,{value:0.3e18});
+		await splitter.processFunds(0.5e18,{value:0.5e18});
+		await splitter.processFunds(0.7e18,{value:0.7e18});
+
+		assert.equal(0.1, (await web3.eth.getBalance(milestone1.address)).toNumber()/1e18);
+		assert.equal(0.2, (await web3.eth.getBalance(milestone2.address)).toNumber()/1e18);
+		assert.equal(0.7, (await web3.eth.getBalance(milestone3.address)).toNumber()/1e18);
+		assert.equal(1.5, (await web3.eth.getBalance(stabFund.address)).toNumber()/1e18);
+	});	
 });
 
 /*contract('ConditionalFund', (accounts) => {

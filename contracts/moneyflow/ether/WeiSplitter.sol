@@ -184,6 +184,10 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 				}
 			}
 		}
+
+		if(amount>0){
+			revert();
+		}
 	}
 
 	function() public {
@@ -295,6 +299,10 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 				c.processFunds.value(needed)(_currentFlow);
 			}
 		}
+		
+		if(amount>0){
+			revert();
+		}		
 	}
 
 	function() public {
