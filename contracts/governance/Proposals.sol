@@ -48,7 +48,7 @@ contract GenericProposal is IProposal, Ownable {
 			uint256(params.length), // length of the array
 			params)
 		){
-			revert();
+			//revert();
 		}
 	}
 

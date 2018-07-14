@@ -195,33 +195,22 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 
 	it('1.1. Q Scenario: 5 employees, 5/5 voted yes, params(100,100) => isYes==true',async() => {
 		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(100), 0);
-		console.log("Step1");
+
 		const wae = await WeiAbsoluteExpense.new(1000);
-		console.log("Step2");
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
-		console.log("Step3");
 
 		const pa = await daoBase.getProposalAtIndex(0);
-		console.log("Step4");
 		const proposal = await IProposal.at(pa);
-		console.log("Step5");
 		const votingAddress = await proposal.getVoting();
-		console.log("Step6");
 		const voting = await Voting_1p1v.at(votingAddress);
-		console.log("Step7");
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		console.log("Step8");
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
-		console.log("Step9");
 
 		await voting.vote(true,0,{from:employee2});
-		console.log("Step10");
 		r2 = await voting.getVotingStats();
-		console.log("Step11");
+
 		assert.equal(r2[0].toNumber(),2,'yes');
-		console.log("Step12");
 		assert.equal(r2[1].toNumber(),0,'no');
-		console.log("Step13");
 
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
