@@ -199,10 +199,12 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
  * @dev Will split money (order does not matter!). 
 */
 contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
+	event consoleUint(string a, uint b);
+
 	constructor(string _name) SplitterBase(_name) public {
 	}
 
-// IWeiReceiver:
+	// IWeiReceiver:
 	// calculate only absolute outputs, but do not take into account the Percents
 	function getMinWeiNeeded()external view returns(uint){
 		if(!_isOpen()){
@@ -298,11 +300,7 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 			if(needed>0){
 				c.processFunds.value(needed)(_currentFlow);
 			}
-		}
-		
-		if(amount>0){
-			revert();
-		}		
+		}	
 	}
 
 	function() public {

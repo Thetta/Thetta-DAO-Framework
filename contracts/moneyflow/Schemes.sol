@@ -37,8 +37,8 @@ contract DefaultMoneyflowScheme is DaoClient {
 	WeiUnsortedSplitter other; 
 	WeiUnsortedSplitter tasks; 
 
-	WeiFund reserveFund;
-	WeiFund dividendsFund;
+	WeiRelativeExpenseWithPeriod reserveFund;
+	WeiRelativeExpenseWithPeriod dividendsFund;
 
 	bytes32 public ADD_NEW_TASK = keccak256(abi.encodePacked("addNewTask"));
 	bytes32 public MODIFY_MONEY_SCHEME = keccak256(abi.encodePacked("modifyMoneyscheme"));

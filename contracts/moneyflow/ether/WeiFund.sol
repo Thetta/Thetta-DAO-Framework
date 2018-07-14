@@ -13,7 +13,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  * This is a terminal item, that has no children.
 */
 
-contract NewWeiFund is IWeiReceiver, IDestination, Ownable {//
+contract WeiFund is IWeiReceiver, IDestination, Ownable {//
 	using SafeMath for uint;
 
 	uint neededWei;
@@ -81,6 +81,8 @@ contract NewWeiFund is IWeiReceiver, IDestination, Ownable {//
 
 	function processFunds(uint _currentFlow) external payable{
 		// emit consoleUint('_getDebtMultiplier', _getDebtMultiplier());
+		require(_isNeedsMoney());
+
 		require(totalWeiReceived+msg.value<=_getDebtMultiplier()*neededWei); // protect from extra money
 		// require(msg.value==_currentFlow);
 		totalWeiReceived += msg.value;
@@ -102,7 +104,11 @@ contract NewWeiFund is IWeiReceiver, IDestination, Ownable {//
 	function getPercentsMul100() view external returns(uint){
 		return 0;
 	}
+
 	function isNeedsMoney()external view returns(bool){
+		return _isNeedsMoney();
+	}
+	function _isNeedsMoney()internal view returns(bool){
 		return _getDebtMultiplier()*neededWei > totalWeiReceived;
 	}
 
@@ -120,44 +126,5 @@ contract NewWeiFund is IWeiReceiver, IDestination, Ownable {//
 
 	function() external{
 
-	}
-}
-
-
-
-contract WeiFund is WeiRelativeExpense {
-	address public output;		// will not be able to change that later!
-	bool public allowFlushTo = true;
-
-	event WeiFund_FlushTo(address _to, uint _balance);
-	event WeiFund_Flush(address _to, uint _balance);
-
-	constructor(address _output, bool _allowFlushTo, uint _percentsDiv100Needed) public 
-		WeiRelativeExpense(_percentsDiv100Needed)
-	{
-		output = _output;
-		allowFlushTo = _allowFlushTo;
-	}
-
-	// Process funds, send it to the Output
-	function flushTo(address _to) external onlyOwner {
-		require(allowFlushTo);		// this operation can be prohibited
-		emit WeiFund_FlushTo(_to, address(this).balance);
-		_to.transfer(address(this).balance);
-	}
-
-	// Process funds, send it to the Output
-	function flush() external onlyOwner {
-		require(0x0!=output);
-
-		// TODO: check for vulnerabilities
-		isMoneyReceived = false;
-		emit WeiFund_FlushTo(output, address(this).balance);
-		output.transfer(address(this).balance);
-	}
-
-	function isNeedsMoney()external view returns(bool){
-		// fund always needs money!
-		return true;
 	}
 }
