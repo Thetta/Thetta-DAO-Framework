@@ -376,7 +376,7 @@ contract('MoneyflowTable tests', (accounts) => {
 		assert.equal(absoluteExpense3Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
 	});
 
-	it('should process money with WeiUnsortedSplitter + 2 WeiAbsoluteExpense + WeiRelativeExpense',async() => {
+  it('should process money with WeiUnsortedSplitter + 2 WeiAbsoluteExpense + WeiRelativeExpense',async() => {
 		let moneyflowTable = await MoneyflowTable.new();
 
 		let SplitterId = getEId(await moneyflowTable.addUnsortedSplitter());			
