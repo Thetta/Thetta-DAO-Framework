@@ -185,7 +185,7 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 			}
 		}
 
-		if(amount>0){
+		if(this.balance>0){
 			revert();
 		}
 	}
@@ -299,7 +299,11 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 			// this help relative Splitters to calculate how to split money
 			if(needed>0){
 				c.processFunds.value(needed)(_currentFlow);
-			}
+			}		
+		}	
+
+		if(this.balance>0){
+			revert();
 		}	
 	}
 
