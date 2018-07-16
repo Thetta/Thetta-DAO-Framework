@@ -61,11 +61,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		internalVote(_origin, true);
 	}
 
-	function isFinished()external view returns(bool){
-		return _isFinished();
-	}
-
-	function _isFinished()internal view returns(bool){
+	function isFinished() public view returns(bool){
 		if(minutesToVote!=0){
 			return _isTimeElapsed();
 		}
@@ -90,7 +86,7 @@ contract Voting_1p1v is IVoting, Ownable {
 		uint noResults = 0;
 		uint votersTotal = 0;
 
-		(yesResults, noResults, votersTotal) = _getVotingStats();
+		(yesResults, noResults, votersTotal) = getVotingStats();
 		return ((yesResults + noResults) * 100) >= (votersTotal * quorumPercent);
 	}
 
@@ -99,30 +95,26 @@ contract Voting_1p1v is IVoting, Ownable {
 		uint noResults = 0;
 		uint votersTotal = 0;
 
-		(yesResults, noResults, votersTotal) = _getVotingStats();
+		(yesResults, noResults, votersTotal) = getVotingStats();
 		return (yesResults * 100) >= ((yesResults + noResults) * consensusPercent);
 	}
 
-	function isYes()external view returns(bool){
-		return _isYes();
-	}
-
-	function _isYes()internal view returns(bool){
+	function isYes() public view returns(bool){
 		if(true==finishedWithYes){
 			return true;
 		}
 
-		return _isFinished() && 
+		return isFinished() && 
 				 _isQuorumReached() &&
 				 _isConsensusReached();
 	}
 
-	function cancelVoting() external onlyOwner {
+	function cancelVoting() public onlyOwner {
 		// TODO:
 	}
 
-	function vote(bool _yes, uint _tokenAmount) external {
-		require(!_isFinished());
+	function vote(bool _yes, uint _tokenAmount) public {
+		require(!isFinished());
 		// This voting type does not deal with tokens, that's why _tokenAmount should be ZERO
 		require(0==_tokenAmount);
 
@@ -142,15 +134,11 @@ contract Voting_1p1v is IVoting, Ownable {
 		addressVotedAlready[_who] = true;
 		emit  Voting1p1v_Vote(_who, _yes);
 
-		_callActionIfEnded();
+		callActionIfEnded();
 	}
 
-	function callActionIfEnded() external {
-		_callActionIfEnded();
-	}
-
-	function _callActionIfEnded() internal {
-		if(!finishedWithYes && _isFinished() && _isYes()){ 
+	function callActionIfEnded() public {
+		if(!finishedWithYes && isFinished() && isYes()){ 
 			// should not be callable again!!!
 			finishedWithYes = true;
 
@@ -172,14 +160,11 @@ contract Voting_1p1v is IVoting, Ownable {
 		return votedCount;
 	}
 
-	function getVotingStats() external constant returns(uint yesResults, uint noResults, uint votersTotal){
-		return _getVotingStats();
-	}
-
-	function _getVotingStats() internal constant returns(uint yesResults, uint noResults, uint votersTotal){
+	function getVotingStats() public constant returns(uint yesResults, uint noResults, uint votersTotal){
 		yesResults = filterResults(employeesVotedYes);
 		noResults = filterResults(employeesVotedNo);
 		votersTotal = dao.getMembersCount(groupName);
 		return;
 	}
+
 }
