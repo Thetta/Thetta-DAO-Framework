@@ -175,8 +175,8 @@ contract Voting_SimpleToken is IVoting, Ownable {
 	function _getVotingStats() internal constant returns(uint yesResults, uint noResults, uint votersTotal){
 		yesResults = 0;
 		noResults = 0;
-		votersTotal = stdDaoToken.totalSupply();
 		if(isQuadraticVoting){
+			votersTotal = stdDaoToken.getVotingTotalForQuadraticVoting();
 			for(uint i=0; i<tokenVotesArray.length; ++i){
 				if(tokenVotesArray[i].vote){
 					yesResults+= sqrt(tokenVotesArray[i].tokenAmount);
@@ -185,6 +185,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 				}
 			}
 		} else {
+			votersTotal = stdDaoToken.totalSupply();
 			for(uint j=0; j<tokenVotesArray.length; ++j){
 				if(tokenVotesArray[j].vote){
 					yesResults+= tokenVotesArray[j].tokenAmount;

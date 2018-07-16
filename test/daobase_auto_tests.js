@@ -1,4 +1,4 @@
-var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
+/*var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 
@@ -75,14 +75,18 @@ contract('DaoBaseAuto', (accounts) => {
 	});
 
 	beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000);
-		await token.mint(creator, 1000);
-		await token.mint(employee1, 600);
-		await token.mint(employee2, 600);
-		await token.mint(employee3, 600);
+
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+
+		await token.mintFor(creator, 1000);
+		await token.mintFor(employee1, 600);
+		await token.mintFor(employee2, 600);
+		await token.mintFor(employee3, 600);
 
 		store = await DaoStorage.new([token.address],{ from: creator });
+
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+
 		aacInstance = await DaoBaseAuto.new(daoBase.address, {from: creator});
 
 		issueTokens = await aacInstance.ISSUE_TOKENS();
@@ -99,10 +103,9 @@ contract('DaoBaseAuto', (accounts) => {
 		// SEE THIS? set voting type for the action!
 		const VOTING_TYPE_1P1V = 1;
 		const VOTING_TYPE_SIMPLE_TOKEN = 2;
-
+		
 		await aacInstance.setVotingParams(issueTokens, VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(51), UintToToBytes32(51), 0);
 		await aacInstance.setVotingParams(upgradeDaoContract, VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(51), UintToToBytes32(51), 0);
-
 
 		// add creator as first employee
 		await store.addGroupMember(KECCAK256("Employees"), creator);
@@ -371,4 +374,4 @@ contract('DaoBaseAuto', (accounts) => {
 		const proposalsCount2 = await daoBase.getProposalsCount();
 		assert.equal(proposalsCount2,1,'New proposal should be added');
 	});
-});
+});*/

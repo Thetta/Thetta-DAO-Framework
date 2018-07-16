@@ -91,20 +91,20 @@ async function totalAndMinNeedsAsserts(money, i, CURRENT_INPUT, e1, e2, e3, offi
 
 	var allNeeds = totalSpend + bonusesSpendPercent*(b1+b2+b3) + fundsPercent*(reserve+dividends);
 
-	global.assert.equal(i.AllOutpultsTotalNeed.toNumber()/money, allNeeds, `AllOutpults Total Need should be ${allNeeds}`);
-	global.assert.equal(i.AllOutpultsMinNeed.toNumber()/money, totalSpend, `AllOutpults min Need should be ${totalSpend}`);
-	global.assert.equal(i.SpendsTotalNeed.toNumber()/money, totalSpend, `Spends Total Need should be ${totalSpend}`);
-	global.assert.equal(i.SpendsMinNeed.toNumber()/money, totalSpend, `Spends min Need should be ${totalSpend}`);
-	global.assert.equal(i.SalariesTotalNeed.toNumber()/money, e1+e2+e3, `Salaries Total Need should be ${e1+e2+e3}`);
-	global.assert.equal(i.SalariesMinNeed.toNumber()/money, e1+e2+e3, `Salaries min Need should be ${e1+e2+e3}`);
-	global.assert.equal(i.OtherTotalNeed.toNumber()/money, office+internet, `Other Total Need should be ${office+internet}`);
-	global.assert.equal(i.OtherMinNeed.toNumber()/money, office+internet, `Other min Need should be ${office+internet}`);
-	global.assert.equal(i.TasksTotalNeed.toNumber()/money, t1+t2+t3, `Tasks Total Need should be ${t1+t2+t3}`);
-	global.assert.equal(i.TasksMinNeed.toNumber()/money, t1+t2+t3, `Tasks min Need should be ${t1+t2+t3}`);
-	global.assert.equal(i.BonusesTotalNeed.toNumber()/money, (b1+b2+b3)*CURRENT_INPUT/10000, `Bonuses Total Need should be ${(b1+b2+b3)*CURRENT_INPUT/10000}`);
-	global.assert.equal(i.BonusesMinNeed.toNumber()/money, 0, `Bonuses min Need should be ${0}`);
-	global.assert.equal(i.RestTotalNeed.toNumber()/money, (reserve+dividends)*CURRENT_INPUT/10000, `Rest Total Need should be ${(reserve+dividends)*CURRENT_INPUT/10000}`);
-	global.assert.equal(i.RestMinNeed.toNumber()/money, 0, `Rest min Need should be ${0}`);
+	assert.equal(i.AllOutpultsTotalNeed.toNumber()/money, allNeeds, `AllOutpults Total Need should be ${allNeeds}`);
+	assert.equal(i.AllOutpultsMinNeed.toNumber()/money, totalSpend, `AllOutpults min Need should be ${totalSpend}`);
+	assert.equal(i.SpendsTotalNeed.toNumber()/money, totalSpend, `Spends Total Need should be ${totalSpend}`);
+	assert.equal(i.SpendsMinNeed.toNumber()/money, totalSpend, `Spends min Need should be ${totalSpend}`);
+	assert.equal(i.SalariesTotalNeed.toNumber()/money, e1+e2+e3, `Salaries Total Need should be ${e1+e2+e3}`);
+	assert.equal(i.SalariesMinNeed.toNumber()/money, e1+e2+e3, `Salaries min Need should be ${e1+e2+e3}`);
+	assert.equal(i.OtherTotalNeed.toNumber()/money, office+internet, `Other Total Need should be ${office+internet}`);
+	assert.equal(i.OtherMinNeed.toNumber()/money, office+internet, `Other min Need should be ${office+internet}`);
+	assert.equal(i.TasksTotalNeed.toNumber()/money, t1+t2+t3, `Tasks Total Need should be ${t1+t2+t3}`);
+	assert.equal(i.TasksMinNeed.toNumber()/money, t1+t2+t3, `Tasks min Need should be ${t1+t2+t3}`);
+	assert.equal(i.BonusesTotalNeed.toNumber()/money, (b1+b2+b3)*CURRENT_INPUT/10000, `Bonuses Total Need should be ${(b1+b2+b3)*CURRENT_INPUT/10000}`);
+	assert.equal(i.BonusesMinNeed.toNumber()/money, 0, `Bonuses min Need should be ${0}`);
+	assert.equal(i.RestTotalNeed.toNumber()/money, (reserve+dividends)*CURRENT_INPUT/10000, `Rest Total Need should be ${(reserve+dividends)*CURRENT_INPUT/10000}`);
+	assert.equal(i.RestMinNeed.toNumber()/money, 0, `Rest min Need should be ${0}`);
 }
 
 
@@ -162,13 +162,13 @@ async function getSplitterParams(money, i, CURRENT_INPUT){
 }
 
 async function structureAsserts(i){
-	global.assert.equal(i.AllOutpultsChildrenCount.toNumber(), 3, 'Children count should be 3');
-	global.assert.equal(i.SpendsChildrenCount.toNumber(), 3, 'Children count should be 3');
-	global.assert.equal(i.SalariesChildrenCount.toNumber(), 3, 'Children count should be 3');
-	global.assert.equal(i.OtherChildrenCount.toNumber(), 2, 'Children count should be 2');
-	global.assert.equal(i.TasksChildrenCount.toNumber(), 3, 'Children count should be 3');
-	global.assert.equal(i.BonusesChildrenCount.toNumber(), 3, 'Children count should be 3');
-	global.assert.equal(i.RestChildrenCount.toNumber(), 2, 'Children count should be 2');
+	assert.equal(i.AllOutpultsChildrenCount.toNumber(), 3, 'Children count should be 3');
+	assert.equal(i.SpendsChildrenCount.toNumber(), 3, 'Children count should be 3');
+	assert.equal(i.SalariesChildrenCount.toNumber(), 3, 'Children count should be 3');
+	assert.equal(i.OtherChildrenCount.toNumber(), 2, 'Children count should be 2');
+	assert.equal(i.TasksChildrenCount.toNumber(), 3, 'Children count should be 3');
+	assert.equal(i.BonusesChildrenCount.toNumber(), 3, 'Children count should be 3');
+	assert.equal(i.RestChildrenCount.toNumber(), 2, 'Children count should be 2');
 }
 
 async function balancesAsserts(money, i, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends){
@@ -176,22 +176,22 @@ async function balancesAsserts(money, i, CURRENT_INPUT, e1, e2, e3, office, inte
 	var bonusesSpendPercent = (CURRENT_INPUT - totalSpend)/10000;
 	var fundsPercent = (CURRENT_INPUT-totalSpend-bonusesSpendPercent*(b1+b2+b3))/10000;
 
-	global.assert.equal(i.Employee1Balance.toNumber()/money, e1, `Employee1 balance should be ${e1} money`);
-	global.assert.equal(i.Employee2Balance.toNumber()/money, e2, `Employee2 balance should be ${e2} money`);
-	global.assert.equal(i.Employee3Balance.toNumber()/money, e3, `Employee3 balance should be ${e3} money`);
-	global.assert.equal(i.OfficeBalance.toNumber()/money, office, `Office balance should be ${office} money`);
-	global.assert.equal(i.InternetBalance.toNumber()/money, internet, `Internet balance should be ${internet} money`);
-	global.assert.equal(i.Task1Balance.toNumber()/money, t1, `Task1 balance should be ${t1} money`);
-	global.assert.equal(i.Task2Balance.toNumber()/money, t2, `Task2 balance should be ${t2} money`);
-	global.assert.equal(i.Task3Balance.toNumber()/money, t3, `Task3 balance should be ${t3} money`);
-	global.assert.equal(i.Bonus1Balance.toNumber()/money, bonusesSpendPercent*b1, `Bonus1 balance should be ${bonusesSpendPercent*b1} money`);
-	global.assert.equal(i.Bonus2Balance.toNumber()/money, bonusesSpendPercent*b2, `Bonus2 balance should be ${bonusesSpendPercent*b2} money`);
-	global.assert.equal(i.Bonus3Balance.toNumber()/money, bonusesSpendPercent*b3, `Bonus3 balance should be ${bonusesSpendPercent*b3} money`);
-	global.assert.equal(i.Reserve3Balance.toNumber()/money, fundsPercent*reserve, `Reserve3 balance should be ${fundsPercent*reserve} money`);
-	global.assert.equal(i.Dividends3Balance.toNumber()/money, fundsPercent*dividends, `Dividends3 balance should be ${fundsPercent*dividends} money`);
+	assert.equal(i.Employee1Balance.toNumber()/money, e1, `Employee1 balance should be ${e1} money`);
+	assert.equal(i.Employee2Balance.toNumber()/money, e2, `Employee2 balance should be ${e2} money`);
+	assert.equal(i.Employee3Balance.toNumber()/money, e3, `Employee3 balance should be ${e3} money`);
+	assert.equal(i.OfficeBalance.toNumber()/money, office, `Office balance should be ${office} money`);
+	assert.equal(i.InternetBalance.toNumber()/money, internet, `Internet balance should be ${internet} money`);
+	assert.equal(i.Task1Balance.toNumber()/money, t1, `Task1 balance should be ${t1} money`);
+	assert.equal(i.Task2Balance.toNumber()/money, t2, `Task2 balance should be ${t2} money`);
+	assert.equal(i.Task3Balance.toNumber()/money, t3, `Task3 balance should be ${t3} money`);
+	assert.equal(i.Bonus1Balance.toNumber()/money, bonusesSpendPercent*b1, `Bonus1 balance should be ${bonusesSpendPercent*b1} money`);
+	assert.equal(i.Bonus2Balance.toNumber()/money, bonusesSpendPercent*b2, `Bonus2 balance should be ${bonusesSpendPercent*b2} money`);
+	assert.equal(i.Bonus3Balance.toNumber()/money, bonusesSpendPercent*b3, `Bonus3 balance should be ${bonusesSpendPercent*b3} money`);
+	assert.equal(i.Reserve3Balance.toNumber()/money, fundsPercent*reserve, `Reserve3 balance should be ${fundsPercent*reserve} money`);
+	assert.equal(i.Dividends3Balance.toNumber()/money, fundsPercent*dividends, `Dividends3 balance should be ${fundsPercent*dividends} money`);
 }
 
-global.contract('MoneyflowTable tests', (accounts) => {
+contract('MoneyflowTable tests', (accounts) => {
 	var token;
 	var store;
 	var daoBase;
@@ -208,8 +208,8 @@ global.contract('MoneyflowTable tests', (accounts) => {
 	const employee2 = accounts[2];
 	const outsider = accounts[3];
 
-	global.beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000000000000000000000);
+	beforeEach(async() => {
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000000000000000000000);
 
 		await token.mint(creator, 1000, {gasPrice: 0});
 
@@ -244,7 +244,7 @@ global.contract('MoneyflowTable tests', (accounts) => {
 		await daoBase.allowActionByAddress(withdrawDonations, creator);
 	});
 
-	global.it('Gas measurements',async() => {
+	it('Gas measurements',async() => {
 		var b1 = web3.eth.getBalance(creator);
 		let moneyflowTable = await MoneyflowTable.new({gasPrice:1});
 		var b2 = web3.eth.getBalance(creator);
@@ -259,7 +259,7 @@ global.contract('MoneyflowTable tests', (accounts) => {
 	});
 
 	// 0->•abs
-	global.it('should process money with WeiTopDownSplitter + 3 WeiAbsoluteExpense',async() => {
+	it('should process money with WeiTopDownSplitter + 3 WeiAbsoluteExpense',async() => {
 		let moneyflowTable = await MoneyflowTable.new();
 
 		let topDownSplitterId = getEId(await moneyflowTable.addTopdownSplitter());			
@@ -277,29 +277,29 @@ global.contract('MoneyflowTable tests', (accounts) => {
 
 		var revenueEndpointAddress = await moneyflowInstance.getRevenueEndpoint();
 
-		global.assert.equal(revenueEndpointAddress, moneyflowTable.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
+		assert.equal(revenueEndpointAddress, moneyflowTable.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
 	
 	 	let totalNeed = await moneyflowTable.getTotalWeiNeeded(6*neededAmount);
-		global.assert.equal(totalNeed, 6*neededAmount);
+		assert.equal(totalNeed, 6*neededAmount);
 		let minNeed = await moneyflowTable.getMinWeiNeeded();
 		// console.log('minNeed:', minNeed)
-		global.assert.equal(minNeed, 6*neededAmount);
+		assert.equal(minNeed, 6*neededAmount);
 
 		// now send some money to the revenue endpoint 
 		await moneyflowTable.processFunds(6*neededAmount, {value:6*neededAmount, from:creator});
 
 		// money should end up in the outputs
 		var absoluteExpense1Balance = await moneyflowTable.getElementBalance(AbsoluteExpense1Id);
-		global.assert.equal(absoluteExpense1Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
+		assert.equal(absoluteExpense1Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
 
 		var absoluteExpense2Balance = await moneyflowTable.getElementBalance(AbsoluteExpense2Id);
-		global.assert.equal(absoluteExpense2Balance.toNumber(),2*neededAmount, 'resource point received money from splitter');
+		assert.equal(absoluteExpense2Balance.toNumber(),2*neededAmount, 'resource point received money from splitter');
 
 		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
-		global.assert.equal(absoluteExpense3Balance.toNumber(),3*neededAmount, 'resource point received money from splitter');
+		assert.equal(absoluteExpense3Balance.toNumber(),3*neededAmount, 'resource point received money from splitter');
 	});
 
-	global.it('should process money with WeiUnsortedSplitter + 3 WeiAbsoluteExpense',async() => {
+	it('should process money with WeiUnsortedSplitter + 3 WeiAbsoluteExpense',async() => {
 		let moneyflowTable = await MoneyflowTable.new();
 		
 		let unsortedSplitterId = getEId(await moneyflowTable.addUnsortedSplitter());	
@@ -316,28 +316,28 @@ global.contract('MoneyflowTable tests', (accounts) => {
 
 		var revenueEndpointAddress = await moneyflowInstance.getRevenueEndpoint();
 
-		global.assert.equal(revenueEndpointAddress, moneyflowTable.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
+		assert.equal(revenueEndpointAddress, moneyflowTable.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
 
 		// now send some money to the revenue endpoint 
 		let totalNeed = await moneyflowTable.getTotalWeiNeeded(6*neededAmount);
-		global.assert.equal(totalNeed, 6*neededAmount);
+		assert.equal(totalNeed, 6*neededAmount);
 		let minNeed = await moneyflowTable.getMinWeiNeeded();
-		global.assert.equal(minNeed, 6*neededAmount);	
+		assert.equal(minNeed, 6*neededAmount);	
 
 		await moneyflowTable.processFunds(6*neededAmount, {value:6*neededAmount, from:creator});
 		// money should end up in the outputs
 		var absoluteExpense1Balance = await moneyflowTable.getElementBalance(AbsoluteExpense1Id);
-		global.assert.equal(absoluteExpense1Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
+		assert.equal(absoluteExpense1Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
 
 		var absoluteExpense2Balance = await moneyflowTable.getElementBalance(AbsoluteExpense2Id);
-		global.assert.equal(absoluteExpense2Balance.toNumber(),2*neededAmount, 'resource point received money from splitter');
+		assert.equal(absoluteExpense2Balance.toNumber(),2*neededAmount, 'resource point received money from splitter');
 
 		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
-		global.assert.equal(absoluteExpense3Balance.toNumber(),3*neededAmount, 'resource point received money from splitter');
+		assert.equal(absoluteExpense3Balance.toNumber(),3*neededAmount, 'resource point received money from splitter');
 	});
 
 
-	global.it('should process money with WeiTopDownSplitter + 2 WeiAbsoluteExpense + WeiRelativeExpense',async() => {
+	it('should process money with WeiTopDownSplitter + 2 WeiAbsoluteExpense + WeiRelativeExpense',async() => {
 		let moneyflowTable = await MoneyflowTable.new();
 
 		let topDownSplitterId = getEId(await moneyflowTable.addTopdownSplitter());			
@@ -355,28 +355,29 @@ global.contract('MoneyflowTable tests', (accounts) => {
 
 		var revenueEndpointAddress = await moneyflowInstance.getRevenueEndpoint();
 
-		global.assert.equal(revenueEndpointAddress, moneyflowTable.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
+		assert.equal(revenueEndpointAddress, moneyflowTable.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
 	
 	 	let totalNeed = await moneyflowTable.getTotalWeiNeeded(3*neededAmount);
-		global.assert.equal(totalNeed.toNumber(), 3*neededAmount);
+		assert.equal(totalNeed.toNumber(), 3*neededAmount);
 		let minNeed = await moneyflowTable.getMinWeiNeeded();
-		global.assert.equal(minNeed.toNumber(), 3*neededAmount);
+		assert.equal(minNeed.toNumber(), 3*neededAmount);
 
 		// now send some money to the revenue endpoint 
 		await moneyflowTable.processFunds(3*neededAmount, {value:3*neededAmount, from:creator});
 
 		// money should end up in the outputs
 		var absoluteExpense1Balance = await moneyflowTable.getElementBalance(AbsoluteExpense1Id);
-		global.assert.equal(absoluteExpense1Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
+		assert.equal(absoluteExpense1Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
 
 		var relativeExpense2Balance = await moneyflowTable.getElementBalance(RelativeExpense1Id);
-		global.assert.equal(relativeExpense2Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
+		assert.equal(relativeExpense2Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
 
 		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
-		global.assert.equal(absoluteExpense3Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
+		assert.equal(absoluteExpense3Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
 	});
 
-	global.it('should process money with WeiUnsortedSplitter + 2 WeiAbsoluteExpense + WeiRelativeExpense',async() => {
+
+  it('should process money with WeiUnsortedSplitter + 2 WeiAbsoluteExpense + WeiRelativeExpense',async() => {
 		let moneyflowTable = await MoneyflowTable.new();
 
 		let SplitterId = getEId(await moneyflowTable.addUnsortedSplitter());			
@@ -415,7 +416,7 @@ global.contract('MoneyflowTable tests', (accounts) => {
 		global.assert.equal(absoluteExpense3Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
 	});
 
-	global.it('should process money with a scheme just like in the paper: 75/25 others, send MORE than minNeed; ',async() => {
+	it('should process money with a scheme just like in the paper: 75/25 others, send MORE than minNeed; ',async() => {
 		const money = web3.toWei(0.0001, "ether");
 		const CURRENT_INPUT = 30900;
 		let e1 = 1000;
@@ -443,7 +444,7 @@ global.contract('MoneyflowTable tests', (accounts) => {
 		await balancesAsserts(money, balances, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 	});
 
-	global.it('should process money with a scheme just like in the paper: 75/25 others, send EQUAL to minNeed',async() => {
+	it('should process money with a scheme just like in the paper: 75/25 others, send EQUAL to minNeed',async() => {
 		const money = web3.toWei(0.0001, "ether");
 		const CURRENT_INPUT = 5900;
 		let e1 = 1000;
@@ -471,7 +472,7 @@ global.contract('MoneyflowTable tests', (accounts) => {
 		await balancesAsserts(money, balances, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, 0, 0, 0, 0, 0);
 	});
 
-	global.it('should not process money: send LESS than minNeed',async() => {
+	it('should not process money: send LESS than minNeed',async() => {
 		const money = web3.toWei(0.0001, "ether");
 		const CURRENT_INPUT = 5900;
 		let e1 = 1000;
@@ -498,7 +499,7 @@ global.contract('MoneyflowTable tests', (accounts) => {
 		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money/100, {value:CURRENT_INPUT*money, gasPrice:0}).should.be.rejectedWith('revert');
 	});
 
-	global.it('should process money with a scheme just like in the paper: 10/15 others, send MORE than minNeed; ',async() => {
+	it('should process money with a scheme just like in the paper: 10/15 others, send MORE than minNeed; ',async() => {
 		const money = web3.toWei(0.0001, "ether");
 		const CURRENT_INPUT = 20900;
 		let e1 = 1000;
@@ -526,7 +527,7 @@ global.contract('MoneyflowTable tests', (accounts) => {
 		await balancesAsserts(money, balances, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 	});
 
-	global.it('should process money with a scheme just like in the paper: 10/15 others, send EQUAL to minNeed; ',async() => {
+	it('should process money with a scheme just like in the paper: 10/15 others, send EQUAL to minNeed; ',async() => {
 		const money = web3.toWei(0.0001, "ether");		
 		const CURRENT_INPUT = 5900;
 		let e1 = 1000;
@@ -554,7 +555,7 @@ global.contract('MoneyflowTable tests', (accounts) => {
 		await balancesAsserts(money, balances, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, 0, 0, 0, 0, 0);
 	});
 
-	global.it('should not process money: send LESS than minNeed; ',async() => {
+	it('should not process money: send LESS than minNeed; ',async() => {
 		const money = web3.toWei(0.0001, "ether");
 		const CURRENT_INPUT = 30900;
 		let e1 = 1000;
