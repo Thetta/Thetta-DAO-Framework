@@ -27,7 +27,6 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {//
 	uint periodHours;
 
 	event WeiFund_FlushTo(address _to, uint _balance);
-	event consoleUint(string a, uint b);
 
 	constructor(uint _neededWei, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours) public {
 		require(!((_isAccumulateDebt)&&(_periodHours==0)));
@@ -53,8 +52,6 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {//
 			need = 0;
 		}
 
-		emit consoleUint('need', need);
-		emit consoleUint('_inputWei', _inputWei);
 		if(need<=_inputWei){
 			return need;
 		}else{
@@ -87,7 +84,6 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {//
 		// require(msg.value==_currentFlow);
 		totalWeiReceived += msg.value;
 		if(_getTotalWeiNeeded(msg.value)==0){
-			emit consoleUint('totalWeiReceived', 0);
 			momentReceived = now;
 			balanceOnMomentReceived = totalWeiReceived;
 		}	

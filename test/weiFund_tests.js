@@ -36,7 +36,7 @@ require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-contract('ConditionalFund', (accounts) => {
+contract('WeiFund', (accounts) => {
 	let money = web3.toWei(0.001, "ether");
 
 	const creator = accounts[0];

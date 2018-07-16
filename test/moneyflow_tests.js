@@ -217,12 +217,12 @@ contract('Moneyflow', (accounts) => {
 	const outsider = accounts[3];
 
 	beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000000000000000000000);
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000000000000000000000, {gasPrice:0});
 
 		await token.mintFor(creator, 1000, {gasPrice: 0});
 
-		store = await DaoStorage.new([token.address],{from: creator});
-		daoBase = await DaoBase.new(store.address,{from: creator});
+		store = await DaoStorage.new([token.address],{from: creator, gasPrice:0});
+		daoBase = await DaoBase.new(store.address,{from: creator, gasPrice:0});
 
 		issueTokens = await daoBase.ISSUE_TOKENS();
 
@@ -234,7 +234,7 @@ contract('Moneyflow', (accounts) => {
 
 		burnTokens = await daoBase.BURN_TOKENS();
 
-		moneyflowInstance = await MoneyFlow.new(daoBase.address);
+		moneyflowInstance = await MoneyFlow.new(daoBase.address, {gasPrice:0});
 
 		withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
 
@@ -260,6 +260,26 @@ contract('Moneyflow', (accounts) => {
 
 		// moneyflow will not create Proposals in this case
 		//await daoBase.allowActionByAddress("addNewProposal", moneyflowInstance.address);
+	});
+
+	it('Should revert when some money stays on unsorted splitter (U-> abs-rel50%)',async() => {	
+		let abs = await WeiAbsoluteExpense.new(1e15);
+		let splitter = await WeiUnsortedSplitter.new('splitter');
+		let rel = await WeiRelativeExpense.new(5000);
+		await splitter.addChild(abs.address);
+		await splitter.addChild(rel.address);
+
+		await splitter.processFunds(1e16, {value:1e16}).should.be.rejectedWith('revert');
+	});
+
+	it('Should revert when some money stays on topdown splitter (T-> abs-rel50%)',async() => {	
+		let abs = await WeiAbsoluteExpense.new(1e15);
+		let splitter = await WeiTopDownSplitter.new('splitter');
+		let rel = await WeiRelativeExpense.new(5000);
+		await splitter.addChild(abs.address);
+		await splitter.addChild(rel.address);
+
+		await splitter.processFunds(1e16, {value:1e16}).should.be.rejectedWith('revert');
 	});
 
 	it('should process money with WeiAbsoluteExpenseWithPeriod, then 25 hours, then money needs again',async() => {
