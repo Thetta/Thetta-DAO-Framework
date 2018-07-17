@@ -195,6 +195,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 
 	it('1.1. Q Scenario: 5 employees, 5/5 voted yes, params(100,100) => isYes==true',async() => {
 		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(100), 0);
+
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -207,6 +208,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 
 		await voting.vote(true,0,{from:employee2});
 		r2 = await voting.getVotingStats();
+
 		assert.equal(r2[0].toNumber(),2,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
 
