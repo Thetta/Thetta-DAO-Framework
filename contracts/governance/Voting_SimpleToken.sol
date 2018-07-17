@@ -154,10 +154,6 @@ contract Voting_SimpleToken is IVoting, Ownable {
 	}
 
 	function callActionIfEnded() external {
-		_callActionIfEnded();
-	}
-
-	function _callActionIfEnded() internal {
 		if(!finishedWithYes && _isFinished() && _isYes()){
 			// should not be callable again!!!
 			finishedWithYes = true;
