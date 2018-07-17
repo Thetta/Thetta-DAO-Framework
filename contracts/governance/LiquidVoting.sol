@@ -36,7 +36,7 @@ contract DelegationTable is IDelegationTable, Voting_SimpleToken {
 	{
 	}
 
-	function delegateMyVoiceTo(address _to, uint _tokenAmount) external {
+	function delegateMyVoiceTo(address _to, uint _tokenAmount) public {
 		require (_to!= address(0));
 		require (_tokenAmount >= stdDaoToken.balanceOf(msg.sender));
 
@@ -52,7 +52,7 @@ contract DelegationTable is IDelegationTable, Voting_SimpleToken {
 		delegations[msg.sender].delegatedForAmount += 1;
 	}
 
-	function removeDelegation(address _to) external {
+	function removeDelegation(address _to) public {
 		require (_to!= address(0));
 		require (delegations[_to].isDelegatedForFrom[msg.sender]);
 		require (delegations[msg.sender].isDelegatorFor[_to]);
@@ -95,7 +95,7 @@ contract LiquidVoting is IVoting, DelegationTable {
 
 		emit VotingSimpleToken_Vote(_who, _yes, tokenBalance);
 
-		_callActionIfEnded();
+		callActionIfEnded();
 	}
 	
 	function getPowerOf(address _who) public view returns(uint){
