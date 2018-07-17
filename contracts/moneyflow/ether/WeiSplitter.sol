@@ -67,6 +67,7 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 
 // IWeiReceiver:
 	// calculate only absolute outputs, but do not take into account the Percents
+
 	function getMinWeiNeeded()public view returns(uint){
 		if(!isOpen()){
 			return 0;
@@ -150,7 +151,7 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 		// transfer below will throw if not enough money?
 		require(amount>=getTotalWeiNeeded(_currentFlow));
 		// ???
-		//require(amount>=getMinWeiNeeded());
+		// require(amount>=_getMinWeiNeeded());
 
 		// DO NOT SEND LESS!
 		// DO NOT SEND MORE!
@@ -161,14 +162,20 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 			// send money. can throw!
 			// we sent needed money but specifying TOTAL amount of flow
 			// this help relative Splitters to calculate how to split money
-			c.processFunds.value(needed)(amount);
+			if(needed>0){
+				c.processFunds.value(needed)(amount);
 
-			// this should be reduced because next child can get only 'amount minus what prev. child got'
-			if(amount>=needed){
-				amount = amount - needed;
-			}else{
-				amount = 0;
+				// this should be reduced because next child can get only 'amount minus what prev. child got'
+				if(amount>=needed){
+					amount = amount - needed;
+				}else{
+					amount = 0;
+				}
 			}
+		}
+
+		if(this.balance>0){
+			revert();
 		}
 	}
 
@@ -181,23 +188,34 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
  * @dev Will split money (order does not matter!). 
 */
 contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
+	event consoleUint(string a, uint b);
+
 	constructor(string _name) SplitterBase(_name) public {
 	}
 
-// IWeiReceiver:
+	// IWeiReceiver:
 	// calculate only absolute outputs, but do not take into account the Percents
 	function getMinWeiNeeded()public view returns(uint){
 		if(!isOpen()){
 			return 0;
 		}
 
-		uint total = 0;
+		uint absSum = 0;
+		uint percentsMul100ReverseSum = 10000;
+
 		for(uint i=0; i<childrenCount; ++i){
-			IWeiReceiver c = IWeiReceiver(children[i]);
-			uint needed = c.getMinWeiNeeded();
-			total = total + needed;
+			if(0!=IWeiReceiver(children[i]).getPercentsMul100()){
+				percentsMul100ReverseSum -= IWeiReceiver(children[i]).getPercentsMul100();
+			}else{
+				absSum += IWeiReceiver(children[i]).getMinWeiNeeded();
+			}
 		}
-		return total;
+
+		if(percentsMul100ReverseSum==0){
+			return 0;
+		}else{
+			return 10000*absSum/percentsMul100ReverseSum;
+		}		
 	}
 
 	function getTotalWeiNeeded(uint _inputWei)public view returns(uint){
@@ -264,8 +282,14 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 			// send money. can throw!
 			// we sent needed money but specifying TOTAL amount of flow
 			// this help relative Splitters to calculate how to split money
-			c.processFunds.value(needed)(_currentFlow);
-		}
+			if(needed>0){
+				c.processFunds.value(needed)(_currentFlow);
+			}		
+		}	
+
+		if(this.balance>0){
+			revert();
+		}	
 	}
 
 	function() public {

@@ -2,6 +2,7 @@ pragma solidity ^0.4.22;
 import "./IMoneyflow.sol";
 
 import "./ether/WeiFund.sol";
+import "./ether/WeiExpense.sol";
 
 import "../IDaoBase.sol";
 
@@ -34,7 +35,7 @@ contract FallbackToWeiReceiver {
  * 'setRootWeiReceiverGeneric', etc
 */
 contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
-	WeiFund donationEndpoint;
+	WeiRelativeExpenseWithPeriod donationEndpoint;
 	// by default - this is 0x0, please use setWeiReceiver method
 	// this can be a ISplitter (top-down or unsorted)
 	IWeiReceiver rootReceiver;
@@ -52,7 +53,7 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 		DaoClient(_dao)
 	{
 		// do not set output!
-		donationEndpoint = new WeiFund(0x0, true, 10000);
+		donationEndpoint = new WeiRelativeExpenseWithPeriod(10000, 0, false);
 		donationF2WR = new FallbackToWeiReceiver(donationEndpoint);
 	}
 
