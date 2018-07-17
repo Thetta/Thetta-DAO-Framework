@@ -4,7 +4,6 @@ import "../IDaoBase.sol";
 
 import "../governance/Voting_1p1v.sol";
 import "../governance/Voting_SimpleToken.sol";
-import "../governance/LiquidVoting.sol";
 import "../governance/Proposals.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -20,8 +19,7 @@ contract GenericCaller is DaoClient, Ownable {
 
 		Voting1p1v,
 		VotingSimpleToken,
-		VotingQuadratic,
-		VotingLiquid
+		VotingQuadratic
 	}
 
 	struct VotingParams {
@@ -135,15 +133,6 @@ contract GenericCaller is DaoClient, Ownable {
 				true);
 		}
 
-		/*if(VotingType.VotingLiquid==vp.votingType){
-			return new LiquidVoting(dao, _proposal, _origin, 
-				uint(vp.param1), 
-				uint(vp.param3), 
-				uint(vp.param4), 
-				address(vp.param5),
-				false);
-		}*/
-
 
 		// TODO: add other implementations
 		// no implementation for this type!
@@ -168,4 +157,3 @@ contract GenericCaller is DaoClient, Ownable {
 		return string(bytesStringTrimmed);
 	}
 }
-
