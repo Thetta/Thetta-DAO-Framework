@@ -4,46 +4,46 @@ pragma solidity ^0.4.22;
  * @title IDestination 
  * @dev Keeps all money until flush is called
 */
-interface IDestination {
+contract IDestination {
 	// pull model
-	function flush() external;
-	function flushTo(address _to) external;
+	function flush() public;
+	function flushTo(address _to) public;
 }
 
 /**
  * @title ISplitter 
  * @dev does not store funds. Splits them between the children
 */
-interface ISplitter {
-	function getChildrenCount()external view returns(uint);
-	function getChild(uint _index)external view returns(address);
-	function addChild(address _newChild) external;
+contract ISplitter {
+	function getChildrenCount()public view returns(uint);
+	function getChild(uint _index)public view returns(address);
+	function addChild(address _newChild) public;
 
-	function open() external;
-	function close() external;
-	function isOpen() external view returns(bool);
+	function open() public;
+	function close() public;
+	function isOpen() public view returns(bool);
 }
 
 /**
  * @title IReceiver 
  * @dev Something that needs funds 
 */
-interface IReceiver {
+contract IReceiver {
 	// In case we have absolute output -> will return 0
 	// in 1/100th percents of input. Examples:
 	// 12 is 0.12% of input; 
 	// 100 is 1% of input
-	function getPercentsMul100()constant external returns(uint);
+	function getPercentsMul100()constant public returns(uint);
 
 	// If this output needs more funds -> will return true
 	// If this output does not need more funds -> will return false 
-	function isNeedsMoney()constant external returns(bool);
+	function isNeedsMoney()constant public returns(bool);
 
 	// WeiReceiver should process all tokens here (hold it or send it somewhere else)
-	function processFunds(uint _currentFlow) external payable;
+	function processFunds(uint _currentFlow) public payable;
 
 	// non payable!
-	function()external;
+	function()public;
 }
 
 // IWeiReceiver does not store funds!
@@ -53,11 +53,11 @@ interface IReceiver {
 // "Relative": percents of input 
 contract IWeiReceiver is IReceiver {
 	// Will calculate only absolute outputs, but not take into account the Percents
-	function getMinWeiNeeded()external view returns(uint);
+	function getMinWeiNeeded()public view returns(uint);
 
 	// In case we have absolute output -> will return fixed amount that is equal to 'getMinWeiNeeded'
 	// In case we have relative output -> will calculate percents of _inputWei 
-	function getTotalWeiNeeded(uint _inputWei)external view returns(uint);
+	function getTotalWeiNeeded(uint _inputWei)public view returns(uint);
 }
 
 // IErc20Receiver does not store funds!
@@ -67,32 +67,32 @@ contract IWeiReceiver is IReceiver {
 // "Relative": percents of input 
 contract IErc20Receiver is IReceiver {
 	// Will calculate only absolute outputs, but not take into account the Percents
-	function getMinTokensNeeded()external view returns(uint);
+	function getMinTokensNeeded()public view returns(uint);
 
 	// In case we have absolute output -> will return fixed amount that is equal to 'getMinTokensNeeded'
 	// In case we have relative output -> will calculate percents of _inputWei 
-	function getTotalTokensNeeded(uint _inputTokens)external view returns(uint);
+	function getTotalTokensNeeded(uint _inputTokens)public view returns(uint);
 }
 
 /**
  * @title Moneyflow 
 */
-interface IMoneyflow {
+contract IMoneyflow {
 	// send Ether using 'sendFunds' method here
-	function getRevenueEndpoint()external view returns(IWeiReceiver);
-	function getDonationEndpoint()external view returns(IWeiReceiver);
+	function getRevenueEndpoint()public view returns(IWeiReceiver);
+	function getDonationEndpoint()public view returns(IWeiReceiver);
 
 	// send Ether using default fallback functions here
-	function getRevenueEndpointAddress()external view returns(address);
-	function getDonationEndpointAddress()external view returns(address);
+	function getRevenueEndpointAddress()public view returns(address);
+	function getDonationEndpointAddress()public view returns(address);
 
 	// send all donations to the msg.sender (onlyOwner of this contract)
-	function withdrawDonationsTo(address _out)external;
+	function withdrawDonationsTo(address _out)public;
 
 // Receivers
 	// usually _receiver is a MoneyFlowScheme 
 	// see Schemes.sol for example
-	function setRootWeiReceiver(IWeiReceiver _receiver) external;
+	function setRootWeiReceiver(IWeiReceiver _receiver) public;
 }
 
 

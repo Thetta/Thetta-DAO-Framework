@@ -45,8 +45,8 @@ async function createStructure(creator, money, e1, e2, e3, office, internet, t1,
 			o.Bonus2 = await WeiRelativeExpense.new(b2, callParams);
 			o.Bonus3 = await WeiRelativeExpense.new(b3, callParams);
 		o.Rest = await WeiUnsortedSplitter.new('Rest', callParams);
-			o.ReserveFund = await WeiFund.new(creator, false, reserve, callParams);
-			o.DividendsFund = await WeiFund.new(creator, false, dividends, callParams);
+			o.ReserveFund = await WeiRelativeExpenseWithPeriod.new(reserve, 0, false, callParams);
+			o.DividendsFund = await WeiRelativeExpenseWithPeriod.new(dividends, 0, false, callParams);
 
 	// CONNECTIONS
 	await o.AllOutpults.addChild(o.Spends.address, callParams);
@@ -217,12 +217,12 @@ contract('Moneyflow', (accounts) => {
 	const outsider = accounts[3];
 
 	beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000000000000000000000);
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000000000000000000000, {gasPrice:0});
 
 		await token.mintFor(creator, 1000, {gasPrice: 0});
 
-		store = await DaoStorage.new([token.address],{from: creator});
-		daoBase = await DaoBase.new(store.address,{from: creator});
+		store = await DaoStorage.new([token.address],{from: creator, gasPrice:0});
+		daoBase = await DaoBase.new(store.address,{from: creator, gasPrice:0});
 
 		issueTokens = await daoBase.ISSUE_TOKENS();
 
@@ -234,7 +234,7 @@ contract('Moneyflow', (accounts) => {
 
 		burnTokens = await daoBase.BURN_TOKENS();
 
-		moneyflowInstance = await MoneyFlow.new(daoBase.address);
+		moneyflowInstance = await MoneyFlow.new(daoBase.address, {gasPrice:0});
 
 		withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
 
@@ -260,6 +260,26 @@ contract('Moneyflow', (accounts) => {
 
 		// moneyflow will not create Proposals in this case
 		//await daoBase.allowActionByAddress("addNewProposal", moneyflowInstance.address);
+	});
+
+	it('Should revert when some money stays on unsorted splitter (U-> abs-rel50%)',async() => {	
+		let abs = await WeiAbsoluteExpense.new(1e15);
+		let splitter = await WeiUnsortedSplitter.new('splitter');
+		let rel = await WeiRelativeExpense.new(5000);
+		await splitter.addChild(abs.address);
+		await splitter.addChild(rel.address);
+
+		await splitter.processFunds(1e16, {value:1e16}).should.be.rejectedWith('revert');
+	});
+
+	it('Should revert when some money stays on topdown splitter (T-> abs-rel50%)',async() => {	
+		let abs = await WeiAbsoluteExpense.new(1e15);
+		let splitter = await WeiTopDownSplitter.new('splitter');
+		let rel = await WeiRelativeExpense.new(5000);
+		await splitter.addChild(abs.address);
+		await splitter.addChild(rel.address);
+
+		await splitter.processFunds(1e16, {value:1e16}).should.be.rejectedWith('revert');
 	});
 
 	it('should process money with WeiAbsoluteExpenseWithPeriod, then 25 hours, then money needs again',async() => {
@@ -365,7 +385,7 @@ contract('Moneyflow', (accounts) => {
 		let struct = {};
 		let balance0 = await web3.eth.getBalance(creator);
 
-		let tax = await WeiRelativeExpenseWithPeriod.new(1000, 0, false, callParams);
+		let tax = await WeiRelativeExpenseWithPeriod.new(10000, 0, false, callParams);
 
 		Splitter = await WeiTopDownSplitter.new('SimpleSplitter', callParams);
 		await Splitter.addChild(tax.address, callParams);
@@ -373,17 +393,17 @@ contract('Moneyflow', (accounts) => {
 		let need1 = await Splitter.isNeedsMoney({from:creator});
 		let totalNeed1 = await Splitter.getTotalWeiNeeded(1000*money);
 		assert.equal(need1, true, 'should need money');
-		assert.equal(totalNeed1.toNumber(), 100*money, 'should be 10% of 1000 money');
+		assert.equal(totalNeed1.toNumber(), 1000*money, 'should be 10% of 1000 money');
 
-		await Splitter.processFunds(1000*money, {value:100*money, from:outsider, gasPrice:0});
+		await Splitter.processFunds(1000*money, {value:1000*money, from:outsider, gasPrice:0});
 
 		let taxBalance = await web3.eth.getBalance(tax.address);
-		assert.equal(taxBalance.toNumber(), 100*money, 'Tax receiver should get 100 money');
+		assert.equal(taxBalance.toNumber(), 1000*money, 'Tax receiver should get 100 money');
 
 		let need2 = await Splitter.isNeedsMoney({from:creator});
 		let totalNeed2 = await Splitter.getTotalWeiNeeded(1000*money);
 		assert.equal(need2, true, 'should need money');
-		assert.equal(totalNeed2.toNumber(), 100*money, 'should be 10% of 1000 money');
+		assert.equal(totalNeed2.toNumber(), 1000*money, 'should be 10% of 1000 money');
 
 		await Splitter.close(callParams);
 
@@ -392,7 +412,7 @@ contract('Moneyflow', (accounts) => {
 		assert.equal(need3, false, 'should not need money');
 		assert.equal(totalNeed3.toNumber(), 0, 'should be 0 money');
 
-		await Splitter.processFunds(100*money, {value:100*money, from:outsider, gasPrice:0}).should.be.rejectedWith('revert');
+		await Splitter.processFunds(1000*money, {value:1000*money, from:outsider, gasPrice:0}).should.be.rejectedWith('revert');
 	});
 
 	it('should allow to send revenue',async() => {
@@ -401,7 +421,7 @@ contract('Moneyflow', (accounts) => {
 		assert.equal(revEndpoint,0x0,'Endpoint should be zero');
 
 		const isEnableFlushTo = true;
-		let fund = await WeiFund.new(creator,isEnableFlushTo,10000);
+		let fund = await await WeiRelativeExpenseWithPeriod.new(10000, 0, false);
 		await moneyflowInstance.setRootWeiReceiver(fund.address);
 
 		const revEndpoint2 = await moneyflowInstance.getRevenueEndpoint();
@@ -448,7 +468,7 @@ contract('Moneyflow', (accounts) => {
 
 	it('should allow to get donations',async() => {
 		const isEnableFlushTo = true;
-		let fund = await WeiFund.new(creator,isEnableFlushTo,10000);
+		let fund = await WeiRelativeExpenseWithPeriod.new(10000, 0, false);
 
 		///
 		const dea = await moneyflowInstance.getDonationEndpoint();
@@ -546,6 +566,44 @@ contract('Moneyflow', (accounts) => {
 
 		let weiAbsoluteExpense3Balance = await web3.eth.getBalance(weiAbsoluteExpense3.address);
 		assert.equal(weiAbsoluteExpense3Balance.toNumber(),money, 'resource point received money from splitter');
+	});
+
+	it('should process money with WeiUnsortedSplitter + 2 WeiAbsoluteExpense + WeiRelativeExpense',async() => {
+		// create WeiTopDownSplitter
+		let weiUnsortedSplitter = await WeiUnsortedSplitter.new('JustSplitter');
+
+		let weiAbsoluteExpense1 = await WeiAbsoluteExpense.new(money, {from:creator, gasPrice:0});
+		let weiRelativeExpense1 = await WeiRelativeExpense.new(9000, {from:creator, gasPrice:0});
+		let weiAbsoluteExpense3 = await WeiAbsoluteExpense.new(money, {from:creator, gasPrice:0});
+
+		// // add 3 WeiAbsoluteExpense outputs to the splitter
+		await weiUnsortedSplitter.addChild(weiAbsoluteExpense1.address);
+		await weiUnsortedSplitter.addChild(weiRelativeExpense1.address);
+		await weiUnsortedSplitter.addChild(weiAbsoluteExpense3.address);
+
+		// add WeiTopDownSplitter to the moneyflow
+		await moneyflowInstance.setRootWeiReceiver(weiUnsortedSplitter.address);
+
+		let revenueEndpointAddress = await moneyflowInstance.getRevenueEndpoint();
+
+		assert.equal(revenueEndpointAddress, weiUnsortedSplitter.address, 'weiUnsortedSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
+
+		// now send some money to the revenue endpoint
+
+		let minNeed = await weiUnsortedSplitter.getMinWeiNeeded();
+		assert.equal(minNeed, 20*money);
+
+		await weiUnsortedSplitter.processFunds(20*money, {value:20*money, from:creator});
+
+		// money should end up in the outputs
+		let weiAbsoluteExpense1Balance = await web3.eth.getBalance(weiAbsoluteExpense1.address);
+		assert.equal(weiAbsoluteExpense1Balance.toNumber(), money, 'resource point received money from splitter');
+
+		let weiRelativeExpense1Balance = await web3.eth.getBalance(weiRelativeExpense1.address);
+		assert.equal(weiRelativeExpense1Balance.toNumber(), 18*money, 'resource point received money from splitter');
+
+		let weiAbsoluteExpense3Balance = await web3.eth.getBalance(weiAbsoluteExpense3.address);
+		assert.equal(weiAbsoluteExpense3Balance.toNumber(), money, 'resource point received money from splitter');
 	});	
 
 	it('should process money with WeiUnsortedSplitter + 3 WeiAbsoluteExpense',async() => {
@@ -726,7 +784,7 @@ contract('Moneyflow', (accounts) => {
 		let b1 = 100;
 		let b2 = 100;
 		let b3 = 200;
-		let reserve = 1000;
+		let reserve = 8500;
 		let dividends = 1500;
 
 		let struct = await createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
@@ -738,8 +796,32 @@ contract('Moneyflow', (accounts) => {
 
 		let balances = await getBalances(struct);
 		await balancesAsserts(balances, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
-		await splitterBalancesAsserts(balances, money, 10800, 0, 0, 0, 0, 0, 0);
+		await splitterBalancesAsserts(balances, money, 0, 0, 0, 0, 0, 0, 0);
 	});
+
+	it('should NOT process money (splitter can not accumulate money) with a scheme just like in the paper: 10/15 others, send MORE than minNeed; ',async() => {
+		const CURRENT_INPUT = 20900;
+		let e1 = 1000;
+		let e2 = 1500;
+		let e3 = 800;
+		let office = 500;
+		let internet = 300;
+		let t1 = 500;
+		let t2 = 300;
+		let t3 = 1000;
+		let b1 = 100;
+		let b2 = 100;
+		let b3 = 200;
+		let reserve = 1000;
+		let dividends = 1500;
+
+		let struct = await createStructure(creator, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		let splitterParams = await getSplitterParams(struct, CURRENT_INPUT, money, creator);
+		await totalAndMinNeedsAsserts(splitterParams, CURRENT_INPUT, money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
+		await structureAsserts(splitterParams);
+
+		await struct.AllOutpults.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money, from:creator, gasPrice:0}).should.be.rejectedWith('revert');
+	});	
 
 	it('should process money with a scheme just like in the paper: 10/15 others, send EQUAL to minNeed; ',async() => {
 		const CURRENT_INPUT = 5900;

@@ -73,11 +73,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		internalVote(_origin, true);
 	}
 
-	function isFinished()external view returns(bool){
-		return _isFinished();
-	}
-
-	function _isFinished()internal view returns(bool){
+	function isFinished()public view returns(bool){
 		if(minutesToVote!=0){
 			return _isTimeElapsed();
 		}
@@ -102,7 +98,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		uint noResults = 0;
 		uint votersTotal = 0;
 
-		(yesResults, noResults, votersTotal) = _getVotingStats();
+		(yesResults, noResults, votersTotal) = getVotingStats();
 		return ((yesResults + noResults) * 100) >= (votersTotal * quorumPercent);
 	}
 
@@ -111,30 +107,26 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		uint noResults = 0;
 		uint votersTotal = 0;
 
-		(yesResults, noResults, votersTotal) = _getVotingStats();
+		(yesResults, noResults, votersTotal) = getVotingStats();
 		return (yesResults * 100) >= ((yesResults + noResults) * consensusPercent);
 	}
 
-	function isYes()external view returns(bool){
-		return _isYes();
-	}
-
-	function _isYes()internal view returns(bool){
+	function isYes()public view returns(bool){
 		if(true==finishedWithYes){
 			return true;
 		}
 
-		return  _isFinished() &&
+		return  isFinished() &&
 		   _isQuorumReached() &&
 		_isConsensusReached();
 	}
 
-	function cancelVoting() external onlyOwner {
+	function cancelVoting() public onlyOwner {
 		// TODO:
 	}
 
-	function vote(bool _yes, uint _tokenAmount) external {
-		require(!_isFinished());
+	function vote(bool _yes, uint _tokenAmount) public {
+		require(!isFinished());
 		require(0==_tokenAmount);
 
 		internalVote(msg.sender, _yes);
@@ -150,11 +142,10 @@ contract Voting_SimpleToken is IVoting, Ownable {
 
 		emit VotingSimpleToken_Vote(_who, _yes, tokenBalance);
 
-		_callActionIfEnded();
 	}
 
 	function callActionIfEnded() public {
-		if(!finishedWithYes && _isFinished() && _isYes()){
+		if(!finishedWithYes && isFinished() && isYes()){
 			// should not be callable again!!!
 			finishedWithYes = true;
 
@@ -164,11 +155,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		}
 	}
 
-	function getVotingStats() external constant returns(uint yesResults, uint noResults, uint votersTotal){
-		return _getVotingStats();
-	}
-
-	function _getVotingStats() internal constant returns(uint yesResults, uint noResults, uint votersTotal){
+	function getVotingStats() public constant returns(uint yesResults, uint noResults, uint votersTotal){
 		yesResults = 0;
 		noResults = 0;
 		if(isQuadraticVoting){

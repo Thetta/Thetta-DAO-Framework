@@ -376,6 +376,45 @@ contract('MoneyflowTable tests', (accounts) => {
 		assert.equal(absoluteExpense3Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
 	});
 
+  it('should process money with WeiUnsortedSplitter + 2 WeiAbsoluteExpense + WeiRelativeExpense',async() => {
+		let moneyflowTable = await MoneyflowTable.new();
+
+		let SplitterId = getEId(await moneyflowTable.addUnsortedSplitter());			
+		let AbsoluteExpense1Id = getEId(await moneyflowTable.addAbsoluteExpense(neededAmount, isPeriodic, isAccumulateDebt, periodHours, output));
+		let RelativeExpense1Id = getEId(await moneyflowTable.addRelativeExpense(9000, isPeriodic, isAccumulateDebt, periodHours, output));
+		let AbsoluteExpense3Id = getEId(await moneyflowTable.addAbsoluteExpense(neededAmount, isPeriodic, isAccumulateDebt, periodHours, output));
+
+		// add 3 WeiAbsoluteExpense outputs to the splitter
+		await moneyflowTable.addChild(SplitterId, AbsoluteExpense1Id);
+		await moneyflowTable.addChild(SplitterId, RelativeExpense1Id);
+		await moneyflowTable.addChild(SplitterId, AbsoluteExpense3Id);
+
+		// add WeiSplitter to the moneyflow
+		await moneyflowInstance.setRootWeiReceiver(moneyflowTable.address);
+
+		var revenueEndpointAddress = await moneyflowInstance.getRevenueEndpoint();
+
+		global.assert.equal(revenueEndpointAddress, moneyflowTable.address, 'weiSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
+	
+	 	let totalNeed = await moneyflowTable.getTotalWeiNeeded(20*neededAmount);
+		global.assert.equal(totalNeed.toNumber(), 20*neededAmount);
+		let minNeed = await moneyflowTable.getMinWeiNeeded();
+		global.assert.equal(minNeed.toNumber(), 20*neededAmount);
+
+		// now send some money to the revenue endpoint 
+		await moneyflowTable.processFunds(20*neededAmount, {value:20*neededAmount, from:creator});
+
+		// money should end up in the outputs
+		var absoluteExpense1Balance = await moneyflowTable.getElementBalance(AbsoluteExpense1Id);
+		global.assert.equal(absoluteExpense1Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
+
+		var relativeExpense2Balance = await moneyflowTable.getElementBalance(RelativeExpense1Id);
+		global.assert.equal(relativeExpense2Balance.toNumber(),18*neededAmount, 'resource point received money from splitter');
+
+		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
+		global.assert.equal(absoluteExpense3Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
+	});
+
 	it('should process money with a scheme just like in the paper: 75/25 others, send MORE than minNeed; ',async() => {
 		const money = web3.toWei(0.0001, "ether");
 		const CURRENT_INPUT = 30900;
