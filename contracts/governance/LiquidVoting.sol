@@ -8,25 +8,25 @@ import "./Voting_SimpleToken.sol";
 
 
 
-// TODO:
 contract DelegationTable is IDelegationTable, Voting_SimpleToken {
 
 	struct Delegator {
-		mapping (address => uint) tokensForVotingFromAddress;
-		mapping (address => bool) isDelegatedForFrom;
-		mapping (address => bool) isDelegatorFor;
-		uint delegatorsAmount;
-		uint delegatedForAmount;
-		uint tokensForVoting;
-		uint blockedTokensForVoting;
-		bool isDelegatedFor;
-		bool isDelegator;
+		mapping (address => uint) tokensForVotingFromAddress; // check delegated tokens from concret address (for deleting delegation)
+		mapping (address => bool) isDelegatedForFrom; // check if for account was delegated any from this address
+		mapping (address => bool) isDelegatorFor; // check if account delegate any for this address
+		uint delegatorsAmount; // amount of delegators which delegated any tokens for this address
+		uint delegatedForAmount; // amount of delegations which this address have done
+		uint tokensForVoting; // tokens which was delegated for address
+		uint blockedTokensForVoting; // tokens which account delegated for other addresses
+		bool isDelegatedFor; // true if someone delegated tokens for this account
+		bool isDelegator; // true if this account delegated any tokens for someone
 	}	
 
 	event DelegatedTo(address _sender, uint _blocked);
 	event DelegationRemoved(address _sender, uint _tokensAmount);
 
 	mapping (address => Delegator) delegations;
+	
 
 	constructor(IDaoBase _dao, IProposal _proposal, 
 		address _origin, uint _minutesToVote,
@@ -75,7 +75,6 @@ contract DelegationTable is IDelegationTable, Voting_SimpleToken {
 	
 }
 
-// TODO:
 contract LiquidVoting is IVoting, DelegationTable {
 
 	constructor(IDaoBase _dao, IProposal _proposal, 
@@ -88,7 +87,7 @@ contract LiquidVoting is IVoting, DelegationTable {
 
 	function internalVote(address _who, bool _yes) internal {
 
-		uint tokenBalance = _getMyPower(_who);
+		uint tokenBalance = getPowerOf(_who);
 
 		require(!addressVotedAlready[_who]);
 
@@ -99,30 +98,14 @@ contract LiquidVoting is IVoting, DelegationTable {
 
 		_callActionIfEnded();
 	}
+	
+	function getPowerOf(address _who) public view returns(uint){
 
-	function _getMyPower(address _who) internal view returns(uint){
-
-		if(delegations[_who].isDelegator){
-			return stdDaoToken.getBalanceAtVoting(votingID, _who) - delegations[_who].blockedTokensForVoting;
-		}
-		if(delegations[_who].isDelegatedFor){
-			return stdDaoToken.getBalanceAtVoting(votingID, _who) + delegations[_who].tokensForVoting;
+		if(delegations[_who].isDelegator || delegations[_who].isDelegatedFor){
+			return stdDaoToken.getBalanceAtVoting(votingID, _who) - delegations[_who].blockedTokensForVoting + delegations[_who].tokensForVoting;
 		}
 
 		return stdDaoToken.getBalanceAtVoting(votingID, _who);
-
-	}
-	
-	function getMyPower() public view returns(uint) {
-
-		if(delegations[msg.sender].isDelegator){
-			return stdDaoToken.getBalanceAtVoting(votingID, msg.sender) - delegations[msg.sender].blockedTokensForVoting;
-		}
-		if(delegations[msg.sender].isDelegatedFor){
-			return stdDaoToken.getBalanceAtVoting(votingID, msg.sender) + delegations[msg.sender].tokensForVoting;
-		}
-
-		return stdDaoToken.getBalanceAtVoting(votingID, msg.sender);
 
 	}
 
