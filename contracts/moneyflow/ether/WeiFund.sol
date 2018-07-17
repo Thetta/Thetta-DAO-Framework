@@ -40,31 +40,11 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {//
 		momentCreated = now;
 	}
 
-	function getTotalFundNeededAmount()external view returns(uint){
+	function getTotalFundNeededAmount()public view returns(uint){
 		return neededWei;
 	}
 
-	function _getTotalWeiNeeded(uint _inputWei)internal view returns(uint){
-		uint need;
-		if(_getDebtMultiplier()*neededWei > totalWeiReceived){
-			need = _getDebtMultiplier()*neededWei - totalWeiReceived;	
-		}else{
-			need = 0;
-		}
-
-		if(need<=_inputWei){
-			return need;
-		}else{
-			return _inputWei;
-		}
-	}
-
-	function getDebtMultiplier()external view returns(uint){
-		return _getDebtMultiplier();
-	}
-
-	function _getDebtMultiplier()internal view returns(uint){
-
+	function getDebtMultiplier()public view returns(uint){
 		if((isPeriodic)&&(!isAccumulateDebt)&&( (now - momentReceived) / (periodHours * 3600 * 1000) >=1)){
 			return (balanceOnMomentReceived/neededWei) + 1;
 		} else if((isPeriodic)&&(isAccumulateDebt)){
@@ -76,51 +56,59 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {//
 
 	// -------------- IWeiReceiver
 
-	function processFunds(uint _currentFlow) external payable{
+	function processFunds(uint _currentFlow) public payable{
 		// emit consoleUint('_getDebtMultiplier', _getDebtMultiplier());
-		require(_isNeedsMoney());
+		require(isNeedsMoney());
 
-		require(totalWeiReceived+msg.value<=_getDebtMultiplier()*neededWei); // protect from extra money
+		require(totalWeiReceived+msg.value<=getDebtMultiplier()*neededWei); // protect from extra money
 		// require(msg.value==_currentFlow);
 		totalWeiReceived += msg.value;
-		if(_getTotalWeiNeeded(msg.value)==0){
+		if(getTotalWeiNeeded(msg.value)==0){
 			momentReceived = now;
 			balanceOnMomentReceived = totalWeiReceived;
 		}	
 	}
 
-	function getTotalWeiNeeded(uint _inputWei)external view returns(uint){
-		return _getTotalWeiNeeded(_inputWei);
+	function getTotalWeiNeeded(uint _inputWei)public view returns(uint){
+		uint need;
+		if(getDebtMultiplier()*neededWei > totalWeiReceived){
+			need = getDebtMultiplier()*neededWei - totalWeiReceived;	
+		}else{
+			need = 0;
+		}
+
+		if(need<=_inputWei){
+			return need;
+		}else{
+			return _inputWei;
+		}
 	}
 
-	function getMinWeiNeeded()external view returns(uint){
+	function getMinWeiNeeded()public view returns(uint){
 		return 0;
 	}
 
-	function getPercentsMul100() view external returns(uint){
+	function getPercentsMul100() view public returns(uint){
 		return 0;
 	}
 
-	function isNeedsMoney()external view returns(bool){
-		return _isNeedsMoney();
-	}
-	function _isNeedsMoney()internal view returns(bool){
-		return _getDebtMultiplier()*neededWei > totalWeiReceived;
+	function isNeedsMoney()public view returns(bool){
+		return getDebtMultiplier()*neededWei > totalWeiReceived;
 	}
 
 	// -------------- IDestination
 
-	function flushTo(address _to) external onlyOwner {
+	function flushTo(address _to) public onlyOwner {
 		emit WeiFund_FlushTo(_to, this.balance);
 		_to.transfer(this.balance);
 	}
 
-	function flush() external onlyOwner {
+	function flush() public onlyOwner {
 		emit WeiFund_FlushTo(owner, this.balance);
 		owner.transfer(this.balance);
 	}	
 
-	function() external{
+	function() public{
 
 	}
 }

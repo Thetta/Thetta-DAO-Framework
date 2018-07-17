@@ -68,12 +68,8 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 // IWeiReceiver:
 	// calculate only absolute outputs, but do not take into account the Percents
 
-	function getMinWeiNeeded()external view returns(uint){
-		return _getMinWeiNeeded();
-	}
-
-	function _getMinWeiNeeded()internal view returns(uint){	
-		if(!_isOpen()){
+	function getMinWeiNeeded()public view returns(uint){
+		if(!isOpen()){
 			return 0;
 		}
 		uint out = 0;
