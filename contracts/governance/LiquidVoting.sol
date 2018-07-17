@@ -86,7 +86,6 @@ contract LiquidVoting is IVoting, DelegationTable {
 	}
 
 	function internalVote(address _who, bool _yes) internal {
-
 		uint tokenBalance = getPowerOf(_who);
 
 		require(!addressVotedAlready[_who]);
@@ -100,7 +99,6 @@ contract LiquidVoting is IVoting, DelegationTable {
 	}
 	
 	function getPowerOf(address _who) public view returns(uint){
-
 		if(delegations[_who].isDelegator || delegations[_who].isDelegatedFor){
 			return stdDaoToken.getBalanceAtVoting(votingID, _who) - delegations[_who].blockedTokensForVoting + delegations[_who].tokensForVoting;
 		}
@@ -110,9 +108,7 @@ contract LiquidVoting is IVoting, DelegationTable {
 	}
 
 	function getDelegatedToMePower() public view returns(uint) {
-
 		return delegations[msg.sender].tokensForVoting;
-
 	}
 
 }
