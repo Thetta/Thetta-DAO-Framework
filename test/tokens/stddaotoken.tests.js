@@ -124,6 +124,11 @@ require('chai')
 		});
 
 		describe('startNewVoting', function() {
+			it('should not be possible to call by non-owner',async() => {
+				// TODO:
+
+			});
+
 			it('should not allow to create > 20 separate votings',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
 
@@ -290,9 +295,26 @@ require('chai')
 
 				let balance1 = await this.token.getBalanceAtVoting(0, web3.eth.accounts[0]).should.be.rejectedWith('revert');
 			});
+
+			it('should work correctly even if new event is started',async() => {
+				// TODO: 
+				// 1 - create event 1
+				// 2 - transfer tokens 
+				// 3 - finish event 
+				// 4 - create event 2
+				// 5 - CHECK BALANCES
+				// 6 - transfer tokens 
+				// 7 - CHECK BALANCES 
+				// 8 - finish event 
+			});
 		});
 
 		describe('finishVoting()', function () {
+			it('should not be possible to call by non-owner',async() => {
+				// TODO:
+
+			});
+
 			it('should throw revert() if VotingID is wrong',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
 				await this.token.mintFor(employee4, 1);

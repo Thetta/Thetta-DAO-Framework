@@ -55,17 +55,20 @@ contract StdDaoToken is DetailedERC20, MintableToken, BurnableToken, PausableTok
 		cap = _cap;
 		isBurnable = _isBurnable;
 		isPausable = _isPausable;
+
 		holders.push(this);
 	}
 
 // ITokenVotingSupport implementation
-	function startNewVoting() onlyOwner public returns(uint) {
+	// TODO: VULNERABILITY! no onlyOwner!
+	function startNewVoting() public returns(uint) {
 		uint idOut = super.startNewEvent();
 		emit VotingStarted(msg.sender, idOut);
 		return idOut;
 	}
 
-	function finishVoting(uint _votingID) onlyOwner public {
+	// TODO: VULNERABILITY! no onlyOwner!
+	function finishVoting(uint _votingID) public {
 		super.finishEvent(_votingID);
 		emit VotingFinished(msg.sender, _votingID);
 	}
