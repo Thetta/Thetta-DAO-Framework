@@ -64,18 +64,20 @@ contract LiquidVoting is IDelegationTable, Voting_SimpleToken {
 
 	function delegateMyVoiceTo(address _to, uint _tokenAmount) public {
 		require (_to!= address(0));
-		require (_tokenAmount >= stdDaoToken.balanceOf(msg.sender));
+		require (_tokenAmount <= stdDaoToken.getBalanceAtVoting(votingID, msg.sender));
 
-		delegations[_to].tokensDelegatedForVoting += _tokenAmount;
-		delegations[_to].tokensDelegatedForVotingFromAddress[msg.sender] += _tokenAmount;
-		delegations[_to].delegatorsAmount += 1;
+		delegations[_to].tokensDelegatedForVoting = _tokenAmount;
+		delegations[_to].tokensDelegatedForVotingFromAddress[msg.sender] = _tokenAmount;
 		delegations[_to].isDelegatedFor = true;
-		delegations[_to].isDelegatedForFrom[msg.sender] = true;
-		delegations[msg.sender].blockedTokensDelegatedForVoting += _tokenAmount;
+		delegations[msg.sender].blockedTokensDelegatedForVoting = _tokenAmount;
 		emit DelegatedTo(msg.sender, _tokenAmount);
 		delegations[msg.sender].isDelegator = true;
-		delegations[msg.sender].isDelegatorFor[_to] = true;
-		delegations[msg.sender].delegatedForAmount += 1;
+		if(!delegations[_to].isDelegatedForFrom[msg.sender] && !delegations[msg.sender].isDelegatorFor[_to]){
+			delegations[msg.sender].delegatedForAmount += 1;
+			delegations[_to].delegatorsAmount += 1;
+			delegations[msg.sender].isDelegatorFor[_to] = true;
+			delegations[_to].isDelegatedForFrom[msg.sender] = true;
+		}
 	}
 
 	function removeDelegation(address _to) public {
