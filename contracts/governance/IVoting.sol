@@ -43,6 +43,7 @@ contract IVoting {
 
 // for "liquid democracy"
 // in this case the delegate does all voting
+
 contract IDelegationTable {
 	function delegateMyVoiceTo(address _to, uint _tokenAmount) public;
 	function removeDelegation(address _to) public;
