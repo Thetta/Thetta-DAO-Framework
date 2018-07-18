@@ -56,25 +56,24 @@ require('chai')
 		});
 
 		describe('isHolder()', function () {
-		     
-		it('should pass', async function () {
-			this.token = await StdDaoToken.new("StdToken","STDT",18, true, false, ETH);
-			await this.token.mintFor(web3.eth.accounts[0], 1000);
-			await this.token.mintFor(web3.eth.accounts[0], 1000);
-			this.token.balanceOf(web3.eth.accounts[0]).then(result => {
-				assert.equal(result.toNumber(), 2000);
+			it('should pass', async function () {
+				this.token = await StdDaoToken.new("StdToken","STDT",18, true, false, ETH);
+				await this.token.mintFor(web3.eth.accounts[0], 1000);
+				await this.token.mintFor(web3.eth.accounts[0], 1000);
+				this.token.balanceOf(web3.eth.accounts[0]).then(result => {
+					assert.equal(result.toNumber(), 2000);
+				});
+				await this.token.transfer(web3.eth.accounts[1],100);
+				await this.token.transfer(web3.eth.accounts[1],100);
+				this.token.balanceOf(web3.eth.accounts[1]).then(result => {
+					assert.equal(result.toNumber(), 200);
+				});
+				let account1 = this.token.holders(1);
+				let account2 = this.token.holders(2);
+				assert.notEqual(account1, account2);
+				
+				this.token.holders(3).should.be.rejectedWith('invalid opcode');
 			});
-			await this.token.transfer(web3.eth.accounts[1],100);
-			await this.token.transfer(web3.eth.accounts[1],100);
-			this.token.balanceOf(web3.eth.accounts[1]).then(result => {
-				assert.equal(result.toNumber(), 200);
-			});
-			let account1 = this.token.holders(1);
-			let account2 = this.token.holders(2);
-			assert.notEqual(account1, account2);
-			
-			this.token.holders(3).should.be.rejectedWith('invalid opcode');
-		});
 		});
 
 		describe('burnFor()', function () {
@@ -164,7 +163,7 @@ require('chai')
 				assert.equal(employee5Balance.toNumber(), 0);
 
 				const tx = await this.token.startNewVoting();
-				const events = tx.logs.filter(l => l.event == 'VotingCreated');
+				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
 				let employee4VotingBalance = await this.token.getBalanceAtVoting(votingID, employee4);
@@ -179,7 +178,7 @@ require('chai')
 				await this.token.mintFor(employee4, 1);
 
 				const tx = await this.token.startNewVoting();
-				const events = tx.logs.filter(l => l.event == 'VotingCreated');
+				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
 				await this.token.transfer(employee5, 1, {from: employee4});
@@ -202,7 +201,7 @@ require('chai')
 				await this.token.mintFor(employee4, 1);
 
 				const tx = await this.token.startNewVoting();
-				const events = tx.logs.filter(l => l.event == 'VotingCreated');
+				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
 				await this.token.burnFor(employee4, 1);
@@ -220,7 +219,7 @@ require('chai')
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
 
 				const tx = await this.token.startNewVoting();
-				const events = tx.logs.filter(l => l.event == 'VotingCreated');
+				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
 				await this.token.mintFor(employee4, 1);
@@ -239,7 +238,7 @@ require('chai')
 				await this.token.mintFor(employee4, 1);
 
 				const tx = await this.token.startNewVoting();
-				const events = tx.logs.filter(l => l.event == 'VotingCreated');
+				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
 				await this.token.transfer(employee5, 1, {from: employee4});
@@ -266,7 +265,7 @@ require('chai')
 				await this.token.mintFor(employee4, 1);
 
 				const tx = await this.token.startNewVoting();
-				const events = tx.logs.filter(l => l.event == 'VotingCreated');
+				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
 				await this.token.approve(employee3, 1, {from: employee4});
@@ -291,7 +290,6 @@ require('chai')
 
 				let balance1 = await this.token.getBalanceAtVoting(0, web3.eth.accounts[0]).should.be.rejectedWith('revert');
 			});
-
 		});
 
 		describe('finishVoting()', function () {
@@ -300,7 +298,7 @@ require('chai')
 				await this.token.mintFor(employee4, 1);
 
 				const tx = await this.token.startNewVoting();
-				const events = tx.logs.filter(l => l.event == 'VotingCreated');
+				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
 				await this.token.transfer(employee5, 1, {from: employee4});
