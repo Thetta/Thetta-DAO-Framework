@@ -7,9 +7,7 @@ import "../tokens/StdDaoToken.sol";
 import "./Voting_SimpleToken.sol";
 
 
-
 contract LiquidVoting is IDelegationTable, Voting_SimpleToken {
-
 	struct Delegator {
 		mapping (address => uint) tokensDelegatedForVotingFromAddress; // check delegated tokens from concret address (for deleting delegation)
 		mapping (address => bool) isDelegatedForFrom; // check if for account was delegated any from this address
@@ -27,7 +25,6 @@ contract LiquidVoting is IDelegationTable, Voting_SimpleToken {
 
 	mapping (address => Delegator) delegations;
 	
-
 	constructor(IDaoBase _dao, IProposal _proposal, 
 		address _origin, uint _minutesToVote,
 		uint _quorumPercent, uint _consensusPercent, address _tokenAddress, bool _isQuadraticVoting) public
@@ -55,7 +52,6 @@ contract LiquidVoting is IDelegationTable, Voting_SimpleToken {
 		}
 
 		return stdDaoToken.getBalanceAtVoting(votingID, _who);
-
 	}
 
 	function getDelegatedPowerOf(address _of) public view returns(uint) {
@@ -102,5 +98,4 @@ contract LiquidVoting is IDelegationTable, Voting_SimpleToken {
 			delegations[_to].isDelegator = false;
 		}
 	}
-	
 }
