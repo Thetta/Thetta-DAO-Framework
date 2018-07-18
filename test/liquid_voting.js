@@ -58,7 +58,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 			assert.equal(r2.toNumber(),0,'yes');
 			r2 = await voting.getPowerOf(employee1);
 			assert.equal(r2.toNumber(),2,'yes');
-			r2 = await voting.getDelegatedToMePower({from: employee1});
+			r2 = await voting.getDelegatedPowerOf(employee1);
 			assert.equal(r2.toNumber(),1,'yes');
 		});
 
@@ -71,7 +71,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 			assert.equal(r2.toNumber(),0,'yes');
 			r2 = await voting.getPowerOf(employee1);
 			assert.equal(r2.toNumber(),2,'yes');
-			r2 = await voting.getDelegatedToMePower({from: employee1});
+			r2 = await voting.getDelegatedPowerOf(employee1);
 			assert.equal(r2.toNumber(),1,'yes');
 
 			await voting.removeDelegation(employee1);
@@ -80,16 +80,16 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 			assert.equal(r2.toNumber(),1,'yes');
 			r2 = await voting.getPowerOf(employee1);
 			assert.equal(r2.toNumber(),1,'yes');
-			r2 = await voting.getDelegatedToMePower({from: employee1});
+			r2 = await voting.getDelegatedPowerOf(employee1);
 			assert.equal(r2.toNumber(),0,'yes');
 		});
 	});
 
-	describe('getDelegatedToMePower()', function () {
-		it('Check getDelegatedToMePower()',async() => {
+	describe('getDelegatedPowerOf()', function () {
+		it('Check getDelegatedPowerOf()',async() => {
 			const voting = await LiquidVoting.new(daoBase.address, creator, creator, 0, 100, 100, token.address, false);
 
-			r2 = await voting.getDelegatedToMePower();
+			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),0,'yes');
 
 			await voting.delegateMyVoiceTo(creator, 1, {from: employee1});
@@ -98,7 +98,25 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 			assert.equal(r2.toNumber(),2,'yes');
 			r2 = await voting.getPowerOf(employee1);
 			assert.equal(r2.toNumber(),0,'yes');
-			r2 = await voting.getDelegatedToMePower();
+			r2 = await voting.getDelegatedPowerOf(creator);
+			assert.equal(r2.toNumber(),1,'yes');
+		});
+	});
+
+	describe('getDelegatedPowerByMe()', function () {
+		it('Check getDelegatedPowerByMe()',async() => {
+			const voting = await LiquidVoting.new(daoBase.address, creator, creator, 0, 100, 100, token.address, false);
+
+			r2 = await voting.getDelegatedPowerByMe(creator);
+			assert.equal(r2.toNumber(),0,'yes');
+
+			await voting.delegateMyVoiceTo(employee1, 1, {from: creator});
+
+			r2 = await voting.getPowerOf(creator);
+			assert.equal(r2.toNumber(),0,'yes');
+			r2 = await voting.getPowerOf(employee1);
+			assert.equal(r2.toNumber(),2,'yes');
+			r2 = await voting.getDelegatedPowerByMe(creator);
 			assert.equal(r2.toNumber(),1,'yes');
 		});
 	});
@@ -107,12 +125,12 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		it('Check delegateMyVoiceTo()',async() => {
 			const voting = await LiquidVoting.new(daoBase.address, creator, creator, 0, 100, 100, token.address, false);
 
-			r2 = await voting.getDelegatedToMePower();
+			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),0);
 
 			await voting.delegateMyVoiceTo(creator, 1, {from: employee1});
 
-			r2 = await voting.getDelegatedToMePower();
+			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),1);
 		});
 	});
@@ -121,17 +139,17 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		it('Check removeDelegation()',async() => {
 			const voting = await LiquidVoting.new(daoBase.address, creator, creator, 0, 100, 100, token.address, false);
 
-			r2 = await voting.getDelegatedToMePower();
+			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),0,);
 
 			await voting.delegateMyVoiceTo(creator, 1, {from: employee1});
 
-			r2 = await voting.getDelegatedToMePower();
+			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),1,);
 
 			await voting.removeDelegation(creator, {from: employee1});
 
-			r2 = await voting.getDelegatedToMePower();
+			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),0,);
 		});
 	});

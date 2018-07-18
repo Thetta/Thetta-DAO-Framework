@@ -47,6 +47,9 @@ contract IVoting {
 contract IDelegationTable {
 	function delegateMyVoiceTo(address _to, uint _tokenAmount) public;
 	function removeDelegation(address _to) public;
+	function getPowerOf(address _who) public view returns(uint);
+	function getDelegatedPowerOf(address _of) public view returns(uint);
+	function getDelegatedPowerByMe(address _to) public view returns(uint);
 }
 
 
