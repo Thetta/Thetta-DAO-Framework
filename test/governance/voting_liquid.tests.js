@@ -118,7 +118,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 			assert.equal(r2.toNumber(),0,'yes');
 			r2 = await voting.getPowerOf(employee1);
 			assert.equal(r2.toNumber(),2,'yes');
-			r2 = await voting.getDelegatedPowerByMe(creator);
+			r2 = await voting.getDelegatedPowerByMe(employee1);
 			assert.equal(r2.toNumber(),1,'yes');
 		});
 	});
