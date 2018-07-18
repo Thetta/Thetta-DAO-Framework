@@ -124,7 +124,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	describe('delegateMyVoiceTo()', function () {
-		it('Check delegateMyVoiceTo() with 1 time delegation',async() => {
+		it('Should delegate from A to B',async() => {
 			const voting = await LiquidVoting.new(daoBase.address, creator, creator, 0, 100, 100, token.address, false);
 
 			r2 = await voting.getDelegatedPowerOf(creator);
@@ -136,7 +136,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 			assert.equal(r2.toNumber(),1);
 		});
 
-		it('Check delegateMyVoiceTo() with 2 times delegation',async() => {
+		it('Should delegate from A to B then from A to B again with the same amount',async() => {
 			const voting = await LiquidVoting.new(daoBase.address, creator, creator, 0, 100, 100, token.address, false);
 
 			r2 = await voting.getDelegatedPowerOf(creator);
