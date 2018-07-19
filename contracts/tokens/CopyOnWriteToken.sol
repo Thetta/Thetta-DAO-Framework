@@ -1,6 +1,7 @@
 pragma solidity ^0.4.21;
 
-import "zeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
+import "zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
+import "zeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 
 /**
  * @title Copy-on-Write (CoW) token 
@@ -23,7 +24,7 @@ import "zeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
  *	  assert.equal(token.getBalanceAtEvent(someEventID_1, ADDRESS_A), 100);
  *	  assert.equal(token.getBalanceAtEvent(someEventID_1, ADDRESS_B), 0);
 */
-contract CopyOnWriteToken is StandardToken {
+contract CopyOnWriteToken is MintableToken, BurnableToken {
 	struct Holder {
         uint256 balance;
         uint lastUpdateTime;
@@ -31,7 +32,6 @@ contract CopyOnWriteToken is StandardToken {
 
 	struct Event {
 	    mapping (address => Holder) holders;
-	    //mapping (address => bool) isChanged;
 	    
 	    bool isEventInProgress;
 	    uint eventStartTime;
@@ -51,6 +51,20 @@ contract CopyOnWriteToken is StandardToken {
 	function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
 		updateCopyOnWriteMaps(_from, _to);
 		return super.transferFrom(_from, _to, _value);
+	}
+
+// MintableToken override
+	function mint(address _to, uint256 _amount) canMint onlyOwner public returns(bool){
+		updateCopyOnWriteMap(_to);
+		return super.mint(_to, _amount);
+	}
+
+// BurnableToken override
+	// @dev This is an override of internal method! public method burn() calls _burn() automatically
+	// (see BurnableToken implementation)
+	function _burn(address _who, uint256 _value) internal {
+		updateCopyOnWriteMap(_who);
+		super._burn(_who, _value);
 	}
 
 //// 
@@ -86,7 +100,7 @@ contract CopyOnWriteToken is StandardToken {
 		return events[_eventID].holders[_for].balance;
 	}
 
-/////
+// Internal methods:
 	function updateCopyOnWriteMaps(address _from, address _to) internal {
 		updateCopyOnWriteMap(_to);
 		updateCopyOnWriteMap(_from);
@@ -97,40 +111,16 @@ contract CopyOnWriteToken is StandardToken {
 			bool res = isNeedToUpdateBalancesMap(i, _for);
 			if(res){
 				events[i].holders[_for].balance = balances[_for];
-				//events[i].isChanged[_for] = true;
 				events[i].holders[_for].lastUpdateTime = now;
 			}
 		}
 	}
 
 	function isNeedToUpdateBalancesMap(uint _eventID, address _for) internal returns(bool) {
-		// TODO: write test to check if this optimization is valid
-
-		/*
-		return (events[_eventID].isEventInProgress && !events[_eventID].isChanged[_for]) || 
-				 (events[_eventID].isEventInProgress && events[_eventID].isChanged[_for] && events[_eventID].holders[_for].lastUpdateTime<events[_eventID].eventStartTime);
-		*/
-
 		return events[_eventID].isEventInProgress && !isBalanceWasChangedAfterEventStarted(_eventID, _for);
 	}
 
 	function isBalanceWasChangedAfterEventStarted(uint _eventID, address _for) internal view returns(bool){
-		//return events[_eventID].isChanged[_for];
 		return (events[_eventID].holders[_for].lastUpdateTime >= events[_eventID].eventStartTime);
-	}
-}
-
-
-/**
- * @title CopyOnWriteTokenTestable
- * @dev Should not be used for production code. Only for tests!
-*/
-contract CopyOnWriteTokenTestable is CopyOnWriteToken {
-	// Not using "zeppelin-solidity/contracts/token/ERC20/MintableToken.sol" to reduce includes
-	function mintFor(address _to, uint _amount) public {
-		super.updateCopyOnWriteMap(_to);
-
-		totalSupply_ = totalSupply_.add(_amount);
-		balances[_to] = balances[_to].add(_amount);
 	}
 }

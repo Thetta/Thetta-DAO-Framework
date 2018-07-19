@@ -1,10 +1,7 @@
 pragma solidity ^0.4.22;
 
-import "zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
-import "zeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
-import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "./CopyOnWriteToken.sol";
 import "./ITokenVotingSupport.sol";
@@ -27,7 +24,7 @@ import "./ITokenVotingSupport.sol";
  *    finishVoting()
  *    getBalanceAtVoting() 
 */
-contract StdDaoToken is DetailedERC20, MintableToken, BurnableToken, PausableToken, CopyOnWriteToken, ITokenVotingSupport {
+contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVotingSupport {
 	uint256 public cap;
 	bool isBurnable;
 	bool isPausable;
@@ -61,14 +58,14 @@ contract StdDaoToken is DetailedERC20, MintableToken, BurnableToken, PausableTok
 
 // ITokenVotingSupport implementation
 	// TODO: VULNERABILITY! no onlyOwner!
-	function startNewVoting() public returns(uint) {
+	function startNewVoting() public whenNotPaused returns(uint) {
 		uint idOut = super.startNewEvent();
 		emit VotingStarted(msg.sender, idOut);
 		return idOut;
 	}
 
 	// TODO: VULNERABILITY! no onlyOwner!
-	function finishVoting(uint _votingID) public {
+	function finishVoting(uint _votingID) whenNotPaused public {
 		super.finishEvent(_votingID);
 		emit VotingFinished(msg.sender, _votingID);
 	}
@@ -82,8 +79,6 @@ contract StdDaoToken is DetailedERC20, MintableToken, BurnableToken, PausableTok
 		require(_to != address(0));
 		require(_value <= balances[msg.sender]);
 
-		super.updateCopyOnWriteMaps(msg.sender, _to);
-
 		if(!isHolder[_to]){
 			holders.push(_to);
 			isHolder[_to] = true;
@@ -95,8 +90,6 @@ contract StdDaoToken is DetailedERC20, MintableToken, BurnableToken, PausableTok
 		require(_to != address(0));
 		require(_value <= balances[_from]);
 		require(_value <= allowed[_from][msg.sender]);
-
-		super.updateCopyOnWriteMaps(_from, _to);
 
 		if(!isHolder[_to]){
 			holders.push(_to);
@@ -113,22 +106,30 @@ contract StdDaoToken is DetailedERC20, MintableToken, BurnableToken, PausableTok
 		return votersTotal;
 	}
 	
-	function burnFor(address _who, uint256 _value) isBurnable_ onlyOwner public{
-		super.updateCopyOnWriteMap(_who);
-		super._burn(_who, _value);
+// MintableToken override
+	// @dev do not call this method. Instead use mintFor()
+	function mint(address _to, uint256 _amount) canMint onlyOwner public returns(bool){
+		revert();
 	}
 
-	// this is an override of MintableToken method with cap
 	function mintFor(address _to, uint256 _amount) canMint onlyOwner public returns(bool){
 		require(totalSupply_.add(_amount) <= cap);
-
-		super.updateCopyOnWriteMap(_to);
 
 		if(!isHolder[_to]){
 			holders.push(_to);
 			isHolder[_to] = true;
 		}
 		return super.mint(_to, _amount);
+	}
+
+// BurnableToken override
+	// @dev do not call this method. Instead use burnFor()
+   function burn(uint256 _value) public {
+		revert();
+   }
+
+	function burnFor(address _who, uint256 _value) isBurnable_ onlyOwner public{
+		super._burn(_who, _value);
 	}
 
 	// this is an override of PausableToken method
