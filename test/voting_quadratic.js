@@ -86,54 +86,54 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 	const VOTING_TYPE_QUADRATIC = 3;
 
 	beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
-		await token.mintFor(creator, 25);
-		await token.mintFor(employee1, 11);
-		await token.mintFor(employee2, 9);
-		await token.mintFor(employee3, 4);
-		await token.mintFor(employee4, 16);
+		// token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+		// await token.mintFor(creator, 25);
+		// await token.mintFor(employee1, 11);
+		// await token.mintFor(employee2, 9);
+		// await token.mintFor(employee3, 4);
+		// await token.mintFor(employee4, 16);
 		// await token.mint(employee5, 1);
 
-		let store = await DaoStorage.new([token.address],{ from: creator });
-		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
-		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
-		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
+		// let store = await DaoStorage.new([token.address],{ from: creator });
+		// daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+		// moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
+		// aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
 
-		issueTokens = await daoBase.ISSUE_TOKENS();
+		// issueTokens = await daoBase.ISSUE_TOKENS();
 
-		manageGroups = await daoBase.MANAGE_GROUPS();
+		// manageGroups = await daoBase.MANAGE_GROUPS();
 
-		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
+		// addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
 
-		withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
+		// withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
 
-		setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
+		// setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
-		await store.addGroupMember(KECCAK256("Employees"), creator);
-		await store.allowActionByAddress(manageGroups,creator);
-		await store.allowActionByAddress(issueTokens,creator);
+		// await store.addGroupMember(KECCAK256("Employees"), creator);
+		// await store.allowActionByAddress(manageGroups,creator);
+		// await store.allowActionByAddress(issueTokens,creator);
 
-		// do not forget to transfer ownership
-		await token.transferOwnership(daoBase.address);
-		await store.transferOwnership(daoBase.address);
+		// // do not forget to transfer ownership
+		// await token.transferOwnership(daoBase.address);
+		// await store.transferOwnership(daoBase.address);
 
-		// AAC requires special permissions
-		await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
-		await daoBase.allowActionByAddress(withdrawDonations, aacInstance.address);
-		await daoBase.allowActionByAddress(setRootWeiReceiver, aacInstance.address);
+		// // AAC requires special permissions
+		// await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
+		// await daoBase.allowActionByAddress(withdrawDonations, aacInstance.address);
+		// await daoBase.allowActionByAddress(setRootWeiReceiver, aacInstance.address);
 
-		// do not forget to transfer ownership
-		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
+		// // do not forget to transfer ownership
+		// await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
 
-		await daoBase.allowActionByVoting(manageGroups, token.address);
-		await daoBase.allowActionByVoting(issueTokens, token.address);
-		await daoBase.allowActionByVoting(addNewProposal, token.address);
+		// await daoBase.allowActionByVoting(manageGroups, token.address);
+		// await daoBase.allowActionByVoting(issueTokens, token.address);
+		// await daoBase.allowActionByVoting(addNewProposal, token.address);
 
-		// check permissions (permissions must be blocked)
-		await daoBase.addGroupMember("Employees", employee1);
-		await daoBase.addGroupMember("Employees", employee2);
-		await daoBase.addGroupMember("Employees", employee3);
-		await daoBase.addGroupMember("Employees", employee4);
+		// // check permissions (permissions must be blocked)
+		// await daoBase.addGroupMember("Employees", employee1);
+		// await daoBase.addGroupMember("Employees", employee2);
+		// await daoBase.addGroupMember("Employees", employee3);
+		// await daoBase.addGroupMember("Employees", employee4);
 		// await daoBase.addGroupMember("Employees", creator);
 	});
 
