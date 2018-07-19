@@ -76,9 +76,6 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 
 // 
 	function transfer(address _to, uint256 _value) public whenNotPaused returns (bool) {
-		require(_to != address(0));
-		require(_value <= balances[msg.sender]);
-
 		if(!isHolder[_to]){
 			holders.push(_to);
 			isHolder[_to] = true;
@@ -87,10 +84,6 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 	}
 
 	function transferFrom(address _from, address _to, uint256 _value) public whenNotPaused returns (bool) {
-		require(_to != address(0));
-		require(_value <= balances[_from]);
-		require(_value <= allowed[_from][msg.sender]);
-
 		if(!isHolder[_to]){
 			holders.push(_to);
 			isHolder[_to] = true;
