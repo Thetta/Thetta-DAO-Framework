@@ -1,10 +1,9 @@
 pragma solidity ^0.4.22;
 
-import "zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
-import "zeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
-import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+
+import "./CopyOnWriteToken.sol";
 import "./ITokenVotingSupport.sol";
 
 /**
@@ -25,30 +24,13 @@ import "./ITokenVotingSupport.sol";
  *    finishVoting()
  *    getBalanceAtVoting() 
 */
-contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotingSupport, DetailedERC20 {
+contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVotingSupport {
 	uint256 public cap;
 	bool isBurnable;
 	bool isPausable;
-	bool isVotingPeriod = false;
+
 	address[] public holders;
-
-	struct Voter {
-        uint256 balance;
-        uint lastUpdateTime;
-    }
-
-	struct Voting {
-	    mapping (address => Voter) voters;
-	    mapping (address => bool) isChanged;
-	    
-	    bool isVotingInProgress;
-	    uint votingStartTime;
-	}
-
-	mapping (uint => Voting) votings;
 	mapping (address => bool) isHolder;
-
-	event VotingCreated(address indexed _address, uint _votingID);
 
 	modifier isBurnable_() { 
 		require (isBurnable); 
@@ -59,6 +41,9 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 		require (isPausable);
 		_; 
 	}
+
+	event VotingStarted(address indexed _address, uint _votingID);
+	event VotingFinished(address indexed _address, uint _votingID);
 	
 	constructor(string _name, string _symbol, uint8 _decimals, bool _isBurnable, bool _isPausable, uint256 _cap) public
 		DetailedERC20(_name, _symbol, _decimals)
@@ -67,44 +52,30 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 		cap = _cap;
 		isBurnable = _isBurnable;
 		isPausable = _isPausable;
+
 		holders.push(this);
 	}
 
-	function startNewVoting() public returns(uint) {
-		for(uint i = 0; i < 20; i++){
-			if(!votings[i].isVotingInProgress){
-				votings[i].isVotingInProgress = true;
-				votings[i].votingStartTime = now;
-				emit VotingCreated(msg.sender, i);
-				return i;
-			}
-		}
-		revert(); //all slots busy at the moment
+// ITokenVotingSupport implementation
+	// TODO: VULNERABILITY! no onlyOwner!
+	function startNewVoting() public whenNotPaused returns(uint) {
+		uint idOut = super.startNewEvent();
+		emit VotingStarted(msg.sender, idOut);
+		return idOut;
 	}
 
-	function finishVoting(uint _votingID) public {
-		require (votings[_votingID].isVotingInProgress);
-		votings[_votingID].isVotingInProgress = false;
+	// TODO: VULNERABILITY! no onlyOwner!
+	function finishVoting(uint _votingID) whenNotPaused public {
+		super.finishEvent(_votingID);
+		emit VotingFinished(msg.sender, _votingID);
 	}
-	
+
+	function getBalanceAtVoting(uint _votingID, address _owner) public view returns (uint256) {
+		return super.getBalanceAtEventStart(_votingID, _owner);
+	}
+
+// 
 	function transfer(address _to, uint256 _value) public whenNotPaused returns (bool) {
-		require(_to != address(0));
-		require(_value <= balances[msg.sender]);
-
-		for(uint i = 0; i < 20; i++){
-			bool res = isNeedToUpdateBalancesMap(i, _to);
-			if(res){
-				votings[i].voters[_to].balance = balances[_to];
-				votings[i].isChanged[_to] = true;
-				votings[i].voters[_to].lastUpdateTime = now;
-			}
-			res = isNeedToUpdateBalancesMap(i, msg.sender);
-			if(res){
-				votings[i].voters[msg.sender].balance = balances[msg.sender];
-				votings[i].isChanged[msg.sender] = true;
-				votings[i].voters[msg.sender].lastUpdateTime = now;
-			}
-		}
 		if(!isHolder[_to]){
 			holders.push(_to);
 			isHolder[_to] = true;
@@ -113,39 +84,12 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 	}
 
 	function transferFrom(address _from, address _to, uint256 _value) public whenNotPaused returns (bool) {
-		require(_to != address(0));
-		require(_value <= balances[_from]);
-		require(_value <= allowed[_from][msg.sender]);
-
-		for(uint i = 0; i < 20; i++){
-			bool res = isNeedToUpdateBalancesMap(i, _to);
-			if(res){
-				votings[i].voters[_to].balance = balances[_to];
-				votings[i].isChanged[_to] = true;
-				votings[i].voters[_to].lastUpdateTime = now;
-			} 
-			res = isNeedToUpdateBalancesMap(i, _from); 
-			if(res){
-				votings[i].voters[_from].balance = balances[_from];
-				votings[i].isChanged[_from] = true;
-				votings[i].voters[_from].lastUpdateTime = now;
-			}
-		}
 		if(!isHolder[_to]){
 			holders.push(_to);
 			isHolder[_to] = true;
 		}
 		return super.transferFrom(_from, _to, _value);
 	}
-
-	function getBalanceAtVoting(uint _votingID, address _owner) public view returns (uint256) {
-		require(votings[_votingID].isVotingInProgress);
-		if(!votings[_votingID].isChanged[_owner]){
-			return balances[_owner];
-		}
-		return votings[_votingID].voters[_owner].balance;
-	}
-
 
 	function getVotingTotalForQuadraticVoting() public view returns(uint){
 		uint votersTotal = 0;
@@ -155,38 +99,30 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 		return votersTotal;
 	}
 	
-	function burnFor(address _who, uint256 _value) isBurnable_ onlyOwner public{
-
-		for(uint i = 0; i < 20; i++){
-			bool res = isNeedToUpdateBalancesMap(i, _who);
-			if(res){
-				votings[i].voters[_who].balance = balances[_who];
-				votings[i].isChanged[_who] = true;
-				votings[i].voters[_who].lastUpdateTime = now;
-			}
-		}
-		super._burn(_who, _value);
+// MintableToken override
+	// @dev do not call this method. Instead use mintFor()
+	function mint(address _to, uint256 _amount) canMint onlyOwner public returns(bool){
+		revert();
 	}
 
-	// this is an override of MintableToken method with cap
 	function mintFor(address _to, uint256 _amount) canMint onlyOwner public returns(bool){
-
 		require(totalSupply_.add(_amount) <= cap);
 
-		for(uint i = 0; i < 20; i++){
-			bool res = isNeedToUpdateBalancesMap(i, _to);
-			if(res){
-				votings[i].voters[_to].balance = balances[_to];
-				votings[i].isChanged[_to] = true;
-				votings[i].voters[_to].lastUpdateTime = now;
-			}
-		}
 		if(!isHolder[_to]){
 			holders.push(_to);
 			isHolder[_to] = true;
 		}
 		return super.mint(_to, _amount);
+	}
 
+// BurnableToken override
+	// @dev do not call this method. Instead use burnFor()
+   function burn(uint256 _value) public {
+		revert();
+   }
+
+	function burnFor(address _who, uint256 _value) isBurnable_ onlyOwner public{
+		super._burn(_who, _value);
 	}
 
 	// this is an override of PausableToken method
@@ -207,10 +143,4 @@ contract StdDaoToken is MintableToken, BurnableToken, PausableToken, ITokenVotin
 			z = (x / z + z) / 2;
 		}
 	}
-
-	function isNeedToUpdateBalancesMap(uint _votingID, address _to) internal returns(bool) {
-		return (votings[_votingID].isVotingInProgress && !votings[_votingID].isChanged[_to]) || (votings[_votingID].isVotingInProgress && votings[_votingID].isChanged[_to] && votings[_votingID].voters[_to].lastUpdateTime<votings[_votingID].votingStartTime);
-	}
-	
-
 }
