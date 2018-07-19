@@ -19,7 +19,8 @@ contract GenericCaller is DaoClient, Ownable {
 		NoVoting,
 		Voting1p1v,
 		VotingSimpleToken,
-		VotingQuadratic
+		VotingQuadratic,
+		VotingLiquid
 	}
 
 	struct VotingParams {
@@ -142,23 +143,4 @@ contract GenericCaller is DaoClient, Ownable {
 		}else{
 			revert();
 		}
-	}
-
-	// function bytes32ToString(bytes32 x)pure internal returns(string){
-	// 	bytes memory bytesString = new bytes(32);
-	// 	uint charCount = 0;
-	// 	for (uint j = 0; j < 32; j++) {
-	// 		byte char = byte(bytes32(uint(x) * 2 ** (8 * j)));
-	// 		if (char != 0) {
-	// 			bytesString[charCount] = char;
-	// 			charCount++;
-	// 		}
-	// 	}
-	// 	bytes memory bytesStringTrimmed = new bytes(charCount);
-	// 	for (j = 0; j < charCount; j++) {
-	// 		bytesStringTrimmed[j] = bytesString[j];
-	// 	}
-	// 	return string(bytesStringTrimmed);
-	// }
 }
-

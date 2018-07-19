@@ -1,6 +1,6 @@
-var increaseTimeTo = require('./utils/increaseTime');
-var latestTime = require('./utils/latestTime');
-var advanceBlock = require('./utils/advanceToBlock');
+var increaseTimeTo = require('../utils/increaseTime');
+var latestTime = require('../utils/latestTime');
+var advanceBlock = require('../utils/advanceToBlock');
 
 var WeiTask = artifacts.require("./WeiTask");
 var WeiBounty = artifacts.require("./WeiBounty");
@@ -921,5 +921,4 @@ contract('Tasks', (accounts) => {
 			assert.strictEqual(status.toNumber(), 8); //must be DeadlineMissed
 		});
 		});
-
 });

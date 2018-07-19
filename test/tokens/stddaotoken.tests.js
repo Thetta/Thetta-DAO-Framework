@@ -35,11 +35,6 @@ require('chai')
 				await this.token.mintFor(web3.eth.accounts[1], 1000).should.be.rejectedWith('revert');
 			});
 
-			it('should fail due to finishMinting() not owner call', async function () {
-				this.token = await StdDaoToken.new("StdToken","STDT",18, true, false, 100);
-				await this.token.finishMinting({from: web3.eth.accounts[1]}).should.be.rejectedWith('revert');
-			});
-
 			it('should fail due to finishMinting() call', async function () {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, true, false, 100);
 				await this.token.finishMinting();
@@ -49,32 +44,32 @@ require('chai')
 			it('should pass', async function () {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, true, false, ETH);
 				await this.token.mintFor(web3.eth.accounts[0], 1000);
-				this.token.balanceOf(web3.eth.accounts[0]).then(result => {
-					assert.equal(result.toNumber(), 1000);
-				});
+				let balance = await this.token.balanceOf(web3.eth.accounts[0]);
+				assert.equal(balance.toNumber(), 1000);
 			});
 		});
 
 		describe('isHolder()', function () {
-		     
-		it('should pass', async function () {
-			this.token = await StdDaoToken.new("StdToken","STDT",18, true, false, ETH);
-			await this.token.mintFor(web3.eth.accounts[0], 1000);
-			await this.token.mintFor(web3.eth.accounts[0], 1000);
-			this.token.balanceOf(web3.eth.accounts[0]).then(result => {
-				assert.equal(result.toNumber(), 2000);
+			it('should pass', async function () {
+				this.token = await StdDaoToken.new("StdToken","STDT",18, true, false, ETH);
+				await this.token.mintFor(web3.eth.accounts[0], 1000);
+				await this.token.mintFor(web3.eth.accounts[0], 1000);
+
+				let balance = await this.token.balanceOf(web3.eth.accounts[0]);
+				assert.equal(balance.toNumber(), 2000);
+
+				await this.token.transfer(web3.eth.accounts[1],100);
+				await this.token.transfer(web3.eth.accounts[1],100);
+
+				balance = await this.token.balanceOf(web3.eth.accounts[1]);
+				assert.equal(balance.toNumber(), 200);
+
+				let account1 = this.token.holders(1);
+				let account2 = this.token.holders(2);
+				assert.notEqual(account1, account2);
+				
+				this.token.holders(3).should.be.rejectedWith('invalid opcode');
 			});
-			await this.token.transfer(web3.eth.accounts[1],100);
-			await this.token.transfer(web3.eth.accounts[1],100);
-			this.token.balanceOf(web3.eth.accounts[1]).then(result => {
-				assert.equal(result.toNumber(), 200);
-			});
-			let account1 = this.token.holders(1);
-			let account2 = this.token.holders(2);
-			assert.notEqual(account1, account2);
-			
-			this.token.holders(3).should.be.rejectedWith('invalid opcode');
-		});
 		});
 
 		describe('burnFor()', function () {
@@ -97,9 +92,8 @@ require('chai')
 				this.token = await StdDaoToken.new("StdToken","STDT",18, true, false, ETH);
 				await this.token.mintFor(web3.eth.accounts[0], 1000);
 				await this.token.burnFor(web3.eth.accounts[0], 1000);
-				this.token.balanceOf(web3.eth.accounts[0]).then(result => {
-					assert.equal(result.toNumber(), 0);
-				});
+				let balance = await this.token.balanceOf(web3.eth.accounts[0]);
+				assert.equal(balance.toNumber(), 0);
 			});
 		});
 
@@ -125,6 +119,17 @@ require('chai')
 		});
 
 		describe('startNewVoting', function() {
+			it('should not be possible to call by non-owner',async() => {
+				// TODO:
+
+			});
+
+			it('should not be possible to call if paused',async() => {
+				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
+				await this.token.pause();
+				await this.token.startNewVoting().should.be.rejectedWith('revert');
+			});
+
 			it('should not allow to create > 20 separate votings',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
 
@@ -164,7 +169,7 @@ require('chai')
 				assert.equal(employee5Balance.toNumber(), 0);
 
 				const tx = await this.token.startNewVoting();
-				const events = tx.logs.filter(l => l.event == 'VotingCreated');
+				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
 				let employee4VotingBalance = await this.token.getBalanceAtVoting(votingID, employee4);
@@ -179,7 +184,7 @@ require('chai')
 				await this.token.mintFor(employee4, 1);
 
 				const tx = await this.token.startNewVoting();
-				const events = tx.logs.filter(l => l.event == 'VotingCreated');
+				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
 				await this.token.transfer(employee5, 1, {from: employee4});
@@ -202,7 +207,7 @@ require('chai')
 				await this.token.mintFor(employee4, 1);
 
 				const tx = await this.token.startNewVoting();
-				const events = tx.logs.filter(l => l.event == 'VotingCreated');
+				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
 				await this.token.burnFor(employee4, 1);
@@ -220,7 +225,7 @@ require('chai')
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
 
 				const tx = await this.token.startNewVoting();
-				const events = tx.logs.filter(l => l.event == 'VotingCreated');
+				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
 				await this.token.mintFor(employee4, 1);
@@ -239,7 +244,7 @@ require('chai')
 				await this.token.mintFor(employee4, 1);
 
 				const tx = await this.token.startNewVoting();
-				const events = tx.logs.filter(l => l.event == 'VotingCreated');
+				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
 				await this.token.transfer(employee5, 1, {from: employee4});
@@ -266,7 +271,7 @@ require('chai')
 				await this.token.mintFor(employee4, 1);
 
 				const tx = await this.token.startNewVoting();
-				const events = tx.logs.filter(l => l.event == 'VotingCreated');
+				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
 				await this.token.approve(employee3, 1, {from: employee4});
@@ -292,15 +297,42 @@ require('chai')
 				let balance1 = await this.token.getBalanceAtVoting(0, web3.eth.accounts[0]).should.be.rejectedWith('revert');
 			});
 
+			it('should work correctly even if new event is started',async() => {
+				// TODO: 
+				// 1 - create event 1
+				// 2 - transfer tokens 
+				// 3 - finish event 
+				// 4 - create event 2
+				// 5 - CHECK BALANCES
+				// 6 - transfer tokens 
+				// 7 - CHECK BALANCES 
+				// 8 - finish event 
+			});
 		});
 
 		describe('finishVoting()', function () {
+			it('should not be possible to call by non-owner',async() => {
+				// TODO:
+
+			});
+
+			it('should not be possible to call if paused',async() => {
+				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
+
+				const tx = await this.token.startNewVoting();
+				const events = tx.logs.filter(l => l.event == 'VotingStarted');
+				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
+				await this.token.pause();
+				await this.token.finishVoting(votingID).should.be.rejectedWith('revert');
+			});
+
 			it('should throw revert() if VotingID is wrong',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
 				await this.token.mintFor(employee4, 1);
 
 				const tx = await this.token.startNewVoting();
-				const events = tx.logs.filter(l => l.event == 'VotingCreated');
+				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
 				await this.token.transfer(employee5, 1, {from: employee4});
