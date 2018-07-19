@@ -8,22 +8,16 @@ import "./Voting_SimpleToken.sol";
 
 
 contract LiquidVoting is IDelegationTable, Voting_SimpleToken {
-	struct Delegator {
-		mapping (address => uint) tokensDelegatedForVotingFromAddress; // check delegated tokens from concret address (for deleting delegation)
-		mapping (address => bool) isDelegatedForFrom; // check if for account was delegated any from this address
-		mapping (address => bool) isDelegatorFor; // check if account delegate any for this address
-		uint delegatorsAmount; // amount of delegators which delegated any tokens for this address
-		uint delegatedForAmount; // amount of delegations which this address have done
-		uint tokensDelegatedForVoting; // tokens which was delegated for address
-		uint blockedTokensDelegatedForVoting; // tokens which account delegated for other addresses
-		bool isDelegatedFor; // true if someone delegated tokens for this account
-		bool isDelegator; // true if this account delegated any tokens for someone
+	struct Delegation {
+		address _address;
+		uint amount;
+		bool isDelegator;
 	}	
 
-	event DelegatedTo(address _sender, uint _blocked);
-	event DelegationRemoved(address _sender, uint _tokensAmount);
+	event DelegatedTo(address _sender, uint _tokensAmount);
+	event DelegationRemoved(address _from, address _to);
 
-	mapping (address => Delegator) delegations;
+	mapping (address => Delegation[]) delegations;
 	
 	constructor(IDaoBase _dao, IProposal _proposal, 
 		address _origin, uint _minutesToVote,
@@ -47,55 +41,83 @@ contract LiquidVoting is IDelegationTable, Voting_SimpleToken {
 	}
 	
 	function getPowerOf(address _who) public view returns(uint){
-		if(delegations[_who].isDelegator || delegations[_who].isDelegatedFor){
-			return stdDaoToken.getBalanceAtVoting(votingID, _who) - delegations[_who].blockedTokensDelegatedForVoting + delegations[_who].tokensDelegatedForVoting;
+		uint res = stdDaoToken.getBalanceAtVoting(votingID, _who);
+
+		for(uint i = 0; i < delegations[_who].length; i++){
+				if(!delegations[_who][i].isDelegator){
+					res += delegations[_who][i].amount;
+				}
+				if(delegations[_who][i].isDelegator){
+					res -= delegations[_who][i].amount;
+				}
 		}
 
-		return stdDaoToken.getBalanceAtVoting(votingID, _who);
+		return  res;
 	}
 
 	function getDelegatedPowerOf(address _of) public view returns(uint) {
-		return delegations[_of].tokensDelegatedForVoting;
+		uint res;
+
+		for(uint i = 0; i < delegations[_of].length; i++){
+				if(!delegations[_of][i].isDelegator){
+					res += delegations[_of][i].amount;
+				}
+		}
+
+		return res;
 	}
 
 	function getDelegatedPowerByMe(address _to) public view returns(uint) {
-		return delegations[_to].blockedTokensDelegatedForVoting;
+		uint res;
+
+		for(uint i = 0; i < delegations[msg.sender].length; i++){
+			if(delegations[msg.sender][i]._address == _to){
+				if(delegations[msg.sender][i].isDelegator){
+					res += delegations[msg.sender][i].amount;
+				}
+			}
+		}
+
+		return res;
 	}
 
 	function delegateMyVoiceTo(address _to, uint _tokenAmount) public {
 		require (_to!= address(0));
-		require (_tokenAmount >= stdDaoToken.balanceOf(msg.sender));
+		require (_tokenAmount <= stdDaoToken.getBalanceAtVoting(votingID, msg.sender));
 
-		delegations[_to].tokensDelegatedForVoting += _tokenAmount;
-		delegations[_to].tokensDelegatedForVotingFromAddress[msg.sender] += _tokenAmount;
-		delegations[_to].delegatorsAmount += 1;
-		delegations[_to].isDelegatedFor = true;
-		delegations[_to].isDelegatedForFrom[msg.sender] = true;
-		delegations[msg.sender].blockedTokensDelegatedForVoting += _tokenAmount;
-		emit DelegatedTo(msg.sender, _tokenAmount);
-		delegations[msg.sender].isDelegator = true;
-		delegations[msg.sender].isDelegatorFor[_to] = true;
-		delegations[msg.sender].delegatedForAmount += 1;
+		for(uint i = 0; i < delegations[_to].length; i++){
+			if(delegations[_to][i]._address == msg.sender){
+				delegations[_to][i].amount = _tokenAmount;
+			}
+		}
+
+		for(i = 0; i < delegations[msg.sender].length; i++){
+			if(delegations[msg.sender][i]._address == _to){
+				delegations[msg.sender][i].amount = _tokenAmount;
+				emit DelegatedTo(_to, _tokenAmount);
+				return;
+			}
+		}
+
+		delegations[_to].push(Delegation(msg.sender, _tokenAmount, false));
+		delegations[msg.sender].push(Delegation(_to, _tokenAmount, true));
 	}
 
 	function removeDelegation(address _to) public {
 		require (_to!= address(0));
-		require (delegations[_to].isDelegatedForFrom[msg.sender]);
-		require (delegations[msg.sender].isDelegatorFor[_to]);
 
-		delegations[_to].tokensDelegatedForVoting -= delegations[_to].tokensDelegatedForVotingFromAddress[msg.sender];
-		delegations[msg.sender].blockedTokensDelegatedForVoting -= delegations[_to].tokensDelegatedForVotingFromAddress[msg.sender];
-		emit DelegationRemoved(_to, delegations[_to].tokensDelegatedForVotingFromAddress[msg.sender]);
-		delegations[_to].tokensDelegatedForVotingFromAddress[msg.sender] = 0;
-		delegations[_to].isDelegatedForFrom[msg.sender] = false;
-		delegations[msg.sender].isDelegatorFor[_to] = false;
-		delegations[_to].delegatorsAmount -= 1;
-		delegations[msg.sender].delegatedForAmount -= 1;
-		if(delegations[_to].delegatorsAmount == 0){
-			delegations[_to].isDelegatedFor = false;
+		for(uint i = 0; i < delegations[_to].length; i++){
+			if(delegations[_to][i]._address == msg.sender){
+				delegations[_to][i].amount = 0;
+			}
 		}
-		if(delegations[msg.sender].delegatedForAmount == 0){
-			delegations[_to].isDelegator = false;
+
+		for(i = 0; i < delegations[msg.sender].length; i++){
+			if(delegations[msg.sender][i]._address == _to){
+				delegations[msg.sender][i].amount = 0;
+			}
 		}
+
+		emit DelegationRemoved(msg.sender, _to);
 	}
 }

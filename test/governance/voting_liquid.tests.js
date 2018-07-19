@@ -25,6 +25,7 @@ require('chai')
 contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 	const creator   = accounts[0];
 	const employee1 = accounts[1];
+	const employee2 = accounts[2];
 
 	let r2;
 	let token;
@@ -37,6 +38,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
 		await token.mintFor(creator, 1);
 		await token.mintFor(employee1, 1);
+		await token.mintFor(employee2, 2);
 
 		let store = await DaoStorage.new([token.address],{ from: creator });
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
@@ -116,19 +118,36 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 			assert.equal(r2.toNumber(),0,'yes');
 			r2 = await voting.getPowerOf(employee1);
 			assert.equal(r2.toNumber(),2,'yes');
-			r2 = await voting.getDelegatedPowerByMe(creator);
+			r2 = await voting.getDelegatedPowerByMe(employee1);
 			assert.equal(r2.toNumber(),1,'yes');
 		});
 	});
 
 	describe('delegateMyVoiceTo()', function () {
-		it('Check delegateMyVoiceTo()',async() => {
+		it('Should delegate from A to B',async() => {
 			const voting = await LiquidVoting.new(daoBase.address, creator, creator, 0, 100, 100, token.address, false);
 
 			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),0);
 
 			await voting.delegateMyVoiceTo(creator, 1, {from: employee1});
+
+			r2 = await voting.getDelegatedPowerOf(creator);
+			assert.equal(r2.toNumber(),1);
+		});
+
+		it('Should delegate from A to B then from A to B again with the same amount',async() => {
+			const voting = await LiquidVoting.new(daoBase.address, creator, creator, 0, 100, 100, token.address, false);
+
+			r2 = await voting.getDelegatedPowerOf(creator);
+			assert.equal(r2.toNumber(),0);
+
+			await voting.delegateMyVoiceTo(creator, 1, {from: employee2});
+
+			r2 = await voting.getDelegatedPowerOf(creator);
+			assert.equal(r2.toNumber(),1);
+
+			await voting.delegateMyVoiceTo(creator, 1, {from: employee2});
 
 			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),1);
