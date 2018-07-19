@@ -1,5 +1,9 @@
 var ether = require('./utils/ether');
-var ethGetBalance = require('./utils/web3');
+var abi = require('./utils/TokenABI');
+
+const pify = require('pify');
+const ethAsync = pify(web3.eth);
+const ethGetBalance = ethAsync.getBalance;
 
 const BigNumber = web3.BigNumber;
 
@@ -8,23 +12,25 @@ const should = require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-const Crowdsale = artifacts.require('Crowdsale');
+const Crowdsale = artifacts.require('SimpleICOWithOwnTokens');
 
 
-contract('Crowdsale', function ([_, investor, wallet, purchaser]) {
+contract('SimpleICOWithOwnTokens', function ([_, investor, wallet, purchaser]) {
   const rate = new BigNumber(1);
-  const value = ether(42);
+  const value = ether(5);
   const tokenSupply = new BigNumber('1e22');
   const expectedTokenAmount = rate.mul(value);
 
   beforeEach(async function () {
-    this.crowdsale = await Crowdsale.new(rate, wallet, "Test", "tst", 18, 10000000000);
+    this.crowdsale = await Crowdsale.new(rate, wallet, "Test", "tst", 18, 10e25);
+    let address = await this.crowdsale.token();
+    this.token = await web3.eth.contract(abi).at(address);
   });
 
   describe('accepting payments', function () {
     it('should accept payments', async function () {
-      await this.crowdsale.send(value).should.be.fulfilled;
-      await this.crowdsale.buyTokens(investor, { value: value, from: purchaser }).should.be.fulfilled;
+      await this.crowdsale.send(value);
+      await this.crowdsale.buyTokens(investor, { value: value, from: purchaser });
     });
   });
 
@@ -46,9 +52,9 @@ contract('Crowdsale', function ([_, investor, wallet, purchaser]) {
     });
 
     it('should forward funds to wallet', async function () {
-      const pre = await ethGetBalance.ethGetBalance(wallet);
+      const pre = await ethGetBalance(wallet);
       await this.crowdsale.sendTransaction({ value, from: investor });
-      const post = await ethGetBalance.ethGetBalance(wallet);
+      const post = await ethGetBalance(wallet);
       post.minus(pre).should.be.bignumber.equal(value);
     });
   });
@@ -71,9 +77,9 @@ contract('Crowdsale', function ([_, investor, wallet, purchaser]) {
     });
 
     it('should forward funds to wallet', async function () {
-      const pre = await ethGetBalance.ethGetBalance(wallet);
+      const pre = await ethGetBalance(wallet);
       await this.crowdsale.buyTokens(investor, { value, from: purchaser });
-      const post = await ethGetBalance.ethGetBalance(wallet);
+      const post = await ethGetBalance(wallet);
       post.minus(pre).should.be.bignumber.equal(value);
     });
   });

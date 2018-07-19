@@ -1,26 +1,11 @@
 pragma solidity ^0.4.23;
 
-import "zeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "zeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 
 
-contract Token is StandardToken {
-  string public name;
-  string public symbol;
-  uint8 public decimals;
-
-  constructor(string _name, string _symbol, uint8 _decimals, uint _totalSupply) public {
-    name = _name;
-    symbol = _symbol;
-    decimals = _decimals;
-    totalSupply_ = _totalSupply;
-    balances[msg.sender] = _totalSupply;
-  }
-}
-
-contract SimpleICOWithOwnTokens {
+contract SimpleICO {
   using SafeMath for uint256;
   using SafeERC20 for ERC20;
 
@@ -57,13 +42,13 @@ contract SimpleICOWithOwnTokens {
    * @param _rate Number of token units a buyer gets per wei
    * @param _wallet Address where collected funds will be forwarded to
    */
-  constructor(uint256 _rate, address _wallet, string _name, string _symbol, uint8 _decimals, uint _totalSupply) public {
+  constructor(uint256 _rate, address _wallet, address _tokenAddress) public {
     require(_rate > 0);
     require(_wallet != address(0));
 
     rate = _rate;
     wallet = _wallet;
-    token = new Token(_name, _symbol, _decimals, _totalSupply);
+    token = ERC20(_tokenAddress);
   }
 
   // -----------------------------------------
