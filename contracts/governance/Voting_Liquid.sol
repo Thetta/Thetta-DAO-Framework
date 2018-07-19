@@ -91,9 +91,9 @@ contract LiquidVoting is IDelegationTable, Voting_SimpleToken {
 			}
 		}
 
-		for(uint j = 0; j < delegations[msg.sender].length; j++){
-			if(delegations[msg.sender][j]._address == _to){
-				delegations[msg.sender][j].amount = _tokenAmount;
+		for(i = 0; i < delegations[msg.sender].length; i++){
+			if(delegations[msg.sender][i]._address == _to){
+				delegations[msg.sender][i].amount = _tokenAmount;
 				emit DelegatedTo(_to, _tokenAmount);
 				return;
 			}
@@ -101,7 +101,6 @@ contract LiquidVoting is IDelegationTable, Voting_SimpleToken {
 
 		delegations[_to].push(Delegation(msg.sender, _tokenAmount, false));
 		delegations[msg.sender].push(Delegation(_to, _tokenAmount, true));
-
 	}
 
 	function removeDelegation(address _to) public {
@@ -113,13 +112,12 @@ contract LiquidVoting is IDelegationTable, Voting_SimpleToken {
 			}
 		}
 
-		for(uint j = 0; j < delegations[msg.sender].length; j++){
-			if(delegations[msg.sender][j]._address == _to){
-				delegations[msg.sender][j].amount = 0;
+		for(i = 0; i < delegations[msg.sender].length; i++){
+			if(delegations[msg.sender][i]._address == _to){
+				delegations[msg.sender][i].amount = 0;
 			}
 		}
 
 		emit DelegationRemoved(msg.sender, _to);
-		
 	}
 }

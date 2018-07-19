@@ -151,7 +151,6 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 
 			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),1);
-
 		});
 	});
 
