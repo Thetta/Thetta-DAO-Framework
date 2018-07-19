@@ -12,7 +12,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  * @title Voting_SimpleToken 
  * @dev This is the implementation of IVoting interface. Each Proposal should have voting attached. 
  * If group members change -> it will not work
-*/
+*
 contract Voting_SimpleToken is IVoting, Ownable {
 	// use DaoClient instead?
 	// (it will handle upgrades)
@@ -50,7 +50,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 	 * @param _quorumPercent - percent of group members to make quorum reached. If minutesToVote==0 and quorum reached -> voting is finished
 	 * @param _consensusPercent - percent of voters (not of group members!) to make consensus reached. If consensus reached -> voting is finished with YES result
 	 * @param _tokenAddress - address of token what uses for voting
-	*/
+	*
 
 	constructor(IDaoBase _dao, IProposal _proposal, 
 		address _origin, uint _minutesToVote,
@@ -189,3 +189,4 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		}
 	}
 }
+*/

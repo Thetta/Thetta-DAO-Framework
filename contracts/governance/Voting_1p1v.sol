@@ -12,7 +12,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  * @dev This is the implementation of IVoting interface. Each Proposal should have voting attached. 
  * If group members change -> it will not work
 */
-contract Voting_1p1v is IVoting, Ownable {
+/*contract Voting_1p1v is IVoting, Ownable {
 	// use DaoClient instead?
 	// (it will handle upgrades)
 	IDaoBase dao;
@@ -32,7 +32,7 @@ contract Voting_1p1v is IVoting, Ownable {
 	event  Voting1p1v_Vote(address _who, bool _yes);
 	event  Voting1p1v_CallAction();
 
-	/**
+	
 	 * TODO: 
 	 * @param _dao – DAO where proposal was created.
 	 * @param _proposal – proposal, which create vote.
@@ -41,7 +41,7 @@ contract Voting_1p1v is IVoting, Ownable {
 	 * @param _groupName - members of which group can vote.
 	 * @param _quorumPercent - percent of group members to make quorum reached. If minutesToVote==0 and quorum reached -> voting is finished
 	 * @param _consensusPercent - percent of voters (not of group members!) to make consensus reached. If consensus reached -> voting is finished with YES result
-	*/
+	
 
 	constructor(IDaoBase _dao, IProposal _proposal, 
 		address _origin, uint _minutesToVote, string _groupName, 
@@ -168,3 +168,4 @@ contract Voting_1p1v is IVoting, Ownable {
 	}
 
 }
+*/

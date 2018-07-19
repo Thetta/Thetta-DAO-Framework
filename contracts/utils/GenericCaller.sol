@@ -2,8 +2,9 @@ pragma solidity ^0.4.22;
 
 import "../IDaoBase.sol";
 
-import "../governance/Voting_1p1v.sol";
-import "../governance/Voting_SimpleToken.sol";
+import "../governance/Voting.sol";
+// import "../governance/Voting_1p1v.sol";
+// import "../governance/Voting_SimpleToken.sol";
 import "../governance/Proposals.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -16,7 +17,6 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 contract GenericCaller is DaoClient, Ownable {
 	enum VotingType {
 		NoVoting,
-
 		Voting1p1v,
 		VotingSimpleToken,
 		VotingQuadratic
@@ -24,11 +24,13 @@ contract GenericCaller is DaoClient, Ownable {
 
 	struct VotingParams {
 		VotingType votingType;
-		bytes32 param1;
-		bytes32 param2;
-		bytes32 param3;
-		bytes32 param4;
-		bytes32 param5;
+		uint minutesToVote;
+		uint quorumPercent;
+		uint consensusPercent;
+		uint[] paramUints;
+		address[] paramAddresses;
+		bool[] paramBools; 
+		string paramString;
 	}
 
 	mapping (bytes32=>VotingParams) votingParams;
@@ -91,15 +93,20 @@ contract GenericCaller is DaoClient, Ownable {
 	}
 
 	function setVotingParams(bytes32 _permissionIdHash, uint _votingType, 
-		bytes32 _param1, bytes32 _param2, 
-		bytes32 _param3, bytes32 _param4, bytes32 _param5) public onlyOwner {
+		uint _minutesToVote,
+		uint _quorumPercent, uint _consensusPercent, 
+		uint[] _paramUints, address[] _paramAddresses, 
+		bool[] _paramBools, string _paramString) public onlyOwner
+	{
 		VotingParams memory params;
-		params.votingType = VotingType(_votingType);
-		params.param1 = _param1;
-		params.param2 = _param2;
-		params.param3 = _param3;
-		params.param4 = _param4;
-		params.param5 = _param5;
+		params.votingType = VotingType(_votingType);	
+		params.minutesToVote = _minutesToVote;
+		params.quorumPercent = _quorumPercent;
+		params.consensusPercent = _consensusPercent;
+		params.paramUints = _paramUints;
+		params.paramAddresses = _paramAddresses;
+		params.paramBools = _paramBools;
+		params.paramString = _paramString;
 
 		votingParams[_permissionIdHash] = params;
 	}
@@ -108,53 +115,50 @@ contract GenericCaller is DaoClient, Ownable {
 		VotingParams memory vp = votingParams[_permissionIdHash];
 
 		if(VotingType.Voting1p1v==vp.votingType){
-			return new Voting_1p1v(dao, _proposal, _origin, 
-				uint(vp.param1), 
-				bytes32ToString(vp.param2), 
-				uint(vp.param3), 
-				uint(vp.param4));
+			return new Voting_1p1v(dao, _proposal, _origin,
+				vp.minutesToVote,
+				vp.quorumPercent,
+				vp.consensusPercent,
+				vp.paramString
+			);
+
+		}else if(VotingType.VotingSimpleToken==vp.votingType){
+			return new Voting_SimpleToken(dao, _proposal, _origin,
+				vp.minutesToVote,
+				vp.quorumPercent,
+				vp.consensusPercent,
+				vp.paramAddresses[0],
+				vp.paramUints[0]
+			);
+
+		}else if(VotingType.VotingQuadratic==vp.votingType){
+			return new Voting_Quadratic(dao, _proposal, _origin,
+				vp.minutesToVote,
+				vp.quorumPercent,
+				vp.consensusPercent,
+				vp.paramAddresses[0],
+				vp.paramUints[0]
+			);
+		}else{
+			revert();
 		}
-
-		if(VotingType.VotingSimpleToken==vp.votingType){
-			return new Voting_SimpleToken(dao, _proposal, _origin, 
-				uint(vp.param1), 
-				uint(vp.param3), 
-				uint(vp.param4), 
-				address(vp.param5),
-				false);
-		}
-
-		if(VotingType.VotingQuadratic==vp.votingType){
-			return new Voting_SimpleToken(dao, _proposal, _origin, 
-				uint(vp.param1), 
-				uint(vp.param3), 
-				uint(vp.param4), 
-				address(vp.param5),
-				true);
-		}
-
-
-		// TODO: add other implementations
-		// no implementation for this type!
-		assert(false==true);
-		return IVoting(0x0);
 	}
 
-	function bytes32ToString(bytes32 x)pure internal returns(string){
-		bytes memory bytesString = new bytes(32);
-		uint charCount = 0;
-		for (uint j = 0; j < 32; j++) {
-			byte char = byte(bytes32(uint(x) * 2 ** (8 * j)));
-			if (char != 0) {
-				bytesString[charCount] = char;
-				charCount++;
-			}
-		}
-		bytes memory bytesStringTrimmed = new bytes(charCount);
-		for (j = 0; j < charCount; j++) {
-			bytesStringTrimmed[j] = bytesString[j];
-		}
-		return string(bytesStringTrimmed);
-	}
+	// function bytes32ToString(bytes32 x)pure internal returns(string){
+	// 	bytes memory bytesString = new bytes(32);
+	// 	uint charCount = 0;
+	// 	for (uint j = 0; j < 32; j++) {
+	// 		byte char = byte(bytes32(uint(x) * 2 ** (8 * j)));
+	// 		if (char != 0) {
+	// 			bytesString[charCount] = char;
+	// 			charCount++;
+	// 		}
+	// 	}
+	// 	bytes memory bytesStringTrimmed = new bytes(charCount);
+	// 	for (j = 0; j < charCount; j++) {
+	// 		bytesStringTrimmed[j] = bytesString[j];
+	// 	}
+	// 	return string(bytesStringTrimmed);
+	// }
 }
 

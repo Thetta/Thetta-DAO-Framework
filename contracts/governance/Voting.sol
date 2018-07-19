@@ -11,7 +11,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  * @dev This is the implementation of IVoting interface. Each Proposal should have voting attached. 
  * If group members change -> it will not work
 */
-contract Voting is IVoting, Ownable {
+contract Voting is IVoting, Ownable {//
 	IDaoBase dao;
 	IProposal proposal; 
 
@@ -21,11 +21,11 @@ contract Voting is IVoting, Ownable {
 	uint64 genesis;
 	uint public quorumPercent;
 	uint public consensusPercent;
-	string public groupName;
 
-	uint[] paramUints;
-	address[] paramAddresses;
-	bool[] paramBools;
+	// uint[] paramUints;
+	// address[] paramAddresses;
+	// bool[] paramBools;
+	// string paramString;
 
 	struct Vote{
 		address voter;
@@ -45,25 +45,23 @@ contract Voting is IVoting, Ownable {
 	 * @param _proposal – proposal, which create vote.
 	 * @param _origin – who create voting (group member).
 	 * @param _minutesToVote - if is zero -> voting until quorum reached, else voting finish after minutesToVote minutes
-	 * @param _groupName - members of which group can vote.
 	 * @param _quorumPercent - percent of group members to make quorum reached. If minutesToVote==0 and quorum reached -> voting is finished
 	 * @param _consensusPercent - percent of voters (not of group members!) to make consensus reached. If consensus reached -> voting is finished with YES result
-	 * @param _paramUints - custom params
-	 * @param _paramAddresses - custom params
-	 * @param _paramBools - custom params
 	*/
 	constructor(IDaoBase _dao, IProposal _proposal, 
-		address _origin, uint _minutesToVote, string _groupName, 
-		uint _quorumPercent, uint _consensusPercent, 
-		uint[] _paramUints, address[] _paramAddresses, bool[] _paramBools) public 
+		address _origin, uint _minutesToVote,
+		uint _quorumPercent, uint _consensusPercent
+		// uint[] _paramUints, address[] _paramAddresses, 
+		// bool[] _paramBools, string _paramString
+		) public 
 	{
-		_generalConstructor(_dao,  _proposal, _origin,  _minutesToVote,  _groupName, _quorumPercent,  _consensusPercent);
-		_customConstructor(_paramUints, _paramAddresses, _paramBools);
+		_generalConstructor(_dao,  _proposal, _origin,  _minutesToVote, _quorumPercent,  _consensusPercent);
+		// _customConstructor(_paramUints, _paramAddresses, _paramBools, _paramString);
 		_vote(_origin, true);
 	}
 
 	function _generalConstructor(IDaoBase _dao, IProposal _proposal, 
-		address _origin, uint _minutesToVote, string _groupName, 
+		address _origin, uint _minutesToVote,
 		uint _quorumPercent, uint _consensusPercent) internal
 	{
 		require((_quorumPercent<=100)&&(_quorumPercent>0));
@@ -72,24 +70,27 @@ contract Voting is IVoting, Ownable {
 		dao = _dao;
 		proposal = _proposal;
 		minutesToVote = _minutesToVote;
-		groupName = _groupName;
 		quorumPercent = _quorumPercent;
 		consensusPercent = _consensusPercent;
 		genesis = uint64(now);		
 	}
 
-	function _customConstructor(uint[] _paramUints, address[] _paramAddresses, bool[] _paramBools) internal{
-		paramUints = _paramUints;
-		paramAddresses = _paramAddresses;
-		paramBools = _paramBools;
-	}
+	// function _customConstructor(uint[] _paramUints, address[] _paramAddresses, bool[] _paramBools, string _paramString) internal{
+	// 	paramUints = _paramUints;
+	// 	paramAddresses = _paramAddresses;
+	// 	paramBools = _paramBools;
+	// 	paramString = _paramString;
+	// }
 
 	function getVoterPower(address _voter) view returns(uint){
-		return 1;
+		return 0;
 	}
 
+	function getVotersTotal() view returns(uint){
+		return 0;
+	}	
+
 	function vote(bool _isYes) public {
-		require(dao.isGroupMember(groupName, msg.sender));
 		require(!isFinished());
 		require(!voted[msg.sender]);
 		_vote(msg.sender, _isYes);
@@ -166,15 +167,14 @@ contract Voting is IVoting, Ownable {
 
 	function getVotingStats() public constant returns(uint yesResults, uint noResults, uint votersTotal){
 		for(uint i=0; i<votesCount; ++i){
-			if(dao.isGroupMember(groupName,votes[i].voter)){
-				if(votes[i].isYes){
-					yesResults+= getVoterPower(votes[i].voter);
-				}else{
-					noResults+= getVoterPower(votes[i].voter);
-				}		
+			if(votes[i].isYes){
+				yesResults+= getVoterPower(votes[i].voter);
+			}else{
+				noResults+= getVoterPower(votes[i].voter);
 			}
+			
 		}
-		votersTotal = dao.getMembersCount(groupName);
+		votersTotal = getVotersTotal();
 		
 		return;
 	}
@@ -188,24 +188,69 @@ contract Voting is IVoting, Ownable {
 // --------------------- IMPLEMENTATIONS ---------------------
 
 contract Voting_1p1v is Voting {
-	function getVoterPower(address _voter) view returns(uint){ // SAME as in Voting
+	string groupName;
+	constructor(IDaoBase _dao, IProposal _proposal, 
+		address _origin, uint _minutesToVote,
+		uint _quorumPercent, uint _consensusPercent, 
+		string _groupName) public 
+	Voting(_dao, _proposal, _origin, _minutesToVote, _quorumPercent, _consensusPercent)
+	{
+		_generalConstructor(_dao,  _proposal, _origin,  _minutesToVote, _quorumPercent,  _consensusPercent);
+		groupName = _groupName;
+		_vote(_origin, true);
+	}
+
+	function getVotersTotal() view returns(uint){
+		return dao.getMembersCount(groupName);
+	}
+
+	function getVoterPower(address _voter) view returns(uint){
+		require(dao.isGroupMember(groupName, _voter));
 		return 1;
 	}
 }
 
 contract Voting_SimpleToken is Voting {
+	address tokenAddress;
+	uint votingID;
+	constructor(IDaoBase _dao, IProposal _proposal, 
+		address _origin, uint _minutesToVote,
+		uint _quorumPercent, uint _consensusPercent, 
+		address _tokenAddress, uint _votingID) public 
+	Voting(_dao, _proposal, _origin, _minutesToVote, _quorumPercent, _consensusPercent)
+	{
+		_generalConstructor(_dao,  _proposal, _origin,  _minutesToVote, _quorumPercent,  _consensusPercent);
+		_vote(_origin, true);
+	}
+
+	function getVotersTotal() view returns(uint){
+		return StdDaoToken(tokenAddress).totalSupply();
+	}
+
 	function getVoterPower(address _voter) view returns(uint){
-		uint votingID = paramUints[0];
-		address tokenAddress = paramAddresses[0];
 		uint tokenAmount = StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter);
 		return tokenAmount;
 	}
 }
 
-contract Voting_TokenQuadratic is Voting {
+contract Voting_Quadratic is Voting {
+	address tokenAddress;
+	uint votingID;	
+	constructor(IDaoBase _dao, IProposal _proposal, 
+		address _origin, uint _minutesToVote,
+		uint _quorumPercent, uint _consensusPercent, 
+		address _tokenAddress, uint _votingID) public 
+	Voting(_dao, _proposal, _origin, _minutesToVote, _quorumPercent, _consensusPercent)
+	{
+		_generalConstructor(_dao,  _proposal, _origin,  _minutesToVote, _quorumPercent,  _consensusPercent);
+		_vote(_origin, true);
+	}
+
+	function getVotersTotal() view returns(uint){
+		return StdDaoToken(tokenAddress).getVotingTotalForQuadraticVoting();
+	}
+
 	function getVoterPower(address _voter) view returns(uint){
-		uint votingID = paramUints[0];
-		address tokenAddress = paramAddresses[0];
 		uint tokenAmount = StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter);
 		return sqrt(tokenAmount);
 	}
