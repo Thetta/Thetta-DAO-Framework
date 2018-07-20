@@ -77,7 +77,7 @@ contract('Multiple Votings', (accounts) => {
 			assert.equal(r2.toNumber(),1,'yes');
 
 			r2 = await qudraticVoting.getPowerOf(employee2);
-			assert.equal(r2.toNumber(),2,'yes');
+			assert.equal(r2.toNumber(),1,'yes');
 
 			token.transfer(creator, 1, {from: employee2});
 			token.transfer(employee2, 1, {from: employee1});
@@ -107,7 +107,7 @@ contract('Multiple Votings', (accounts) => {
 			assert.equal(r2.toNumber(),1,'yes');
 
 			r2 = await qudraticVoting.getPowerOf(employee2);
-			assert.equal(r2.toNumber(),2,'yes');
+			assert.equal(r2.toNumber(),1,'yes');
 		});
 	});
 });
