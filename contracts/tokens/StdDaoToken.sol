@@ -32,6 +32,9 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 	address[] public holders;
 	mapping (address => bool) isHolder;
 
+	mapping (uint => address) votingOwners;
+	
+
 	modifier isBurnable_() { 
 		require (isBurnable); 
 		_; 
@@ -59,15 +62,26 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 // ITokenVotingSupport implementation
 	// TODO: VULNERABILITY! no onlyOwner!
 	function startNewVoting() public whenNotPaused returns(uint) {
+		require (isContract(msg.sender));
+		
 		uint idOut = super.startNewEvent();
+		votingOwners[idOut] = msg.sender;
 		emit VotingStarted(msg.sender, idOut);
 		return idOut;
 	}
 
 	// TODO: VULNERABILITY! no onlyOwner!
 	function finishVoting(uint _votingID) whenNotPaused public {
+		require (votingOwners[_votingID] == msg.sender);
+		
 		super.finishEvent(_votingID);
 		emit VotingFinished(msg.sender, _votingID);
+	}
+
+	function isContract(address addr) returns (bool) {
+		uint size;
+		assembly { size := extcodesize(addr) }
+		return size > 0;
 	}
 
 	function getBalanceAtVoting(uint _votingID, address _owner) public view returns (uint256) {

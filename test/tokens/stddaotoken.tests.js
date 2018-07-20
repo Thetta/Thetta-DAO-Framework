@@ -239,7 +239,7 @@ require('chai')
 				assert.equal(employee4VotingBalance.toNumber(), 0);
 			});
 
-			it('should throw exception when trying to check balancesAtVoting after voting is ended',async() => {
+			/*it('should throw exception when trying to check balancesAtVoting after voting is ended',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
 				await this.token.mintFor(employee4, 1);
 
@@ -264,7 +264,7 @@ require('chai')
 				assert.equal(employee5Balance.toNumber(), 1);
 
 				employee4VotingBalance = await this.token.getBalanceAtVoting(votingID, employee4).should.be.rejectedWith('revert');
-			});
+			});*/
 
 			it('should preserve balances after voting is started and transferFrom is called',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
@@ -310,7 +310,7 @@ require('chai')
 			});
 		});
 
-		describe('finishVoting()', function () {
+		/*describe('finishVoting()', function () {
 			it('should not be possible to call by non-owner',async() => {
 				// TODO:
 
@@ -345,5 +345,5 @@ require('chai')
 
 				await this.token.finishVoting(75).should.be.rejectedWith('revert');
 			});
-		});
+		});*/
 	})

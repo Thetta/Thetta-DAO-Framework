@@ -125,6 +125,11 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		// TODO:
 	}
 
+	function finishVoting() public onlyOwner {
+		stdDaoToken.finishVoting(votingID);
+	}
+	
+
 	function vote(bool _yes, uint _tokenAmount) public {
 		require(!isFinished());
 		require(0==_tokenAmount);
