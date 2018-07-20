@@ -202,6 +202,39 @@ require('chai')
 				assert.equal(employee5VotingBalance.toNumber(), 0);
 			});
 
+			it('should preserve balances in 2 different votings',async() => {
+				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
+				await this.token.mintFor(employee4, 1);
+
+				let tx = await this.token.startNewVoting();
+				let events = tx.logs.filter(l => l.event == 'VotingStarted');
+				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
+				await this.token.transfer(employee5, 1, {from: employee4});
+
+				tx = await this.token.startNewVoting();
+				events = tx.logs.filter(l => l.event == 'VotingStarted');
+				const secondVotingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
+				employee4Balance = await this.token.balanceOf(employee4);
+				employee5Balance = await this.token.balanceOf(employee5);
+
+				employee4VotingBalance = await this.token.getBalanceAtVoting(votingID, employee4);
+				employee5VotingBalance = await this.token.getBalanceAtVoting(votingID, employee5);
+
+				let employee4SecondVotingBalance = await this.token.getBalanceAtVoting(secondVotingID, employee4);
+				let employee5SecondVotingBalance = await this.token.getBalanceAtVoting(secondVotingID, employee5);
+
+				assert.equal(employee4Balance.toNumber(), 0);
+				assert.equal(employee5Balance.toNumber(), 1);
+
+				assert.equal(employee4VotingBalance.toNumber(), 1);
+				assert.equal(employee5VotingBalance.toNumber(), 0);
+
+				assert.equal(employee4SecondVotingBalance.toNumber(), 0);
+				assert.equal(employee5SecondVotingBalance.toNumber(), 1);
+			});
+
 			it('should preserve balances after voting is started and burnFor called',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, true, true, ETH);
 				await this.token.mintFor(employee4, 1);
