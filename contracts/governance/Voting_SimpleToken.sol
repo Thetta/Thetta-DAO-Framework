@@ -156,6 +156,9 @@ contract Voting_SimpleToken is IVoting, Ownable {
 	}
 
 	function getPowerOf(address _who) view public returns(uint) {
+		if(isQuadraticVoting){
+			return sqrt(stdDaoToken.getBalanceAtVoting(votingID, _who));
+		}
 		return stdDaoToken.getBalanceAtVoting(votingID, _who);
 	}
 	
