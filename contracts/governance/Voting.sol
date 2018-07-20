@@ -6,12 +6,7 @@ import './IProposal.sol';
 import '../tokens/StdDaoToken.sol';
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-/**
- * @title Voting_1p1v 
- * @dev This is the implementation of IVoting interface. Each Proposal should have voting attached. 
- * If group members change -> it will not work
-*/
-contract Voting is IVoting, Ownable {//
+contract Voting is IVoting, Ownable {
 	IDaoBase dao;
 	IProposal proposal; 
 
@@ -22,10 +17,9 @@ contract Voting is IVoting, Ownable {//
 	uint public quorumPercent;
 	uint public consensusPercent;
 
-	// uint[] paramUints;
-	// address[] paramAddresses;
-	// bool[] paramBools;
-	// string paramString;
+	address tokenAddress;
+	uint votingID;	
+	string groupName;
 
 	struct Vote{
 		address voter;
@@ -36,33 +30,34 @@ contract Voting is IVoting, Ownable {//
 	mapping(uint=>Vote) votes;
 
 	uint votesCount = 0;
+	VotingType votingType;
 
 	event Voted(address _who, bool _yes);
 	event CallAction();
 
-	/**
+	enum VotingType{
+		Membership,
+		Token_Simple,
+		Token_Quadratic,
+		Token_Liquid
+	}
+
+	/*
 	 * @param _dao – DAO where proposal was created.
 	 * @param _proposal – proposal, which create vote.
 	 * @param _origin – who create voting (group member).
 	 * @param _minutesToVote - if is zero -> voting until quorum reached, else voting finish after minutesToVote minutes
 	 * @param _quorumPercent - percent of group members to make quorum reached. If minutesToVote==0 and quorum reached -> voting is finished
 	 * @param _consensusPercent - percent of voters (not of group members!) to make consensus reached. If consensus reached -> voting is finished with YES result
+	 * @param _votingType
+	 * @param _groupName
+	 * @param _tokenAddress
 	*/
 	constructor(IDaoBase _dao, IProposal _proposal, 
 		address _origin, uint _minutesToVote,
-		uint _quorumPercent, uint _consensusPercent
-		// uint[] _paramUints, address[] _paramAddresses, 
-		// bool[] _paramBools, string _paramString
+		uint _quorumPercent, uint _consensusPercent, VotingType _votingType,
+		string _groupName, address _tokenAddress
 		) public 
-	{
-		_generalConstructor(_dao,  _proposal, _origin,  _minutesToVote, _quorumPercent,  _consensusPercent);
-		// _customConstructor(_paramUints, _paramAddresses, _paramBools, _paramString);
-		_vote(_origin, true);
-	}
-
-	function _generalConstructor(IDaoBase _dao, IProposal _proposal, 
-		address _origin, uint _minutesToVote,
-		uint _quorumPercent, uint _consensusPercent) internal
 	{
 		require((_quorumPercent<=100)&&(_quorumPercent>0));
 		require((_consensusPercent<=100)&&(_consensusPercent>0));
@@ -72,23 +67,52 @@ contract Voting is IVoting, Ownable {//
 		minutesToVote = _minutesToVote;
 		quorumPercent = _quorumPercent;
 		consensusPercent = _consensusPercent;
-		genesis = uint64(now);		
-	}
+		groupName = _groupName;
+		votingType = _votingType;
+		genesis = uint64(now);	
 
-	// function _customConstructor(uint[] _paramUints, address[] _paramAddresses, bool[] _paramBools, string _paramString) internal{
-	// 	paramUints = _paramUints;
-	// 	paramAddresses = _paramAddresses;
-	// 	paramBools = _paramBools;
-	// 	paramString = _paramString;
-	// }
-
-	function getVoterPower(address _voter) view returns(uint){
-		return 0;
+		_vote(_origin, true);
 	}
 
 	function getVotersTotal() view returns(uint){
-		return 0;
-	}	
+		if(VotingType.Membership==votingType){
+			return dao.getMembersCount(groupName);
+
+		}else if(VotingType.Token_Simple==votingType){
+			return StdDaoToken(tokenAddress).totalSupply();
+
+		}else if(VotingType.Token_Quadratic==votingType){
+			return StdDaoToken(tokenAddress).getVotingTotalForQuadraticVoting();
+
+		}else{
+			revert();
+		}
+	}
+
+	function getVoterPower(address _voter) view returns(uint){
+		if(VotingType.Membership==votingType){
+			require(dao.isGroupMember(groupName, _voter));
+			return 1;
+
+		}else if(VotingType.Token_Simple==votingType){
+			return StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter);
+		
+		}else if(VotingType.Token_Quadratic==votingType){
+			return _sqrt(StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter));
+		
+		}else{
+			revert();
+		}
+	}
+
+	function _sqrt(uint x) internal pure returns (uint y) {
+		uint z = (x + 1) / 2;
+		y = x;
+		while (z < y) {
+			y = z;
+			z = (x / z + z) / 2;
+		}
+	}
 
 	function vote(bool _isYes) public {
 		require(!isFinished());
@@ -116,17 +140,16 @@ contract Voting is IVoting, Ownable {//
 	function isFinished() public view returns(bool){
 		if(canceled){
 			return true;
-		}
-
-		if(minutesToVote!=0){
+		
+		}else if(minutesToVote!=0){
 			return _isTimeElapsed();
-		}
-
-		if(finishedWithYes){
+		
+		}else if(finishedWithYes){
 			return true;
+		
+		}else{
+			return _isQuorumReached();
 		}
-
-		return _isQuorumReached();
 	}
 
 	function _isTimeElapsed() internal view returns(bool){
@@ -159,10 +182,8 @@ contract Voting is IVoting, Ownable {//
 		if(true==finishedWithYes){
 			return true;
 		}
-		return !canceled &&
-			isFinished() && 
-			_isQuorumReached() && 
-			_isConsensusReached();
+		return !canceled&& isFinished()&& 
+			_isQuorumReached()&& _isConsensusReached();
 	}
 
 	function getVotingStats() public constant returns(uint yesResults, uint noResults, uint votersTotal){
@@ -171,11 +192,9 @@ contract Voting is IVoting, Ownable {//
 				yesResults+= getVoterPower(votes[i].voter);
 			}else{
 				noResults+= getVoterPower(votes[i].voter);
-			}
-			
+			}		
 		}
-		votersTotal = getVotersTotal();
-		
+		votersTotal = getVotersTotal();	
 		return;
 	}
 
@@ -187,7 +206,7 @@ contract Voting is IVoting, Ownable {//
 
 // --------------------- IMPLEMENTATIONS ---------------------
 
-contract Voting_1p1v is Voting {
+/*contract Voting_1p1v is Voting {
 	string groupName;
 	constructor(IDaoBase _dao, IProposal _proposal, 
 		address _origin, uint _minutesToVote,
@@ -201,12 +220,45 @@ contract Voting_1p1v is Voting {
 	}
 
 	function getVotersTotal() view returns(uint){
-		return dao.getMembersCount(groupName);
+		if(VotingType.1P1V==votingType){
+			return dao.getMembersCount(groupName);
+
+		}else if(VotingType.Token_Simple==votingType){
+			return StdDaoToken(tokenAddress).totalSupply();
+
+		}else if(VotingType.Token_Quadratic==votingType){
+			return StdDaoToken(tokenAddress).getVotingTotalForQuadraticVoting();
+
+		}else{
+			revert();
+		}
 	}
 
-	function getVoterPower(address _voter) view returns(uint){
-		require(dao.isGroupMember(groupName, _voter));
-		return 1;
+	function getVoterPower(address _voter) view returns(uint){	
+		if(VotingType.1P1V==votingType){
+			require(dao.isGroupMember(groupName, _voter));
+			return 1;
+
+		}else if(VotingType.Token_Simple==votingType){
+			uint tokenAmount = StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter);
+			return tokenAmount;
+		
+		}else if(VotingType.Token_Quadratic==votingType){
+			uint tokenAmount = StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter);
+			return sqrt(tokenAmount);
+		
+		}else{
+			revert();
+		}
+	}
+
+	function sqrt(uint x) internal pure returns (uint y) {
+		uint z = (x + 1) / 2;
+		y = x;
+		while (z < y) {
+			y = z;
+			z = (x / z + z) / 2;
+		}
 	}
 }
 
@@ -216,10 +268,12 @@ contract Voting_SimpleToken is Voting {
 	constructor(IDaoBase _dao, IProposal _proposal, 
 		address _origin, uint _minutesToVote,
 		uint _quorumPercent, uint _consensusPercent, 
-		address _tokenAddress, uint _votingID) public 
+		address _tokenAddress) public 
 	Voting(_dao, _proposal, _origin, _minutesToVote, _quorumPercent, _consensusPercent)
 	{
 		_generalConstructor(_dao,  _proposal, _origin,  _minutesToVote, _quorumPercent,  _consensusPercent);
+		tokenAddress = _tokenAddress;
+		votingID = StdDaoToken(_tokenAddress).startNewVoting();		
 		_vote(_origin, true);
 	}
 
@@ -239,10 +293,12 @@ contract Voting_Quadratic is Voting {
 	constructor(IDaoBase _dao, IProposal _proposal, 
 		address _origin, uint _minutesToVote,
 		uint _quorumPercent, uint _consensusPercent, 
-		address _tokenAddress, uint _votingID) public 
+		address _tokenAddress) public 
 	Voting(_dao, _proposal, _origin, _minutesToVote, _quorumPercent, _consensusPercent)
 	{
 		_generalConstructor(_dao,  _proposal, _origin,  _minutesToVote, _quorumPercent,  _consensusPercent);
+		tokenAddress = _tokenAddress;
+		votingID = StdDaoToken(_tokenAddress).startNewVoting();
 		_vote(_origin, true);
 	}
 
@@ -262,5 +318,5 @@ contract Voting_Quadratic is Voting {
 			y = z;
 			z = (x / z + z) / 2;
 		}
-	}	
-}
+	}
+}*/

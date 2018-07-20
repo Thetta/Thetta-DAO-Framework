@@ -13,11 +13,9 @@ var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 var Voting_SimpleToken = artifacts.require("./Voting_SimpleToken");
 var IProposal = artifacts.require("./IProposal");
 
-const BigNumber = web3.BigNumber;
-
 require('chai')
   .use(require('chai-as-promised'))
-  .use(require('chai-bignumber')(BigNumber))
+  .use(require('chai-bignumber')(web3.BigNumber))
   .should();
 
 function KECCAK256 (x){
@@ -148,7 +146,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	it('0. should create new voting', async()=>{
 		let isGroupMember = await daoBase.isGroupMember('Employees', employee1);
 		assert.equal(isGroupMember,true, 'Creator is ein the group');
-		let voting = await Voting_SimpleToken.new(daoBase.address, employee1, employee1, 60, 51, 71, token.address, false);
+		let voting = await Voting_SimpleToken.new(daoBase.address, employee1, employee1, 60, 51, 71, token.address);
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
 		assert.equal(quorumPercent.toNumber(), 51, 'quorumPercent should be 51');
@@ -156,7 +154,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.1. Q Scenario: 5 employees, 5/5 voted yes, params(100,100) => isYes==true',async() => {
-		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8(""), UintToToBytes32(100), UintToToBytes32(100), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), UintToToBytes32(100), UintToToBytes32(100), fromUtf8("Employees"));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -201,7 +199,7 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 	});
 
 	it('1.2. Q Scenario: 5 employees, 1/5 voted yes, params(10,100) => isYes==true',async() => {
-		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(10), UintToToBytes32(100), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), UintToToBytes32(10), UintToToBytes32(100), fromUtf8("Employees"));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 

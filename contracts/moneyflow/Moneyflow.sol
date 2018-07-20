@@ -93,7 +93,7 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 // WeiReceivers:
 	// receiver can be a splitter, fund or event task
 	// _receiver can be 0x0!
-	function setRootWeiReceiver(IWeiReceiver _receiver) public isCanDo(SET_ROOT_WEI_RECEIVER){
+	function setRootWeiReceiver(IWeiReceiver _receiver) public {
 		emit MoneyFlow_SetRootWeiReceiver(msg.sender, address(_receiver));
 		rootReceiver = _receiver;
 		revenueF2WR = new FallbackToWeiReceiver(address(rootReceiver));

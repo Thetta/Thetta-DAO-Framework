@@ -12,7 +12,7 @@ var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 
 var InformalProposal = artifacts.require("./InformalProposal");
 
-var LiquidVoting = artifacts.require("./LiquidVoting");
+// var LiquidVoting = artifacts.require("./LiquidVoting");
 var IProposal = artifacts.require("./IProposal");
 
 const BigNumber = web3.BigNumber;
@@ -22,7 +22,7 @@ require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
+/*contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 	const creator   = accounts[0];
 	const employee1 = accounts[1];
 	const employee2 = accounts[2];
@@ -173,3 +173,4 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		});
 	});
 });
+*/
