@@ -45,6 +45,12 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 		_; 
 	}
 
+	modifier onlyVotingOwner(uint _votingID) { 
+		require (votingOwners[_votingID] == msg.sender);
+		_; 
+	}
+	
+
 	event VotingStarted(address indexed _address, uint _votingID);
 	event VotingFinished(address indexed _address, uint _votingID);
 	
@@ -71,14 +77,12 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 	}
 
 	// TODO: VULNERABILITY! no onlyOwner!
-	function finishVoting(uint _votingID) whenNotPaused public {
-		require (votingOwners[_votingID] == msg.sender);
-		
+	function finishVoting(uint _votingID) whenNotPaused onlyVotingOwner(_votingID) public {
 		super.finishEvent(_votingID);
 		emit VotingFinished(msg.sender, _votingID);
 	}
 
-	function isContract(address addr) returns (bool) {
+	function isContract(address addr) internal returns(bool) {
 		uint size;
 		assembly { size := extcodesize(addr) }
 		return size > 0;
