@@ -127,7 +127,7 @@ contract GenericCaller is DaoClient, Ownable {
 		emit consoleAddr('addr(vp.param5)', address(vp.param5));
 		IVoting V = new Voting(dao, _proposal, _origin, vp.votingType,
 			uint(vp.param1), 
-			bytes32ToString(vp.param2),
+			'ololo',
 			uint(vp.param3), 
 			uint(vp.param4),
 			address(vp.param5)

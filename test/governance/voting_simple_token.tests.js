@@ -7,6 +7,7 @@ var MoneyFlow = artifacts.require("./MoneyFlow");
 var IWeiReceiver = artifacts.require("./IWeiReceiver");
 var WeiAbsoluteExpense = artifacts.require("./WeiAbsoluteExpense");
 var InformalProposal = artifacts.require("./InformalProposal");
+var GenericProposal = artifacts.require("./GenericProposal");
 
 var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 
@@ -63,7 +64,7 @@ function fromUtf8(str) {
 	return padToBytes32(hex);
 };
 
-contract('Voting(quorumPercent, consensusPercent)', (accounts) => {
+contract('Voting 1P1V', (accounts) => {
 	const creator   = accounts[0];
 	const employee1 = accounts[1];
 	const employee2 = accounts[2];
@@ -93,6 +94,7 @@ contract('Voting(quorumPercent, consensusPercent)', (accounts) => {
 	const VOTING_TYPE_1P1V = 1;
 	const VOTING_TYPE_SIMPLE_TOKEN = 2;
 	const VOTING_TYPE_QUADRATIC = 3;
+	const VOTING_TYPE_LIQUID = 4;
 
 	beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
@@ -159,9 +161,8 @@ contract('Voting(quorumPercent, consensusPercent)', (accounts) => {
 	it('1.1. Q Scenario: 5 employees, 5/5 voted yes, params(100,100) => isYes==true',async() => {
 		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8(""), UintToToBytes32(100), UintToToBytes32(100), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
-		// await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
-		await aacInstance.createVoting(_permissionId, prop, _origin)
-/*
+		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
+
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
@@ -200,9 +201,9 @@ contract('Voting(quorumPercent, consensusPercent)', (accounts) => {
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
-	*/});
+	});
 
-	/*it('1.2. Q Scenario: 5 employees, 1/5 voted yes, params(10,100) => isYes==true',async() => {
+	it('1.2. Q Scenario: 5 employees, 1/5 voted yes, params(10,100) => isYes==true',async() => {
 		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(10), UintToToBytes32(100), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -707,5 +708,5 @@ contract('Voting(quorumPercent, consensusPercent)', (accounts) => {
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
-	});*/
+	});
 });

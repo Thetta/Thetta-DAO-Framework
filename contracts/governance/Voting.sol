@@ -71,6 +71,8 @@ contract Voting is IVoting, Ownable {
 		groupName = _groupName;
 		votingType = _votingType;
 		genesis = uint64(now);	
+		tokenAddress = _tokenAddress;
+		votingID = StdDaoToken(_tokenAddress).startNewVoting();
 
 		_vote(_origin, true);
 	}
@@ -203,120 +205,3 @@ contract Voting is IVoting, Ownable {
 	}	
 }
 
-
-// --------------------- IMPLEMENTATIONS ---------------------
-
-/*contract Voting_1p1v is Voting {
-	string groupName;
-	constructor(IDaoBase _dao, IProposal _proposal, 
-		address _origin, uint _minutesToVote,
-		uint _quorumPercent, uint _consensusPercent, 
-		string _groupName) public 
-	Voting(_dao, _proposal, _origin, _minutesToVote, _quorumPercent, _consensusPercent)
-	{
-		_generalConstructor(_dao,  _proposal, _origin,  _minutesToVote, _quorumPercent,  _consensusPercent);
-		groupName = _groupName;
-		_vote(_origin, true);
-	}
-
-	function getVotersTotal() view returns(uint){
-		if(VotingType.1P1V==votingType){
-			return dao.getMembersCount(groupName);
-
-		}else if(VotingType.VotingSimpleToken==votingType){
-			return StdDaoToken(tokenAddress).totalSupply();
-
-		}else if(VotingType.VotingQuadratic==votingType){
-			return StdDaoToken(tokenAddress).getVotingTotalForQuadraticVoting();
-
-		}else{
-			revert();
-		}
-	}
-
-	function getVoterPower(address _voter) view returns(uint){	
-		if(VotingType.1P1V==votingType){
-			require(dao.isGroupMember(groupName, _voter));
-			return 1;
-
-		}else if(VotingType.VotingSimpleToken==votingType){
-			uint tokenAmount = StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter);
-			return tokenAmount;
-		
-		}else if(VotingType.VotingQuadratic==votingType){
-			uint tokenAmount = StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter);
-			return sqrt(tokenAmount);
-		
-		}else{
-			revert();
-		}
-	}
-
-	function sqrt(uint x) internal pure returns (uint y) {
-		uint z = (x + 1) / 2;
-		y = x;
-		while (z < y) {
-			y = z;
-			z = (x / z + z) / 2;
-		}
-	}
-}
-
-contract Voting_SimpleToken is Voting {
-	address tokenAddress;
-	uint votingID;
-	constructor(IDaoBase _dao, IProposal _proposal, 
-		address _origin, uint _minutesToVote,
-		uint _quorumPercent, uint _consensusPercent, 
-		address _tokenAddress) public 
-	Voting(_dao, _proposal, _origin, _minutesToVote, _quorumPercent, _consensusPercent)
-	{
-		_generalConstructor(_dao,  _proposal, _origin,  _minutesToVote, _quorumPercent,  _consensusPercent);
-		tokenAddress = _tokenAddress;
-		votingID = StdDaoToken(_tokenAddress).startNewVoting();		
-		_vote(_origin, true);
-	}
-
-	function getVotersTotal() view returns(uint){
-		return StdDaoToken(tokenAddress).totalSupply();
-	}
-
-	function getVoterPower(address _voter) view returns(uint){
-		uint tokenAmount = StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter);
-		return tokenAmount;
-	}
-}
-
-contract Voting_Quadratic is Voting {
-	address tokenAddress;
-	uint votingID;	
-	constructor(IDaoBase _dao, IProposal _proposal, 
-		address _origin, uint _minutesToVote,
-		uint _quorumPercent, uint _consensusPercent, 
-		address _tokenAddress) public 
-	Voting(_dao, _proposal, _origin, _minutesToVote, _quorumPercent, _consensusPercent)
-	{
-		_generalConstructor(_dao,  _proposal, _origin,  _minutesToVote, _quorumPercent,  _consensusPercent);
-		tokenAddress = _tokenAddress;
-		votingID = StdDaoToken(_tokenAddress).startNewVoting();
-		_vote(_origin, true);
-	}
-
-	function getVotersTotal() view returns(uint){
-		return StdDaoToken(tokenAddress).getVotingTotalForQuadraticVoting();
-	}
-
-	function getVoterPower(address _voter) view returns(uint){
-		uint tokenAmount = StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter);
-		return sqrt(tokenAmount);
-	}
-
-	function sqrt(uint x) internal pure returns (uint y) {
-		uint z = (x + 1) / 2;
-		y = x;
-		while (z < y) {
-			y = z;
-			z = (x / z + z) / 2;
-		}
-	}
-}*/
