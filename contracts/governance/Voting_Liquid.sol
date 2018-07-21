@@ -7,7 +7,7 @@ import "../tokens/StdDaoToken.sol";
 import "./Voting_SimpleToken.sol";
 
 
-contract LiquidVoting is IDelegationTable, Voting_SimpleToken {
+/*contract LiquidVoting is IDelegationTable, Voting_SimpleToken {
 	struct Delegation {
 		address _address;
 		uint amount;
@@ -121,3 +121,4 @@ contract LiquidVoting is IDelegationTable, Voting_SimpleToken {
 		emit DelegationRemoved(msg.sender, _to);
 	}
 }
+*/

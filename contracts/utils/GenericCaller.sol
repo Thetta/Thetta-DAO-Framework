@@ -2,8 +2,8 @@ pragma solidity ^0.4.22;
 
 import "../IDaoBase.sol";
 
-import "../governance/Voting_1p1v.sol";
-import "../governance/Voting_SimpleToken.sol";
+import "../governance/Voting.sol";
+// import "../governance/Voting_SimpleToken.sol";
 import "../governance/Proposals.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -14,17 +14,20 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  * WARNING: should be permitted to add new proposal by the current DaoBase!!!
 */
 contract GenericCaller is DaoClient, Ownable {
-	enum VotingType {
-		NoVoting,
+	// enum VotingType {
+	// 	NoVoting,
+	// 	Voting1p1v,
+	// 	VotingSimpleToken,
+	// 	VotingQuadratic,
+	// 	VotingLiquid
+	// }
 
-		Voting1p1v,
-		VotingSimpleToken,
-		VotingQuadratic,
-		VotingLiquid
-	}
-
+	event consoleAddr(string comment, address a);
+	event consoleB32(string comment, bytes32 a);
+	event consoleUint(string comment, uint a);
+	event consoleStr(string comment, string a);
 	struct VotingParams {
-		VotingType votingType;
+		Voting.VotingType votingType;
 		bytes32 param1;
 		bytes32 param2;
 		bytes32 param3;
@@ -91,11 +94,14 @@ contract GenericCaller is DaoClient, Ownable {
 		}
 	}
 
+		// address _origin, uint _minutesToVote,
+		// uint _quorumPercent, uint _consensusPercent, VotingType _votingType,
+		// string _groupName, address _tokenAddress
 	function setVotingParams(bytes32 _permissionIdHash, uint _votingType, 
 		bytes32 _param1, bytes32 _param2, 
 		bytes32 _param3, bytes32 _param4, bytes32 _param5) public onlyOwner {
 		VotingParams memory params;
-		params.votingType = VotingType(_votingType);
+		params.votingType = Voting.VotingType(_votingType);
 		params.param1 = _param1;
 		params.param2 = _param2;
 		params.param3 = _param3;
@@ -105,48 +111,29 @@ contract GenericCaller is DaoClient, Ownable {
 		votingParams[_permissionIdHash] = params;
 	}
 
-	function createVoting(bytes32 _permissionIdHash, IProposal _proposal, address _origin)internal returns(IVoting){
+	function createVoting(bytes32 _permissionIdHash, IProposal _proposal, address _origin)public returns(IVoting){
 		VotingParams memory vp = votingParams[_permissionIdHash];
 
-		if(VotingType.Voting1p1v==vp.votingType){
-			return new Voting_1p1v(dao, _proposal, _origin, 
-				uint(vp.param1), 
-				bytes32ToString(vp.param2), 
-				uint(vp.param3), 
-				uint(vp.param4));
-		}
+		emit consoleAddr('dao', address(dao));
+		emit consoleAddr('_proposal', address(_proposal));
+		emit consoleAddr('_origin', address(_origin));
 
-		if(VotingType.VotingSimpleToken==vp.votingType){
-			return new Voting_SimpleToken(dao, _proposal, _origin, 
-				uint(vp.param1), 
-				uint(vp.param3), 
-				uint(vp.param4), 
-				address(vp.param5),
-				false);
-		}
+		emit consoleUint('votingType', uint(vp.votingType));
 
-		if(VotingType.VotingQuadratic==vp.votingType){
-			return new Voting_SimpleToken(dao, _proposal, _origin, 
-				uint(vp.param1), 
-				uint(vp.param3), 
-				uint(vp.param4), 
-				address(vp.param5),
-				true);
-		}
+		emit consoleUint('uint(vp.param1)', uint(vp.param1));
+		emit consoleStr('str(vp.param2)', bytes32ToString(vp.param2));
+		emit consoleUint('uint(vp.param3)', uint(vp.param3));
+		emit consoleUint('uint(vp.param4)', uint(vp.param4));
+		emit consoleAddr('addr(vp.param5)', address(vp.param5));
+		IVoting V = new Voting(dao, _proposal, _origin, vp.votingType,
+			uint(vp.param1), 
+			bytes32ToString(vp.param2),
+			uint(vp.param3), 
+			uint(vp.param4),
+			address(vp.param5)
+		);
 
-		/*if(VotingType.VotingLiquid==vp.votingType){
--			return new LiquidVoting(dao, _proposal, _origin, 
--				uint(vp.param1), 
--				uint(vp.param3), 
--				uint(vp.param4), 
--				address(vp.param5),
--				false);
--		}*/
-
-		// TODO: add other implementations
-		// no implementation for this type!
-		assert(false==true);
-		return IVoting(0x0);
+		return V;
 	}
 
 	function bytes32ToString(bytes32 x)pure internal returns(string){
