@@ -27,6 +27,30 @@ require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
+async function increaseTime(time){
+	await web3.currentProvider.sendAsync({
+		jsonrpc: '2.0', 
+		method: 'evm_increaseTime', 
+		params: [time], 
+		id: new Date().getSeconds()
+	}, async (err, resp) => {
+		if (err){
+			console.log(err);
+		}
+	})
+}
+
+async function increaseTimeRepeated(time){
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+}
+
+
 contract('Voting liquid', (accounts) => {
 	const creator   = accounts[0];
 	const employee1 = accounts[1];

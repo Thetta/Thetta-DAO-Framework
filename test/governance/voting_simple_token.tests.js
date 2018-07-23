@@ -21,6 +21,29 @@ const VOTING_TYPE_SIMPLE_TOKEN = 2;
 const VOTING_TYPE_QUADRATIC = 3;
 const VOTING_TYPE_LIQUID = 4;
 
+async function increaseTime(time){
+	await web3.currentProvider.sendAsync({
+		jsonrpc: '2.0', 
+		method: 'evm_increaseTime', 
+		params: [time], 
+		id: new Date().getSeconds()
+	}, async (err, resp) => {
+		if (err){
+			console.log(err);
+		}
+	})
+}
+
+async function increaseTimeRepeated(time){
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+}
+
 
 require('chai')
   .use(require('chai-as-promised'))
@@ -425,7 +448,7 @@ contract('Voting simple token', (accounts) => {
 	});
 
 	it('1.8. T Scenario: 5 employees, 2/5 voted yes, 1/5 voted no, params(50,50) => isYes==true',async() => {
-		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(59), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -444,19 +467,14 @@ contract('Voting simple token', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should not be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is not finished');
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [3600 * 25 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		await increaseTimeRepeated(3600*1000);
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting should not be finished');
 		assert.strictEqual(await voting.isYes(),true,'Voting is not finished');
 	});
 
 	it('1.9. T Scenario: no yes yes, params(100,20) => isYes==false',async() => {
-		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(20), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(59), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(20), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -473,19 +491,14 @@ contract('Voting simple token', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [3600 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		await increaseTimeRepeated(3600*1000);
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is  finished');
 	});
 
 	it('1.10. T Scenario: no no no yes yes, params(100,20) => isYes==true',async() => {
-		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(20), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(59), fromUtf8("Employees"), UintToToBytes32(100), UintToToBytes32(20), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -504,12 +517,7 @@ contract('Voting simple token', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [3600 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		await increaseTimeRepeated(3600*1000);
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
@@ -517,7 +525,7 @@ contract('Voting simple token', (accounts) => {
 	});
 
 	it('1.11. T Scenario: yes no no yes, params(50,50) => isYes==true',async() => {
-		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(59), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -531,13 +539,6 @@ contract('Voting simple token', (accounts) => {
 		await voting.vote(false,{from:employee2});
 		await voting.vote(false,{from:employee3});
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [1800 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
-
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -546,19 +547,14 @@ contract('Voting simple token', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [1800 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		await increaseTimeRepeated(3600*1000);
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
 	});
 
 	it('1.12. T Scenario: yes, params(20,20) => isYes==true',async() => {
-		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(20), UintToToBytes32(20), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(59), fromUtf8("Employees"), UintToToBytes32(20), UintToToBytes32(20), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -569,19 +565,14 @@ contract('Voting simple token', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [3600 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		await increaseTimeRepeated(3600*1000);
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
 		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 	});
 
 	it('1.13. T Scenario: yes yes no no, params(51,51) => isYes==false',async() => {
-		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(51), UintToToBytes32(51), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(59), fromUtf8("Employees"), UintToToBytes32(51), UintToToBytes32(51), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -596,12 +587,7 @@ contract('Voting simple token', (accounts) => {
 		await voting.vote(false,{from:employee3});
 		await voting.vote(true,{from:employee4});
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [3600 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		await increaseTimeRepeated(3600*1000);
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is no');
@@ -609,7 +595,7 @@ contract('Voting simple token', (accounts) => {
 	});
 
 	it('1.14. T Scenario: yes, params(21,21) => isYes==false',async() => {
-		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(21), UintToToBytes32(21), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(59), fromUtf8("Employees"), UintToToBytes32(21), UintToToBytes32(21), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -620,19 +606,14 @@ contract('Voting simple token', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [3600 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		await increaseTimeRepeated(3600*1000);
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is no');
 	});
 
 	it('1.15. T Scenario: yes no, params(21,21) => isYes==false',async() => {
-		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(60), fromUtf8("Employees"), UintToToBytes32(21), UintToToBytes32(51), addressToBytes32(token.address));
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(59), fromUtf8("Employees"), UintToToBytes32(21), UintToToBytes32(51), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
 
@@ -645,12 +626,7 @@ contract('Voting simple token', (accounts) => {
 
 		await voting.vote(false,{from:employee2});
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [3600 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		await increaseTimeRepeated(3600*1000);
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is no');

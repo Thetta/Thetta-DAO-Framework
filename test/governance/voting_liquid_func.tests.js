@@ -20,6 +20,28 @@ const VOTING_TYPE_SIMPLE_TOKEN = 2;
 const VOTING_TYPE_QUADRATIC = 3;
 const VOTING_TYPE_LIQUID = 4;
 
+async function increaseTime(time){
+	await web3. currentProvider.sendAsync({
+		jsonrpc: '2.0', 
+		method: 'evm_increaseTime', 
+		params: [time], 
+		id: new Date().getSeconds()
+	}, async (err, resp) => {
+		if (err){
+			console.log(err);
+		}
+	})
+}
+
+async function increaseTimeRepeated(time){
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+	await increaseTime(3600*1000);
+}
 
 require('chai')
   .use(require('chai-as-promised'))
@@ -443,12 +465,7 @@ contract('Voting liquid (func)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should not be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is not finished');
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [3600 * 25 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		await increaseTimeRepeated(3600 * 225 * 1000);
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting should not be finished');
 		assert.strictEqual(await voting.isYes(),true,'Voting is not finished');
@@ -472,12 +489,7 @@ contract('Voting liquid (func)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [3600 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		await increaseTimeRepeated(3600 * 25 * 1000);
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is  finished');
@@ -503,12 +515,7 @@ contract('Voting liquid (func)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [3600 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		await increaseTimeRepeated(3600 * 25 * 1000);
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
@@ -530,13 +537,6 @@ contract('Voting liquid (func)', (accounts) => {
 		await voting.vote(false,{from:employee2});
 		await voting.vote(false,{from:employee3});
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [1800 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
-
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -545,12 +545,7 @@ contract('Voting liquid (func)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [1800 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		await increaseTimeRepeated(3600 * 25 * 1000);
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
@@ -568,12 +563,7 @@ contract('Voting liquid (func)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [3600 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		await increaseTimeRepeated(3600 * 25 * 1000);
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
 		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
@@ -595,12 +585,7 @@ contract('Voting liquid (func)', (accounts) => {
 		await voting.vote(false,{from:employee3});
 		await voting.vote(true,{from:employee4});
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [3600 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		await increaseTimeRepeated(3600 * 25 * 1000);
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is no');
@@ -619,12 +604,7 @@ contract('Voting liquid (func)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [3600 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		await increaseTimeRepeated(3600 * 25 * 1000);
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is no');
@@ -644,12 +624,7 @@ contract('Voting liquid (func)', (accounts) => {
 
 		await voting.vote(false,{from:employee2});
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [3600 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		await increaseTimeRepeated(3600 * 25 * 1000);
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is no');
