@@ -114,20 +114,9 @@ contract GenericCaller is DaoClient, Ownable {
 	function createVoting(bytes32 _permissionIdHash, IProposal _proposal, address _origin)public returns(IVoting){
 		VotingParams memory vp = votingParams[_permissionIdHash];
 
-		emit consoleAddr('dao', address(dao));
-		emit consoleAddr('_proposal', address(_proposal));
-		emit consoleAddr('_origin', address(_origin));
-
-		emit consoleUint('votingType', uint(vp.votingType));
-
-		emit consoleUint('uint(vp.param1)', uint(vp.param1));
-		emit consoleStr('str(vp.param2)', bytes32ToString(vp.param2));
-		emit consoleUint('uint(vp.param3)', uint(vp.param3));
-		emit consoleUint('uint(vp.param4)', uint(vp.param4));
-		emit consoleAddr('addr(vp.param5)', address(vp.param5));
 		IVoting V = new Voting(dao, _proposal, _origin, vp.votingType,
 			uint(vp.param1), 
-			'ololo',
+			bytes32ToString(vp.param2),
 			uint(vp.param3), 
 			uint(vp.param4),
 			address(vp.param5)

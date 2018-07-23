@@ -10,8 +10,13 @@ var InformalProposal = artifacts.require("./InformalProposal");
 
 var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 
-var Voting_SimpleToken = artifacts.require("./Voting_SimpleToken");
+var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
+
+const VOTING_TYPE_1P1V = 1;
+const VOTING_TYPE_SIMPLE_TOKEN = 2;
+const VOTING_TYPE_QUADRATIC = 3;
+const VOTING_TYPE_LIQUID = 4;
 
 function KECCAK256 (x){
 	return web3.sha3(x);
@@ -56,7 +61,7 @@ function fromUtf8(str) {
 	return padToBytes32(hex);
 };
 
-contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
+contract('Voting Quadratic', (accounts) => {
 	const creator   = accounts[0];
 	const employee1 = accounts[1];
 	const employee2 = accounts[2];
@@ -145,11 +150,11 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_SimpleToken.at(votingAddress);
+		const voting = await Voting.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
+		await voting.vote(true,{from:employee2});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),6,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
@@ -157,7 +162,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(true,0,{from:employee3});
+		await voting.vote(true,{from:employee3});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),8,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
@@ -165,7 +170,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(true,0,{from:employee4});
+		await voting.vote(true,{from:employee4});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),12,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
@@ -173,7 +178,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(true,0);
+		await voting.vote(true);
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),17,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
@@ -190,7 +195,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_SimpleToken.at(votingAddress);
+		const voting = await Voting.at(votingAddress);
 
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
@@ -213,7 +218,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_SimpleToken.at(votingAddress);
+		const voting = await Voting.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -222,7 +227,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.equal(quorumPercent.toNumber(), 100, 'quorumPercent should be 100');
 		assert.equal(consensusPercent.toNumber(), 10, 'consensusPercent should be 10');
 
-		await voting.vote(false,0,{from:employee2});
+		await voting.vote(false,{from:employee2});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),3,'no');
@@ -230,7 +235,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee3});
+		await voting.vote(false,{from:employee3});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),5,'no');
@@ -238,7 +243,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee4});
+		await voting.vote(false,{from:employee4});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),9,'no');
@@ -246,7 +251,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0);
+		await voting.vote(false);
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),14,'no');
@@ -263,11 +268,11 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_SimpleToken.at(votingAddress);
+		const voting = await Voting.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(false,0,{from:employee2});
+		await voting.vote(false,{from:employee2});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),3,'no');
@@ -275,7 +280,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee3});
+		await voting.vote(false,{from:employee3});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),5,'no');
@@ -283,7 +288,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee4});
+		await voting.vote(false,{from:employee4});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),9,'no');
@@ -291,7 +296,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0);
+		await voting.vote(false);
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),14,'no');
@@ -308,11 +313,11 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_SimpleToken.at(votingAddress);
+		const voting = await Voting.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(false,0,{from:employee2});
+		await voting.vote(false,{from:employee2});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),3,'no');
@@ -320,7 +325,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee3});
+		await voting.vote(false,{from:employee3});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),5,'no');
@@ -328,7 +333,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee4});
+		await voting.vote(false,{from:employee4});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),9,'no');
@@ -336,7 +341,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0);
+		await voting.vote(false);
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),14,'no');
@@ -353,11 +358,11 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_SimpleToken.at(votingAddress);
+		const voting = await Voting.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(false,0,{from:employee2});
+		await voting.vote(false,{from:employee2});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),3,'no');
@@ -365,7 +370,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee3});
+		await voting.vote(false,{from:employee3});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),5,'no');
@@ -382,11 +387,11 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_SimpleToken.at(votingAddress);
+		const voting = await Voting.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
+		await voting.vote(true,{from:employee2});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),6,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
@@ -394,7 +399,7 @@ contract('Voting_Quadratic(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee3});
+		await voting.vote(false,{from:employee3});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),6,'yes');
 		assert.equal(r2[1].toNumber(),2,'no');

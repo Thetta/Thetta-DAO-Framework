@@ -16,6 +16,12 @@ var IProposal = artifacts.require("./IProposal");
 
 const BigNumber = web3.BigNumber;
 
+const VOTING_TYPE_1P1V = 1;
+const VOTING_TYPE_SIMPLE_TOKEN = 2;
+const VOTING_TYPE_QUADRATIC = 3;
+const VOTING_TYPE_LIQUID = 4;
+
+
 require('chai')
   .use(require('chai-as-promised'))
   .use(require('chai-bignumber')(BigNumber))
@@ -64,7 +70,7 @@ function fromUtf8(str) {
 	return padToBytes32(hex);
 };
 
-contract('Voting 1P1V', (accounts) => {
+contract('Voting simple token', (accounts) => {
 	const creator   = accounts[0];
 	const employee1 = accounts[1];
 	const employee2 = accounts[2];
@@ -89,12 +95,6 @@ contract('Voting 1P1V', (accounts) => {
 	let setRootWeiReceiver;
 
 	let money = web3.toWei(0.001, "ether");
-
-	// SEE THIS? set voting type for the action!
-	const VOTING_TYPE_1P1V = 1;
-	const VOTING_TYPE_SIMPLE_TOKEN = 2;
-	const VOTING_TYPE_QUADRATIC = 3;
-	const VOTING_TYPE_LIQUID = 4;
 
 	beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
@@ -194,7 +194,7 @@ contract('Voting 1P1V', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(true,);
+		await voting.vote(true);
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),5,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
@@ -267,7 +267,7 @@ contract('Voting 1P1V', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,);
+		await voting.vote(false);
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),4,'no');
@@ -312,7 +312,7 @@ contract('Voting 1P1V', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,);
+		await voting.vote(false);
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),4,'no');
@@ -357,7 +357,7 @@ contract('Voting 1P1V', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,);
+		await voting.vote(false);
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),4,'no');
@@ -499,7 +499,7 @@ contract('Voting 1P1V', (accounts) => {
 		await voting.vote(true,{from:employee2});
 		await voting.vote(false,{from:employee3});
 		await voting.vote(false,{from:employee4});
-		await voting.vote(false,);
+		await voting.vote(false);
 
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
