@@ -156,7 +156,7 @@ contract DaoBase is IDaoBase, Ownable {
 			if(isCan){
 				bool isVotingFound = false;
 				bool votingResult = false;
-				(isVotingFound, votingResult) = store.getProposalVotingResults(_a);
+				(isVotingFound, votingResult) = store.getProposalVotingResults(_a,0);
 
 				if(isVotingFound){
 					// if this action can be done by voting, then Proposal can do this action 

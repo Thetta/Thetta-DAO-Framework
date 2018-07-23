@@ -22,13 +22,14 @@ contract Voting_SimpleToken is IVoting, Ownable {
 	uint public minutesToVote;
 	bool finishedWithYes;
 	uint64 genesis;
+	address origin;
 	uint public quorumPercent;
 	uint public consensusPercent;
 	uint public votingID;
 	bool public isQuadraticVoting;
 	StdDaoToken stdDaoToken;
 
-	mapping (address=>bool) addressVotedAlready;
+	mapping (uint => mapping(address=>bool)) addressVotedAlready;
 
 	struct TokenVote{
 		address voter;
@@ -36,10 +37,11 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		uint tokenAmount;
 	}
 
-	TokenVote[] tokenVotesArray;
+	mapping (uint => TokenVote[]) tokenVotesArray;
 
 	event  VotingSimpleToken_Vote(address _who, bool _yes, uint _tokenAmount);
 	event  VotingSimpleToken_CallAction();
+	event  VotingStarted(address indexed _address, uint _votingID);
 
 	/**
 	 * TODO: 
@@ -66,14 +68,11 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		consensusPercent = _consensusPercent;
 		isQuadraticVoting = _isQuadraticVoting;
 		stdDaoToken = StdDaoToken(_tokenAddress);
-		votingID = stdDaoToken.startNewVoting();
 
 		genesis = uint64(now);
-
-		internalVote(_origin, true);
 	}
 
-	function isFinished()public view returns(bool){
+	function isFinished(uint _votingID)public view returns(bool){
 		if(minutesToVote!=0){
 			return _isTimeElapsed();
 		}
@@ -82,7 +81,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 			return true;
 		}
 
-		return _isQuorumReached();
+		return _isQuorumReached(_votingID);
 	}
 
 	function _isTimeElapsed() internal view returns(bool){
@@ -93,64 +92,72 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		return (uint64(now) - genesis) >= (minutesToVote * 60 * 1000);
 	}
 
-	function _isQuorumReached() internal view returns(bool){
+	function _isQuorumReached(uint _votingID) internal view returns(bool){
 		uint yesResults = 0;
 		uint noResults = 0;
 		uint votersTotal = 0;
 
-		(yesResults, noResults, votersTotal) = getVotingStats();
+		(yesResults, noResults, votersTotal) = getVotingStats(_votingID);
 		return ((yesResults + noResults) * 100) >= (votersTotal * quorumPercent);
 	}
 
-	function _isConsensusReached() internal view returns(bool){
+	function _isConsensusReached(uint _votingID) internal view returns(bool){
 		uint yesResults = 0;
 		uint noResults = 0;
 		uint votersTotal = 0;
 
-		(yesResults, noResults, votersTotal) = getVotingStats();
+		(yesResults, noResults, votersTotal) = getVotingStats(_votingID);
 		return (yesResults * 100) >= ((yesResults + noResults) * consensusPercent);
 	}
 
-	function isYes()public view returns(bool){
+	function isYes(uint _votingID)public view returns(bool){
 		if(true==finishedWithYes){
 			return true;
 		}
 
-		return  isFinished() &&
-		   _isQuorumReached() &&
-		_isConsensusReached();
+		return  isFinished(_votingID) &&
+		   _isQuorumReached(_votingID) &&
+		_isConsensusReached(_votingID);
 	}
 
 	function cancelVoting() public onlyOwner {
 		// TODO:
 	}
 
-	function finishVoting() public onlyOwner {
-		stdDaoToken.finishVoting(votingID);
+	function startNewVoting() public onlyOwner returns(uint){
+		votingID = stdDaoToken.startNewVoting();
+		emit VotingStarted(msg.sender, votingID);
+		internalVote(msg.sender, true, votingID);
+		return votingID;
+	}
+
+	function finishVoting(uint _votingID) public onlyOwner {
+		stdDaoToken.finishVoting(_votingID);
 	}
 	
 
-	function vote(bool _yes, uint _tokenAmount) public {
-		require(!isFinished());
+	function vote(bool _yes, uint _tokenAmount, uint _votingID) public {
+		require(!isFinished(_votingID));
 		require(0==_tokenAmount);
 
-		internalVote(msg.sender, _yes);
+		internalVote(msg.sender, _yes, _votingID);
 	}
 
-	function internalVote(address _who, bool _yes) internal {
-		uint tokenBalance = stdDaoToken.getBalanceAtVoting(votingID, _who);
+	function internalVote(address _who, bool _yes, uint _votingID) internal {
+		uint tokenBalance = stdDaoToken.getBalanceAtVoting(_votingID, _who);
 
-		require(!addressVotedAlready[_who]);
+		require(!addressVotedAlready[_votingID][_who]);
 
-		tokenVotesArray.push(TokenVote(_who, _yes, tokenBalance));
-		addressVotedAlready[_who] = true;
+		tokenVotesArray[_votingID].push(TokenVote(_who, _yes, tokenBalance));
+		addressVotedAlready[_votingID][_who] = true;
 
 		emit VotingSimpleToken_Vote(_who, _yes, tokenBalance);
 
+		callActionIfEnded(_votingID);
 	}
 
-	function callActionIfEnded() public {
-		if(!finishedWithYes && isFinished() && isYes()){
+	function callActionIfEnded(uint _votingID) public {
+		if(!finishedWithYes && isFinished(_votingID) && isYes(_votingID)){
 			// should not be callable again!!!
 			finishedWithYes = true;
 
@@ -160,25 +167,25 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		}
 	}
 
-	function getVotingStats() public constant returns(uint yesResults, uint noResults, uint votersTotal){
+	function getVotingStats(uint _votingID) public constant returns(uint yesResults, uint noResults, uint votersTotal){
 		yesResults = 0;
 		noResults = 0;
 		if(isQuadraticVoting){
 			votersTotal = stdDaoToken.getVotingTotalForQuadraticVoting();
-			for(uint i=0; i<tokenVotesArray.length; ++i){
-				if(tokenVotesArray[i].vote){
-					yesResults+= sqrt(tokenVotesArray[i].tokenAmount);
+			for(uint i=0; i<tokenVotesArray[_votingID].length; ++i){
+				if(tokenVotesArray[_votingID][i].vote){
+					yesResults+= sqrt(tokenVotesArray[_votingID][i].tokenAmount);
 				}else{
-					noResults+= sqrt(tokenVotesArray[i].tokenAmount);
+					noResults+= sqrt(tokenVotesArray[_votingID][i].tokenAmount);
 				}
 			}
 		} else {
 			votersTotal = stdDaoToken.totalSupply();
-			for(uint j=0; j<tokenVotesArray.length; ++j){
-				if(tokenVotesArray[j].vote){
-					yesResults+= tokenVotesArray[j].tokenAmount;
+			for(uint j=0; j<tokenVotesArray[_votingID].length; ++j){
+				if(tokenVotesArray[_votingID][j].vote){
+					yesResults+= tokenVotesArray[_votingID][j].tokenAmount;
 				}else{
-					noResults+= tokenVotesArray[j].tokenAmount;
+					noResults+= tokenVotesArray[_votingID][j].tokenAmount;
 				}
 			}
 		}

@@ -12,7 +12,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  * @dev This is the implementation of IVoting interface. Each Proposal should have voting attached. 
  * If group members change -> it will not work
 */
-contract Voting_1p1v is IVoting, Ownable {
+contract Voting_1p1v is Ownable {
 	// use DaoClient instead?
 	// (it will handle upgrades)
 	IDaoBase dao;

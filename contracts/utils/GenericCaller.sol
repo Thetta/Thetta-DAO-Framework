@@ -36,6 +36,8 @@ contract GenericCaller is DaoClient, Ownable {
 
 	event GenericCaller_DoActionDirectly(bytes32 _permissionId, address _target, address _origin, string _methodSig);
 	event GenericCaller_CreateNewProposal(bytes32 _permissionId, address _target, address _origin, string _methodSig);
+	event VotingStarted(address indexed _address, uint _votingID);
+	
 
 /////
 	constructor(IDaoBase _dao)public
@@ -91,6 +93,13 @@ contract GenericCaller is DaoClient, Ownable {
 		}
 	}
 
+	function startNewVoting(address _voting) public onlyOwner returns(uint) {
+		Voting_SimpleToken voting_SimpleToken = Voting_SimpleToken(_voting);
+		uint _votingID = voting_SimpleToken.startNewVoting();
+		emit VotingStarted(msg.sender, _votingID);
+		return _votingID;
+	}
+
 	function setVotingParams(bytes32 _permissionIdHash, uint _votingType, 
 		bytes32 _param1, bytes32 _param2, 
 		bytes32 _param3, bytes32 _param4, bytes32 _param5) public onlyOwner {
@@ -109,11 +118,11 @@ contract GenericCaller is DaoClient, Ownable {
 		VotingParams memory vp = votingParams[_permissionIdHash];
 
 		if(VotingType.Voting1p1v==vp.votingType){
-			return new Voting_1p1v(dao, _proposal, _origin, 
+			return IVoting(new Voting_1p1v(dao, _proposal, _origin, 
 				uint(vp.param1), 
 				bytes32ToString(vp.param2), 
 				uint(vp.param3), 
-				uint(vp.param4));
+				uint(vp.param4)));
 		}
 
 		if(VotingType.VotingSimpleToken==vp.votingType){

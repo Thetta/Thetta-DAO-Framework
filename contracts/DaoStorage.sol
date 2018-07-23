@@ -218,12 +218,12 @@ contract DaoStorage is DaoStorageGroups {
 		return proposals.length;
 	}
 
-	function getProposalVotingResults(address _p) public constant returns (bool isVotingFound, bool votingResult){
+	function getProposalVotingResults(address _p, uint _votingID) public constant returns (bool isVotingFound, bool votingResult){
 		// scan all votings and search for the one that is finished
 		for(uint i=0; i<proposals.length; ++i){
 			if(proposals[i]==_p){
 				IVoting voting = proposals[i].getVoting();
-				return (true, 	voting.isFinished() && voting.isYes());
+				return (true, 	voting.isFinished(_votingID) && voting.isYes(_votingID));
 			}
 		}
 		return (false,false);

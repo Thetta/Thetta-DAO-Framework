@@ -33,6 +33,7 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 	mapping (address => bool) isHolder;
 
 	mapping (uint => address) votingOwners;
+	mapping (uint => address) eventOwners;
 	
 
 	modifier isBurnable_() { 
@@ -49,10 +50,17 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 		require (votingOwners[_votingID] == msg.sender);
 		_; 
 	}
+
+	modifier onlyEventOwner(uint _eventID) { 
+		require (eventOwners[_eventID] == msg.sender);
+		_; 
+	}
 	
 
 	event VotingStarted(address indexed _address, uint _votingID);
 	event VotingFinished(address indexed _address, uint _votingID);
+	event EventStarted(address indexed _address, uint _eventID);
+	event EventFinished(address indexed _address, uint _eventID);
 	
 	constructor(string _name, string _symbol, uint8 _decimals, bool _isBurnable, bool _isPausable, uint256 _cap) public
 		DetailedERC20(_name, _symbol, _decimals)
@@ -70,7 +78,7 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 	function startNewVoting() public whenNotPaused returns(uint) {
 		require (isContract(msg.sender));
 		
-		uint idOut = super.startNewEvent();
+		uint idOut = startNewEvent();
 		votingOwners[idOut] = msg.sender;
 		emit VotingStarted(msg.sender, idOut);
 		return idOut;
@@ -78,14 +86,31 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 
 	// TODO: VULNERABILITY! no onlyOwner!
 	function finishVoting(uint _votingID) whenNotPaused onlyVotingOwner(_votingID) public {
-		super.finishEvent(_votingID);
+		finishEvent(_votingID);
 		emit VotingFinished(msg.sender, _votingID);
 	}
 
-	function isContract(address addr) internal returns(bool) {
-		uint size;
-		assembly { size := extcodesize(addr) }
-		return size > 0;
+	function startNewEvent() whenNotPaused public returns(uint){
+		require (isContract(msg.sender));
+
+		uint idOut = super.startNewEvent();
+		eventOwners[idOut] = msg.sender;
+		emit EventStarted(msg.sender, idOut);
+		return idOut;
+	}
+
+	// TODO: onlyOwner!
+	function finishEvent(uint _eventID) whenNotPaused onlyVotingOwner(_eventID) public {
+		super.finishEvent(_eventID);
+		emit EventFinished(msg.sender, _eventID);
+	}
+
+	function isContract(address _addr) internal returns(bool isContract) {
+		uint32 size;
+		assembly {
+			size := extcodesize(_addr)
+		}
+		return (size > 0);
 	}
 
 	function getBalanceAtVoting(uint _votingID, address _owner) public view returns (uint256) {

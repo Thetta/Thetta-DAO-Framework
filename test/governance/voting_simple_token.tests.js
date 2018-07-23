@@ -164,43 +164,53 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
-		r2 = await voting.getVotingStats();
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
+
+		await voting.vote(true,0,votingID,{from:employee1});
+		r2 = await voting.getVotingStats(votingID);
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),0,'no');
+
+		await voting.vote(true,0,votingID,{from:employee2});
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),2,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 
-		await voting.vote(true,0,{from:employee3});
-		r2 = await voting.getVotingStats();
+		await voting.vote(true,0,votingID,{from:employee3});
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 
-		await voting.vote(true,0,{from:employee4});
-		r2 = await voting.getVotingStats();
+		await voting.vote(true,0,votingID,{from:employee4});
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),4,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 
-		await voting.vote(true,0);
-		r2 = await voting.getVotingStats();
+		await voting.vote(true,0,votingID);
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),5,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),true,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),true,'Voting is finished');
 	});
 
-	it('1.2. Q Scenario: 5 employees, 1/5 voted yes, params(10,100) => isYes==true',async() => {
+	it('1.2. Q Scenario: 5 employees, 0/5 voted yes, params(10,100) => isYes==false',async() => {
 		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(10), UintToToBytes32(100), addressToBytes32(token.address));
 		const wae = await WeiAbsoluteExpense.new(1000);
 		await aacInstance.setRootWeiReceiverAuto(wae.address, {from:employee1});
@@ -210,17 +220,21 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
 
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
 		assert.equal(quorumPercent.toNumber(), 10, 'quorumPercent should be 10');
 		assert.equal(consensusPercent.toNumber(), 100, 'consensusPercent should be 100');
 
-		r2 = await voting.getVotingStats();
-		assert.equal(r2[0].toNumber(),1,'yes');
+		r2 = await voting.getVotingStats(votingID);
+		assert.equal(r2[0].toNumber(),0,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 	});
 
 	it('1.3. Q Scenario: 5 employees, 1/5 voted yes, 4/5 voted no, params(100,10) => isYes==true',async() => {
@@ -232,45 +246,55 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
 
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
 		assert.equal(quorumPercent.toNumber(), 100, 'quorumPercent should be 100');
 		assert.equal(consensusPercent.toNumber(), 10, 'consensusPercent should be 10');
 
-		await voting.vote(false,0,{from:employee2});
-		r2 = await voting.getVotingStats();
+		await voting.vote(true,0,votingID,{from:employee1});
+		r2 = await voting.getVotingStats(votingID);
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),0,'no');
+
+		await voting.vote(false,0,votingID,{from:employee2});
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),1,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee3});
-		r2 = await voting.getVotingStats();
+		await voting.vote(false,0,votingID,{from:employee3});
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),2,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee4});
-		r2 = await voting.getVotingStats();
+		await voting.vote(false,0,votingID,{from:employee4});
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),3,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 
-		await voting.vote(false,0);
-		r2 = await voting.getVotingStats();
+		await voting.vote(false,0,votingID);
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),4,'no');
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),true,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),true,'Voting is finished');
 	});
 
 	it('1.4. Q Scenario: 5 employees, 1/5 voted yes, 4/5 voted no, params(100,20) => isYes==true',async() => {
@@ -282,40 +306,50 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(false,0,{from:employee2});
-		r2 = await voting.getVotingStats();
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
+
+		await voting.vote(true,0,votingID,{from:employee1});
+		r2 = await voting.getVotingStats(votingID);
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),0,'no');
+
+		await voting.vote(false,0,votingID,{from:employee2});
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),1,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee3});
-		r2 = await voting.getVotingStats();
+		await voting.vote(false,0,votingID,{from:employee3});
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),2,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee4});
-		r2 = await voting.getVotingStats();
+		await voting.vote(false,0,votingID,{from:employee4});
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),3,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 
-		await voting.vote(false,0);
-		r2 = await voting.getVotingStats();
+		await voting.vote(false,0,votingID);
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),4,'no');
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),true,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),true,'Voting is finished');
 	});
 
 	it('1.5. Q Scenario: 5 employees, 1/5 voted yes, 4/5 voted no, params(100,21) => isYes==false',async() => {
@@ -327,40 +361,50 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(false,0,{from:employee2});
-		r2 = await voting.getVotingStats();
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
+
+		await voting.vote(true,0,votingID,{from:employee1});
+		r2 = await voting.getVotingStats(votingID);
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),0,'no');
+
+		await voting.vote(false,0,votingID,{from:employee2});
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),1,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee3});
-		r2 = await voting.getVotingStats();
+		await voting.vote(false,0,votingID,{from:employee3});
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),2,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee4});
-		r2 = await voting.getVotingStats();
+		await voting.vote(false,0,votingID,{from:employee4});
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),3,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 
-		await voting.vote(false,0);
-		r2 = await voting.getVotingStats();
+		await voting.vote(false,0,votingID);
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),4,'no');
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),true,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 	});
 
 	it('1.6. Q Scenario: 5 employees, 1/5 voted yes, 2/5 voted no, params(50,50) => isYes==false',async() => {
@@ -372,24 +416,34 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(false,0,{from:employee2});
-		r2 = await voting.getVotingStats();
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
+
+		await voting.vote(true,0,votingID,{from:employee1});
+		r2 = await voting.getVotingStats(votingID);
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),0,'no');
+
+		await voting.vote(false,0,votingID,{from:employee2});
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),1,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee3});
-		r2 = await voting.getVotingStats();
+		await voting.vote(false,0,votingID,{from:employee3});
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),2,'no');
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),true,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 	});
 
 	it('1.7. Q Scenario: 5 employees, 2/5 voted yes, 1/5 voted no, params(50,50) => isYes==true',async() => {
@@ -401,24 +455,34 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
-		r2 = await voting.getVotingStats();
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
+
+		await voting.vote(true,0,votingID,{from:employee1});
+		r2 = await voting.getVotingStats(votingID);
+		assert.equal(r2[0].toNumber(),1,'yes');
+		assert.equal(r2[1].toNumber(),0,'no');
+
+		await voting.vote(true,0,votingID,{from:employee2});
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),2,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee3});
-		r2 = await voting.getVotingStats();
+		await voting.vote(false,0,votingID,{from:employee3});
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),2,'yes');
 		assert.equal(r2[1].toNumber(),1,'no');
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),true,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),true,'Voting is finished');
 	});
 
 	it('1.8. T Scenario: 5 employees, 2/5 voted yes, 1/5 voted no, params(50,50) => isYes==true',async() => {
@@ -430,16 +494,22 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
-		assert.strictEqual(await voting.isFinished(),false,'Voting should not be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is not finished');
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
-		await voting.vote(true,0,{from:employee3});
-		assert.strictEqual(await voting.isFinished(),false,'Voting should not be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is not finished');
+		await voting.vote(true,0,votingID,{from:employee1});
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
+
+		await voting.vote(true,0,votingID,{from:employee2});
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should not be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is not finished');
+
+		await voting.vote(true,0,votingID,{from:employee3});
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting should not be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is not finished');
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0',
@@ -448,8 +518,8 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting should not be finished');
-		assert.strictEqual(await voting.isYes(),true,'Voting is not finished');
+		assert.strictEqual(await voting.isFinished(votingID),true,'Voting should not be finished');
+		assert.strictEqual(await voting.isYes(votingID),true,'Voting is not finished');
 	});
 
 	it('1.9. T Scenario: no yes yes, params(100,20) => isYes==false',async() => {
@@ -461,14 +531,20 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
-		await voting.vote(false,0,{from:employee3});
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
+
+		await voting.vote(true,0,votingID,{from:employee1});
+		await voting.vote(true,0,votingID,{from:employee2});
+		await voting.vote(false,0,votingID,{from:employee3});
+
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0',
@@ -477,8 +553,8 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is  finished');
+		assert.strictEqual(await voting.isFinished(votingID),true,'Voting is finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is  finished');
 	});
 
 	it('1.10. T Scenario: no no no yes yes, params(100,20) => isYes==true',async() => {
@@ -490,16 +566,22 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
-		await voting.vote(false,0,{from:employee3});
-		await voting.vote(false,0,{from:employee4});
-		await voting.vote(false,0);
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
+
+		await voting.vote(true,0,votingID,{from:employee1});
+		await voting.vote(true,0,votingID,{from:employee2});
+		await voting.vote(false,0,votingID,{from:employee3});
+		await voting.vote(false,0,votingID,{from:employee4});
+		await voting.vote(false,0,votingID);
+
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0',
@@ -508,8 +590,8 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(votingID),true,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),true,'Voting is still not finished');
 
 	});
 
@@ -522,26 +604,17 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(false,0,{from:employee2});
-		await voting.vote(false,0,{from:employee3});
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
-		await web3.currentProvider.sendAsync({
-			jsonrpc: '2.0',
-			method: 'evm_increaseTime',
-			params: [1800 * 1 * 1000],
-			id: new Date().getTime()
-		}, function(err){if(err) console.log('err:', err)});
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
 
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
-
-		await voting.vote(true,0,{from:employee4});
-
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+		await voting.vote(false,0,votingID,{from:employee1});
+		await voting.vote(false,0,votingID,{from:employee2});
+		await voting.vote(false,0,votingID,{from:employee3});
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0',
@@ -550,8 +623,23 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),true,'Voting is still not finished');
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
+
+		await voting.vote(true,0,votingID,{from:employee4});
+
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
+
+		await web3.currentProvider.sendAsync({
+			jsonrpc: '2.0',
+			method: 'evm_increaseTime',
+			params: [1800 * 1 * 1000],
+			id: new Date().getTime()
+		}, function(err){if(err) console.log('err:', err)});
+
+		assert.strictEqual(await voting.isFinished(votingID),true,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
 	});
 
 	it('1.12. T Scenario: yes, params(20,20) => isYes==true',async() => {
@@ -563,8 +651,16 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
+		await voting.vote(true,0,votingID);
+		await voting.vote(false,0,votingID,{from:employee1});
+
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0',
@@ -573,8 +669,8 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
-		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),true,'Voting is finished');
+		assert.strictEqual(await voting.isYes(votingID),true,'Voting is finished');
 	});
 
 	it('1.13. T Scenario: yes yes no no, params(51,51) => isYes==false',async() => {
@@ -586,12 +682,17 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(false,0,{from:employee2});
-		await voting.vote(false,0,{from:employee3});
-		await voting.vote(true,0,{from:employee4});
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
+
+		await voting.vote(false,0,votingID,{from:employee2});
+		await voting.vote(false,0,votingID,{from:employee3});
+		await voting.vote(true,0,votingID,{from:employee4});
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0',
@@ -600,8 +701,8 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is no');
+		assert.strictEqual(await voting.isFinished(votingID),true,'Voting is finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is no');
 
 	});
 
@@ -614,8 +715,13 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
+
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0',
@@ -624,8 +730,8 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is no');
+		assert.strictEqual(await voting.isFinished(votingID),true,'Voting is finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is no');
 	});
 
 	it('1.15. T Scenario: yes no, params(21,21) => isYes==false',async() => {
@@ -637,10 +743,15 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(false,0,{from:employee2});
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
+
+		await voting.vote(false,0,votingID,{from:employee2});
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0',
@@ -649,8 +760,8 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 			id: new Date().getTime()
 		}, function(err){if(err) console.log('err:', err)});
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is no');
+		assert.strictEqual(await voting.isFinished(votingID),true,'Voting is finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is no');
 	});
 
 	it('1.16. Q Scenario: creator have 11/15 tokens, (50,50) => isYes==true',async() => {
@@ -669,13 +780,19 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
 
-		r2 = await voting.getVotingStats();
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+
+		await voting.vote(true,0,votingID);
+
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),11,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
 		assert.equal(r2[2].toNumber(),15,'total');
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),true,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),true,'Voting is finished');
 	});
 
 	it('1.17. Q Scenario: creator have 1/15 tokens, employee1 have 10 and vote no, (50,50) => isYes==false',async() => {
@@ -693,17 +810,24 @@ contract('Voting_SimpleToken(quorumPercent, consensusPercent)', (accounts) => {
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
 		const voting = await Voting_SimpleToken.at(votingAddress);
-		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(false,0,{from:employee1});
+		const tx = await aacInstance.startNewVoting(votingAddress);
+		const events = tx.logs.filter(l => l.event == 'VotingStarted');
+		const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
-		r2 = await voting.getVotingStats();
+		assert.strictEqual(await voting.isFinished(votingID),false,'Voting is still not finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is still not finished');
+
+		await voting.vote(true,0,votingID);
+
+		await voting.vote(false,0,votingID,{from:employee1});
+
+		r2 = await voting.getVotingStats(votingID);
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),11,'no');
 		assert.equal(r2[2].toNumber(),15,'total');
 
-		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(votingID),true,'Voting should be finished');
+		assert.strictEqual(await voting.isYes(votingID),false,'Voting is finished');
 	});
 });
