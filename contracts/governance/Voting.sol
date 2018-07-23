@@ -19,7 +19,6 @@ contract Voting is IVoting, Ownable {
 	event CallAction();
 	event DelegatedTo(address _sender, uint _tokensAmount);
 	event DelegationRemoved(address _from, address _to);
-	event consoleBool(string a, bool b);
 	
 	/*
 	 * @param _dao – DAO where proposal was created.
@@ -110,7 +109,6 @@ library VotingLib {
 	event DelegatedTo(address _sender, uint _tokensAmount);
 	event DelegationRemoved(address _from, address _to);
 
-	event consoleBool(string a, bool b);
 	event consoleUint(string a, uint b);
 
 	enum VotingType{
@@ -186,16 +184,12 @@ library VotingLib {
 	function getVotersTotal(VotingStorage storage self)public view returns(uint){	
 		if(VotingType.Voting1p1v==self.votingType){
 			return self.dao.getMembersCount(self.groupName);
-
 		}else if(VotingType.VotingSimpleToken==self.votingType){
 			return StdDaoToken(self.tokenAddress).totalSupply();
-
 		}else if(VotingType.VotingQuadratic==self.votingType){
 			return StdDaoToken(self.tokenAddress).getVotingTotalForQuadraticVoting();
-
 		}else if(VotingType.VotingLiquid==self.votingType){
 			return StdDaoToken(self.tokenAddress).totalSupply();
-		
 		}else{
 			revert();
 		}
@@ -208,13 +202,10 @@ library VotingLib {
 			}else{
 				return 0;
 			}	
-
 		}else if(VotingType.VotingSimpleToken==self.votingType){
 			return StdDaoToken(self.tokenAddress).getBalanceAtVoting(self.votingID, _voter);
-		
 		}else if(VotingType.VotingQuadratic==self.votingType){
 			return sqrt(StdDaoToken(self.tokenAddress).getBalanceAtVoting(self.votingID, _voter));
-		
 		}else if(VotingType.VotingLiquid==self.votingType){
 			uint res = StdDaoToken(self.tokenAddress).getBalanceAtVoting(self.votingID, _voter);
 			for(uint i = 0; i < self.delegations[_voter].length; i++){
@@ -225,7 +216,6 @@ library VotingLib {
 				}
 			}
 			return  res;
-
 		}else{
 			revert();
 		}
@@ -256,8 +246,6 @@ library VotingLib {
 	}
 
 	function isFinished(VotingStorage storage self) public view returns(bool){
-		emit consoleBool('_isTimeElapsed', _isTimeElapsed(self));
-		emit consoleBool('_isQuorumReached', _isQuorumReached(self));
 		if(self.canceled||self.finishedWithYes){
 			return true;
 

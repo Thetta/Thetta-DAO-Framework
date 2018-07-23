@@ -40,7 +40,7 @@ async function increaseTime(time){
 	})
 }
 
-async function increaseTimeRepeated(time){
+async function increaseTimeRepeated(time){ // HACK: sometimes increase time not work, so I repeat it 
 	await increaseTime(3600*1000);
 	await increaseTime(3600*1000);
 	await increaseTime(3600*1000);
