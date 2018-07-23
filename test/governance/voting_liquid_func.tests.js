@@ -1,4 +1,4 @@
-/*var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
+var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 
@@ -10,7 +10,7 @@ var InformalProposal = artifacts.require("./InformalProposal");
 
 var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 
-var LiquidVoting = artifacts.require("./LiquidVoting");
+var Voting_Liquid = artifacts.require("./Voting_Liquid");
 var IProposal = artifacts.require("./IProposal");
 
 const BigNumber = web3.BigNumber;
@@ -63,7 +63,7 @@ function fromUtf8(str) {
 	return padToBytes32(hex);
 };
 
-contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
+contract('Voting_Liquid(quorumPercent, consensusPercent)', (accounts) => {
 	const creator   = accounts[0];
 	const employee1 = accounts[1];
 	const employee2 = accounts[2];
@@ -148,7 +148,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 	it('0. should create new voting', async()=>{
 		let isGroupMember = await daoBase.isGroupMember('Employees', employee1);
 		assert.equal(isGroupMember,true, 'Creator is ein the group');
-		let voting = await LiquidVoting.new(daoBase.address, employee1, employee1, 60, 51, 71, token.address, false);
+		let voting = await Voting_Liquid.new(daoBase.address, employee1, employee1, 60, 51, 71, token.address, false);
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
 		assert.equal(quorumPercent.toNumber(), 51, 'quorumPercent should be 51');
@@ -163,7 +163,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -208,7 +208,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
@@ -231,7 +231,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -281,7 +281,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -326,7 +326,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -371,7 +371,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -400,7 +400,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -429,7 +429,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -460,7 +460,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -489,7 +489,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -521,7 +521,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -562,7 +562,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -585,7 +585,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -613,7 +613,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -636,7 +636,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -667,7 +667,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),11,'yes');
@@ -692,7 +692,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await LiquidVoting.at(votingAddress);
+		const voting = await Voting_Liquid.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
@@ -706,4 +706,4 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 	});
-});*/
+});

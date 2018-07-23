@@ -216,7 +216,7 @@ contract('DaoBaseAuto', (accounts) => {
 		// dont vote again!
     await voting.vote.sendTransaction(true, 0, {from: employee1}).should.be.rejectedWith('revert');
 		// vote by employee 2
-		await voting.vote(true,0,{from:employee2});
+		await voting.vote(true,{from:employee2});
 
 		const r2 = await voting.getVotingStats();
 		assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
@@ -224,7 +224,7 @@ contract('DaoBaseAuto', (accounts) => {
 
 
 		// vote by employee 3
-		await voting.vote(true,0,{from:employee3});
+		await voting.vote(true,{from:employee3});
 
 		// get voting results again
 		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
@@ -284,7 +284,7 @@ contract('DaoBaseAuto', (accounts) => {
 		assert.strictEqual(balance1.toNumber(),600,'initial employee1 balance');
 
 		// should execute the action (issue tokens)!
-		await voting.vote(true,0,{from:employee2});
+		await voting.vote(true,{from:employee2});
 
 		const r2 = await voting.getVotingStats();
 		assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
@@ -331,7 +331,7 @@ contract('DaoBaseAuto', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0);
+		await voting.vote(true);
 
 		const r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)

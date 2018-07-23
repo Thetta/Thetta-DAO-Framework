@@ -12,7 +12,7 @@ var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 
 var InformalProposal = artifacts.require("./InformalProposal");
 
-var LiquidVoting = artifacts.require("./LiquidVoting");
+var Voting_Liquid = artifacts.require("./Voting_Liquid");
 var IProposal = artifacts.require("./IProposal");
 
 const BigNumber = web3.BigNumber;
@@ -22,7 +22,7 @@ require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
+contract('Voting_Liquid(quorumPercent, consensusPercent)', (accounts) => {
 	const creator   = accounts[0];
 	const employee1 = accounts[1];
 	const employee2 = accounts[2];
@@ -46,13 +46,13 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 	});
 	describe('getPowerOf()', function () {
 		it('Check getPower()',async() => {
-			const voting = await LiquidVoting.new(daoBase.address, creator, creator, 0, 100, 100, token.address, false);
+			const voting = await Voting_Liquid.new(daoBase.address, creator, creator, 0, 100, 100, token.address);
 			r2 = await voting.getPowerOf(creator);
 			assert.equal(r2.toNumber(),1,'yes');
 		});
 
 		it('Check getPower() when voice delegated',async() => {
-			const voting = await LiquidVoting.new(daoBase.address, creator, creator, 0, 100, 100, token.address, false);
+			const voting = await Voting_Liquid.new(daoBase.address, creator, creator, 0, 100, 100, token.address);
 
 			await voting.delegateMyVoiceTo(employee1, 1);
 
@@ -65,7 +65,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		});
 
 		it('Check getPower() when voice delegated and delegation removed',async() => {
-			const voting = await LiquidVoting.new(daoBase.address, creator, creator, 0, 100, 100, token.address, false);
+			const voting = await Voting_Liquid.new(daoBase.address, creator, creator, 0, 100, 100, token.address);
 
 			await voting.delegateMyVoiceTo(employee1, 1);
 
@@ -89,7 +89,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 
 	describe('getDelegatedPowerOf()', function () {
 		it('Check getDelegatedPowerOf()',async() => {
-			const voting = await LiquidVoting.new(daoBase.address, creator, creator, 0, 100, 100, token.address, false);
+			const voting = await Voting_Liquid.new(daoBase.address, creator, creator, 0, 100, 100, token.address);
 
 			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),0,'yes');
@@ -107,7 +107,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 
 	describe('getDelegatedPowerByMe()', function () {
 		it('Check getDelegatedPowerByMe()',async() => {
-			const voting = await LiquidVoting.new(daoBase.address, creator, creator, 0, 100, 100, token.address, false);
+			const voting = await Voting_Liquid.new(daoBase.address, creator, creator, 0, 100, 100, token.address);
 
 			r2 = await voting.getDelegatedPowerByMe(creator);
 			assert.equal(r2.toNumber(),0,'yes');
@@ -125,7 +125,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 
 	describe('delegateMyVoiceTo()', function () {
 		it('Should delegate from A to B',async() => {
-			const voting = await LiquidVoting.new(daoBase.address, creator, creator, 0, 100, 100, token.address, false);
+			const voting = await Voting_Liquid.new(daoBase.address, creator, creator, 0, 100, 100, token.address);
 
 			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),0);
@@ -137,7 +137,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 		});
 
 		it('Should delegate from A to B then from A to B again with the same amount',async() => {
-			const voting = await LiquidVoting.new(daoBase.address, creator, creator, 0, 100, 100, token.address, false);
+			const voting = await Voting_Liquid.new(daoBase.address, creator, creator, 0, 100, 100, token.address);
 
 			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),0);
@@ -156,7 +156,7 @@ contract('LiquidVoting(quorumPercent, consensusPercent)', (accounts) => {
 
 	describe('removeDelegation()', function () {
 		it('Check removeDelegation()',async() => {
-			const voting = await LiquidVoting.new(daoBase.address, creator, creator, 0, 100, 100, token.address, false);
+			const voting = await Voting_Liquid.new(daoBase.address, creator, creator, 0, 100, 100, token.address);
 
 			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),0,);

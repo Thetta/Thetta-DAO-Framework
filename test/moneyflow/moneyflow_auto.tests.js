@@ -180,7 +180,7 @@ contract('MoneyflowAuto', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
+		await voting.vote(true,{from:employee2});
 
 		// check voting results again
 		const r2 = await voting.getVotingStats();
@@ -250,7 +250,7 @@ contract('MoneyflowAuto', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
+		await voting.vote(true,{from:employee2});
 
 		// check voting results again
 		const r2 = await voting.getVotingStats();

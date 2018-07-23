@@ -12,8 +12,8 @@ var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 
 var InformalProposal = artifacts.require("./InformalProposal");
 
-var LiquidVoting = artifacts.require("./LiquidVoting");
-var Voting = artifacts.require("./Voting");
+var Voting_Liquid = artifacts.require("./Voting_Liquid");
+var Voting_SimpleToken = artifacts.require("./Voting_SimpleToken");
 var IProposal = artifacts.require("./IProposal");
 
 const BigNumber = web3.BigNumber;
@@ -52,9 +52,9 @@ contract('Multiple Votings', (accounts) => {
 		it('Check getPower() when 3 different votings created',async() => {
 
 			// TODO: fix VOTING_TYPE_SIMPLE_TOKEN -> VOTING_TYPE_LIQUID
-			let liquidVoting = await LiquidVoting.new(daoBase.address, creator, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, '', 100, 100, token.address);
-			let simpleVoting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_SIMPLE_TOKEN, 60, '', 51, 71, token.address);
-			let qudraticVoting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_QUADRATIC, 60, '', 51, 71, token.address);
+			let liquidVoting = await Voting_Liquid.new(daoBase.address, creator, creator, 0, 100, 100, token.address);
+			let simpleVoting = await Voting_SimpleToken.new(daoBase.address, employee1, employee1, 60, '', 51, 71);
+			let qudraticVoting = await Voting_Quadratic.new(daoBase.address, employee1, employee1, 60, 51, 71, token.address);
 
 			r2 = await liquidVoting.getPowerOf(creator);
 			assert.equal(r2.toNumber(),1,'yes');

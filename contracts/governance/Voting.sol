@@ -17,9 +17,9 @@ contract Voting is IVoting, Ownable {
 	uint public quorumPercent;
 	uint public consensusPercent;
 
-	address tokenAddress;
-	uint votingID;	
-	string groupName;
+	// address tokenAddress;
+	// uint votingID;	
+	// string groupName;
 
 	struct Vote{
 		address voter;
@@ -30,18 +30,18 @@ contract Voting is IVoting, Ownable {
 	mapping(uint=>Vote) votes;
 
 	uint votesCount = 0;
-	VotingType votingType;
+	// VotingType votingType;
 
 	event Voted(address _who, bool _yes);
 	event CallAction();
 
-	enum VotingType{
-		NoVoting,
-		Voting1p1v,
-		VotingSimpleToken,
-		VotingQuadratic,
-		VotingLiquid
-	}
+	// enum VotingType{
+	// 	NoVoting,
+	// 	Voting1p1v,
+	// 	VotingSimpleToken,
+	// 	VotingQuadratic,
+	// 	VotingLiquid
+	// }
 
 	/*
 	 * @param _dao – DAO where proposal was created.
@@ -54,68 +54,69 @@ contract Voting is IVoting, Ownable {
 	 * @param _groupName
 	 * @param _tokenAddress
 	*/
-	constructor(IDaoBase _dao, IProposal _proposal, 
-		address _origin, VotingType _votingType, 
-		uint _minutesToVote, string _groupName, 
-		uint _quorumPercent, uint _consensusPercent, 
-		address _tokenAddress) public 
+	constructor(IDaoBase _dao, IProposal _proposal, address _origin, uint _minutesToVote, uint _quorumPercent, uint _consensusPercent) public {
+		_generalConstructor(_dao, _proposal, _origin, _minutesToVote, _quorumPercent,  _consensusPercent);
+	}
+	
+	function _generalConstructor(IDaoBase _dao, IProposal _proposal, address _origin, 
+		uint _minutesToVote, uint _quorumPercent, uint _consensusPercent)internal
 	{
-		require((_quorumPercent<=100)&&(_quorumPercent>0));
-		require((_consensusPercent<=100)&&(_consensusPercent>0));
+		// require((_quorumPercent<=100)&&(_quorumPercent>0));
+		// require((_consensusPercent<=100)&&(_consensusPercent>0));
 
 		dao = _dao;
 		proposal = _proposal;
 		minutesToVote = _minutesToVote;
 		quorumPercent = _quorumPercent;
 		consensusPercent = _consensusPercent;
-		groupName = _groupName;
-		votingType = _votingType;
+		// groupName = _groupName;
+		// votingType = _votingType;
 		genesis = uint64(now);	
-		tokenAddress = _tokenAddress;
-		votingID = StdDaoToken(_tokenAddress).startNewVoting();
-
-		_vote(_origin, true);
+		// tokenAddress = _tokenAddress;
+		// votingID = StdDaoToken(_tokenAddress).startNewVoting();
 	}
 
 	function getVotersTotal() view returns(uint){
-		if(VotingType.Voting1p1v==votingType){
-			return dao.getMembersCount(groupName);
+		return 0;
+		// if(VotingType.Voting1p1v==votingType){
+		// 	return dao.getMembersCount(groupName);
 
-		}else if(VotingType.VotingSimpleToken==votingType){
-			return StdDaoToken(tokenAddress).totalSupply();
+		// }else if(VotingType.VotingSimpleToken==votingType){
+		// 	return StdDaoToken(tokenAddress).totalSupply();
 
-		}else if(VotingType.VotingQuadratic==votingType){
-			return StdDaoToken(tokenAddress).getVotingTotalForQuadraticVoting();
+		// }else if(VotingType.VotingQuadratic==votingType){
+		// 	return StdDaoToken(tokenAddress).getVotingTotalForQuadraticVoting();
 
-		}else{
-			revert();
-		}
+		// }else{
+		// 	revert();
+		// }
 	}
 
-	function getVoterPower(address _voter) view returns(uint){
-		if(VotingType.Voting1p1v==votingType){
-			require(dao.isGroupMember(groupName, _voter));
-			return 1;
+	function getPowerOf(address _voter)public view returns(uint){
+		return 0;
+		// if(VotingType.Voting1p1v==votingType){
+		// 	require(dao.isGroupMember(groupName, _voter));
+		// 	return 1;
 
-		}else if(VotingType.VotingSimpleToken==votingType){
-			return StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter);
+		// }else if(VotingType.VotingSimpleToken==votingType){
+		// 	return StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter);
 		
-		}else if(VotingType.VotingQuadratic==votingType){
-			return _sqrt(StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter));
+		// }else if(VotingType.VotingQuadratic==votingType){
+		// 	return _sqrt(StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter));
 		
-		}else{
-			revert();
-		}
+		// }else{
+		// 	revert();
+		// }
 	}
 
-	function _sqrt(uint x) internal pure returns (uint y) {
-		uint z = (x + 1) / 2;
-		y = x;
-		while (z < y) {
-			y = z;
-			z = (x / z + z) / 2;
-		}
-	}
+	// function _sqrt(uint x) internal pure returns (uint y) {
+	// 	uint z = (x + 1) / 2;
+	// 	y = x;
+	// 	while (z < y) {
+	// 		y = z;
+	// 		z = (x / z + z) / 2;
+	// 	}
+	// }
 
 	function vote(bool _isYes) public {
 		require(!isFinished());
@@ -141,14 +142,11 @@ contract Voting is IVoting, Ownable {
 	}
 
 	function isFinished() public view returns(bool){
-		if(canceled){
+		if(canceled||finishedWithYes){
 			return true;
 
 		}else if(minutesToVote!=0){
 			return _isTimeElapsed();
-
-		}else if(finishedWithYes){
-			return true;
 
 		}else{
 			return _isQuorumReached();
@@ -191,9 +189,9 @@ contract Voting is IVoting, Ownable {
 	function getVotingStats() public constant returns(uint yesResults, uint noResults, uint votersTotal){
 		for(uint i=0; i<votesCount; ++i){
 			if(votes[i].isYes){
-				yesResults+= getVoterPower(votes[i].voter);
+				yesResults+= getPowerOf(votes[i].voter);
 			}else{
-				noResults+= getVoterPower(votes[i].voter);
+				noResults+= getPowerOf(votes[i].voter);
 			}		
 		}
 		votersTotal = getVotersTotal();	
@@ -205,3 +203,182 @@ contract Voting is IVoting, Ownable {
 	}	
 }
 
+
+
+contract Voting_1p1v is Voting {
+	string public groupName;
+	constructor(IDaoBase _dao, IProposal _proposal, address _origin, uint _minutesToVote, string _groupName, uint _quorumPercent, uint _consensusPercent) public 
+		Voting(_dao, _proposal, _origin, _minutesToVote, _quorumPercent,  _consensusPercent) {
+		_generalConstructor(_dao, _proposal, _origin, _minutesToVote, _quorumPercent,  _consensusPercent);
+		groupName = _groupName;
+		_vote(_origin, true);
+	}
+
+	function getVotersTotal() view returns(uint){
+		return dao.getMembersCount(groupName);
+	}
+
+	function getPowerOf(address _voter) view returns(uint){	
+		require(dao.isGroupMember(groupName, _voter));
+		return 1;
+	}
+}
+
+contract Voting_SimpleToken is Voting {
+	address tokenAddress;
+	uint votingID;
+	constructor(IDaoBase _dao, IProposal _proposal, address _origin, uint _minutesToVote, uint _quorumPercent, uint _consensusPercent, address _tokenAddress) public 
+		Voting(_dao, _proposal, _origin, _minutesToVote, _quorumPercent,  _consensusPercent) {
+		_generalConstructor(_dao, _proposal, _origin, _minutesToVote, _quorumPercent,  _consensusPercent);
+		tokenAddress = _tokenAddress;
+		votingID = StdDaoToken(_tokenAddress).startNewVoting();
+		_vote(_origin, true);
+	}
+
+	function getVotersTotal() view returns(uint){
+		return StdDaoToken(tokenAddress).totalSupply();
+	}
+
+	function getPowerOf(address _voter) view returns(uint){
+		uint tokenAmount = StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter);
+		return tokenAmount;
+	}
+}
+
+contract Voting_Quadratic is Voting {
+	address tokenAddress;
+	uint votingID;	
+	constructor(IDaoBase _dao, IProposal _proposal, address _origin, uint _minutesToVote, uint _quorumPercent, uint _consensusPercent, address _tokenAddress) public 
+		Voting(_dao, _proposal, _origin, _minutesToVote, _quorumPercent,  _consensusPercent) {
+		_generalConstructor(_dao, _proposal, _origin, _minutesToVote, _quorumPercent,  _consensusPercent);
+		tokenAddress = _tokenAddress;
+		votingID = StdDaoToken(_tokenAddress).startNewVoting();
+		_vote(_origin, true);
+	}
+
+	function getVotersTotal() view returns(uint){
+		return StdDaoToken(tokenAddress).getVotingTotalForQuadraticVoting();
+	}
+
+	function getPowerOf(address _voter) view returns(uint){
+		uint tokenAmount = StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter);
+		return sqrt(tokenAmount);
+	}
+
+	function sqrt(uint x) internal pure returns (uint y) {
+		uint z = (x + 1) / 2;
+		y = x;
+		while (z < y) {
+			y = z;
+			z = (x / z + z) / 2;
+		}
+	}
+}
+
+contract Voting_Liquid is Voting {
+	address tokenAddress;
+	uint votingID;	
+
+	struct Delegation {
+		address _address;
+		uint amount;
+		bool isDelegator;
+	}	
+
+	event DelegatedTo(address _sender, uint _tokensAmount);
+	event DelegationRemoved(address _from, address _to);
+
+	mapping (address => Delegation[]) delegations;
+	
+	constructor(IDaoBase _dao, IProposal _proposal, address _origin, uint _minutesToVote, uint _quorumPercent, uint _consensusPercent, address _tokenAddress) public 
+		Voting(_dao, _proposal, _origin, _minutesToVote, _quorumPercent,  _consensusPercent) {
+		_generalConstructor(_dao, _proposal, _origin, _minutesToVote, _quorumPercent,  _consensusPercent);
+		tokenAddress = _tokenAddress;
+		votingID = StdDaoToken(_tokenAddress).startNewVoting();
+		_vote(_origin, true);
+	}
+	
+	function getPowerOf(address _voter) public view returns(uint){
+		uint res = StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter);
+
+		for(uint i = 0; i < delegations[_voter].length; i++){
+			if(!delegations[_voter][i].isDelegator){
+				res += delegations[_voter][i].amount;
+			}else{
+				res -= delegations[_voter][i].amount;
+			}
+		}
+
+		return  res;
+	}
+
+	function getVotersTotal() view returns(uint){
+		return StdDaoToken(tokenAddress).totalSupply();
+	}	
+
+	function getDelegatedPowerOf(address _of) public view returns(uint) {
+		uint res;
+
+		for(uint i = 0; i < delegations[_of].length; i++){
+			if(!delegations[_of][i].isDelegator){
+				res += delegations[_of][i].amount;
+			}
+		}
+
+		return res;
+	}
+
+	function getDelegatedPowerByMe(address _to) public view returns(uint) {
+		uint res;
+
+		for(uint i = 0; i < delegations[msg.sender].length; i++){
+			if(delegations[msg.sender][i]._address == _to){
+				if(delegations[msg.sender][i].isDelegator){
+					res += delegations[msg.sender][i].amount;
+				}
+			}
+		}
+
+		return res;
+	}
+
+	function delegateMyVoiceTo(address _to, uint _tokenAmount) public {
+		require (_to!= address(0));
+		require (_tokenAmount <= StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, msg.sender));
+
+		for(uint i = 0; i < delegations[_to].length; i++){
+			if(delegations[_to][i]._address == msg.sender){
+				delegations[_to][i].amount = _tokenAmount;
+			}
+		}
+
+		for(i = 0; i < delegations[msg.sender].length; i++){
+			if(delegations[msg.sender][i]._address == _to){
+				delegations[msg.sender][i].amount = _tokenAmount;
+				emit DelegatedTo(_to, _tokenAmount);
+				return;
+			}
+		}
+
+		delegations[_to].push(Delegation(msg.sender, _tokenAmount, false));
+		delegations[msg.sender].push(Delegation(_to, _tokenAmount, true));
+	}
+
+	function removeDelegation(address _to) public {
+		require (_to!= address(0));
+
+		for(uint i = 0; i < delegations[_to].length; i++){
+			if(delegations[_to][i]._address == msg.sender){
+				delegations[_to][i].amount = 0;
+			}
+		}
+
+		for(i = 0; i < delegations[msg.sender].length; i++){
+			if(delegations[msg.sender][i]._address == _to){
+				delegations[msg.sender][i].amount = 0;
+			}
+		}
+
+		emit DelegationRemoved(msg.sender, _to);
+	}
+}

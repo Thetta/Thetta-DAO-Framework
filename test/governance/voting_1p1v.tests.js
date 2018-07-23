@@ -145,7 +145,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		let voting = await Voting_1p1v.new(daoBase.address, proposal.address, creator, 0, "Employees", 51, 90, {from:creator});
 
 		// vote by first, check results  (getVotingStats, isFinished, isYes, etc)
-		await voting.vote(true,0,{from:employee1});
+		await voting.vote(true,{from:employee1});
 
 		var r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
@@ -160,18 +160,18 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.equal(r2[1].toNumber(),0,'no');
 		assert.equal(r2[2].toNumber(),5,'creator + 4 employee');
 
-		await voting.vote(true,0,{from:employee2});
+		await voting.vote(true,{from:employee2});
 
 		var r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		assert.equal(r2[1].toNumber(),0,'no');
 
-		await voting.vote(true, 0, {from: employee2}).should.be.rejectedWith('revert');
+		await voting.vote(true, {from: employee2}).should.be.rejectedWith('revert');
 
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee3});
+		await voting.vote(true,{from:employee3});
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished: 4/6 voted');
 		assert.strictEqual(await voting.isYes(),true,'Voting is finished: 4/6 voted, all said yes');
@@ -206,7 +206,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
+		await voting.vote(true,{from:employee2});
 		r2 = await voting.getVotingStats();
 
 		assert.equal(r2[0].toNumber(),2,'yes');
@@ -215,7 +215,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(true,0,{from:employee3});
+		await voting.vote(true,{from:employee3});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),3,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
@@ -223,7 +223,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(true,0,{from:employee4});
+		await voting.vote(true,{from:employee4});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),4,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
@@ -231,7 +231,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(true,0);
+		await voting.vote(true);
 		r2 = await voting.getVotingStats();
 		assert.equal(r2
 			[0].toNumber(),5,'yes');
@@ -281,7 +281,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.equal(quorumPercent.toNumber(), 100, 'quorumPercent should be 100');
 		assert.equal(consensusPercent.toNumber(), 10, 'consensusPercent should be 10');
 
-		await voting.vote(false,0,{from:employee2});
+		await voting.vote(false,{from:employee2});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),1,'no');
@@ -289,7 +289,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee3});
+		await voting.vote(false,{from:employee3});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),2,'no');
@@ -297,7 +297,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee4});
+		await voting.vote(false,{from:employee4});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),3,'no');
@@ -305,7 +305,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0);
+		await voting.vote(false);
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),4,'no');
@@ -326,7 +326,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(false,0,{from:employee2});
+		await voting.vote(false,{from:employee2});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),1,'no');
@@ -334,7 +334,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee3});
+		await voting.vote(false,{from:employee3});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),2,'no');
@@ -342,7 +342,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee4});
+		await voting.vote(false,{from:employee4});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),3,'no');
@@ -350,7 +350,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0);
+		await voting.vote(false);
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),4,'no');
@@ -371,7 +371,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(false,0,{from:employee2});
+		await voting.vote(false,{from:employee2});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),1,'no');
@@ -379,7 +379,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee3});
+		await voting.vote(false,{from:employee3});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),2,'no');
@@ -387,7 +387,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee4});
+		await voting.vote(false,{from:employee4});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),3,'no');
@@ -395,7 +395,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0);
+		await voting.vote(false);
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),4,'no');
@@ -416,7 +416,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(false,0,{from:employee2});
+		await voting.vote(false,{from:employee2});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),1,'no');
@@ -424,7 +424,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee3});
+		await voting.vote(false,{from:employee3});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
 		assert.equal(r2[1].toNumber(),2,'no');
@@ -445,7 +445,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
+		await voting.vote(true,{from:employee2});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),2,'yes');
 		assert.equal(r2[1].toNumber(),0,'no');
@@ -453,7 +453,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
-		await voting.vote(false,0,{from:employee3});
+		await voting.vote(false,{from:employee3});
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),2,'yes');
 		assert.equal(r2[1].toNumber(),1,'no');
@@ -474,11 +474,11 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
+		await voting.vote(true,{from:employee2});
 		assert.strictEqual(await voting.isFinished(),false,'Voting should not be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is not finished');
 
-		await voting.vote(true,0,{from:employee3});
+		await voting.vote(true,{from:employee3});
 		assert.strictEqual(await voting.isFinished(),false,'Voting should not be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is not finished');
 
@@ -505,8 +505,8 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
-		await voting.vote(false,0,{from:employee3});
+		await voting.vote(true,{from:employee2});
+		await voting.vote(false,{from:employee3});
 
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
@@ -534,10 +534,10 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
-		await voting.vote(false,0,{from:employee3});
-		await voting.vote(false,0,{from:employee4});
-		await voting.vote(false,0);
+		await voting.vote(true,{from:employee2});
+		await voting.vote(false,{from:employee3});
+		await voting.vote(false,{from:employee4});
+		await voting.vote(false);
 
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
@@ -566,8 +566,8 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(false,0,{from:employee2});
-		await voting.vote(false,0,{from:employee3});
+		await voting.vote(false,{from:employee2});
+		await voting.vote(false,{from:employee3});
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0',
@@ -579,7 +579,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee4});
+		await voting.vote(true,{from:employee4});
 
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
@@ -630,9 +630,9 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(false,0,{from:employee2});
-		await voting.vote(false,0,{from:employee3});
-		await voting.vote(true,0,{from:employee4});
+		await voting.vote(false,{from:employee2});
+		await voting.vote(false,{from:employee3});
+		await voting.vote(true,{from:employee4});
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0',
@@ -681,7 +681,7 @@ contract('Voting_1p1v(quorumPercent, consensusPercent)', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(false,0,{from:employee2});
+		await voting.vote(false,{from:employee2});
 
 		await web3.currentProvider.sendAsync({
 			jsonrpc: '2.0',
