@@ -5,6 +5,7 @@ import "../IDaoBase.sol";
 import "../governance/Voting_1p1v.sol";
 import "../governance/Voting_SimpleToken.sol";
 import "../governance/Proposals.sol";
+import "../tokens/StdDaoToken.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -91,6 +92,13 @@ contract GenericCaller is DaoClient, Ownable {
 		}
 	}
 
+	function finishVoting(bytes32 _permissionIdHash, uint _votingID) public onlyOwner {
+		VotingParams memory vp = votingParams[_permissionIdHash];
+		StdDaoToken memory token = StdDaoToken(address(vp.param5));
+		token.finishVoting(_votingID);
+	}
+	
+
 	function setVotingParams(bytes32 _permissionIdHash, uint _votingType, 
 		bytes32 _param1, bytes32 _param2, 
 		bytes32 _param3, bytes32 _param4, bytes32 _param5) public onlyOwner {
@@ -107,6 +115,8 @@ contract GenericCaller is DaoClient, Ownable {
 
 	function createVoting(bytes32 _permissionIdHash, IProposal _proposal, address _origin)internal returns(IVoting){
 		VotingParams memory vp = votingParams[_permissionIdHash];
+		StdDaoToken memory token = StdDaoToken(address(vp.param5));
+		uint votingID = token.startNewVoting();
 
 		if(VotingType.Voting1p1v==vp.votingType){
 			return new Voting_1p1v(dao, _proposal, _origin, 
@@ -117,12 +127,14 @@ contract GenericCaller is DaoClient, Ownable {
 		}
 
 		if(VotingType.VotingSimpleToken==vp.votingType){
+
 			return new Voting_SimpleToken(dao, _proposal, _origin, 
 				uint(vp.param1), 
 				uint(vp.param3), 
 				uint(vp.param4), 
 				address(vp.param5),
-				false);
+				false,
+				votingID);
 		}
 
 		if(VotingType.VotingQuadratic==vp.votingType){
@@ -131,7 +143,8 @@ contract GenericCaller is DaoClient, Ownable {
 				uint(vp.param3), 
 				uint(vp.param4), 
 				address(vp.param5),
-				true);
+				true,
+				votingID);
 		}
 
 		/*if(VotingType.VotingLiquid==vp.votingType){

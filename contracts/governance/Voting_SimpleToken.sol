@@ -54,7 +54,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 
 	constructor(IDaoBase _dao, IProposal _proposal, 
 		address _origin, uint _minutesToVote,
-		uint _quorumPercent, uint _consensusPercent, address _tokenAddress, bool _isQuadraticVoting) public 
+		uint _quorumPercent, uint _consensusPercent, address _tokenAddress, bool _isQuadraticVoting, uint _votingID) public 
 	{
 		require((_quorumPercent<=100)&&(_quorumPercent>0));
 		require((_consensusPercent<=100)&&(_consensusPercent>0));
@@ -66,7 +66,7 @@ contract Voting_SimpleToken is IVoting, Ownable {
 		consensusPercent = _consensusPercent;
 		isQuadraticVoting = _isQuadraticVoting;
 		stdDaoToken = StdDaoToken(_tokenAddress);
-		votingID = stdDaoToken.startNewVoting();
+		votingID = _votingID;
 
 		genesis = uint64(now);
 
