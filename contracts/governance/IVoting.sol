@@ -9,7 +9,7 @@ pragma solidity ^0.4.22;
 contract IVoting {
 	// _tokenAmount -> if this voting type DOES NOT use tokens -> set to any value (e.g., 0);
 	// will execute action automatically if the voting is finished 
-	function vote(bool _yes, uint _tokenAmount) public;
+	function vote(bool _yes) public;
 
 	// stop the voting
 	function cancelVoting() public;

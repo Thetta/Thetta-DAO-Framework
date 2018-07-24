@@ -8,7 +8,7 @@ var IWeiReceiver = artifacts.require("./IWeiReceiver");
 var WeiAbsoluteExpense = artifacts.require("./WeiAbsoluteExpense");
 
 var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
-var Voting_1p1v = artifacts.require("./Voting_1p1v");
+var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
 
 function KECCAK256 (x){
@@ -171,7 +171,7 @@ contract('MoneyflowAuto', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_1p1v.at(votingAddress);
+		const voting = await Voting.at(votingAddress);
 
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
@@ -180,7 +180,7 @@ contract('MoneyflowAuto', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
+		await voting.vote(true,{from:employee2});
 
 		// check voting results again
 		const r2 = await voting.getVotingStats();
@@ -246,11 +246,11 @@ contract('MoneyflowAuto', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_1p1v.at(votingAddress);
+		const voting = await Voting.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
+		await voting.vote(true,{from:employee2});
 
 		// check voting results again
 		const r2 = await voting.getVotingStats();
