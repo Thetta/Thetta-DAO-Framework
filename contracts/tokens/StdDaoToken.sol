@@ -5,6 +5,7 @@ import "zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 
 import "./CopyOnWriteToken.sol";
 import "./ITokenVotingSupport.sol";
+import "../DaoBase.sol";
 
 /**
  * @title StdDaoToken 
@@ -24,13 +25,16 @@ import "./ITokenVotingSupport.sol";
  *    finishVoting()
  *    getBalanceAtVoting() 
 */
-contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVotingSupport {
+contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, DaoBase, ITokenVotingSupport {
 	uint256 public cap;
 	bool isBurnable;
 	bool isPausable;
 
 	address[] public holders;
 	mapping (address => bool) isHolder;
+	mapping (uint => address) votingCreated;
+
+	bytes32 public TOKEN_StartNewVoting = keccak256(abi.encodePacked("TOKEN_StartNewVoting"));
 
 	modifier isBurnable_() { 
 		require (isBurnable); 
@@ -58,14 +62,17 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 
 // ITokenVotingSupport implementation
 	// TODO: VULNERABILITY! no onlyOwner!
-	function startNewVoting() public whenNotPaused returns(uint) {
+	function startNewVoting(address _voting) public whenNotPaused isCanDo(TOKEN_StartNewVoting) returns(uint) {
 		uint idOut = super.startNewEvent();
+		votingCreated[idOut] = _voting;
 		emit VotingStarted(msg.sender, idOut);
 		return idOut;
 	}
 
 	// TODO: VULNERABILITY! no onlyOwner!
 	function finishVoting(uint _votingID) whenNotPaused public {
+		require (msg.sender == votingCreated[_votingID]);
+		
 		super.finishEvent(_votingID);
 		emit VotingFinished(msg.sender, _votingID);
 	}

@@ -39,6 +39,13 @@ contract Voting is IVoting, Ownable {
 		store.generalConstructor(_dao, _proposal, _origin, _votingType, _minutesToVote, _groupName, _quorumPercent, _consensusPercent, _tokenAddress);
 	}
 
+	function setStdDaoTokenVotingID(uint _stdDaoTokenVotingID) public onlyOwner {
+		if(VotingType.Voting1p1v!=store.votingType){
+			store.votingID = _stdDaoTokenVotingID;
+		}
+	}
+	
+
 	function quorumPercent()view returns(uint){
 		return store.quorumPercent;
 	}
@@ -61,6 +68,9 @@ contract Voting is IVoting, Ownable {
 
 	function vote(bool _isYes) public{
 		store.libVote(msg.sender, _isYes);
+		if(store.isFinished(store)){
+			StdDaoToken(store.tokenAddress).finishVoting(store.votingID);
+		}
 	}
 
 	function callActionIfEnded() public {
@@ -164,11 +174,8 @@ library VotingLib {
 		store.groupName = _groupName;
 		store.votingType = _votingType;
 		store.genesis = now;
+		store.tokenAddress = _tokenAddress;
 
-		if(VotingType.Voting1p1v!=store.votingType){
-			store.tokenAddress = _tokenAddress;
-			store.votingID = StdDaoToken(_tokenAddress).startNewVoting();
-		}
 		libVote(store, _origin, true);
 	}
 
