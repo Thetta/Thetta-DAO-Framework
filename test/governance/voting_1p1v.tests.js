@@ -24,28 +24,8 @@ require('chai')
   .should();
 
 
-async function increaseTime(time){
-	await web3.currentProvider.sendAsync({
-		jsonrpc: '2.0', 
-		method: 'evm_increaseTime', 
-		params: [time], 
-		id: new Date().getSeconds()
-	}, async (err, resp) => {
-		if (err){
-			console.log(err);
-		}
-	})
-}
+var increaseTime = require('../utils/increaseTime');
 
-async function increaseTimeRepeated(time){ // HACK: sometimes increase time not work, so I repeat it 
-	await increaseTime(3600*1000);
-	await increaseTime(3600*1000);
-	await increaseTime(3600*1000);
-	await increaseTime(3600*1000);
-	await increaseTime(3600*1000);
-	await increaseTime(3600*1000);
-	await increaseTime(3600*1000);
-}
 
 function KECCAK256 (x){
 	return web3.sha3(x);
@@ -529,7 +509,7 @@ contract('Voting 1P1V', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting should not be finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is not finished');
 
-		await increaseTimeRepeated(3600*1000);
+		await increaseTime(3600*1000);
 
 		var fin = await voting.isFinished();
 		var isY = await voting.isYes();
@@ -555,7 +535,7 @@ contract('Voting 1P1V', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await increaseTimeRepeated(3600*1000);
+		await increaseTime(3600*1000);
 
 		var fin = await voting.isFinished();
 		var isY = await voting.isYes();
@@ -583,7 +563,7 @@ contract('Voting 1P1V', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await increaseTimeRepeated(3600*1000);
+		await increaseTime(3600*1000);
 
 		var fin = await voting.isFinished();
 		var isY = await voting.isYes();
@@ -618,7 +598,7 @@ contract('Voting 1P1V', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await increaseTimeRepeated(3600*1000);
+		await increaseTime(3600*1000);
 
 		var fin = await voting.isFinished();
 		var isY = await voting.isYes();
@@ -638,7 +618,7 @@ contract('Voting 1P1V', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await increaseTimeRepeated(3600*1000);
+		await increaseTime(3600*1000);
 
 		var fin = await voting.isFinished();
 		var isY = await voting.isYes();
@@ -662,7 +642,7 @@ contract('Voting 1P1V', (accounts) => {
 		await voting.vote(false,{from:employee3});
 		await voting.vote(true,{from:employee4});
 
-		await increaseTimeRepeated(3600*1000);
+		await increaseTime(3600*1000);
 
 		var fin = await voting.isFinished();
 		var isY = await voting.isYes();
@@ -683,7 +663,7 @@ contract('Voting 1P1V', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await increaseTimeRepeated(3600*1000);
+		await increaseTime(3600*1000);
 
 		var fin = await voting.isFinished();
 		var isY = await voting.isYes();
@@ -705,7 +685,7 @@ contract('Voting 1P1V', (accounts) => {
 
 		await voting.vote(false,{from:employee2});
 
-		await increaseTimeRepeated(3600*1000);
+		await increaseTime(3600*1000);
 
 		var fin = await voting.isFinished();
 		var isY = await voting.isYes();

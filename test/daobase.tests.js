@@ -12,6 +12,11 @@ function KECCAK256 (x){
 	return web3.sha3(x);
 }
 
+require('chai')
+  .use(require('chai-as-promised'))
+  .use(require('chai-bignumber')(web3.BigNumber))
+  .should();
+
 contract('DaoBase', (accounts) => {
 	let token;
 	let store;
@@ -49,15 +54,10 @@ contract('DaoBase', (accounts) => {
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{from: creator});
-
 		issueTokens = await daoBase.ISSUE_TOKENS();
-
 		manageGroups = await daoBase.MANAGE_GROUPS();
-
 		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
-
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
-
 		burnTokens = await daoBase.BURN_TOKENS();
 
 		// do not forget to transfer ownership
@@ -168,7 +168,7 @@ contract('DaoBase', (accounts) => {
 		await daoBase.issueTokens(token.address, employee2, 100, {from: creator}).should.be.rejectedWith('revert');
 
 		// now try to withdraw donations with new mc
-		const money = 1000000000;
+		const money = 1e15;
 		const dea = await moneyflowInstance.getDonationEndpoint();
 		const donationEndpoint = await IWeiReceiver.at(dea);
 		await donationEndpoint.processFunds(money, { from: creator, value: money, gasPrice: 0});
@@ -184,9 +184,7 @@ contract('DaoBase', (accounts) => {
 		let outBalance2 = await web3.eth.getBalance(outsider);
 		let balanceDelta = outBalance2.toNumber() - outBalance.toNumber();
 
-		// TODO: fix that!!!
-		// TODO: why not working?
-		//assert.equal(balanceDelta, money, 'all donations now on outsiders`s balance');
+		assert.equal(balanceDelta, money, 'all donations now on outsiders`s balance');
 
 		let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);
 		assert.equal(donationBalance2.toNumber(),0, 'all donations now on creator`s balance');
