@@ -15,9 +15,9 @@ import "./utils/GenericCaller.sol";
 */
 contract DaoBaseAuto is GenericCaller {
 
-	bytes32 constant public MANAGE_GROUPS = keccak256("manageGroups");
-	bytes32 constant public ISSUE_TOKENS = keccak256("issueTokens");
-	bytes32 constant public UPGRADE_DAO_CONTRACT = keccak256("upgradeDaoContract");
+	bytes32 public MANAGE_GROUPS = keccak256(abi.encodePacked("manageGroups"));
+	bytes32 public ISSUE_TOKENS = keccak256(abi.encodePacked("issueTokens"));
+	bytes32 public UPGRADE_DAO_CONTRACT = keccak256(abi.encodePacked("upgradeDaoContract"));
 
 	constructor(IDaoBase _dao)public
 		GenericCaller(_dao)
@@ -26,7 +26,7 @@ contract DaoBaseAuto is GenericCaller {
 
 	function addGroupMemberAuto(string _group, address _a) public returns(address proposalOut){
 		bytes32[] memory params = new bytes32[](2);
-		params[0] = bytes32(keccak256(_group));
+		params[0] = bytes32(keccak256(abi.encodePacked(_group)));
 		params[1] = bytes32(_a);
 
 	   return doAction(MANAGE_GROUPS, dao, msg.sender,"addGroupMemberGeneric(bytes32[])",params);
@@ -58,4 +58,3 @@ contract DaoBaseAuto is GenericCaller {
 	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public isCanDo("manageGroups"){
    */
 }
-

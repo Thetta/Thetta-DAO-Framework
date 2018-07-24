@@ -16,7 +16,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  * It will transfer ownership only during upgrade
  *
  * 2. Currently DaoBase works only with StdDaoToken. It does not support working with 
- * plain ERC20 tokens because we need some extra features like mint(), burn() and transferOwnership()
+ * plain ERC20 tokens because we need some extra features like mintFor(), burnFor() and transferOwnership()
 */
 contract DaoBase is IDaoBase, Ownable {
 	DaoStorage public store;
@@ -32,11 +32,11 @@ contract DaoBase is IDaoBase, Ownable {
 	event DaoBase_IssueTokens(address _tokenAddress, address _to, uint _amount);
 	event DaoBase_BurnTokens(address _tokenAddress, address _who, uint _amount);
 
-	bytes32 constant public ISSUE_TOKENS = keccak256("issueTokens");
-	bytes32 constant public MANAGE_GROUPS = keccak256("manageGroups");
-	bytes32 constant public ADD_NEW_PROPOSAL = keccak256("addNewProposal");
-	bytes32 constant public BURN_TOKENS = keccak256("burnTokens");
-	bytes32 constant public UPGRADE_DAO_CONTRACT = keccak256("upgradeDaoContract");
+	bytes32 public ISSUE_TOKENS = keccak256(abi.encodePacked("issueTokens"));
+	bytes32 public MANAGE_GROUPS = keccak256(abi.encodePacked("manageGroups"));
+	bytes32 public ADD_NEW_PROPOSAL = keccak256(abi.encodePacked("addNewProposal"));
+	bytes32 public BURN_TOKENS = keccak256(abi.encodePacked("burnTokens"));
+	bytes32 public UPGRADE_DAO_CONTRACT = keccak256(abi.encodePacked("upgradeDaoContract"));
 
 	constructor(DaoStorage _store) public {
 		store = _store;
@@ -55,20 +55,16 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 	modifier isCanDo(bytes32 _what){
-		require(_isCanDoAction(msg.sender,_what)); 
+		require(isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
 
 // IDaoBase:
-	function addObserver(IDaoObserver _observer) external {
+	function addObserver(IDaoObserver _observer) public {
 		store.addObserver(_observer);
 	}
 
-	function upgradeDaoContract(IDaoBase _new) external isCanDo(UPGRADE_DAO_CONTRACT) {
-		_upgradeDaoContract(_new);
-	}
-
-	function _upgradeDaoContract(IDaoBase _new) internal{
+	function upgradeDaoContract(IDaoBase _new) public isCanDo(UPGRADE_DAO_CONTRACT) {
 		emit DaoBase_UpgradeDaoContract(_new);
 		// call observers.onUpgrade() for all observers
 		for(uint i=0; i<store.getObserverCount(); ++i){
@@ -85,43 +81,43 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 // Groups:
-	function getMembersCount(string _groupName) external constant returns(uint){
-		return store.getMembersCount(keccak256(_groupName));
+	function getMembersCount(string _groupName) public constant returns(uint){
+		return store.getMembersCount(keccak256(abi.encodePacked(_groupName)));
 	}
-	function addGroupMember(string _groupName, address _a) external isCanDo(MANAGE_GROUPS) {
+	function addGroupMember(string _groupName, address _a) public isCanDo(MANAGE_GROUPS) {
 		emit DaoBase_AddGroupMember(_groupName, _a);
-		store.addGroupMember(keccak256(_groupName), _a);
+		store.addGroupMember(keccak256(abi.encodePacked(_groupName)), _a);
 	}
-	function getGroupMembers(string _groupName) external constant returns(address[]){
-		return store.getGroupMembers(keccak256(_groupName));
+	function getGroupMembers(string _groupName) public constant returns(address[]){
+		return store.getGroupMembers(keccak256(abi.encodePacked(_groupName)));
 	}
-	function removeGroupMember(string _groupName, address _a) external isCanDo(MANAGE_GROUPS){
+	function removeGroupMember(string _groupName, address _a) public isCanDo(MANAGE_GROUPS){
 		emit DaoBase_RemoveGroupMember(_a);
-		store.removeGroupMember(keccak256(_groupName), _a);
+		store.removeGroupMember(keccak256(abi.encodePacked(_groupName)), _a);
 	}
-	function isGroupMember(string _groupName,address _a)external constant returns(bool) {
-		return store.isGroupMember(keccak256(_groupName), _a);
+	function isGroupMember(string _groupName,address _a)public constant returns(bool) {
+		return store.isGroupMember(keccak256(abi.encodePacked(_groupName)), _a);
 	}
-	function getMemberByIndex(string _groupName, uint _index) external view returns (address) {
-		return store.getMemberByIndex(keccak256(_groupName), _index);
+	function getMemberByIndex(string _groupName, uint _index) public view returns (address) {
+		return store.getMemberByIndex(keccak256(abi.encodePacked(_groupName)), _index);
 	}
 
 // Actions:
-	function allowActionByShareholder(bytes32 _what, address _tokenAddress) external isCanDo(MANAGE_GROUPS){
+	function allowActionByShareholder(bytes32 _what, address _tokenAddress) public isCanDo(MANAGE_GROUPS){
 		emit DaoBase_AllowActionByShareholder(_what, _tokenAddress);
 		store.allowActionByShareholder(_what, _tokenAddress);
 	}
-	function allowActionByVoting(bytes32 _what, address _tokenAddress) external isCanDo(MANAGE_GROUPS){
+	function allowActionByVoting(bytes32 _what, address _tokenAddress) public isCanDo(MANAGE_GROUPS){
 		emit DaoBase_AllowActionByVoting(_what, _tokenAddress);
 		store.allowActionByVoting(_what,_tokenAddress);
 	}
-	function allowActionByAddress(bytes32 _what, address _a) external isCanDo(MANAGE_GROUPS) {
+	function allowActionByAddress(bytes32 _what, address _a) public isCanDo(MANAGE_GROUPS) {
 		emit DaoBase_AllowActionByAddress(_what, _a);
 		store.allowActionByAddress(_what,_a);
 	}
-	function allowActionByAnyMemberOfGroup(bytes32 _what, string _groupName) external isCanDo(MANAGE_GROUPS){
+	function allowActionByAnyMemberOfGroup(bytes32 _what, string _groupName) public isCanDo(MANAGE_GROUPS){
 		emit DaoBase_AllowActionByAnyMemberOfGroup(_what, _groupName);
-		store.allowActionByAnyMemberOfGroup(_what, keccak256(_groupName));
+		store.allowActionByAnyMemberOfGroup(_what, keccak256(abi.encodePacked(_groupName)));
 	}
 
 	/**
@@ -135,12 +131,7 @@ contract DaoBase is IDaoBase, Ownable {
 	 *    b. caller is voting and it is succeeded -> allow
 	 * 4. deny
 	*/
-
-	function isCanDoAction(address _a, bytes32 _permissionNameHash) external constant returns(bool){
-		return _isCanDoAction(_a, _permissionNameHash);
-	}
-
-	function _isCanDoAction(address _a, bytes32 _permissionNameHash) internal constant returns(bool){
+	function isCanDoAction(address _a, bytes32 _permissionNameHash) public constant returns(bool){
 		// 0 - is can do by address?
 		if(store.isCanDoByAddress(_permissionNameHash, _a)){
 			return true;
@@ -189,31 +180,27 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 // Proposals:
-	function addNewProposal(IProposal _proposal) external isCanDo(ADD_NEW_PROPOSAL) { 
+	function addNewProposal(IProposal _proposal) public isCanDo(ADD_NEW_PROPOSAL) { 
 		emit DaoBase_AddNewProposal(address(_proposal));
 		store.addNewProposal(_proposal);
 	}
 
-	function getProposalAtIndex(uint _i)external constant returns(IProposal){
+	function getProposalAtIndex(uint _i)public constant returns(IProposal){
 		return store.getProposalAtIndex(_i);
 	}
 
-	function getProposalsCount()external constant returns(uint){
+	function getProposalsCount()public constant returns(uint){
 		return store.getProposalsCount();
 	}
 
 // Tokens:
-	function issueTokens(address _tokenAddress, address _to, uint _amount)external isCanDo(ISSUE_TOKENS) {
-		_issueTokens(_tokenAddress,_to,_amount);
-	}
-
-	function _issueTokens(address _tokenAddress, address _to, uint _amount)internal{
+	function issueTokens(address _tokenAddress, address _to, uint _amount)public isCanDo(ISSUE_TOKENS) {
 		emit DaoBase_IssueTokens(_tokenAddress, _to, _amount);
 		for(uint i=0; i<store.getAllTokenAddresses().length; ++i){
 			if(store.getAllTokenAddresses()[i]==_tokenAddress){
 				// WARNING:
 				// token ownership should be transferred to the current DaoBase to do that!!!
-				store.getAllTokenAddresses()[i].mint(_to, _amount);
+				store.getAllTokenAddresses()[i].mintFor(_to, _amount);
 				return;
 			}
 		}
@@ -222,14 +209,14 @@ contract DaoBase is IDaoBase, Ownable {
 		revert();
 	}
 
-	function burnTokens(address _tokenAddress, address _who, uint _amount)external isCanDo(BURN_TOKENS){
+	function burnTokens(address _tokenAddress, address _who, uint _amount)public isCanDo(BURN_TOKENS){
 		emit DaoBase_BurnTokens(_tokenAddress, _who, _amount);
 
 		for(uint i=0; i<store.getAllTokenAddresses().length; ++i){
 			if(store.getAllTokenAddresses()[i]==_tokenAddress){
 				// WARNING:
 				// token ownership should be transferred to the current DaoBase to do that!!!
-				store.getAllTokenAddresses()[i].burn(_who, _amount);
+				store.getAllTokenAddresses()[i].burnFor(_who, _amount);
 				return;
 			}
 		}
@@ -255,7 +242,7 @@ contract DaoBaseWithUnpackers is DaoBase {
 
 	function upgradeDaoContractGeneric(bytes32[] _params) external {
 		IDaoBase _b = IDaoBase(address(_params[0]));
-		_upgradeDaoContract(_b);
+		upgradeDaoContract(_b);
 	}
 
 	function addGroupMemberGeneric(bytes32[] _params) external {
@@ -271,7 +258,7 @@ contract DaoBaseWithUnpackers is DaoBase {
 		address _to = address(_params[1]);
 		uint _amount = uint(_params[2]);
 
-		_issueTokens(_tokenAddress, _to, _amount);
+		issueTokens(_tokenAddress, _to, _amount);
 	}
 
 	// TODO: add other methods:

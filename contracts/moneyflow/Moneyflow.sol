@@ -2,6 +2,7 @@ pragma solidity ^0.4.22;
 import "./IMoneyflow.sol";
 
 import "./ether/WeiFund.sol";
+import "./ether/WeiExpense.sol";
 
 import "../IDaoBase.sol";
 
@@ -34,7 +35,7 @@ contract FallbackToWeiReceiver {
  * 'setRootWeiReceiverGeneric', etc
 */
 contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
-	WeiFund donationEndpoint;
+	WeiRelativeExpenseWithPeriod donationEndpoint;
 	// by default - this is 0x0, please use setWeiReceiver method
 	// this can be a ISplitter (top-down or unsorted)
 	IWeiReceiver rootReceiver;
@@ -52,55 +53,47 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 		DaoClient(_dao)
 	{
 		// do not set output!
-		donationEndpoint = new WeiFund(0x0, true, 10000);
+		donationEndpoint = new WeiRelativeExpenseWithPeriod(10000, 0, false);
 		donationF2WR = new FallbackToWeiReceiver(donationEndpoint);
 	}
 
 // IMoneyflow:
 	// will withdraw donations
-	function withdrawDonationsTo(address _out) external isCanDo(WITHDRAW_DONATIONS){
-		_withdrawDonationsTo(_out);
-	}
-
-	function _withdrawDonationsTo(address _out) internal{
+	function withdrawDonationsTo(address _out) public isCanDo(WITHDRAW_DONATIONS){
 		emit MoneyFlow_WithdrawDonations(msg.sender, _out, address(donationEndpoint).balance);
 		donationEndpoint.flushTo(_out);
 	}
 
-	function getDonationEndpoint()external constant returns(IWeiReceiver){
+	function getDonationEndpoint()public constant returns(IWeiReceiver){
 		return donationEndpoint;
 	}
 
-	function getRevenueEndpoint()external constant returns(IWeiReceiver){
+	function getRevenueEndpoint()public constant returns(IWeiReceiver){
 		return rootReceiver;
 	}
 
-	function getDonationEndpointAddress()external constant returns(address){
+	function getDonationEndpointAddress()public constant returns(address){
 		return address(donationF2WR);
 	}
 
-	function getRevenueEndpointAddress()external constant returns(address){
+	function getRevenueEndpointAddress()public constant returns(address){
 		return address(revenueF2WR);
 	}
 
-	function setRootWeiReceiverGeneric(bytes32[] _params) external {
+	function setRootWeiReceiverGeneric(bytes32[] _params) public {
 		IWeiReceiver receiver = IWeiReceiver(address(_params[0]));
-		_setRootWeiReceiver(receiver);
+		setRootWeiReceiver(receiver);
 	}
 
-	function withdrawDonationsToGeneric(bytes32[] _params) external {
+	function withdrawDonationsToGeneric(bytes32[] _params) public {
 		address out = address(_params[0]);
-		_withdrawDonationsTo(out);
+		withdrawDonationsTo(out);
 	}
 
 // WeiReceivers:
 	// receiver can be a splitter, fund or event task
 	// _receiver can be 0x0!
-	function setRootWeiReceiver(IWeiReceiver _receiver) external isCanDo(SET_ROOT_WEI_RECEIVER){
-		_setRootWeiReceiver(_receiver);
-	}
-
-	function _setRootWeiReceiver(IWeiReceiver _receiver) internal{
+	function setRootWeiReceiver(IWeiReceiver _receiver) public isCanDo(SET_ROOT_WEI_RECEIVER){
 		emit MoneyFlow_SetRootWeiReceiver(msg.sender, address(_receiver));
 		rootReceiver = _receiver;
 		revenueF2WR = new FallbackToWeiReceiver(address(rootReceiver));

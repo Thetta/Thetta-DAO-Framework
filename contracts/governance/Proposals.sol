@@ -31,7 +31,7 @@ contract GenericProposal is IProposal, Ownable {
 	event GenericProposal_Action(IVoting _voting);
 
 // IVoting implementation
-	function action() external {
+	function action() public {
 		emit GenericProposal_Action(voting);
 
 		// in some cases voting is still not set
@@ -48,15 +48,15 @@ contract GenericProposal is IProposal, Ownable {
 			uint256(params.length), // length of the array
 			params)
 		){
-			revert();
+			//revert();
 		}
 	}
 
-	function setVoting(IVoting _voting) external onlyOwner{
+	function setVoting(IVoting _voting) public onlyOwner{
 		voting = _voting;
 	}
 
-	function getVoting()external view returns(IVoting){
+	function getVoting() public view returns(IVoting){
 		return voting;
 	}
 }
@@ -76,16 +76,16 @@ contract InformalProposal is IProposal, Ownable {
 		proposalText = _proposalText;
 	}
 
-	function getProposalText()external view returns(string){
+	function getProposalText() public view returns(string){
 		return proposalText;
 	}
 
 // IVoting implementation
-	function setVoting(IVoting _voting) external onlyOwner{
+	function setVoting(IVoting _voting) public onlyOwner{
 		voting = _voting;
 	}
 
-	function getVoting()external view returns(IVoting){
+	function getVoting() public view returns(IVoting){
 		return voting;
 	}
 

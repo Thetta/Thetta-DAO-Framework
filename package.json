@@ -4,8 +4,8 @@
   "description": "Thetta Decentralized Autonomous Organizations framework core",
   "main": "truffle.js",
   "scripts": {
-	"coverage": "scripts/coverage.sh",
-	"coveralls": "scripts/coveralls.sh",
+    "coverage": "scripts/coverage.sh",
+    "coveralls": "scripts/coveralls.sh",
     "solium": "./node_modules/solium/bin/solium.js --dir contracts",
     "test": "scripts/test.sh"
   },

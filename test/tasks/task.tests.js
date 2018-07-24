@@ -1,14 +1,12 @@
-var increaseTimeTo = require('./utils/increaseTime');
-var latestTime = require('./utils/latestTime');
-var advanceBlock = require('./utils/advanceToBlock');
+var increaseTimeTo = require('../utils/increaseTime');
+var latestTime = require('../utils/latestTime');
+var advanceBlock = require('../utils/advanceToBlock');
 
 var WeiTask = artifacts.require("./WeiTask");
 var WeiBounty = artifacts.require("./WeiBounty");
 var DaoBase = artifacts.require("./DaoBase");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
-
-var CheckExceptions = require('./utils/checkexceptions');
 
 function KECCAK256 (x){
 	return web3.sha3(x);
@@ -35,7 +33,7 @@ contract('Tasks', (accounts) => {
 	var secondContractBalance;
 	var secondEmployeeBalance;
 	var secondCreatorBalance;
-	
+
 	let issueTokens;
 	let manageGroups;
 	let addNewProposal;
@@ -56,16 +54,16 @@ contract('Tasks', (accounts) => {
 	});
 
 	beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000);
-		await token.mint(creator, 1000);
-    
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+		await token.mintFor(creator, 1000);
+
 		store = await DaoStorage.new([token.address],{from: creator});
 		daoBase = await DaoBase.new(store.address,{from: creator});
-		
+
 		issueTokens = await daoBase.ISSUE_TOKENS();
-		
+
 		manageGroups = await daoBase.MANAGE_GROUPS();
-		
+
 		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
 
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
@@ -73,7 +71,7 @@ contract('Tasks', (accounts) => {
 		// add creator as first employee
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(manageGroups,creator);
-		
+
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
@@ -88,15 +86,9 @@ contract('Tasks', (accounts) => {
 
 	it('Tasks: prepaid positive scenario. Task created by creator',async() => {
 		// should not create weiTask (prepaid + donation);
-		th = await CheckExceptions.checkContractThrows(WeiTask.new, 
-			[daoBase.address, 'Task Caption', 'Task description', false, true, ETH, { from: creator }]
-		);
-
+    th = await WeiTask.new(daoBase.address, 'Task Caption', 'Task description', false, true, ETH, deadlineTime, timeToCancell, {from: creator}).should.be.rejectedWith('revert');
 		// should not create weiTask (prepaid + 0 Wei);
-		th = await CheckExceptions.checkContractThrows(WeiTask.new, 
-			[daoBase.address, 'Task Caption', 'Task description', false, false, 0, { from: creator }]
-		);
-
+    th = await WeiTask.new(daoBase.address, 'Task Caption', 'Task description', false, false, 0, deadlineTime, timeToCancell, {from: creator}).should.be.rejectedWith('revert');
 		// should create weiTask
 		firstContractBalance = await web3.eth.getBalance(daoBase.address);
 		assert.strictEqual(firstContractBalance.toNumber(),0);
@@ -106,8 +98,8 @@ contract('Tasks', (accounts) => {
 		firstCreatorBalance = await web3.eth.getBalance(creator);
 
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			daoBase.address, 
-			'Task Caption', 
+			daoBase.address,
+			'Task Caption',
 			'Task description',
 			false,
 			false,
@@ -122,9 +114,7 @@ contract('Tasks', (accounts) => {
 		await daoBase.allowActionByAnyMemberOfGroup(startTask,"Employees");
 
 		// should not become "InProgress" before "Prepaid"
-		th = await CheckExceptions.checkContractThrows(task.startTask,
-			[employee1, { from: employee1 }]
-		);
+		th = await task.startTask(employee1, {from: employee1}).should.be.rejectedWith('revert');
 
 		// should become "PrePaid" after transfer 1 ETH
 		var status = await task.getCurrentState();
@@ -175,9 +165,7 @@ contract('Tasks', (accounts) => {
 		assert.strictEqual(status.toNumber(), 3);
 
 		// should not become "Completed" after outsider call
-		th = await CheckExceptions.checkContractThrows(task.notifyThatCompleted,
-			[{ from: outsider }]
-		);
+		th = await task.notifyThatCompleted({from: outsider}).should.be.rejectedWith('revert');
 
 		// should become "Completed" after employee have marked task as compvared
 		var th = await task.notifyThatCompleted({from:employee1, gasPrice:0});
@@ -192,9 +180,7 @@ contract('Tasks', (accounts) => {
 		assert.strictEqual(isDonation,false);
 
 		//N5. should not become "CanGetFunds" after outsider call
-		th = await CheckExceptions.checkContractThrows(task.confirmCompletion,
-			[{ from: outsider }]
-		);
+		th = await task.confirmCompletion({from: outsider}).should.be.rejectedWith('revert');
 
 		// should become "CanGetFunds" after creator have marked task as compvared
 		var th = await task.confirmCompletion({from:creator});
@@ -202,13 +188,9 @@ contract('Tasks', (accounts) => {
 		assert.strictEqual(status.toNumber(), 6);
 
 		//N6. should not become "Finished" after outsider calls
-		await CheckExceptions.checkContractThrows(task.setOutput,
-			[outsider,{ from: outsider }]
-		);
+		await task.setOutput(outsider, {from: outsider}).should.be.rejectedWith('revert');
 
-		await CheckExceptions.checkContractThrows(task.setOutput,
-			[creator,{ from: outsider }]
-		);
+		await task.setOutput(creator, {from: outsider}).should.be.rejectedWith('revert');
 
 		// should become "Finished" after employee set output and call flush();
 		var out = await task.setOutput(employee1);
@@ -234,8 +216,8 @@ contract('Tasks', (accounts) => {
 		firstCreatorBalance = await web3.eth.getBalance(creator);
 
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			daoBase.address, 
-			'Task Caption', 
+			daoBase.address,
+			'Task Caption',
 			'Task description',
 			true,
 			false,
@@ -329,8 +311,8 @@ contract('Tasks', (accounts) => {
 	it('Tasks: postpaid positive scenario with KNOWN price. Task created by creator',async() => {
 		// should create weiTask
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			daoBase.address, 
-			'Task Caption', 
+			daoBase.address,
+			'Task Caption',
 			'Task description',
 			true,
 			false,
@@ -421,8 +403,8 @@ contract('Tasks', (accounts) => {
 		firstCreatorBalance = await web3.eth.getBalance(creator);
 
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			daoBase.address, 
-			'Task Caption', 
+			daoBase.address,
+			'Task Caption',
 			'Task description',
 			true,
 			true,
@@ -510,8 +492,8 @@ contract('Tasks', (accounts) => {
 		firstCreatorBalance = await web3.eth.getBalance(creator);
 
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			daoBase.address, 
-			'Task Caption', 
+			daoBase.address,
+			'Task Caption',
 			'Task description',
 			false,
 			false,
@@ -543,8 +525,8 @@ contract('Tasks', (accounts) => {
 		firstCreatorBalance = await web3.eth.getBalance(creator)
 
 		task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			daoBase.address, 
-			'Task Caption', 
+			daoBase.address,
+			'Task Caption',
 			'Task description',
 			false,
 			false,
@@ -618,8 +600,8 @@ contract('Tasks', (accounts) => {
 		firstCreatorBalance = await web3.eth.getBalance(creator);
 
 		bounty = await WeiBounty.new( // (IDaoBase _dao, string _caption, string _desc, uint _neededWei, uint64 _deadlineTime)
-			daoBase.address, 
-			'Bounty Caption', 
+			daoBase.address,
+			'Bounty Caption',
 			'Bounty description',
 			ETH,
 			deadlineTime,
@@ -631,9 +613,7 @@ contract('Tasks', (accounts) => {
 		await daoBase.allowActionByAddress(startBounty,employee1);
 
 		// should not become "InProgress" before "Prepaid"
-		th = await CheckExceptions.checkContractThrows(bounty.startTask,
-			[{ from: employee1 }]
-		);
+		th = await bounty.startTask({from: employee1}).should.be.rejectedWith('revert');
 
 		// should become "PrePaid" after transfer 1 ETH
 		var status = await bounty.getCurrentState();
@@ -684,9 +664,7 @@ contract('Tasks', (accounts) => {
 		assert.strictEqual(status.toNumber(), 3);
 
 		// should not become "Completed" after outsider call
-		th = await CheckExceptions.checkContractThrows(bounty.notifyThatCompleted,
-			[{ from: outsider }]
-		);
+		th = await bounty.notifyThatCompleted({from: outsider}).should.be.rejectedWith('revert');
 
 		// should become "Completed" after employee have marked bounty as compvared
 		var th = await bounty.notifyThatCompleted({from:employee1, gasPrice:0});
@@ -701,9 +679,7 @@ contract('Tasks', (accounts) => {
 		assert.strictEqual(isDonation,false);
 
 		//N5. should not become "CanGetFunds" after outsider call
-		th = await CheckExceptions.checkContractThrows(bounty.confirmCompletion,
-			[{ from: outsider }]
-		);
+		th = await bounty.confirmCompletion({from: outsider}).should.be.rejectedWith('revert');
 
 		// should become "CanGetFunds" after creator have marked bounty as compvared
 		var th = await bounty.confirmCompletion({from:creator});
@@ -711,13 +687,9 @@ contract('Tasks', (accounts) => {
 		assert.strictEqual(status.toNumber(), 6);
 
 		// should not become "Finished" after outsider calls
-		await CheckExceptions.checkContractThrows(bounty.setOutput,
-			[outsider,{ from: outsider }]
-		);
+		await bounty.setOutput(outsider, {from: outsider}).should.be.rejectedWith('revert');
 
-		await CheckExceptions.checkContractThrows(bounty.setOutput,
-			[creator,{ from: outsider }]
-		);
+		await bounty.setOutput(outsider, {from: outsider}).should.be.rejectedWith('revert');
 
 		// should become "Finished" after employee set output and call flush();
 		var out = await bounty.setOutput(employee1);
@@ -737,8 +709,8 @@ contract('Tasks', (accounts) => {
 
 		it('should fail due to _timeToCancell =< 0', async function () {
 			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			daoBase.address, 
-			'Task Caption', 
+			daoBase.address,
+			'Task Caption',
 			'Task description',
 			false,
 			false,
@@ -748,11 +720,11 @@ contract('Tasks', (accounts) => {
 			{ from: creator }
 		).should.be.rejectedWith('revert');
 		});
-			
+
 		it('should fail due to not time to cancell yet', async function () {
 			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			daoBase.address, 
-			'Task Caption', 
+			daoBase.address,
+			'Task Caption',
 			'Task description',
 			false,
 			false,
@@ -765,11 +737,11 @@ contract('Tasks', (accounts) => {
 			var status = await task.getCurrentState();
 			assert.notEqual(status.toNumber(), 1); //must not be cancelled
 		});
-			
+
 		it('should pass', async function () {
 			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			daoBase.address, 
-			'Task Caption', 
+			daoBase.address,
+			'Task Caption',
 			'Task description',
 			false,
 			false,
@@ -789,8 +761,8 @@ contract('Tasks', (accounts) => {
 
 		it('should fail due to deadlineTime =< 0', async function () {
 			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			daoBase.address, 
-			'Task Caption', 
+			daoBase.address,
+			'Task Caption',
 			'Task description',
 			false,
 			false,
@@ -800,11 +772,11 @@ contract('Tasks', (accounts) => {
 			{ from: creator }
 		).should.be.rejectedWith('revert');
 		});
-			
+
 		it('should fail due to not deadline missed yet', async function () {
 			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			daoBase.address, 
-			'Task Caption', 
+			daoBase.address,
+			'Task Caption',
 			'Task description',
 			false,
 			false,
@@ -851,8 +823,8 @@ contract('Tasks', (accounts) => {
 
 		it('should fail due to state != InProgress yet', async function () {
 			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			daoBase.address, 
-			'Task Caption', 
+			daoBase.address,
+			'Task Caption',
 			'Task description',
 			false,
 			false,
@@ -896,8 +868,8 @@ contract('Tasks', (accounts) => {
 
 		it('should pass', async function () {
 			task = await WeiTask.new( // (address _mc, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei) public
-			daoBase.address, 
-			'Task Caption', 
+			daoBase.address,
+			'Task Caption',
 			'Task description',
 			false,
 			false,
@@ -949,5 +921,4 @@ contract('Tasks', (accounts) => {
 			assert.strictEqual(status.toNumber(), 8); //must be DeadlineMissed
 		});
 		});
-
 });
