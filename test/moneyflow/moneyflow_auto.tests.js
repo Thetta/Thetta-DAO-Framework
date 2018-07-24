@@ -8,10 +8,8 @@ var IWeiReceiver = artifacts.require("./IWeiReceiver");
 var WeiAbsoluteExpense = artifacts.require("./WeiAbsoluteExpense");
 
 var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
-var Voting_1p1v = artifacts.require("./Voting_1p1v");
+var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
-
-var CheckExceptions = require('./utils/checkexceptions');
 
 function KECCAK256 (x){
 	return web3.sha3(x);
@@ -55,8 +53,8 @@ contract('MoneyflowAuto', (accounts) => {
 	const employee2 = accounts[2];
 	const employee3 = accounts[3];
 	const outsider = accounts[4];
-	const output = accounts[5]; 
-	
+	const output = accounts[5];
+
 	let issueTokens;
 	let manageGroups;
 	let addNewProposal;
@@ -72,20 +70,20 @@ contract('MoneyflowAuto', (accounts) => {
 	let money = web3.toWei(0.001, "ether");
 
 	beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000);
-		await token.mint(creator, 1000);
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+		await token.mintFor(creator, 1000);
 
 		let store = await DaoStorage.new([token.address],{from: creator});
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{from: creator});
-		
+
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 
 		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator});
 
 		issueTokens = await daoBase.ISSUE_TOKENS();
-		
+
 		manageGroups = await daoBase.MANAGE_GROUPS();
-		
+
 		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
 
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
@@ -128,7 +126,7 @@ contract('MoneyflowAuto', (accounts) => {
 		assert.equal(isCanWithdraw, true, 'Creator should be able to withdrawDonations directly without voting');
 
 		// send some money
-		const dea = await moneyflowInstance.getDonationEndpoint(); 
+		const dea = await moneyflowInstance.getDonationEndpoint();
 		assert.notEqual(dea,0x0, 'donation endpoint should be created');
 		const donationEndpoint = await IWeiReceiver.at(dea);
 		await donationEndpoint.processFunds(money, { from: creator, value: money});
@@ -136,7 +134,7 @@ contract('MoneyflowAuto', (accounts) => {
 		let donationBalance = await web3.eth.getBalance(donationEndpoint.address);
 		assert.equal(donationBalance.toNumber(),money, 'all money at donation point now');
 
-		// get the donations 
+		// get the donations
 		let pointBalance = await web3.eth.getBalance(output);
 		// this will call the action directly!
 		await aacInstance.withdrawDonationsToAuto(output, { from:creator });
@@ -154,7 +152,7 @@ contract('MoneyflowAuto', (accounts) => {
 		assert.equal(isCanWithdraw, false, 'Creator should be not able to withdrawDonations directly without voting');
 
 		// send some money
-		const dea = await moneyflowInstance.getDonationEndpoint(); 
+		const dea = await moneyflowInstance.getDonationEndpoint();
 		assert.notEqual(dea,0x0, 'donation endpoint should be created');
 		const donationEndpoint = await IWeiReceiver.at(dea);
 		await donationEndpoint.processFunds(money, { from: employee1, value: money});
@@ -162,7 +160,7 @@ contract('MoneyflowAuto', (accounts) => {
 		let donationBalance = await web3.eth.getBalance(donationEndpoint.address);
 		assert.equal(donationBalance.toNumber(),money, 'all money at donation point now');
 
-		// get the donations 
+		// get the donations
 		let pointBalance = await web3.eth.getBalance(output);
 
 		// this will call the action directly!
@@ -173,7 +171,7 @@ contract('MoneyflowAuto', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_1p1v.at(votingAddress);
+		const voting = await Voting.at(votingAddress);
 
 		let quorumPercent = await voting.quorumPercent();
 		let consensusPercent = await voting.consensusPercent();
@@ -182,7 +180,7 @@ contract('MoneyflowAuto', (accounts) => {
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
+		await voting.vote(true,{from:employee2});
 
 		// check voting results again
 		const r2 = await voting.getVotingStats();
@@ -248,11 +246,11 @@ contract('MoneyflowAuto', (accounts) => {
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
 		const votingAddress = await proposal.getVoting();
-		const voting = await Voting_1p1v.at(votingAddress);
+		const voting = await Voting.at(votingAddress);
 		assert.strictEqual(await voting.isFinished(),false,'Voting is still not finished');
 		assert.strictEqual(await voting.isYes(),false,'Voting is still not finished');
 
-		await voting.vote(true,0,{from:employee2});
+		await voting.vote(true,{from:employee2});
 
 		// check voting results again
 		const r2 = await voting.getVotingStats();

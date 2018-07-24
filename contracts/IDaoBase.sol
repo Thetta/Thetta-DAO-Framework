@@ -6,8 +6,8 @@ import './governance/IProposal.sol';
  * @title IDaoObserver, can be called IDaoClient really.
  * @dev Also, see DaoClient contract below.
  */
-interface IDaoObserver {
-	function onUpgrade(address _newAddress) external;
+contract IDaoObserver {
+	function onUpgrade(address _newAddress) public;
 }
 
 /**
@@ -15,35 +15,35 @@ interface IDaoObserver {
  * @dev Derive your DAO from it and provide the method implementation or 
  * see DaoBase contract that implements it.
  */
-interface IDaoBase {
-	function addObserver(IDaoObserver _observer)external;
-	function upgradeDaoContract(IDaoBase _new)external;
+contract IDaoBase {
+	function addObserver(IDaoObserver _observer)public;
+	function upgradeDaoContract(IDaoBase _new)public;
 
 // Groups
-	function addGroupMember(string _groupName, address _a) external;
-	function removeGroupMember(string _groupName, address _a) external;
-	function getMembersCount(string _groupName) external constant returns(uint);
-	function isGroupMember(string _groupName,address _a)external constant returns(bool);
-	function getMemberByIndex(string _groupName, uint _index) external view returns (address);
+	function addGroupMember(string _groupName, address _a) public;
+	function removeGroupMember(string _groupName, address _a) public;
+	function getMembersCount(string _groupName) public constant returns(uint);
+	function isGroupMember(string _groupName,address _a)public constant returns(bool);
+	function getMemberByIndex(string _groupName, uint _index) public view returns (address);
 
 // Permissions
-	function allowActionByShareholder(bytes32 _what, address _tokenAddress) external;
-	function allowActionByVoting(bytes32 _what, address _tokenAddress) external;
-	function allowActionByAddress(bytes32 _what, address _a) external;
-	function allowActionByAnyMemberOfGroup(bytes32 _what, string _groupName) external;
+	function allowActionByShareholder(bytes32 _what, address _tokenAddress) public;
+	function allowActionByVoting(bytes32 _what, address _tokenAddress) public;
+	function allowActionByAddress(bytes32 _what, address _a) public;
+	function allowActionByAnyMemberOfGroup(bytes32 _what, string _groupName) public;
 
-	function isCanDoAction(address _a, bytes32 _permissionName)external constant returns(bool);
+	function isCanDoAction(address _a, bytes32 _permissionName)public constant returns(bool);
 
 // Tokens
 	// ???? TODO: needed
 	//function addTokenAddressToList();
-	function issueTokens(address _tokenAddress, address _to, uint amount)external;
-	function burnTokens(address _tokenAddress, address _who, uint amount)external;
+	function issueTokens(address _tokenAddress, address _to, uint amount)public;
+	function burnTokens(address _tokenAddress, address _who, uint amount)public;
 
 // Governance/Proposals
-	function addNewProposal(IProposal _proposal) external;
-	function getProposalAtIndex(uint _i)external constant returns(IProposal);
-	function getProposalsCount()external constant returns(uint);
+	function addNewProposal(IProposal _proposal) public;
+	function getProposalAtIndex(uint _i)public constant returns(IProposal);
+	function getProposalsCount()public constant returns(uint);
 }
 
 /**
@@ -72,7 +72,7 @@ contract DaoClient is IDaoObserver {
 	 * dao will point at NEW contract!
 	 * @param _newAddress New controller.
 	 */
-	function onUpgrade(address _newAddress) external {
+	function onUpgrade(address _newAddress) public {
 		require(msg.sender==address(dao));
 
 		dao = IDaoBase(_newAddress);

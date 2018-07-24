@@ -8,17 +8,20 @@ var MoneyFlow = artifacts.require("./MoneyFlow");
 var IWeiReceiver = artifacts.require("./IWeiReceiver");
 var IProposal = artifacts.require("./IProposal");
 
-var CheckExceptions = require('./utils/checkexceptions');
-
 function KECCAK256 (x){
 	return web3.sha3(x);
 }
+
+require('chai')
+  .use(require('chai-as-promised'))
+  .use(require('chai-bignumber')(web3.BigNumber))
+  .should();
 
 contract('DaoBase', (accounts) => {
 	let token;
 	let store;
 	let daoBase;
-	
+
 	let issueTokens;
 	let manageGroups;
 	let addNewProposal;
@@ -42,9 +45,8 @@ contract('DaoBase', (accounts) => {
 	});
 
 	beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, true, 1000000000);
-		await token.mint(creator, 1000);
-    
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+		await token.mintFor(creator, 1000);
 		store = await DaoStorage.new([token.address],{from: creator});
 
 		// add creator as first employee
@@ -52,15 +54,10 @@ contract('DaoBase', (accounts) => {
 		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{from: creator});
-		
 		issueTokens = await daoBase.ISSUE_TOKENS();
-		
 		manageGroups = await daoBase.MANAGE_GROUPS();
-		
 		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
-
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
-		
 		burnTokens = await daoBase.BURN_TOKENS();
 
 		// do not forget to transfer ownership
@@ -113,9 +110,7 @@ contract('DaoBase', (accounts) => {
 	it('should not add new vote if not employee',async() => {
 		// employee1 is still not added to DaoBase as an employee
 		let newProposal = 0x123;
-		await CheckExceptions.checkContractThrows(daoBase.addNewProposal.sendTransaction,
-			[newProposal, { from: employee1}],
-			'Should not add new proposal because employee1 has no permission');
+		await daoBase.addNewProposal.sendTransaction(newProposal, {from: employee1}).should.be.rejectedWith('revert');
 	});
 
 	it('should issue tokens to employee1 and employee2',async() => {
@@ -124,9 +119,8 @@ contract('DaoBase', (accounts) => {
 
 		// but now creator has 1000 and employee1 has 1000, so creator is not in majority
 		// this should fail
-		await CheckExceptions.checkContractThrows(daoBase.issueTokens.sendTransaction,
-			[token.address, employee2, 1000, { from: creator}],
-			'Should not issue more tokens because creator is no longer in majority');
+		// Should not issue more tokens because creator is no longer in majority
+		await daoBase.issueTokens.sendTransaction(token.address, employee2, 1000, {from: creator}).should.be.rejectedWith('revert');
 
 		await token.transfer(employee2, 1000, {from: employee1});
 
@@ -168,17 +162,14 @@ contract('DaoBase', (accounts) => {
 		const isEmployeeAdded = await daoBaseNew.isGroupMember("Employees",employee1);
 		assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
 
-		await CheckExceptions.checkContractThrows(daoBase.addGroupMember,
-			["Employees", employee2, { from: creator}],
-			'Should not add new employee to old MC');
-
-		await CheckExceptions.checkContractThrows(daoBase.issueTokens,
-			[token.address, employee2, 100, { from: creator}],
-			'Should not issue tokens through MC');
+		// Should not add new employee to old MC
+		await daoBase.addGroupMember("Employees", employee2, {from: creator}).should.be.rejectedWith('revert');
+		// Should not issue tokens through MC
+		await daoBase.issueTokens(token.address, employee2, 100, {from: creator}).should.be.rejectedWith('revert');
 
 		// now try to withdraw donations with new mc
-		const money = 1000000000;
-		const dea = await moneyflowInstance.getDonationEndpoint(); 
+		const money = 1e15;
+		const dea = await moneyflowInstance.getDonationEndpoint();
 		const donationEndpoint = await IWeiReceiver.at(dea);
 		await donationEndpoint.processFunds(money, { from: creator, value: money, gasPrice: 0});
 
@@ -193,9 +184,7 @@ contract('DaoBase', (accounts) => {
 		let outBalance2 = await web3.eth.getBalance(outsider);
 		let balanceDelta = outBalance2.toNumber() - outBalance.toNumber();
 
-		// TODO: fix that!!!
-		// TODO: why not working? 
-		//assert.equal(balanceDelta, money, 'all donations now on outsiders`s balance');
+		assert.equal(balanceDelta, money, 'all donations now on outsiders`s balance');
 
 		let donationBalance2 = await web3.eth.getBalance(donationEndpoint.address);
 		assert.equal(donationBalance2.toNumber(),0, 'all donations now on creator`s balance');
@@ -206,22 +195,22 @@ contract('DaoBase', (accounts) => {
 		await daoBase.addGroupMember("Employees", employee2);
 		await daoBase.addGroupMember("Employees", employee3);
 
-		await CheckExceptions.checkContractThrows(daoBase.addGroupMember, 
-			["Employees", employee3]); //Shouldnt add again
+		// Shouldnt add again
+		await daoBase.addGroupMember("Employees", employee3).should.be.rejectedWith('revert');
 
 		assert.strictEqual(await daoBase.isGroupMember("Employees", employee1),
-			true, 'Should be in the group')
+			true, 'Should be in the group');
 		assert.strictEqual(await daoBase.isGroupMember("Employees", employee2),
-			true, 'Should be in the group')
+			true, 'Should be in the group');
 		assert.strictEqual(await daoBase.isGroupMember("Employees", employee3),
-			true, 'Should be in the group')
+			true, 'Should be in the group');
 
 		assert.equal(4, await daoBase.getMembersCount("Employees"), '3 employees + creator');
 
 		await daoBase.removeGroupMember("Employees", employee3, {from:creator});
 
 		assert.strictEqual(await daoBase.isGroupMember("Employees", employee3),
-			false, 'Should not be in the group')
+			false, 'Should not be in the group');
 
 		// await daoBase.getGroupParticipants
 		assert.equal(3, (await daoBase.getMembersCount("Employees")).toNumber(), '2 employees + creator');
@@ -236,23 +225,12 @@ contract('DaoBase', (accounts) => {
 	});
 
 	it('should not either burn or mint tokens',async() => {
-		await CheckExceptions.checkContractThrows(token.burn, [
-			creator, 1000, {from:creator}])
-
-		await CheckExceptions.checkContractThrows(token.burn, [
-			creator, 1000, {from:employee1}])
-
-		await CheckExceptions.checkContractThrows(token.burn, [
-			creator, 1000, {from:outsider}])
-
-		await CheckExceptions.checkContractThrows(token.mint, [
-			creator, 1000, {from:creator}])
-
-		await CheckExceptions.checkContractThrows(token.mint, [
-			creator, 1000, {from:employee1}])
-
-		await CheckExceptions.checkContractThrows(token.mint, [
-			creator, 1000, {from:outsider}])
+		await token.burnFor(creator, 1000, {from:creator}).should.be.rejectedWith('revert');
+		await token.burnFor(creator, 1000, {from:employee1}).should.be.rejectedWith('revert');
+		await token.burnFor(creator, 1000, {from:outsider}).should.be.rejectedWith('revert');
+		await token.mintFor(creator, 1000, {from:creator}).should.be.rejectedWith('revert');
+		await token.mintFor(creator, 1000, {from:employee1}).should.be.rejectedWith('revert');
+		await token.mintFor(creator, 1000, {from:outsider}).should.be.rejectedWith('revert');
 	});
 });
 

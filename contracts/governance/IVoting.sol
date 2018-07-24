@@ -6,18 +6,18 @@ pragma solidity ^0.4.22;
  * The result is binary (yes or no only)
  * Any algorightm inside (1p1v, linear, quadratic, etc)
 */
-interface IVoting {
+contract IVoting {
 	// _tokenAmount -> if this voting type DOES NOT use tokens -> set to any value (e.g., 0);
 	// will execute action automatically if the voting is finished 
-	function vote(bool _yes, uint _tokenAmount) external;
+	function vote(bool _yes) public;
 
 	// stop the voting
-	function cancelVoting() external;
+	function cancelVoting() public;
 
 	// This is for statistics
 	// Can get this stats if voting is finished. 
 	// Can get this stats if voting is NOT finished. 
-	function getVotingStats() external view returns(uint yesResults, uint noResults, uint totalResults);
+	function getVotingStats() public view returns(uint yesResults, uint noResults, uint totalResults);
 
 	// Is voting finished?
 	//
@@ -29,7 +29,7 @@ interface IVoting {
 	// When isFinished():
 	// 1 - i can not vote any more
 	// 2 - i can get results with isYes()
-	function isFinished()external view returns(bool);
+	function isFinished()public view returns(bool);
 
 	// The result of voting
 	// 
@@ -38,14 +38,30 @@ interface IVoting {
 	// 2 - all these conditions should be met:
 	//		2.1 - isFinished() 
 	//		2.2 - is quorum reached 
-	function isYes()external view returns(bool);
+	function isYes()public view returns(bool);
 }
 
-// for "liquid democracy"
-// in this case the delegate does all voting
-interface IDelegationTable {
-	function delegateMyVoiceTo(address _to, uint _tokenAmount) external;
-	function removeDelegation(address _to) external;
+/**
+ * @title For "Liquid democracy" 
+ * @dev Rules: 
+ * 1 - If total power is 1000 and you delegate some power -> total power is (always) still 1000.
+ * 2 - You can not REdelegate the power delegated to you. You can delegate only your current balance.
+ * 3 - You can removeDelegation at any time 
+*/
+contract IDelegationTable {
+	// @dev delegateMyVoiceTo() will override the currently set value. 
+	// I.e., if you called delegateMyVoiceTo(A,10) and then delegateMyVoiceTo(A,20) again, 
+	// then getDelegatedPowerByMe(A) is 20 (not 30!)
+	function delegateMyVoiceTo(address _to, uint _tokenAmount) public;
+	// @dev Returns how much i delegated power to _to
+	function getDelegatedPowerByMe(address _to) public view returns(uint);
+	// @dev Cancel the delegation of power to _to
+	function removeDelegation(address _to) public;
+
+	// @dev Returns the sum of: balance of _who AND the total delegated power of _who 
+	function getPowerOf(address _who) public view returns(uint);
+	// @dev Returns the total delegated power of _who 
+	function getDelegatedPowerOf(address _of) public view returns(uint);
 }
 
 
