@@ -68,7 +68,7 @@ contract Voting is IVoting, Ownable {
 
 	function vote(bool _isYes) public{
 		store.libVote(msg.sender, _isYes);
-		if(store.isFinished(store)){
+		if(store.isFinished()){
 			StdDaoToken(store.tokenAddress).finishVoting(store.votingID);
 		}
 	}
