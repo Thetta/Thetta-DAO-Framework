@@ -69,7 +69,7 @@ contract CopyOnWriteToken is MintableToken, BurnableToken {
 
 //// 
 	// TODO: onlyOwner!
-	function startNewEvent() public returns(uint){
+	function startNewEvent() internal returns(uint){
 		for(uint i = 0; i < 20; i++){
 			if(!events[i].isEventInProgress){
 				events[i].isEventInProgress = true;
@@ -83,7 +83,7 @@ contract CopyOnWriteToken is MintableToken, BurnableToken {
 	}
 
 	// TODO: onlyOwner!
-	function finishEvent(uint _eventID) public {
+	function finishEvent(uint _eventID) internal {
 		require(events[_eventID].isEventInProgress);
 		events[_eventID].isEventInProgress = false;
 
