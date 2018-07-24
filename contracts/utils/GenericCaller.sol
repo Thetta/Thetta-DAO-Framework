@@ -114,6 +114,7 @@ contract GenericCaller is DaoClient, Ownable {
 
 	function createVoting(bytes32 _permissionIdHash, IProposal _proposal, address _origin)public returns(IVoting){
 		VotingParams memory vp = votingParams[_permissionIdHash];
+		StdDaoToken token = StdDaoToken(address(vp.param5));
 
 		IVoting V = new Voting(dao, _proposal, _origin, vp.votingType,
 			uint(vp.param1), 
@@ -122,6 +123,11 @@ contract GenericCaller is DaoClient, Ownable {
 			uint(vp.param4),
 			address(vp.param5)
 		);
+		
+		if(vp.votingType != VotingLib.VotingType.Voting1p1v){
+			uint stdDaoTokenVotingID = token.startNewVoting(address(V));
+			V.setStdDaoTokenVotingID(stdDaoTokenVotingID);
+		}
 
 		return V;
 	}

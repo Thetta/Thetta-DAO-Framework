@@ -186,8 +186,9 @@ contract('Voting 1P1V', (accounts) => {
 		var isY = await voting.isYes();
 		assert.strictEqual(fin,true,'Voting should be finished: 4/6 voted');
 		assert.strictEqual(isY,true,'Voting is finished: 4/6 voted, all said yes');
-		await daoBase.removeGroupMember("Employees", employee3, {from:creator});
 
+		await daoBase.removeGroupMember("Employees", employee3, {from:creator});
+		
 		// WARNING:
 		// if voting is finished -> even if we remove some employees from the group
 		// the voting results should not be changed!!!

@@ -87,6 +87,7 @@ contract('Voting simple token', (accounts) => {
 	let daoBase;
 	let moneyflowInstance;
 	let aacInstance;
+	let startNewVoting;
 
 	let issueTokens;
 	let manageGroups;
@@ -99,17 +100,18 @@ contract('Voting simple token', (accounts) => {
 
 	beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+		let store = await DaoStorage.new([token.address],{ from: creator });
+		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
+		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
 		await token.mintFor(creator, 1);
-		await token.mintFor(employee1, 1);
+		await token.mintFor(aacInstance.address, 1);
 		await token.mintFor(employee2, 1);
 		await token.mintFor(employee3, 1);
 		await token.mintFor(employee4, 1);
 		// await token.mintFor(employee5, 1);
 
-		let store = await DaoStorage.new([token.address],{ from: creator });
-		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
-		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
-		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, {from: creator});
+		startNewVoting = await token.TOKEN_StartNewVoting();
 
 		issueTokens = await daoBase.ISSUE_TOKENS();
 
@@ -120,6 +122,8 @@ contract('Voting simple token', (accounts) => {
 		withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
 
 		setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
+
+		await token.allowActionByAddress(aacInstance.address, startNewVoting);
 
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(manageGroups,creator);
@@ -612,11 +616,11 @@ contract('Voting simple token', (accounts) => {
 
 	it('1.16. Q Scenario: creator have 11/15 tokens, (50,50) => isYes==true',async() => {
 		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
-		await daoBase.issueTokens(token.address, creator, 10);
+		await daoBase.issueTokens(token.address, aacInstance.address, 10);
 
 		let totalSupply = await token.totalSupply();
 		assert.equal(totalSupply.toNumber(), 15);
-		let creatorBalance = await token.balanceOf(creator);
+		let creatorBalance = await token.balanceOf(aacInstance.address);
 		assert.equal(creatorBalance.toNumber(), 11);
 
 		const wae = await WeiAbsoluteExpense.new(1000);
@@ -635,7 +639,7 @@ contract('Voting simple token', (accounts) => {
 		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
 	});
 
-	it('1.17. Q Scenario: creator have 1/15 tokens, employee1 have 10 and vote no, (50,50) => isYes==false',async() => {
+	it('1.17. Q Scenario: creator have 1/15 tokens, employee1 have 11 and vote no, (50,50) => isYes==false',async() => {
 		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
 		await daoBase.issueTokens(token.address, employee1, 10);
 		const wae = await WeiAbsoluteExpense.new(1000);
@@ -644,7 +648,7 @@ contract('Voting simple token', (accounts) => {
 		let totalSupply = await token.totalSupply();
 		assert.equal(totalSupply.toNumber(), 15);
 		let e1Balance = await token.balanceOf(employee1);
-		assert.equal(e1Balance.toNumber(), 11);
+		assert.equal(e1Balance.toNumber(), 10);
 
 		const pa = await daoBase.getProposalAtIndex(0);
 		const proposal = await IProposal.at(pa);
@@ -657,7 +661,7 @@ contract('Voting simple token', (accounts) => {
 
 		r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),1,'yes');
-		assert.equal(r2[1].toNumber(),11,'no');
+		assert.equal(r2[1].toNumber(),10,'no');
 		assert.equal(r2[2].toNumber(),15,'total');
 
 		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');

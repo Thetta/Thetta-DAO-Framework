@@ -18,6 +18,9 @@ contract Voting is IVoting, Ownable {
 	event CallAction();
 	event DelegatedTo(address _sender, uint _tokensAmount);
 	event DelegationRemoved(address _from, address _to);
+	uint private yesResults;
+	uint private noResults;
+	uint private votersTotal;
 	
 	/*
 	 * @param _dao – DAO where proposal was created.
@@ -39,6 +42,11 @@ contract Voting is IVoting, Ownable {
 		store.generalConstructor(_dao, _proposal, _origin, _votingType, _minutesToVote, _groupName, _quorumPercent, _consensusPercent, _tokenAddress);
 	}
 
+	function setStdDaoTokenVotingID(uint _stdDaoTokenVotingID) public onlyOwner {
+		store.votingID = _stdDaoTokenVotingID;
+		vote(true);
+	}
+	
 	function quorumPercent()view returns(uint){
 		return store.quorumPercent;
 	}
@@ -63,6 +71,12 @@ contract Voting is IVoting, Ownable {
 		store.libVote(msg.sender, _isYes);
 	}
 
+	function finishVoting() public {
+		require (isFinished());
+		
+		StdDaoToken(store.tokenAddress).finishVoting(store.votingID);	
+	}
+
 	function callActionIfEnded() public {
 		store.callActionIfEnded();
 	}
@@ -75,7 +89,7 @@ contract Voting is IVoting, Ownable {
 		return store.isYes();
 	}
 
-	function getVotingStats() public constant returns(uint yesResults, uint noResults, uint votersTotal){
+	function getVotingStats() public constant returns(uint _yesResults, uint _noResults, uint _votersTotal){
 		return store.getVotingStats();
 	}
 
@@ -164,12 +178,12 @@ library VotingLib {
 		store.groupName = _groupName;
 		store.votingType = _votingType;
 		store.genesis = now;
+		store.tokenAddress = _tokenAddress;
 
-		if(VotingType.Voting1p1v!=store.votingType){
-			store.tokenAddress = _tokenAddress;
-			store.votingID = StdDaoToken(_tokenAddress).startNewVoting();
+		if(VotingType.Voting1p1v==store.votingType){
+			libVote(store, _origin, true);
 		}
-		libVote(store, _origin, true);
+		
 	}
 
 	function getNow() public view returns(uint){

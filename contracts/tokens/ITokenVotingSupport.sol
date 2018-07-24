@@ -25,7 +25,7 @@ pragma solidity ^0.4.22;
 */
 interface ITokenVotingSupport {
 	// can throw if 20 votings are already started
-	function startNewVoting() external returns(uint);
+	function startNewVoting(address _voting) external returns(uint);
 
 	function finishVoting(uint _votingID) external;
 

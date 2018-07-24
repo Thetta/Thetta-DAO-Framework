@@ -31,7 +31,18 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 
 	address[] public holders;
 	mapping (address => bool) isHolder;
+	mapping (uint => address) votingCreated;
+	mapping (bytes32 => mapping(address => bool)) permissions;
 
+	bytes32 public TOKEN_StartNewVoting = keccak256(abi.encodePacked("TOKEN_StartNewVoting"));
+	bytes32 public allow_actions = keccak256(abi.encodePacked("allow_actions"));
+	bytes32 public disallow_actions = keccak256(abi.encodePacked("disallow_actions"));
+
+	modifier isCanDo(bytes32 _permissionID) { 
+		require (permissions[_permissionID][msg.sender]); 
+		_; 
+	}
+	
 	modifier isBurnable_() { 
 		require (isBurnable); 
 		_; 
@@ -52,20 +63,29 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 		cap = _cap;
 		isBurnable = _isBurnable;
 		isPausable = _isPausable;
+		permissions[allow_actions][msg.sender] = true;
+		permissions[TOKEN_StartNewVoting][msg.sender] = true;
 
 		holders.push(this);
 	}
 
+	function allowActionByAddress(address _who, bytes32 _action) public isCanDo(allow_actions) {
+		permissions[_action][_who] = true;
+	}
+	
 // ITokenVotingSupport implementation
 	// TODO: VULNERABILITY! no onlyOwner!
-	function startNewVoting() public whenNotPaused returns(uint) {
+	function startNewVoting(address _voting) public whenNotPaused isCanDo(TOKEN_StartNewVoting) returns(uint) {
 		uint idOut = super.startNewEvent();
+		votingCreated[idOut] = _voting;
 		emit VotingStarted(msg.sender, idOut);
 		return idOut;
 	}
 
 	// TODO: VULNERABILITY! no onlyOwner!
 	function finishVoting(uint _votingID) whenNotPaused public {
+		require (msg.sender == votingCreated[_votingID]);
+		
 		super.finishEvent(_votingID);
 		emit VotingFinished(msg.sender, _votingID);
 	}
