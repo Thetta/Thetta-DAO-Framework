@@ -1,6 +1,9 @@
 const BigNumber = web3.BigNumber;
 
 const StdDaoToken = artifacts.require('StdDaoToken');
+const DaoStorage = artifacts.require("./DaoStorage");
+var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
+var Voting = artifacts.require("./Voting");
 
 require('chai')
 	.use(require('chai-as-promised'))
@@ -12,8 +15,11 @@ require('chai')
 		const employee3 = accounts[3];
 		const employee4 = accounts[4];
 		const employee5 = accounts[5];
+		let store;
+		let daoBase;
 		
 		const ETH = 1000000000000000000;
+		const VOTING_TYPE_LIQUID = 4;
 
 		beforeEach(async function () {
 
@@ -126,40 +132,49 @@ require('chai')
 
 			it('should not be possible to call if paused',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
+				store = await DaoStorage.new([this.token.address],{ from: creator });
+				daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+				const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, this.token.address);
 				await this.token.pause();
-				await this.token.startNewVoting().should.be.rejectedWith('revert');
+				await this.token.startNewVoting(voting.address).should.be.rejectedWith('revert');
 			});
 
 			it('should not allow to create > 20 separate votings',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
+				store = await DaoStorage.new([this.token.address],{ from: creator });
+				daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+				const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, this.token.address);
 
-				await this.token.startNewVoting();//1
-				await this.token.startNewVoting();//2
-				await this.token.startNewVoting();//3
-				await this.token.startNewVoting();//4
-				await this.token.startNewVoting();//5
-				await this.token.startNewVoting();//6
-				await this.token.startNewVoting();//7
-				await this.token.startNewVoting();//8
-				await this.token.startNewVoting();//9
-				await this.token.startNewVoting();//10
-				await this.token.startNewVoting();//11
-				await this.token.startNewVoting();//12
-				await this.token.startNewVoting();//13
-				await this.token.startNewVoting();//14
-				await this.token.startNewVoting();//15
-				await this.token.startNewVoting();//16
-				await this.token.startNewVoting();//17
-				await this.token.startNewVoting();//18
-				await this.token.startNewVoting();//19
-				await this.token.startNewVoting();//20
-				await this.token.startNewVoting().should.be.rejectedWith('revert'); //should be revert();
+				await this.token.startNewVoting(voting.address);//1
+				await this.token.startNewVoting(voting.address);//2
+				await this.token.startNewVoting(voting.address);//3
+				await this.token.startNewVoting(voting.address);//4
+				await this.token.startNewVoting(voting.address);//5
+				await this.token.startNewVoting(voting.address);//6
+				await this.token.startNewVoting(voting.address);//7
+				await this.token.startNewVoting(voting.address);//8
+				await this.token.startNewVoting(voting.address);//9
+				await this.token.startNewVoting(voting.address);//10
+				await this.token.startNewVoting(voting.address);//11
+				await this.token.startNewVoting(voting.address);//12
+				await this.token.startNewVoting(voting.address);//13
+				await this.token.startNewVoting(voting.address);//14
+				await this.token.startNewVoting(voting.address);//15
+				await this.token.startNewVoting(voting.address);//16
+				await this.token.startNewVoting(voting.address);//17
+				await this.token.startNewVoting(voting.address);//18
+				await this.token.startNewVoting(voting.address);//19
+				await this.token.startNewVoting(voting.address);//20
+				await this.token.startNewVoting(voting.address).should.be.rejectedWith('revert'); //should be revert();
 			});
 		});
 
 		describe('getBalanceAtVoting()', function () {
 			it('should preserve balances if no transfers happened after voting is started',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
+				store = await DaoStorage.new([this.token.address],{ from: creator });
+				daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+				const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, this.token.address);
 				await this.token.mintFor(employee4, 1);
 
 				let employee4Balance = await this.token.balanceOf(employee4);
@@ -168,7 +183,7 @@ require('chai')
 				assert.equal(employee4Balance.toNumber(), 1);
 				assert.equal(employee5Balance.toNumber(), 0);
 
-				const tx = await this.token.startNewVoting();
+				const tx = await this.token.startNewVoting(voting.address);
 				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
@@ -181,9 +196,12 @@ require('chai')
 
 			it('should preserve balances after voting is started',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
+				store = await DaoStorage.new([this.token.address],{ from: creator });
+				daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+				const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, this.token.address);
 				await this.token.mintFor(employee4, 1);
 
-				const tx = await this.token.startNewVoting();
+				const tx = await this.token.startNewVoting(voting.address);
 				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
@@ -204,15 +222,18 @@ require('chai')
 
 			it('should preserve balances in 2 different votings',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
+				store = await DaoStorage.new([this.token.address],{ from: creator });
+				daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+				const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, this.token.address);
 				await this.token.mintFor(employee4, 1);
 
-				let tx = await this.token.startNewVoting();
+				let tx = await this.token.startNewVoting(voting.address);
 				let events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
 				await this.token.transfer(employee5, 1, {from: employee4});
 
-				tx = await this.token.startNewVoting();
+				tx = await this.token.startNewVoting(voting.address);
 				events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const secondVotingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
@@ -237,9 +258,13 @@ require('chai')
 
 			it('should preserve balances after voting is started and burnFor called',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, true, true, ETH);
+				store = await DaoStorage.new([this.token.address],{ from: creator });
+				daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+				const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, this.token.address);
+
 				await this.token.mintFor(employee4, 1);
 
-				const tx = await this.token.startNewVoting();
+				const tx = await this.token.startNewVoting(voting.address);
 				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
@@ -256,8 +281,11 @@ require('chai')
 
 			it('should preserve balances after voting is started and mintFor called',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
+				store = await DaoStorage.new([this.token.address],{ from: creator });
+				daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+				const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, this.token.address);
 
-				const tx = await this.token.startNewVoting();
+				const tx = await this.token.startNewVoting(voting.address);
 				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
@@ -274,9 +302,13 @@ require('chai')
 
 			it('should throw exception when trying to check balancesAtVoting after voting is ended',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
+				store = await DaoStorage.new([this.token.address],{ from: creator });
+				daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+				const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, this.token.address);
+				
 				await this.token.mintFor(employee4, 1);
 
-				const tx = await this.token.startNewVoting();
+				const tx = await this.token.startNewVoting(creator);
 				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
@@ -301,9 +333,13 @@ require('chai')
 
 			it('should preserve balances after voting is started and transferFrom is called',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
+				store = await DaoStorage.new([this.token.address],{ from: creator });
+				daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+				const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, this.token.address);
+				
 				await this.token.mintFor(employee4, 1);
 
-				const tx = await this.token.startNewVoting();
+				const tx = await this.token.startNewVoting(voting.address);
 				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
@@ -351,8 +387,11 @@ require('chai')
 
 			it('should not be possible to call if paused',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
+				store = await DaoStorage.new([this.token.address],{ from: creator });
+				daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+				const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, this.token.address);
 
-				const tx = await this.token.startNewVoting();
+				const tx = await this.token.startNewVoting(voting.address);
 				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 
@@ -362,9 +401,13 @@ require('chai')
 
 			it('should throw revert() if VotingID is wrong',async() => {
 				this.token = await StdDaoToken.new("StdToken","STDT",18, false, true, ETH);
+				store = await DaoStorage.new([this.token.address],{ from: creator });
+				daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+				const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, this.token.address);
+				
 				await this.token.mintFor(employee4, 1);
 
-				const tx = await this.token.startNewVoting();
+				const tx = await this.token.startNewVoting(voting.address);
 				const events = tx.logs.filter(l => l.event == 'VotingStarted');
 				const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
 

@@ -36,11 +36,11 @@ contract('Voting liquid', (accounts) => {
 
 	let r2;
 	let token;
-	let voting;
 	let daoBase;
 
 	beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+
 		await token.mintFor(creator, 1);
 		await token.mintFor(employee1, 1);
 		await token.mintFor(employee2, 2);
@@ -52,12 +52,23 @@ contract('Voting liquid', (accounts) => {
 	describe('getPowerOf()', function () {
 		it('Check getPower()',async() => {
 			const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, token.address);
+
+			const tx = await token.startNewVoting(voting.address);
+			const events = tx.logs.filter(l => l.event == 'VotingStarted');
+			const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+			await voting.setStdDaoTokenVotingID(votingID);
+
 			r2 = await voting.getPowerOf(creator);
 			assert.equal(r2.toNumber(),1,'yes');
 		});
 
 		it('Check getPower() when voice delegated',async() => {
 			const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, token.address);
+
+			const tx = await token.startNewVoting(voting.address);
+			const events = tx.logs.filter(l => l.event == 'VotingStarted');
+			const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+			await voting.setStdDaoTokenVotingID(votingID);
 
 			await voting.delegateMyVoiceTo(employee1, 1);
 
@@ -71,6 +82,11 @@ contract('Voting liquid', (accounts) => {
 
 		it('Check getPower() when voice delegated and delegation removed',async() => {
 			const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, token.address);
+
+			const tx = await token.startNewVoting(voting.address);
+			const events = tx.logs.filter(l => l.event == 'VotingStarted');
+			const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+			await voting.setStdDaoTokenVotingID(votingID);
 
 			await voting.delegateMyVoiceTo(employee1, 1);
 
@@ -96,6 +112,11 @@ contract('Voting liquid', (accounts) => {
 		it('Check getDelegatedPowerOf()',async() => {
 			const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, token.address);
 
+			const tx = await token.startNewVoting(voting.address);
+			const events = tx.logs.filter(l => l.event == 'VotingStarted');
+			const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+			await voting.setStdDaoTokenVotingID(votingID);
+
 			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),0,'yes');
 
@@ -113,6 +134,11 @@ contract('Voting liquid', (accounts) => {
 	describe('getDelegatedPowerByMe()', function () {
 		it('Check getDelegatedPowerByMe()',async() => {
 			const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, token.address);
+
+			const tx = await token.startNewVoting(voting.address);
+			const events = tx.logs.filter(l => l.event == 'VotingStarted');
+			const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+			await voting.setStdDaoTokenVotingID(votingID);
 
 			r2 = await voting.getDelegatedPowerByMe(creator);
 			assert.equal(r2.toNumber(),0,'yes');
@@ -132,6 +158,11 @@ contract('Voting liquid', (accounts) => {
 		it('Should delegate from A to B',async() => {
 			const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, token.address);
 
+			const tx = await token.startNewVoting(voting.address);
+			const events = tx.logs.filter(l => l.event == 'VotingStarted');
+			const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+			await voting.setStdDaoTokenVotingID(votingID);
+
 			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),0);
 
@@ -143,6 +174,11 @@ contract('Voting liquid', (accounts) => {
 
 		it('Should delegate from A to B then from A to B again with the same amount',async() => {
 			const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, token.address);
+
+			const tx = await token.startNewVoting(voting.address);
+			const events = tx.logs.filter(l => l.event == 'VotingStarted');
+			const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+			await voting.setStdDaoTokenVotingID(votingID);
 
 			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),0);
@@ -162,6 +198,11 @@ contract('Voting liquid', (accounts) => {
 	describe('removeDelegation()', function () {
 		it('Check removeDelegation()',async() => {
 			const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, token.address);
+
+			const tx = await token.startNewVoting(voting.address);
+			const events = tx.logs.filter(l => l.event == 'VotingStarted');
+			const votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+			await voting.setStdDaoTokenVotingID(votingID);
 
 			r2 = await voting.getDelegatedPowerOf(creator);
 			assert.equal(r2.toNumber(),0);

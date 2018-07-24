@@ -19,6 +19,8 @@ contract IVoting {
 	// Can get this stats if voting is NOT finished. 
 	function getVotingStats() public view returns(uint yesResults, uint noResults, uint totalResults);
 
+	function setStdDaoTokenVotingID(uint _stdDaoTokenVotingID) public;
+
 	// Is voting finished?
 	//
 	// 1 - First we check if minutesToVote!=0 and time elapsed 

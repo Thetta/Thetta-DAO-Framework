@@ -77,6 +77,7 @@ contract('Voting Quadratic', (accounts) => {
 	let daoBase;
 	let moneyflowInstance;
 	let aacInstance;
+	let startNewVoting;
 
 	let issueTokens;
 	let manageGroups;
@@ -92,17 +93,19 @@ contract('Voting Quadratic', (accounts) => {
 
 	beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
-		await token.mintFor(creator, 25);
-		await token.mintFor(employee1, 11);
-		await token.mintFor(employee2, 9);
-		await token.mintFor(employee3, 4);
-		await token.mintFor(employee4, 16);
-		// await token.mint(employee5, 1);
-
 		let store = await DaoStorage.new([token.address],{ from: creator });
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
 		moneyflowInstance = await MoneyFlow.new(daoBase.address, {from: creator});
 		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
+
+		await token.mintFor(creator, 25);
+		await token.mintFor(aacInstance.address, 11);
+		await token.mintFor(employee2, 9);
+		await token.mintFor(employee3, 4);
+		await token.mintFor(employee4, 16);
+		// await token.mint(employee5, 1);
+		
+		startNewVoting = await token.TOKEN_StartNewVoting();
 
 		issueTokens = await daoBase.ISSUE_TOKENS();
 
@@ -113,6 +116,8 @@ contract('Voting Quadratic', (accounts) => {
 		withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
 
 		setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
+
+		await token.allowActionByAddress(aacInstance.address, startNewVoting);
 
 		await store.addGroupMember(KECCAK256("Employees"), creator);
 		await store.allowActionByAddress(manageGroups,creator);

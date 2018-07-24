@@ -56,6 +56,21 @@ contract('Multiple Votings', (accounts) => {
 			let simpleVoting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_SIMPLE_TOKEN, 60, '', 51, 71, token.address);
 			let qudraticVoting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_QUADRATIC, 60, '', 51, 71, token.address);
 
+			let tx = await token.startNewVoting(liquidVoting.address);
+			let events = tx.logs.filter(l => l.event == 'VotingStarted');
+			let votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+			await liquidVoting.setStdDaoTokenVotingID(votingID);
+
+			tx = await token.startNewVoting(simpleVoting.address);
+			events = tx.logs.filter(l => l.event == 'VotingStarted');
+			votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+			await simpleVoting.setStdDaoTokenVotingID(votingID);
+
+			tx = await token.startNewVoting(qudraticVoting.address);
+			events = tx.logs.filter(l => l.event == 'VotingStarted');
+			votingID = events.filter(e => e.args._address == creator)[0].args._votingID;
+			await qudraticVoting.setStdDaoTokenVotingID(votingID);
+
 			r2 = await liquidVoting.getPowerOf(creator);
 			assert.equal(r2.toNumber(),1,'yes');
 

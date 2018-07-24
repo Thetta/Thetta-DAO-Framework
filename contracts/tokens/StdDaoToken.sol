@@ -5,7 +5,6 @@ import "zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 
 import "./CopyOnWriteToken.sol";
 import "./ITokenVotingSupport.sol";
-import "../DaoBase.sol";
 
 /**
  * @title StdDaoToken 
@@ -25,7 +24,7 @@ import "../DaoBase.sol";
  *    finishVoting()
  *    getBalanceAtVoting() 
 */
-contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, DaoBase, ITokenVotingSupport {
+contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVotingSupport {
 	uint256 public cap;
 	bool isBurnable;
 	bool isPausable;
@@ -33,9 +32,17 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, DaoBase,
 	address[] public holders;
 	mapping (address => bool) isHolder;
 	mapping (uint => address) votingCreated;
+	mapping (bytes32 => mapping(address => bool)) permissions;
 
 	bytes32 public TOKEN_StartNewVoting = keccak256(abi.encodePacked("TOKEN_StartNewVoting"));
+	bytes32 public allow_actions = keccak256(abi.encodePacked("allow_actions"));
+	bytes32 public disallow_actions = keccak256(abi.encodePacked("disallow_actions"));
 
+	modifier isCanDo(bytes32 _permissionID) { 
+		require (permissions[_permissionID][msg.sender]); 
+		_; 
+	}
+	
 	modifier isBurnable_() { 
 		require (isBurnable); 
 		_; 
@@ -56,10 +63,16 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, DaoBase,
 		cap = _cap;
 		isBurnable = _isBurnable;
 		isPausable = _isPausable;
+		permissions[allow_actions][msg.sender] = true;
+		permissions[TOKEN_StartNewVoting][msg.sender] = true;
 
 		holders.push(this);
 	}
 
+	function allowActionByAddress(address _who, bytes32 _action) public isCanDo(allow_actions) {
+		permissions[_action][_who] = true;
+	}
+	
 // ITokenVotingSupport implementation
 	// TODO: VULNERABILITY! no onlyOwner!
 	function startNewVoting(address _voting) public whenNotPaused isCanDo(TOKEN_StartNewVoting) returns(uint) {
