@@ -19,14 +19,6 @@ contract Voting is IVoting, Ownable {
 	event DelegatedTo(address _sender, uint _tokensAmount);
 	event DelegationRemoved(address _from, address _to);
 	
-	enum VotingType{
-		NoVoting,
-		Voting1p1v,
-		VotingSimpleToken,
-		VotingQuadratic,
-		VotingLiquid
-	}
-
 	/*
 	 * @param _dao – DAO where proposal was created.
 	 * @param _proposal – proposal, which create vote.
@@ -39,7 +31,7 @@ contract Voting is IVoting, Ownable {
 	 * @param _tokenAddress – for votings that uses token amount of voter
 	*/
 	constructor(IDaoBase _dao, IProposal _proposal, 
-		address _origin, VotingType _votingType, 
+		address _origin, VotingLib.VotingType _votingType, 
 		uint _minutesToVote, string _groupName, 
 		uint _quorumPercent, uint _consensusPercent, 
 		address _tokenAddress) public 
@@ -115,6 +107,14 @@ library VotingLib {
 	event DelegatedTo(address _sender, uint _tokensAmount);
 	event DelegationRemoved(address _from, address _to);
 
+	enum VotingType{
+		NoVoting,
+		Voting1p1v,
+		VotingSimpleToken,
+		VotingQuadratic,
+		VotingLiquid
+	}
+
 	struct Delegation {
 		address _address;
 		uint amount;
@@ -144,11 +144,11 @@ library VotingLib {
 		mapping(address=>Delegation[]) delegations;
 
 		uint votesCount;
-		Voting.VotingType votingType;	
+		VotingType votingType;	
 	}
 
 	function generalConstructor(VotingStorage storage store, IDaoBase _dao, IProposal _proposal, 
-		address _origin, Voting.VotingType _votingType, 
+		address _origin, VotingType _votingType, 
 		uint _minutesToVote, string _groupName, 
 		uint _quorumPercent, uint _consensusPercent, 
 		address _tokenAddress) public 
@@ -165,7 +165,7 @@ library VotingLib {
 		store.votingType = _votingType;
 		store.genesis = now;
 
-		if(Voting.VotingType.Voting1p1v!=store.votingType){
+		if(VotingType.Voting1p1v!=store.votingType){
 			store.tokenAddress = _tokenAddress;
 			store.votingID = StdDaoToken(_tokenAddress).startNewVoting();
 		}
@@ -177,13 +177,13 @@ library VotingLib {
 	}
 
 	function getVotersTotal(VotingStorage storage store)public view returns(uint){	
-		if(Voting.VotingType.Voting1p1v==store.votingType){
+		if(VotingType.Voting1p1v==store.votingType){
 			return store.dao.getMembersCount(store.groupName);
-		}else if(Voting.VotingType.VotingSimpleToken==store.votingType){
+		}else if(VotingType.VotingSimpleToken==store.votingType){
 			return StdDaoToken(store.tokenAddress).totalSupply();
-		}else if(Voting.VotingType.VotingQuadratic==store.votingType){
+		}else if(VotingType.VotingQuadratic==store.votingType){
 			return StdDaoToken(store.tokenAddress).getVotingTotalForQuadraticVoting();
-		}else if(Voting.VotingType.VotingLiquid==store.votingType){
+		}else if(VotingType.VotingLiquid==store.votingType){
 			return StdDaoToken(store.tokenAddress).totalSupply();
 		}else{
 			revert();
@@ -191,17 +191,17 @@ library VotingLib {
 	}
 
 	function getPowerOf(VotingStorage storage store, address _voter)public view returns(uint){
-		if(Voting.VotingType.Voting1p1v==store.votingType){
+		if(VotingType.Voting1p1v==store.votingType){
 			if(store.dao.isGroupMember(store.groupName, _voter)){
 				return 1;
 			}else{
 				return 0;
 			}	
-		}else if(Voting.VotingType.VotingSimpleToken==store.votingType){
+		}else if(VotingType.VotingSimpleToken==store.votingType){
 			return StdDaoToken(store.tokenAddress).getBalanceAtVoting(store.votingID, _voter);
-		}else if(Voting.VotingType.VotingQuadratic==store.votingType){
+		}else if(VotingType.VotingQuadratic==store.votingType){
 			return sqrt(StdDaoToken(store.tokenAddress).getBalanceAtVoting(store.votingID, _voter));
-		}else if(Voting.VotingType.VotingLiquid==store.votingType){
+		}else if(VotingType.VotingLiquid==store.votingType){
 			uint res = StdDaoToken(store.tokenAddress).getBalanceAtVoting(store.votingID, _voter);
 			for(uint i = 0; i < store.delegations[_voter].length; i++){
 				if(!store.delegations[_voter][i].isDelegator){
@@ -229,7 +229,7 @@ library VotingLib {
 		require(!isFinished(store));
 		require(!store.voted[msg.sender]);
 
-		if(Voting.VotingType.Voting1p1v==store.votingType){
+		if(VotingType.Voting1p1v==store.votingType){
 			require(store.dao.isGroupMember(store.groupName, _voter));
 		}
 
