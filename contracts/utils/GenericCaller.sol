@@ -15,13 +15,6 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 */
 contract GenericCaller is DaoClient, Ownable {
 	using VotingLib for VotingLib.VotingType;
-	// enum VotingType {
-	// 	NoVoting,
-	// 	Voting1p1v,
-	// 	VotingSimpleToken,
-	// 	VotingQuadratic,
-	// 	VotingLiquid
-	// }
 
 	event consoleAddr(string comment, address a);
 	event consoleB32(string comment, bytes32 a);
