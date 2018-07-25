@@ -8,11 +8,6 @@ var IWeiReceiver = artifacts.require("./IWeiReceiver");
 var WeiAbsoluteExpense = artifacts.require("./WeiAbsoluteExpense");
 var InformalProposal = artifacts.require("./InformalProposal");
 
-var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
-
-var InformalProposal = artifacts.require("./InformalProposal");
-
-var Voting = artifacts.require("./Voting");
 var Voting = artifacts.require("./Voting");
 var IProposal = artifacts.require("./IProposal");
 
@@ -22,7 +17,6 @@ const VOTING_TYPE_1P1V = 1;
 const VOTING_TYPE_SIMPLE_TOKEN = 2;
 const VOTING_TYPE_QUADRATIC = 3;
 const VOTING_TYPE_LIQUID = 4;
-
 
 require('chai')
   .use(require('chai-as-promised'))
@@ -47,23 +41,12 @@ contract('Multiple Votings', (accounts) => {
 
 		let store = await DaoStorage.new([token.address],{ from: creator });
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
-
 	});
+
 	describe('getPowerOf()', function () {
 		it('Check getPower() when 3 different votings created',async() => {
-
-			let liquidVoting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, token.address);
 			let simpleVoting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_SIMPLE_TOKEN, 60, '', 51, 71, token.address);
 			let qudraticVoting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_QUADRATIC, 60, '', 51, 71, token.address);
-
-			r2 = await liquidVoting.getPowerOf(creator);
-			assert.equal(r2.toNumber(),1,'yes');
-
-			r2 = await liquidVoting.getPowerOf(employee1);
-			assert.equal(r2.toNumber(),1,'yes');
-
-			r2 = await liquidVoting.getPowerOf(employee2);
-			assert.equal(r2.toNumber(),2,'yes');
 
 			r2 = await simpleVoting.getPowerOf(creator);
 			assert.equal(r2.toNumber(),1,'yes');
@@ -85,15 +68,6 @@ contract('Multiple Votings', (accounts) => {
 
 			token.transfer(creator, 1, {from: employee2});
 			token.transfer(employee2, 1, {from: employee1});
-
-			r2 = await liquidVoting.getPowerOf(creator);
-			assert.equal(r2.toNumber(),1,'yes');
-
-			r2 = await liquidVoting.getPowerOf(employee1);
-			assert.equal(r2.toNumber(),1,'yes');
-
-			r2 = await liquidVoting.getPowerOf(employee2);
-			assert.equal(r2.toNumber(),2,'yes');
 
 			r2 = await simpleVoting.getPowerOf(creator);
 			assert.equal(r2.toNumber(),1,'yes');

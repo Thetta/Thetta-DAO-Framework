@@ -10,10 +10,10 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 // 1 - client transfers N tokens for D days
 // 2 - client calls vote(_yes, _tokenAmount) 
 // 3 - the result is calculated
-
-contract Voting is IVoting, Ownable {
+contract Voting is DaoClient, IVoting, Ownable {
 	using VotingLib for VotingLib.VotingStorage;
 	VotingLib.VotingStorage store;
+
 	event Voted(address _who, bool _yes);
 	event CallAction();
 	event DelegatedTo(address _sender, uint _tokensAmount);
@@ -35,7 +35,9 @@ contract Voting is IVoting, Ownable {
 		uint _minutesToVote, string _groupName, 
 		uint _quorumPercent, uint _consensusPercent, 
 		address _tokenAddress) public 
+		DaoClient(_dao)
 	{
+		// TODO: remove _dao from storage!!!
 		store.generalConstructor(_dao, _proposal, _origin, _votingType, _minutesToVote, _groupName, _quorumPercent, _consensusPercent, _tokenAddress);
 	}
 
@@ -79,8 +81,13 @@ contract Voting is IVoting, Ownable {
 		return store.getVotingStats();
 	}
 
+	// TODO: add tests
 	function cancelVoting() public onlyOwner {
 		store.canceled = true;
+
+		// TODO: 
+		// call it???
+		// token.finishVoting();
 	}
 
 	// ------------------ LIQUID ------------------

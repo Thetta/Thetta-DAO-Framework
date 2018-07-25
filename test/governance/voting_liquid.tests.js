@@ -47,8 +47,8 @@ contract('Voting liquid', (accounts) => {
 
 		let store = await DaoStorage.new([token.address],{ from: creator });
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
-
 	});
+
 	describe('getPowerOf()', function () {
 		it('Check getPower()',async() => {
 			const voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, token.address);
