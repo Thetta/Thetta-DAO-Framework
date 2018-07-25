@@ -1,8 +1,17 @@
 {
-  "extends": "solium:recommended",
+  "extends": "solium:all",
   "plugins": ["security"],
   "rules": {
-    "indentation": ["warning", "tab"],
-    "quotes": ["warning", "double"]
+    "quotes": ["error", "double"],
+    "no-empty-blocks": "off",
+    "indentation": ["error", "tab"],
+    "max-len": ["warning", 120],
+    "no-constant": ["error"],
+    "security/enforce-explicit-visibility": ["error"],
+    "security/no-block-members": ["warning"],
+    "security/no-inline-assembly": ["warning"],
+	 "conditionals-whitespace": ["off"],
+	 "operator-whitespace": ["off"],
+	 "function-order": ["off"]
   }
 }
