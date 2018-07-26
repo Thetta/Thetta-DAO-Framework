@@ -118,22 +118,22 @@ contract SimpleICO is DaoClient, Ownable {
     paused = false;
   }
 
-  function distributeBeforeICO(address[] _addresses, uint256[] _tokenAmount) onlyOwner public {
+  function distributeBeforeICO(address[] _addresses, uint256[] _tokenAmounts) onlyOwner public {
     require (now < startDate);
     require (_addresses.length > 0);
-    require (_addresses.length == _tokenAmount.length);
+    require (_addresses.length == _tokenAmounts.length);
     
     for(uint256 i = 0; i < _addresses.length; i++){
-      dao.issueTokens(tokenAddress, _addresses[i], _tokenAmount[i]);
+      dao.issueTokens(tokenAddress, _addresses[i], _tokenAmounts[i]);
     }
   }
 
-  function distributeAfterICO(address[] _addresses, uint256[] _tokenAmount) onlyAfterSuccess onlyOwner public {
+  function distributeAfterICO(address[] _addresses, uint256[] _tokenAmounts) onlyAfterSuccess onlyOwner public {
     require (_addresses.length > 0);
-    require (_addresses.length == _tokenAmount.length);
+    require (_addresses.length == _tokenAmounts.length);
     
     for(uint256 i = 0; i < _addresses.length; i++){
-      dao.issueTokens(tokenAddress, _addresses[i], _tokenAmount[i]);
+      dao.issueTokens(tokenAddress, _addresses[i], _tokenAmounts[i]);
     }
   }
   
