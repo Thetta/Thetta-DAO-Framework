@@ -248,7 +248,7 @@ contract('SimpleICO', function (accounts) {
       await increaseTimeTo(duration.weeks(1));
 
       let balanceBefore = web3.eth.getBalance(employee1).toNumber();
-      await this.crowdsale.forwardFunds(employee1, {gasPrice: 0});
+      await this.crowdsale.forwardFunds(employee1);
       let balanceAfter = web3.eth.getBalance(employee1).toNumber();
       assert.strictEqual(balanceBefore+softCap, balanceAfter-10000); // - gas 
     });
