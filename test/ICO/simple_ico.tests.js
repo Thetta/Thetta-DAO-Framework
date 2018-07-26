@@ -198,7 +198,9 @@ contract('SimpleICO', function (accounts) {
     });
 
     it('should pass', async function () {
-      await increaseTimeTo(duration.weeks(3));
+      await increaseTimeTo(duration.weeks(1));
+      await this.crowdsale.send(softCap);
+      await increaseTimeTo(duration.weeks(1));
       await this.crowdsale.distributeAfterICO([employee1,employee2,employee3], [10,20,30]);
       let balance = await token.balanceOf(employee1);
       assert.strictEqual(balance.toNumber(), 10);

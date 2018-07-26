@@ -17,8 +17,8 @@ contract SimpleICO is DaoClient, Ownable {
   uint256 public maxPurchase;
   uint256 public softCap;
   uint256 public hardCap;
-  uint public startDate;
-  uint public endDate;
+  uint256 public startDate;
+  uint256 public endDate;
   bool public stopped;
   bool public paused;
 
@@ -36,16 +36,16 @@ contract SimpleICO is DaoClient, Ownable {
   );
 
   modifier onlyWhileOpen() {
-    require(block.timestamp >= startDate && block.timestamp <= endDate && weiRaised < hardCap && !stopped);
+    require(block.timestamp >= startDate && block.timestamp <= endDate && weiRaised <= hardCap && !stopped);
     _;
   }
 
-  modifier onlyWhenFailed() {
+  modifier onlyAfterFail() {
     require((block.timestamp >= endDate && weiRaised < softCap) || stopped);
     _;
   }
 
-  modifier onlyWhenSuccess() {
+  modifier onlyAfterSuccess() {
     require(block.timestamp >= endDate && weiRaised >= softCap);
     _;
   }
@@ -55,7 +55,7 @@ contract SimpleICO is DaoClient, Ownable {
     _;
   }
 
-  constructor(uint256 _rate, address _tokenAddress, IDaoBase _dao, uint256 _minPurchase, uint256 _maxPurchase, uint _startDate, uint _endDate, uint256 _softCap, uint256 _hardCap) public 
+  constructor(uint256 _rate, address _tokenAddress, IDaoBase _dao, uint256 _minPurchase, uint256 _maxPurchase, uint256 _startDate, uint256 _endDate, uint256 _softCap, uint256 _hardCap) public 
       DaoClient(_dao)
   {
     require(_rate > 0);
@@ -88,7 +88,7 @@ contract SimpleICO is DaoClient, Ownable {
     uint256 tokens = _getTokenAmount(weiAmount);
     weiRaised = weiRaised.add(weiAmount);
 
-    _processPurchase(_beneficiary, tokens);
+    dao.issueTokens(tokenAddress, _beneficiary, tokens);
 
     emit TokenPurchase(
       msg.sender,
@@ -97,15 +97,6 @@ contract SimpleICO is DaoClient, Ownable {
       tokens
     );
 
-  }
-
-  function _processPurchase(
-    address _beneficiary,
-    uint256 _tokenAmount
-  )
-    internal
-  {
-    dao.issueTokens(tokenAddress, _beneficiary, _tokenAmount);
   }
 
   function _getTokenAmount(uint256 _weiAmount)
@@ -127,23 +118,22 @@ contract SimpleICO is DaoClient, Ownable {
     paused = false;
   }
 
-  function distributeBeforeICO(address[] _addresses, uint256[] _tokensAmount) onlyOwner public {
+  function distributeBeforeICO(address[] _addresses, uint256[] _tokenAmount) onlyOwner public {
     require (now < startDate);
     require (_addresses.length > 0);
-    require (_addresses.length == _tokensAmount.length);
+    require (_addresses.length == _tokenAmount.length);
     
-    for(uint i = 0; i < _addresses.length; i++){
-      dao.issueTokens(tokenAddress, _addresses[i], _tokensAmount[i]);
+    for(uint256 i = 0; i < _addresses.length; i++){
+      dao.issueTokens(tokenAddress, _addresses[i], _tokenAmount[i]);
     }
   }
 
-  function distributeAfterICO(address[] _addresses, uint256[] _tokensAmount) onlyOwner public {
-    require (now > endDate);
+  function distributeAfterICO(address[] _addresses, uint256[] _tokenAmount) onlyAfterSuccess onlyOwner public {
     require (_addresses.length > 0);
-    require (_addresses.length == _tokensAmount.length);
+    require (_addresses.length == _tokenAmount.length);
     
-    for(uint i = 0; i < _addresses.length; i++){
-      dao.issueTokens(tokenAddress, _addresses[i], _tokensAmount[i]);
+    for(uint256 i = 0; i < _addresses.length; i++){
+      dao.issueTokens(tokenAddress, _addresses[i], _tokenAmount[i]);
     }
   }
   
@@ -155,11 +145,11 @@ contract SimpleICO is DaoClient, Ownable {
     return isWhitelisted[_member];
   }
   
-  function forwardFunds(address _wallet) onlyWhenSuccess onlyOwner public {
+  function forwardFunds(address _wallet) onlyAfterSuccess onlyOwner public {
     _wallet.transfer(address(this).balance);
   }
 
-  function refund() onlyWhenFailed public {
+  function refund() onlyAfterFail public {
     uint256 payment = deposits[msg.sender];
     assert(address(this).balance >= payment);
 
