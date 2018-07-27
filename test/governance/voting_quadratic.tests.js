@@ -3,7 +3,7 @@ var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 
 var Voting = artifacts.require("./Voting");
-var Genericproposal = artifacts.require("./Genericproposal");
+var Genericproposal = artifacts.require("./GenericProposal");
 
 const BigNumber = web3.BigNumber;
 
