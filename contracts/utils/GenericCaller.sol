@@ -14,14 +14,14 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  * WARNING: should be permitted to add new proposal by the current DaoBase!!!
 */
 contract GenericCaller is DaoClient, Ownable {
-	using VotingLib for VotingLib.VotingType;
+	// using VotingLib for VotingLib.VotingType;
 
 	event consoleAddr(string comment, address a);
 	event consoleB32(string comment, bytes32 a);
 	event consoleUint(string comment, uint a);
 	event consoleStr(string comment, string a);
 	struct VotingParams {
-		VotingLib.VotingType votingType;
+		Voting.VotingType votingType;
 		bytes32 param1;
 		bytes32 param2;
 		bytes32 param3;
@@ -95,7 +95,7 @@ contract GenericCaller is DaoClient, Ownable {
 		bytes32 _param1, bytes32 _param2, 
 		bytes32 _param3, bytes32 _param4, bytes32 _param5) public onlyOwner {
 		VotingParams memory params;
-		params.votingType = VotingLib.VotingType(_votingType);
+		params.votingType = Voting.VotingType(_votingType);
 		params.param1 = _param1;
 		params.param2 = _param2;
 		params.param3 = _param3;
