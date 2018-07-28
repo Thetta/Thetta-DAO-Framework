@@ -11,7 +11,6 @@ var InformalProposal = artifacts.require("./InformalProposal");
 var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
 
 var Voting = artifacts.require("./Voting");
-var VotingLib = artifacts.require("./VotingLib");
 var IProposal = artifacts.require("./IProposal");
 
 const VOTING_TYPE_1P1V = 1;

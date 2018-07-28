@@ -14,8 +14,6 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  * WARNING: should be permitted to add new proposal by the current DaoBase!!!
 */
 contract GenericCaller is DaoClient, Ownable {
-	// using VotingLib for VotingLib.VotingType;
-
 	event consoleAddr(string comment, address a);
 	event consoleB32(string comment, bytes32 a);
 	event consoleUint(string comment, uint a);
