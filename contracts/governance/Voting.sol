@@ -223,7 +223,7 @@ library VotingLib {
 		}
 	}
 
-	function sqrt(uint x) public pure returns (uint y){
+	function sqrt(uint x) internal pure returns (uint y){
 		uint z = (x+1)/2;
 		y = x;
 		while (z<y){
@@ -258,9 +258,6 @@ library VotingLib {
 	}
 
 	function _isTimeElapsed(VotingStorage storage store) internal view returns(bool){
-		if(store.minutesToVote==0){
-			return false;
-		}
 		return (now - store.genesis) > (store.minutesToVote * 60 * 1000);
 	}
 
@@ -348,12 +345,12 @@ library VotingLib {
 		emit DelegationRemoved(msg.sender, _to);
 	}
 
-	function callActionIfEnded(VotingStorage storage store) public {
+	function callActionIfEnded(VotingStorage storage store) internal {
 		if(!store.finishedWithYes && isFinished(store) && isYes(store)){ 
 			// should not be callable again!!!
 			store.finishedWithYes = true;
 			emit CallAction();
-			store.proposal.action(); // can throw!
+			store.proposal.action();
 		}
 	}			
 }
