@@ -261,16 +261,27 @@ contract('MoneyflowTable tests', (accounts) => {
 	// 0->•abs
 	it('should process money with WeiTopDownSplitter + 3 WeiAbsoluteExpense',async() => {
 		let moneyflowTable = await MoneyflowTable.new();
-
+		var output1 = await WeiAbsoluteExpense.new(neededAmount);
+		var output2 = await WeiAbsoluteExpense.new(2*neededAmount);
+		var output3 = await WeiAbsoluteExpense.new(3*neededAmount);
 		let topDownSplitterId = getEId(await moneyflowTable.addTopdownSplitter());			
-		let AbsoluteExpense1Id = getEId(await moneyflowTable.addAbsoluteExpense(neededAmount, isPeriodic, isAccumulateDebt, periodHours, output));
-		let AbsoluteExpense2Id = getEId(await moneyflowTable.addAbsoluteExpense(2*neededAmount, isPeriodic, isAccumulateDebt, periodHours, output));
-		let AbsoluteExpense3Id = getEId(await moneyflowTable.addAbsoluteExpense(3*neededAmount, isPeriodic, isAccumulateDebt, periodHours, output));
+		let AbsoluteExpense1Id = getEId(await moneyflowTable.addAbsoluteExpense(neededAmount, isPeriodic, isAccumulateDebt, periodHours, output1.address));
+		let AbsoluteExpense2Id = getEId(await moneyflowTable.addAbsoluteExpense(2*neededAmount, isPeriodic, isAccumulateDebt, periodHours, output2.address));
+		let AbsoluteExpense3Id = getEId(await moneyflowTable.addAbsoluteExpense(3*neededAmount, isPeriodic, isAccumulateDebt, periodHours, output3.address));
 
 		// add 3 WeiAbsoluteExpense outputs to the splitter
 		await moneyflowTable.addChild(topDownSplitterId, AbsoluteExpense1Id);
 		await moneyflowTable.addChild(topDownSplitterId, AbsoluteExpense2Id);
 		await moneyflowTable.addChild(topDownSplitterId, AbsoluteExpense3Id);
+
+
+		var id1 = await moneyflowTable.getChildId(topDownSplitterId, 0);
+		var id2 = await moneyflowTable.getChildId(topDownSplitterId, 1);
+		var id3 = await moneyflowTable.getChildId(topDownSplitterId, 2);
+
+		assert.equal(id1, AbsoluteExpense1Id);
+		assert.equal(id2, AbsoluteExpense2Id);
+		assert.equal(id3, AbsoluteExpense3Id);
 
 		// add WeiTopDownSplitter to the moneyflow
 		await moneyflowInstance.setRootWeiReceiver(moneyflowTable.address);
@@ -279,15 +290,14 @@ contract('MoneyflowTable tests', (accounts) => {
 
 		assert.equal(revenueEndpointAddress, moneyflowTable.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
 	
-	 	let totalNeed = await moneyflowTable.getTotalWeiNeeded(6*neededAmount);
+	 	var totalNeed = await moneyflowTable.getTotalWeiNeeded(6*neededAmount);
 		assert.equal(totalNeed, 6*neededAmount);
-		let minNeed = await moneyflowTable.getMinWeiNeeded();
-		// console.log('minNeed:', minNeed)
+		var minNeed = await moneyflowTable.getMinWeiNeeded();
 		assert.equal(minNeed, 6*neededAmount);
-
+		var need1 =  await moneyflowTable.isNeedsMoney();
 		// now send some money to the revenue endpoint 
 		await moneyflowTable.processFunds(6*neededAmount, {value:6*neededAmount, from:creator});
-
+		assert.equal(need1, true);
 		// money should end up in the outputs
 		var absoluteExpense1Balance = await moneyflowTable.getElementBalance(AbsoluteExpense1Id);
 		assert.equal(absoluteExpense1Balance.toNumber(),1*neededAmount, 'resource point received money from splitter');
@@ -297,6 +307,40 @@ contract('MoneyflowTable tests', (accounts) => {
 
 		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
 		assert.equal(absoluteExpense3Balance.toNumber(),3*neededAmount, 'resource point received money from splitter');
+
+	 	var totalNeed = await moneyflowTable.getTotalWeiNeeded(6*neededAmount);
+		assert.equal(totalNeed.toNumber(), 0*neededAmount);
+		var minNeed = await moneyflowTable.getMinWeiNeeded();
+		assert.equal(minNeed.toNumber(), 0*neededAmount);
+
+		var need2 =  await moneyflowTable.isNeedsMoney();
+		assert.equal(need2, false);
+
+		var b1 = await web3.eth.getBalance(output1.address);
+		await moneyflowTable.withdrawFundsFromElement(AbsoluteExpense1Id,{gasPrice:0});
+		var b2 = await web3.eth.getBalance(output1.address);
+		assert.equal(b2.toNumber()-b1.toNumber(), 1*neededAmount);
+
+		var b1 = await web3.eth.getBalance(output2.address);
+		await moneyflowTable.withdrawFundsFromElement(AbsoluteExpense2Id,{gasPrice:0});
+		var b2 = await web3.eth.getBalance(output2.address);
+		assert.equal(b2.toNumber()-b1.toNumber(), 2*neededAmount);
+
+		var b1 = await web3.eth.getBalance(output3.address);
+		await moneyflowTable.withdrawFundsFromElement(AbsoluteExpense3Id,{gasPrice:0});
+		var b2 = await web3.eth.getBalance(output3.address);
+		assert.equal(b2.toNumber()-b1.toNumber(), 3*neededAmount);
+
+		var absoluteExpense1Balance = await moneyflowTable.getElementBalance(AbsoluteExpense1Id);
+		assert.equal(absoluteExpense1Balance.toNumber(),0*neededAmount, 'resource point received money from splitter');
+
+		var absoluteExpense2Balance = await moneyflowTable.getElementBalance(AbsoluteExpense2Id);
+		assert.equal(absoluteExpense2Balance.toNumber(),0*neededAmount, 'resource point received money from splitter');
+
+		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
+		assert.equal(absoluteExpense3Balance.toNumber(),0*neededAmount, 'resource point received money from splitter');
+		var need2 =  await moneyflowTable.isNeedsMoney();
+
 	});
 
 	it('should process money with WeiUnsortedSplitter + 3 WeiAbsoluteExpense',async() => {
@@ -352,6 +396,10 @@ contract('MoneyflowTable tests', (accounts) => {
 
 		// add WeiTopDownSplitter to the moneyflow
 		await moneyflowInstance.setRootWeiReceiver(moneyflowTable.address);
+
+		var id1 = await moneyflowTable.getChildId(topDownSplitterId, 0);
+		var id2 = await moneyflowTable.getChildId(topDownSplitterId, 1);
+		var id3 = await moneyflowTable.getChildId(topDownSplitterId, 2);
 
 		var revenueEndpointAddress = await moneyflowInstance.getRevenueEndpoint();
 
@@ -579,5 +627,81 @@ contract('MoneyflowTable tests', (accounts) => {
 		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money/100, {value:CURRENT_INPUT*money, gasPrice:0}).should.be.rejectedWith('revert');
 		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money, {value:CURRENT_INPUT*money/100, gasPrice:0}).should.be.rejectedWith('revert');
 		await struct.moneyflowTable.processFunds(CURRENT_INPUT*money/100, {value:CURRENT_INPUT*money, gasPrice:0}).should.be.rejectedWith('revert');
+	});
+
+	it('should process money when opened and not process when closed with WeiTopDownSplitter + 3 WeiAbsoluteExpense',async() => {
+		let moneyflowTable = await MoneyflowTable.new();
+
+		let topDownSplitterId = getEId(await moneyflowTable.addTopdownSplitter());			
+		let AbsoluteExpense1Id = getEId(await moneyflowTable.addAbsoluteExpense(neededAmount, isPeriodic, isAccumulateDebt, periodHours, output));
+		let AbsoluteExpense2Id = getEId(await moneyflowTable.addAbsoluteExpense(2*neededAmount, isPeriodic, isAccumulateDebt, periodHours, output));
+		let AbsoluteExpense3Id = getEId(await moneyflowTable.addAbsoluteExpense(3*neededAmount, isPeriodic, isAccumulateDebt, periodHours, output));
+
+		// add 3 WeiAbsoluteExpense outputs to the splitter
+		await moneyflowTable.addChild(topDownSplitterId, AbsoluteExpense1Id);
+		await moneyflowTable.addChild(topDownSplitterId, AbsoluteExpense2Id);
+		await moneyflowTable.addChild(topDownSplitterId, AbsoluteExpense3Id);
+
+		// add WeiTopDownSplitter to the moneyflow
+		await moneyflowInstance.setRootWeiReceiver(moneyflowTable.address);
+
+		var revenueEndpointAddress = await moneyflowInstance.getRevenueEndpoint();
+
+		assert.equal(revenueEndpointAddress, moneyflowTable.address, 'weiTopDownSplitter.address saved in moneyflowInstance as revenueEndpointAddress');
+	
+	 	var totalNeed = await moneyflowTable.getTotalWeiNeeded(6*neededAmount);
+		assert.equal(totalNeed, 6*neededAmount);
+		var minNeed = await moneyflowTable.getMinWeiNeeded();
+		// console.log('minNeed:', minNeed)
+		assert.equal(minNeed, 6*neededAmount);
+
+		var isOpen1 = await moneyflowTable.isOpen(AbsoluteExpense1Id);
+		var isOpen2 = await moneyflowTable.isOpen(AbsoluteExpense2Id);
+		var isOpen3 = await moneyflowTable.isOpen(AbsoluteExpense3Id);
+		assert.equal(isOpen1, true);
+		assert.equal(isOpen2, true);
+		assert.equal(isOpen3, true);
+
+		await moneyflowTable.closeElement(AbsoluteExpense3Id);
+
+	 	var totalNeed = await moneyflowTable.getTotalWeiNeeded(6*neededAmount);
+		assert.equal(totalNeed, 3*neededAmount);
+		var minNeed = await moneyflowTable.getMinWeiNeeded();
+		assert.equal(minNeed, 3*neededAmount);
+
+		await moneyflowTable.closeElement(AbsoluteExpense1Id);
+
+	 	var totalNeed = await moneyflowTable.getTotalWeiNeeded(6*neededAmount);
+		assert.equal(totalNeed, 2*neededAmount);
+		var minNeed = await moneyflowTable.getMinWeiNeeded();
+		assert.equal(minNeed, 2*neededAmount);
+
+		var isOpen1 = await moneyflowTable.isOpen(AbsoluteExpense1Id);
+		var isOpen2 = await moneyflowTable.isOpen(AbsoluteExpense2Id);
+		var isOpen3 = await moneyflowTable.isOpen(AbsoluteExpense3Id);
+		assert.equal(isOpen1, false);
+		assert.equal(isOpen2, true);
+		assert.equal(isOpen3, false);
+
+		await moneyflowTable.openElement(AbsoluteExpense3Id);
+		var isOpen1 = await moneyflowTable.isOpen(AbsoluteExpense1Id);
+		var isOpen2 = await moneyflowTable.isOpen(AbsoluteExpense2Id);
+		var isOpen3 = await moneyflowTable.isOpen(AbsoluteExpense3Id);
+		assert.equal(isOpen1, false);
+		assert.equal(isOpen2, true);
+		assert.equal(isOpen3, true);
+
+		// now send some money to the revenue endpoint 
+		await moneyflowTable.processFunds(5*neededAmount, {value:5*neededAmount, from:creator});
+
+		// money should end up in the outputs
+		var absoluteExpense1Balance = await moneyflowTable.getElementBalance(AbsoluteExpense1Id);
+		assert.equal(absoluteExpense1Balance.toNumber(),0*neededAmount, 'resource point received money from splitter');
+
+		var absoluteExpense2Balance = await moneyflowTable.getElementBalance(AbsoluteExpense2Id);
+		assert.equal(absoluteExpense2Balance.toNumber(),2*neededAmount, 'resource point received money from splitter');
+
+		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
+		assert.equal(absoluteExpense3Balance.toNumber(),3*neededAmount, 'resource point received money from splitter');
 	});
 });
