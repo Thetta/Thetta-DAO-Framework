@@ -86,10 +86,9 @@ contract MoneyflowTable is Ownable{//is IWeiReceiver,
 	function _processFunds(uint _eId, uint _currentFlow, uint _amount) internal {
 		if(Splitters[_eId].isOpen){
 			return _processFundsSplitter(_eId, _currentFlow, _amount);
-		}else if(Expenses[_eId].isOpen){
+		}else if(Expenses[_eId].isOpen&&_isNeedsMoney(_eId)){
 			return _processFundsExpense(_eId, _currentFlow, _amount);
 		}else {
-			revert();
 		}
 	}
 
@@ -115,6 +114,7 @@ contract MoneyflowTable is Ownable{//is IWeiReceiver,
 		require(_amount==_getTotalWeiNeeded(_eId, _currentFlow));
 		Expenses[_eId].momentReceived = uint(now);
 		Expenses[_eId].balance += _amount;
+		Expenses[_eId].isMoneyReceived = true;
 	}
 	
 	function getMinWeiNeededForElement(uint _eId)external view returns(uint) {
@@ -128,7 +128,7 @@ contract MoneyflowTable is Ownable{//is IWeiReceiver,
 		}else if((Splitters[_eId].isOpen)&&(ElementTypes.UnsortedSplitter==elementsType[_eId])){
 			return _getMinWeiNeededUnsortedSplitter(_eId);
 
-		}else if(Expenses[_eId].isOpen){
+		}else if(Expenses[_eId].isOpen && _isNeedsMoney(_eId)){
 			return _getMinWeiNeededExpense(_eId);
 
 		}else {
@@ -239,6 +239,7 @@ contract MoneyflowTable is Ownable{//is IWeiReceiver,
 	function processFunds(uint _currentFlow) external payable {
 		require(_currentFlow>=_getMinWeiNeeded(0));
 		require(msg.value>=_getMinWeiNeeded(0));
+
 		return _processFunds(0, _currentFlow, msg.value);
 	}
 
@@ -365,7 +366,7 @@ contract MoneyflowTable is Ownable{//is IWeiReceiver,
 	}
 
 	function withdrawFundsFromElement(uint _eId)external onlyOwner{
-		require(_isExpense(_eId));
+		// require(_isExpense(_eId));
 		Expenses[_eId].output.processFunds.value(Expenses[_eId].balance)(Expenses[_eId].balance);
 		Expenses[_eId].balance = 0;
 	}
