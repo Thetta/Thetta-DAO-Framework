@@ -3,7 +3,6 @@ pragma solidity ^0.4.22;
 import "../IDaoBase.sol";
 
 import "../governance/Voting.sol";
-// import "../governance/Voting_SimpleToken.sol";
 import "../governance/Proposals.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -86,9 +85,9 @@ contract GenericCaller is DaoClient, Ownable {
 		}
 	}
 
-		// address _origin, uint _minutesToVote,
-		// uint _quorumPercent, uint _consensusPercent, VotingType _votingType,
-		// string _groupName, address _tokenAddress
+	// address _origin, uint _minutesToVote,
+	// uint _quorumPercent, uint _consensusPercent, VotingType _votingType,
+	// string _groupName, address _tokenAddress
 	function setVotingParams(bytes32 _permissionIdHash, uint _votingType, 
 		bytes32 _param1, bytes32 _param2, 
 		bytes32 _param3, bytes32 _param4, bytes32 _param5) public onlyOwner {
