@@ -27,8 +27,8 @@ contract Voting is IVoting, Ownable {
 		bool isYes;
 	}
 
-	mapping(address=>bool) voted;
-	mapping(uint=>Vote) votes;
+	mapping(address => bool) voted;
+	mapping(uint => Vote) votes;
 
 	uint votesCount = 0;
 	VotingType votingType;
@@ -60,7 +60,7 @@ contract Voting is IVoting, Ownable {
 	 * @param _proposal – proposal, which create vote.
 	 * @param _origin – who create voting (group member).
 	 * @param _minutesToVote - if is zero -> voting until quorum reached, else voting finish after minutesToVote minutes
-	 * @param _quorumPercent - percent of group members to make quorum reached. If minutesToVote==0 and quorum reached -> voting is finished
+	 * @param _quorumPercent - percent of group members to make quorum reached. If minutesToVote == 0 and quorum reached -> voting is finished
 	 * @param _consensusPercent - percent of voters (not of group members!) to make consensus reached. If consensus reached -> voting is finished with YES result
 	 * @param _votingType
 	 * @param _groupName
@@ -72,8 +72,8 @@ contract Voting is IVoting, Ownable {
 		uint _quorumPercent, uint _consensusPercent, 
 		address _tokenAddress) public 
 	{
-		require((_quorumPercent<=100)&&(_quorumPercent>0));
-		require((_consensusPercent<=100)&&(_consensusPercent>0));
+		require((_quorumPercent <= 100) &&(_quorumPercent> 0));
+		require((_consensusPercent <= 100) &&(_consensusPercent> 0));
 
 		dao = _dao;
 		proposal = _proposal;
@@ -84,43 +84,43 @@ contract Voting is IVoting, Ownable {
 		votingType = _votingType;
 		genesis = uint64(now);
 
-		if(VotingType.Voting1p1v!=votingType){
+		if(VotingType.Voting1p1v!= votingType) {
 			tokenAddress = _tokenAddress;
 			votingID = StdDaoToken(_tokenAddress).startNewVoting();
 		}
 
-		_vote(_origin, true);
+		internalVote(_origin, true);
 	}
 
-	function getVotersTotal() view returns(uint){
-		if(VotingType.Voting1p1v==votingType){
+	function getVotersTotal() view returns(uint) {
+		if(VotingType.Voting1p1v == votingType) {
 			return dao.getMembersCount(groupName);
-		}else if(VotingType.VotingSimpleToken==votingType){
+		}else if(VotingType.VotingSimpleToken == votingType) {
 			return StdDaoToken(tokenAddress).totalSupply();
-		}else if(VotingType.VotingQuadratic==votingType){
+		}else if(VotingType.VotingQuadratic == votingType) {
 			return StdDaoToken(tokenAddress).getVotingTotalForQuadraticVoting();
-		}else if(VotingType.VotingLiquid==votingType){
+		}else if(VotingType.VotingLiquid == votingType) {
 			return StdDaoToken(tokenAddress).totalSupply();		
 		}else{
 			revert();
 		}
 	}
 
-	function getPowerOf(address _voter) view returns(uint){
-		if(VotingType.Voting1p1v==votingType){
-			if(dao.isGroupMember(groupName, _voter)){
+	function getPowerOf(address _voter) view returns(uint) {
+		if(VotingType.Voting1p1v == votingType) {
+			if(dao.isGroupMember(groupName, _voter)) {
 				return 1;
 			}else{
 				return 0;
 			}	
-		}else if(VotingType.VotingSimpleToken==votingType){
+		}else if(VotingType.VotingSimpleToken == votingType) {
 			return StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter);		
-		}else if(VotingType.VotingQuadratic==votingType){
+		}else if(VotingType.VotingQuadratic == votingType) {
 			return _sqrt(StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter));		
-		}else if(VotingType.VotingLiquid==votingType){
+		}else if(VotingType.VotingLiquid == votingType) {
 			uint res = StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, _voter);
-			for(uint i = 0; i < delegations[_voter].length; i++){
-				if(!delegations[_voter][i].isDelegator){
+			for(uint i = 0; i < delegations[_voter].length; i++) {
+				if(!delegations[_voter][i].isDelegator) {
 					res += delegations[_voter][i].amount;
 				}else{
 					res -= delegations[_voter][i].amount;
@@ -144,10 +144,10 @@ contract Voting is IVoting, Ownable {
 	function vote(bool _isYes) public {
 		require(!isFinished());
 		require(!voted[msg.sender]);
-		_vote(msg.sender, _isYes);
+		internalVote(msg.sender, _isYes);
 	}
 
-	function _vote(address _voter, bool _isYes) internal {
+	function internalVote(address _voter, bool _isYes) internal {
 		votes[votesCount] = Vote(_voter, _isYes);
 		voted[_voter] = true;
 		emit Voted(_voter, _isYes);
@@ -156,7 +156,7 @@ contract Voting is IVoting, Ownable {
 	}
 
 	function callActionIfEnded() public {
-		if(!finishedWithYes && isFinished() && isYes()){ 
+		if(!finishedWithYes && isFinished() && isYes()) { 
 			// should not be callable again!!!
 			finishedWithYes = true;
 			emit CallAction();
@@ -164,52 +164,49 @@ contract Voting is IVoting, Ownable {
 		}
 	}
 
-	function isFinished() public view returns(bool){
-		if(canceled){
+	function isFinished() public view returns(bool) {
+		if(canceled) {
 			return true;
-
-		}else if(minutesToVote!=0){
+		}else if(minutesToVote!= 0) {
 			return _isTimeElapsed();
-
-		}else if(finishedWithYes){
+		}else if(finishedWithYes) {
 			return true;
-
 		}else{
 			return _isQuorumReached();
 		}
 	}
 
-	function _isTimeElapsed() internal view returns(bool){
-		if(minutesToVote==0){
+	function _isTimeElapsed() internal view returns(bool) {
+		if(minutesToVote == 0) {
 			return false;
 		}
 		return (uint64(now) - genesis) >= (minutesToVote * 60 * 1000);
 	}
 
-	function _isQuorumReached() internal view returns(bool){
+	function _isQuorumReached() internal view returns(bool) {
 		var (yesResults, noResults, votersTotal) = getVotingStats();
 		return ((yesResults + noResults) * 100) >= (votersTotal * quorumPercent);
 	}
 
-	function _isConsensusReached() internal view returns(bool){
+	function _isConsensusReached() internal view returns(bool) {
 		var (yesResults, noResults, votersTotal) = getVotingStats();
 		return (yesResults * 100) >= ((yesResults + noResults) * consensusPercent);
 	}
 
-	function isYes() public view returns(bool){
-		if(true==finishedWithYes){
+	function isYes() public view returns(bool) {
+		if(true == finishedWithYes) {
 			return true;
 		}
-		return !canceled&& isFinished()&& 
-			_isQuorumReached()&& _isConsensusReached();
+		return !canceled && isFinished() && 
+			_isQuorumReached() && _isConsensusReached();
 	}
 
-	function getVotingStats() public constant returns(uint yesResults, uint noResults, uint votersTotal){
-		for(uint i=0; i<votesCount; ++i){
-			if(votes[i].isYes){
-				yesResults+= getPowerOf(votes[i].voter);
+	function getVotingStats() public constant returns(uint yesResults, uint noResults, uint votersTotal) {
+		for(uint i = 0; i < votesCount; ++i) {
+			if(votes[i].isYes) {
+				yesResults += getPowerOf(votes[i].voter);
 			}else{
-				noResults+= getPowerOf(votes[i].voter);
+				noResults += getPowerOf(votes[i].voter);
 			}		
 		}
 		votersTotal = getVotersTotal();	
@@ -223,17 +220,17 @@ contract Voting is IVoting, Ownable {
 	// ------------------ LIQUID ------------------
 
 	function getDelegatedPowerOf(address _of) public view returns(uint res) {
-		for(uint i = 0; i < delegations[_of].length; i++){
-			if(!delegations[_of][i].isDelegator){
+		for(uint i = 0; i < delegations[_of].length; i++) {
+			if(!delegations[_of][i].isDelegator) {
 				res += delegations[_of][i].amount;
 			}
 		}
 	}
 
 	function getDelegatedPowerByMe(address _to) public view returns(uint res) {
-		for(uint i = 0; i < delegations[msg.sender].length; i++){
-			if(delegations[msg.sender][i]._address == _to){
-				if(delegations[msg.sender][i].isDelegator){
+		for(uint i = 0; i < delegations[msg.sender].length; i++) {
+			if(delegations[msg.sender][i]._address == _to) {
+				if(delegations[msg.sender][i].isDelegator) {
 					res += delegations[msg.sender][i].amount;
 				}
 			}
@@ -244,14 +241,14 @@ contract Voting is IVoting, Ownable {
 		require (_to!= address(0));
 		require (_tokenAmount <= StdDaoToken(tokenAddress).getBalanceAtVoting(votingID, msg.sender));
 
-		for(uint i = 0; i < delegations[_to].length; i++){
-			if(delegations[_to][i]._address == msg.sender){
+		for(uint i = 0; i < delegations[_to].length; i++) {
+			if(delegations[_to][i]._address == msg.sender) {
 				delegations[_to][i].amount = _tokenAmount;
 			}
 		}
 
-		for(i = 0; i < delegations[msg.sender].length; i++){
-			if(delegations[msg.sender][i]._address == _to){
+		for(i = 0; i < delegations[msg.sender].length; i++) {
+			if(delegations[msg.sender][i]._address == _to) {
 				delegations[msg.sender][i].amount = _tokenAmount;
 				emit DelegatedTo(_to, _tokenAmount);
 				return;
@@ -265,13 +262,13 @@ contract Voting is IVoting, Ownable {
 	function removeDelegation(address _to) public {
 		require (_to!= address(0));
 
-		for(uint i = 0; i < delegations[_to].length; i++){
-			if(delegations[_to][i]._address == msg.sender){
+		for(uint i = 0; i < delegations[_to].length; i++) {
+			if(delegations[_to][i]._address == msg.sender) {
 				delegations[_to][i].amount = 0;
 			}
 		}
-		for(i = 0; i < delegations[msg.sender].length; i++){
-			if(delegations[msg.sender][i]._address == _to){
+		for(i = 0; i < delegations[msg.sender].length; i++) {
+			if(delegations[msg.sender][i]._address == _to) {
 				delegations[msg.sender][i].amount = 0;
 			}
 		}
