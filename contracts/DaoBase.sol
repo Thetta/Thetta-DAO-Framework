@@ -67,7 +67,7 @@ contract DaoBase is IDaoBase, Ownable {
 	function upgradeDaoContract(IDaoBase _new) public isCanDo(UPGRADE_DAO_CONTRACT) {
 		emit DaoBase_UpgradeDaoContract(_new);
 		// call observers.onUpgrade() for all observers
-		for(uint i=0; i<store.getObserverCount(); ++i){
+		for(uint i=0; i<store.getObserverCount(); ++i) {
 			IDaoObserver(store.getObserverAtIndex(i)).onUpgrade(_new);
 		}
 
@@ -75,47 +75,55 @@ contract DaoBase is IDaoBase, Ownable {
 		store.transferOwnership(_new);
 
 		// transfer ownership of all tokens (this -> _new)
-		for(i=0; i<store.getAllTokenAddresses().length; ++i){
+		for(i=0; i<store.getAllTokenAddresses().length; ++i) {
 			store.getAllTokenAddresses()[i].transferOwnership(_new);
 		}
 	}
 
 // Groups:
-	function getMembersCount(string _groupName) public constant returns(uint){
+	function getMembersCount(string _groupName) public view returns(uint) {
 		return store.getMembersCount(keccak256(abi.encodePacked(_groupName)));
 	}
+
 	function addGroupMember(string _groupName, address _a) public isCanDo(MANAGE_GROUPS) {
 		emit DaoBase_AddGroupMember(_groupName, _a);
 		store.addGroupMember(keccak256(abi.encodePacked(_groupName)), _a);
 	}
-	function getGroupMembers(string _groupName) public constant returns(address[]){
+
+	function getGroupMembers(string _groupName) public view returns(address[]) {
 		return store.getGroupMembers(keccak256(abi.encodePacked(_groupName)));
 	}
-	function removeGroupMember(string _groupName, address _a) public isCanDo(MANAGE_GROUPS){
+
+	function removeGroupMember(string _groupName, address _a) public isCanDo(MANAGE_GROUPS) {
 		emit DaoBase_RemoveGroupMember(_a);
 		store.removeGroupMember(keccak256(abi.encodePacked(_groupName)), _a);
 	}
-	function isGroupMember(string _groupName,address _a)public constant returns(bool) {
+
+	function isGroupMember(string _groupName,address _a) public view returns(bool) {
 		return store.isGroupMember(keccak256(abi.encodePacked(_groupName)), _a);
 	}
+
 	function getMemberByIndex(string _groupName, uint _index) public view returns (address) {
 		return store.getMemberByIndex(keccak256(abi.encodePacked(_groupName)), _index);
 	}
 
 // Actions:
-	function allowActionByShareholder(bytes32 _what, address _tokenAddress) public isCanDo(MANAGE_GROUPS){
+	function allowActionByShareholder(bytes32 _what, address _tokenAddress) public isCanDo(MANAGE_GROUPS) {
 		emit DaoBase_AllowActionByShareholder(_what, _tokenAddress);
 		store.allowActionByShareholder(_what, _tokenAddress);
 	}
-	function allowActionByVoting(bytes32 _what, address _tokenAddress) public isCanDo(MANAGE_GROUPS){
+
+	function allowActionByVoting(bytes32 _what, address _tokenAddress) public isCanDo(MANAGE_GROUPS) {
 		emit DaoBase_AllowActionByVoting(_what, _tokenAddress);
 		store.allowActionByVoting(_what,_tokenAddress);
 	}
+
 	function allowActionByAddress(bytes32 _what, address _a) public isCanDo(MANAGE_GROUPS) {
 		emit DaoBase_AllowActionByAddress(_what, _a);
 		store.allowActionByAddress(_what,_a);
 	}
-	function allowActionByAnyMemberOfGroup(bytes32 _what, string _groupName) public isCanDo(MANAGE_GROUPS){
+
+	function allowActionByAnyMemberOfGroup(bytes32 _what, string _groupName) public isCanDo(MANAGE_GROUPS) {
 		emit DaoBase_AllowActionByAnyMemberOfGroup(_what, _groupName);
 		store.allowActionByAnyMemberOfGroup(_what, keccak256(abi.encodePacked(_groupName)));
 	}
@@ -133,20 +141,20 @@ contract DaoBase is IDaoBase, Ownable {
 	*/
 	function isCanDoAction(address _a, bytes32 _permissionNameHash) public constant returns(bool){
 		// 0 - is can do by address?
-		if(store.isCanDoByAddress(_permissionNameHash, _a)){
+		if(store.isCanDoByAddress(_permissionNameHash, _a)) {
 			return true;
 		}
 
 		// 1 - check if group member can do that without voting?
-	   if(store.isCanDoByGroupMember(_permissionNameHash, _a)){
+	   if(store.isCanDoByGroupMember(_permissionNameHash, _a)) {
 			return true;
 		}
 
-		for(uint i=0; i<store.getAllTokenAddresses().length; ++i){
+		for(uint i=0; i<store.getAllTokenAddresses().length; ++i) {
 
 			// 2 - check if shareholder can do that without voting?
 			if(store.isCanDoByShareholder(_permissionNameHash, store.getAllTokenAddresses()[i]) && 
-				(store.getAllTokenAddresses()[i].balanceOf(_a)!=0)){
+				(store.getAllTokenAddresses()[i].balanceOf(_a)!=0)) {
 				return true;
 			}
 
@@ -209,7 +217,7 @@ contract DaoBase is IDaoBase, Ownable {
 		revert();
 	}
 
-	function burnTokens(address _tokenAddress, address _who, uint _amount)public isCanDo(BURN_TOKENS){
+	function burnTokens(address _tokenAddress, address _who, uint _amount)public isCanDo(BURN_TOKENS) {
 		emit DaoBase_BurnTokens(_tokenAddress, _who, _amount);
 
 		for(uint i=0; i<store.getAllTokenAddresses().length; ++i){
