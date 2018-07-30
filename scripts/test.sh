@@ -18,7 +18,7 @@ if ganachecli_running; then
   echo "Using existing ganache-cli instance"
 else
   echo "Starting ganache-cli"
-  ./node_modules/ganache-cli/build/cli.node.js --gasLimit 0xfffffffffff --port 8555\
+  ./node_modules/ganache-cli/build/cli.node.js --gasLimit 0xfffffffffff --port 8555 --defaultBalanceEther 200\
   > /dev/null &
   ganachecli_pid=$!
 fi
