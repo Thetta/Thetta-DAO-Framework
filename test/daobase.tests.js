@@ -2,6 +2,8 @@ var DaoBaseWithUnpackers = artifacts.require('./DaoBaseWithUnpackers');
 var StdDaoToken = artifacts.require('./StdDaoToken');
 var DaoStorage = artifacts.require('./DaoStorage');
 var DaoBaseWithUnpackers = artifacts.require('./DaoBaseWithUnpackers');
+var GenericProposal = artifacts.require("./GenericProposal");
+var DaoClient = artifacts.require("./DaoClient");
 
 // to check how upgrade works with IDaoBase clients
 
