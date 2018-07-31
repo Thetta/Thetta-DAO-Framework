@@ -23,11 +23,10 @@ module.exports = function increaseTime (duration) {
     });
   });
 
-
-function increaseTimeTo (target) {
-  let now = latestTime();
-  if (target < now) throw Error(`Cannot increase current time(${now}) to a moment in the past(${target})`);
-  let diff = target - now;
-  return increaseTime(diff);
-}
-}
+  function increaseTimeTo (target) {
+    let now = latestTime();
+    if (target < now) throw Error(`Cannot increase current time(${now}) to a moment in the past(${target})`);
+    let diff = target - now;
+    return increaseTime(diff);
+  }
+};

@@ -1,11 +1,12 @@
 
 pragma solidity ^0.4.22;
 
-import '../IDaoBase.sol';
-import './IVoting.sol';
-import './IProposal.sol';
-import '../tokens/StdDaoToken.sol';
+import "../IDaoBase.sol";
+import "./IVoting.sol";
+import "./IProposal.sol";
+import "../tokens/StdDaoToken.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+
 
 contract Voting is IVoting, Ownable {
 	IDaoBase dao;
@@ -22,7 +23,7 @@ contract Voting is IVoting, Ownable {
 	uint votingID;
 	string public groupName;
 
-	struct Vote{
+	struct Vote {
 		address voter;
 		bool isYes;
 	}
@@ -82,7 +83,7 @@ contract Voting is IVoting, Ownable {
 		consensusPercent = _consensusPercent;
 		groupName = _groupName;
 		votingType = _votingType;
-		genesis = uint64(now);
+		genesis = uint64(block.timestamp);
 
 		if(VotingType.Voting1p1v!= votingType) {
 			tokenAddress = _tokenAddress;
@@ -92,7 +93,7 @@ contract Voting is IVoting, Ownable {
 		internalVote(_origin, true);
 	}
 
-	function getVotersTotal() view returns(uint) {
+	function getVotersTotal() public view returns(uint) {
 		if(VotingType.Voting1p1v == votingType) {
 			return dao.getMembersCount(groupName);
 		}else if(VotingType.VotingSimpleToken == votingType) {
@@ -101,16 +102,16 @@ contract Voting is IVoting, Ownable {
 			return StdDaoToken(tokenAddress).getVotingTotalForQuadraticVoting();
 		}else if(VotingType.VotingLiquid == votingType) {
 			return StdDaoToken(tokenAddress).totalSupply();		
-		}else{
+		}else {
 			revert();
 		}
 	}
 
-	function getPowerOf(address _voter) view returns(uint) {
+	function getPowerOf(address _voter) public view returns(uint) {
 		if(VotingType.Voting1p1v == votingType) {
 			if(dao.isGroupMember(groupName, _voter)) {
 				return 1;
-			}else{
+			}else {
 				return 0;
 			}	
 		}else if(VotingType.VotingSimpleToken == votingType) {
@@ -122,12 +123,12 @@ contract Voting is IVoting, Ownable {
 			for(uint i = 0; i < delegations[_voter].length; i++) {
 				if(!delegations[_voter][i].isDelegator) {
 					res += delegations[_voter][i].amount;
-				}else{
+				}else {
 					res -= delegations[_voter][i].amount;
 				}
 			}
 			return  res;
-		}else{
+		}else {
 			revert();
 		}
 	}
@@ -171,7 +172,7 @@ contract Voting is IVoting, Ownable {
 			return _isTimeElapsed();
 		}else if(finishedWithYes) {
 			return true;
-		}else{
+		}else {
 			return _isQuorumReached();
 		}
 	}
@@ -201,7 +202,7 @@ contract Voting is IVoting, Ownable {
 			_isQuorumReached() && _isConsensusReached();
 	}
 
-	function getVotingStats() public constant returns(uint yesResults, uint noResults, uint votersTotal) {
+	function getVotingStats() public view returns(uint yesResults, uint noResults, uint votersTotal) {
 		for(uint i = 0; i < votesCount; ++i) {
 			if(votes[i].isYes) {
 				yesResults += getPowerOf(votes[i].voter);
