@@ -5,7 +5,8 @@
   "main": "truffle.js",
   "scripts": {
     "coverage": "scripts/coverage.sh",
-    "coveralls": "scripts/coveralls.sh",
+	"coveralls": "scripts/coveralls.sh",
+	"gas-estimate": "node scripts/gas-estimate.js",
     "solium": "./node_modules/solium/bin/solium.js --dir contracts",
     "test": "scripts/test.sh",
     "lint": "eslint .",
