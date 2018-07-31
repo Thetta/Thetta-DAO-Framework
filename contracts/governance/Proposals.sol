@@ -23,7 +23,7 @@ contract GenericProposal is IProposal, Ownable {
 		target = _target;
 		params = _params;
 		methodSig = _methodSig;
-		if(_origin==0x0){
+		if(_origin==0x0) {
 			revert();
 		}
 	}
@@ -35,7 +35,7 @@ contract GenericProposal is IProposal, Ownable {
 		emit GenericProposal_Action(voting);
 
 		// in some cases voting is still not set
-		if(0x0!=address(voting)){
+		if(0x0!=address(voting)) {
 			require(msg.sender==address(voting));
 		}
 
@@ -52,11 +52,11 @@ contract GenericProposal is IProposal, Ownable {
 		}
 	}
 
-	function setVoting(IVoting _voting) public onlyOwner{
+	function setVoting(IVoting _voting) public onlyOwner {
 		voting = _voting;
 	}
 
-	function getVoting() public view returns(IVoting){
+	function getVoting() public view returns(IVoting) {
 		return voting;
 	}
 }
@@ -69,27 +69,27 @@ contract GenericProposal is IProposal, Ownable {
  * i.e. with messages like "Lets switch to Slack?"
 */
 contract InformalProposal is IProposal, Ownable {
-	string proposalText = '';
+	string proposalText = "";
 	IVoting voting;
 
 	constructor(string _proposalText) public {
 		proposalText = _proposalText;
 	}
 
-	function getProposalText() public view returns(string){
+	function getProposalText() public view returns(string) {
 		return proposalText;
 	}
 
 // IVoting implementation
-	function setVoting(IVoting _voting) public onlyOwner{
+	function setVoting(IVoting _voting) public onlyOwner {
 		voting = _voting;
 	}
 
-	function getVoting() public view returns(IVoting){
+	function getVoting() public view returns(IVoting) {
 		return voting;
 	}
 
-	function action()public{
+	function action() public {
 		return;
 	}
 }
