@@ -4,9 +4,9 @@
 // var MoneyflowAuto = artifacts.require("./MoneyflowAuto") ;
 
 module.exports = function (deployer) {
-	// deployer.deploy(VotingLib).then(() => {
-	// 	deployer.link(VotingLib, Voting);
-	// 	deployer.link(VotingLib, GenericCaller);
-	// 	deployer.link(VotingLib, MoneyflowAuto);
-	// });
+  // deployer.deploy(VotingLib).then(() => {
+  // 	deployer.link(VotingLib, Voting);
+  // 	deployer.link(VotingLib, GenericCaller);
+  // 	deployer.link(VotingLib, MoneyflowAuto);
+  // });
 };
