@@ -7,6 +7,8 @@ var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 var MoneyFlow = artifacts.require("./MoneyFlow");
 var IWeiReceiver = artifacts.require("./IWeiReceiver");
 var IProposal = artifacts.require("./IProposal");
+var DaoClient = artifacts.require("./DaoClient");
+var GenericProposal = artifacts.require("./GenericProposal");
 
 function KECCAK256 (x){
 	return web3.sha3(x);
@@ -33,6 +35,8 @@ contract('DaoBase', (accounts) => {
 	let withdrawDonations;
 	let setRootWeiReceiver;
 	let burnTokens;
+	let daoClient;
+	let proposal;
 
 	const creator = accounts[0];
 	const employee1 = accounts[1];
@@ -71,6 +75,118 @@ contract('DaoBase', (accounts) => {
 		await daoBase.allowActionByVoting(manageGroups, token.address);
 		await daoBase.allowActionByVoting(issueTokens, token.address);
 		await daoBase.allowActionByVoting(upgradeDaoContract, token.address);
+	});
+
+	describe('addObserver()', function () {
+		it('Should add observer to store',async() => {
+			daoClient = await DaoClient.new(daoBase.address);
+			await daoBase.addObserver(daoClient.address);
+			await assert.equal(await store.getObserverCount(), 2);
+			await assert.equal(await store.getObserverAtIndex(0), daoClient.address);
+		});
+	});
+
+	describe('getMembersCount()', function () {
+		it('Should return correct value',async() => {
+			await daoBase.addGroupMember("Employees", employee1);
+			assert.equal(await daoBase.getMembersCount("Employees"), 2);
+		});
+	});
+
+	describe('getGroupMembers()', function () {
+		it('Should return correct value',async() => {
+			await daoBase.addGroupMember("Employees", employee2);
+			let members = await daoBase.getGroupMembers("Employees");
+			assert.equal(members.length, 2);
+		});
+	});
+
+	describe('removeGroupMember()', function () {
+		it('Should revert due to call whithout rights',async() => {
+			await daoBase.removeGroupMember("Employees", employee2, {from: outsider}).should.be.rejectedWith('revert');
+		});
+
+		it('Should remove member from store',async() => {
+			await daoBase.addGroupMember("Employees", employee1);
+			await daoBase.removeGroupMember("Employees", employee1);
+			let members = await daoBase.getGroupMembers("Employees");
+			assert.equal(members.length, 1);
+		});
+	});
+
+	describe('isGroupMember()', function () {
+		it('Should return false',async() => {
+			assert.equal(await daoBase.isGroupMember("Employees", outsider), false);
+		});
+
+		it('Should return true',async() => {
+			assert.equal(await daoBase.isGroupMember("Employees", creator), true);
+		});
+	});
+
+	describe('getMemberByIndex()', function () {
+		it('Should return creator',async() => {
+			assert.equal(await daoBase.getMemberByIndex("Employees", 0), creator);
+		});
+	});
+
+	describe('allowActionByVoting()', function () {
+		it('Should revert due to call allow action without outsider',async() => {
+			token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+			await daoBase.allowActionByVoting(KECCAK256("Test"), token.address, {from: outsider}).should.be.rejectedWith('revert');
+		});
+	});
+
+	describe('allowActionByShareholder()', function () {
+		it('Should revert due to call allow action without outsider',async() => {
+			await daoBase.allowActionByShareholder(KECCAK256("Test"), token.address, {from: outsider}).should.be.rejectedWith('revert');
+		});
+	});
+
+	describe('allowActionByAddress()', function () {
+		it('Should revert due to call allow action without outsider',async() => {
+			await daoBase.allowActionByShareholder(KECCAK256("Test"), employee3, {from: outsider}).should.be.rejectedWith('revert');
+		});
+
+		it('Should allow action',async() => {
+			await daoBase.allowActionByAddress(KECCAK256("Test"), employee3);
+			assert.equal(await daoBase.isCanDoAction(employee3, KECCAK256("Test")), true);
+		});
+	});
+
+	describe('allowActionByAnyMemberOfGroup()', function () {
+		it('Should revert due to call allow action without outsider',async() => {
+			await daoBase.allowActionByAnyMemberOfGroup(KECCAK256("Test"), employee3, {from: outsider}).should.be.rejectedWith('revert');
+		});
+	});
+
+	describe('addNewProposal()', function () {
+		it('Should revert due to call allow action without outsider',async() => {
+			proposal = await GenericProposal.new(creator, creator, '', []);
+			await daoBase.addNewProposal(proposal.address, {from: outsider}).should.be.rejectedWith('revert');
+		});
+
+		it('Should remove member from store',async() => {
+			proposal = await GenericProposal.new(creator, creator, '', []);
+			await daoBase.addNewProposal(proposal.address);
+		});
+	});
+
+	describe('getProposalAtIndex()', function () {
+		it('Should return correct value',async() => {
+			proposal = await GenericProposal.new(creator, creator, '', []);
+			await daoBase.addNewProposal(proposal.address);
+			assert.equal(await daoBase.getProposalAtIndex(0), proposal.address);
+		});
+	});
+
+	describe('getProposalsCount()', function () {
+		it('Should return correct value',async() => {
+			proposal = await GenericProposal.new(creator, creator, '', []);
+			await daoBase.addNewProposal(proposal.address);
+			let amount = await daoBase.getProposalsCount();
+			assert.equal(amount.toNumber(), 1);
+		});
 	});
 
 	it('should set everything correctly',async() => {
