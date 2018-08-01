@@ -19,6 +19,11 @@ contract DaoBaseAuto is GenericCaller {
 	bytes32 public MANAGE_GROUPS = keccak256(abi.encodePacked("manageGroups"));
 	bytes32 public ISSUE_TOKENS = keccak256(abi.encodePacked("issueTokens"));
 	bytes32 public UPGRADE_DAO_CONTRACT = keccak256(abi.encodePacked("upgradeDaoContract"));
+	bytes32 public REMOVE_GROUP_MEMBER = keccak256(abi.encodePacked("removeGroupMember"));
+	bytes32 public ALLOW_ACTION_BY_SHAREHOLDER = keccak256(abi.encodePacked("allowActionByShareholder"));
+	bytes32 public ALLOW_ACTION_BY_VOTING = keccak256(abi.encodePacked("allowActionByVoting"));
+	bytes32 public ALLOW_ACTION_BY_ADDRESS = keccak256(abi.encodePacked("allowActionByAddress"));
+	bytes32 public ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP = keccak256(abi.encodePacked("allowActionByAnyMemberOfGroup"));
 
 	constructor(IDaoBase _dao)public
 		GenericCaller(_dao)
@@ -49,13 +54,43 @@ contract DaoBaseAuto is GenericCaller {
 		return doAction(UPGRADE_DAO_CONTRACT, dao, msg.sender,"upgradeDaoContractGeneric(bytes32[])",params);
 	}
 
-	// TODO: add other methods:
-	/*
-	function addGroup(string _groupName) public isCanDo("manageGroups")
-	function removeGroupMember(string _groupName, address _a) public isCanDo("manageGroups"){
-	function allowActionByShareholder(string _what, address _tokenAddress) public isCanDo("manageGroups"){
-	function allowActionByVoting(string _what, address _tokenAddress) public isCanDo("manageGroups"){
-	function allowActionByAddress(string _what, address _a) public isCanDo("manageGroups"){
-	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public isCanDo("manageGroups"){
-   */
+	function removeGroupMemberAuto(string _groupName, address _a) public returns(address proposalOut) {
+		bytes32[] memory params = new bytes32[](2);
+		params[0] = bytes32(keccak256(abi.encodePacked(_groupName)));
+		params[1] = bytes32(_a);
+
+		return doAction(REMOVE_GROUP_MEMBER, dao, msg.sender,"removeGroupMemberGeneric(bytes32[])",params);
+	}
+
+	function allowActionByShareholderAuto(string _what, address _tokenAddress) public returns(address proposalOut) {
+		bytes32[] memory params = new bytes32[](2);
+		params[0] = bytes32(keccak256(abi.encodePacked(_what)));
+		params[1] = bytes32(_tokenAddress);
+
+		return doAction(ALLOW_ACTION_BY_SHAREHOLDER, dao, msg.sender,"allowActionByShareholderGeneric(bytes32[])",params);
+	}
+
+	function allowActionByVotingAuto(string _what, address _tokenAddress) public returns(address proposalOut) {
+		bytes32[] memory params = new bytes32[](2);
+		params[0] = bytes32(keccak256(abi.encodePacked(_what)));
+		params[1] = bytes32(_tokenAddress);
+
+		return doAction(ALLOW_ACTION_BY_VOTING, dao, msg.sender,"allowActionByVotingGeneric(bytes32[])",params);
+	}
+
+	function allowActionByAddressAuto(string _what, address _a) public returns(address proposalOut) {
+		bytes32[] memory params = new bytes32[](2);
+		params[0] = bytes32(keccak256(abi.encodePacked(_what)));
+		params[1] = bytes32(_a);
+
+		return doAction(ALLOW_ACTION_BY_ADDRESS, dao, msg.sender,"allowActionByAddressGeneric(bytes32[])",params);
+	}
+
+	function allowActionByAnyMemberOfGroupAuto(string _what, string _groupName) public returns(address proposalOut) {
+		bytes32[] memory params = new bytes32[](2);
+		params[0] = bytes32(keccak256(abi.encodePacked(_what)));
+		params[1] = bytes32(keccak256(abi.encodePacked(_groupName)));
+
+		return doAction(ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP, dao, msg.sender,"allowActionByAnyMemberOfGroupGeneric(bytes32[])",params);
+	}
 }

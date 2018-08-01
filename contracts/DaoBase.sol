@@ -271,12 +271,56 @@ contract DaoBaseWithUnpackers is DaoBase {
 		issueTokens(_tokenAddress, _to, _amount);
 	}
 
-	// TODO: add other methods:
-	/*
-	function removeGroupMember(string _groupName, address _a) public isCanDo("manageGroups"){
-	function allowActionByShareholder(string _what, address _tokenAddress) public isCanDo("manageGroups"){
-	function allowActionByVoting(string _what, address _tokenAddress) public isCanDo("manageGroups"){
-	function allowActionByAddress(string _what, address _a) public isCanDo("manageGroups"){
-	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public isCanDo("manageGroups"){
-   */
+	function removeGroupMemberGeneric(bytes32[] _params) external {
+		string memory _groupName = bytes32ToString(_params[0]);
+		address _a = address(_params[1]);
+
+		removeGroupMember(_groupName, _a);
+	}
+
+	function allowActionByShareholderGeneric(bytes32[] _params) external {
+		bytes32 _what = bytes32(_params[0]);
+		address _a = address(_params[1]);
+
+		allowActionByShareholder(_what, _a);
+	}
+
+	function allowActionByVotingGeneric(bytes32[] _params) external {
+		bytes32 _what = bytes32(_params[0]);
+		address _tokenAddress = address(_params[1]);
+
+		allowActionByVoting(_what, _tokenAddress);
+	}
+
+	function allowActionByAddressGeneric(bytes32[] _params) external {
+		bytes32 _what = bytes32(_params[0]);
+		address _a = address(_params[1]);
+
+		allowActionByAddress(_what, _a);
+	}
+
+	function allowActionByAnyMemberOfGroupGeneric(bytes32[] _params) external {
+		bytes32 _what = bytes32(_params[0]);
+		string memory _groupName = bytes32ToString(_params[1]);
+
+		allowActionByAnyMemberOfGroup(_what, _groupName);
+	}
+
+	function bytes32ToString(bytes32 x) internal view returns (string) {
+		bytes memory bytesString = new bytes(32);
+		uint charCount = 0;
+		for (uint j = 0; j < 32; j++) {
+			byte char = byte(bytes32(uint(x) * 2 ** (8 * j)));
+			if (char != 0) {
+				bytesString[charCount] = char;
+				charCount++;
+			}
+		}
+		bytes memory bytesStringTrimmed = new bytes(charCount);
+		for (j = 0; j < charCount; j++) {
+			bytesStringTrimmed[j] = bytesString[j];
+		}
+		return string(bytesStringTrimmed);
+	}
+
 }
