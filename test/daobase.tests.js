@@ -2,8 +2,11 @@ var DaoBaseWithUnpackers = artifacts.require('./DaoBaseWithUnpackers');
 var StdDaoToken = artifacts.require('./StdDaoToken');
 var DaoStorage = artifacts.require('./DaoStorage');
 var DaoBaseWithUnpackers = artifacts.require('./DaoBaseWithUnpackers');
+var GenericProposal = artifacts.require("./GenericProposal");
+var DaoClient = artifacts.require("./DaoClient");
 
 // to check how upgrade works with IDaoBase clients
+
 var MoneyFlow = artifacts.require('./MoneyFlow');
 var IWeiReceiver = artifacts.require('./IWeiReceiver');
 var IProposal = artifacts.require('./IProposal');
@@ -18,100 +21,214 @@ require('chai')
   .should();
 
 contract('DaoBase', (accounts) => {
-  let token;
-  let store;
-  let daoBase;
+	let token;
+	let store;
+	let daoBase;
 
-  let issueTokens;
-  let manageGroups;
-  let addNewProposal;
-  let upgradeDaoContract;
-  let addNewTask;
-  let startTask;
-  let startBounty;
-  let modifyMoneyscheme;
-  let withdrawDonations;
-  let setRootWeiReceiver;
-  let burnTokens;
+	let issueTokens;
+	let manageGroups;
+	let addNewProposal;
+	let upgradeDaoContract;
+	let addNewTask;
+	let startTask;
+	let startBounty;
+	let modifyMoneyscheme;
+	let withdrawDonations;
+	let setRootWeiReceiver;
+	let burnTokens;
+	let daoClient;
+	let proposal;
 
-  const creator = accounts[0];
-  const employee1 = accounts[1];
-  const employee2 = accounts[2];
-  const outsider = accounts[3];
-  const employee3 = accounts[4];
+	const creator = accounts[0];
+	const employee1 = accounts[1];
+	const employee2 = accounts[2];
+	const outsider = accounts[3];
+	const employee3 = accounts[4];
 
-  before(async () => {
+	before(async() => {
 
-  });
+	});
 
-  beforeEach(async () => {
-    token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
-    await token.mintFor(creator, 1000);
-    store = await DaoStorage.new([token.address], { from: creator });
+	beforeEach(async() => {
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+		await token.mintFor(creator, 1000);
+		store = await DaoStorage.new([token.address],{from: creator});
 
-    // add creator as first employee
-    await store.addGroupMember(KECCAK256('Employees'), creator);
-    await store.allowActionByAddress(KECCAK256('manageGroups'), creator);
+		// add creator as first employee
+		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
 
-    daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
-    issueTokens = await daoBase.ISSUE_TOKENS();
-    manageGroups = await daoBase.MANAGE_GROUPS();
-    upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
-    addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
-    burnTokens = await daoBase.BURN_TOKENS();
+		daoBase = await DaoBaseWithUnpackers.new(store.address,{from: creator});
+		issueTokens = await daoBase.ISSUE_TOKENS();
+		manageGroups = await daoBase.MANAGE_GROUPS();
+		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
+		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
+		burnTokens = await daoBase.BURN_TOKENS();
 
-    // do not forget to transfer ownership
-    await token.transferOwnership(daoBase.address);
-    await store.transferOwnership(daoBase.address);
+		// do not forget to transfer ownership
+		await token.transferOwnership(daoBase.address);
+		await store.transferOwnership(daoBase.address);
 
-    // Set permissions:
-    await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, 'Employees');
-    await daoBase.allowActionByAnyMemberOfGroup(burnTokens, 'Employees');
+		// Set permissions:
+		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(burnTokens, "Employees");
 
-    await daoBase.allowActionByVoting(manageGroups, token.address);
-    await daoBase.allowActionByVoting(issueTokens, token.address);
-    await daoBase.allowActionByVoting(upgradeDaoContract, token.address);
-  });
+		await daoBase.allowActionByVoting(manageGroups, token.address);
+		await daoBase.allowActionByVoting(issueTokens, token.address);
+		await daoBase.allowActionByVoting(upgradeDaoContract, token.address);
+	});
 
-  it('should set everything correctly', async () => {
-    const isMember = await daoBase.isGroupMember('Employees', creator);
-    assert.equal(isMember, true, 'Permission should be set correctly');
+	describe('addObserver()', function () {
+		it('Should add observer to store',async() => {
+			daoClient = await DaoClient.new(daoBase.address);
+			await daoBase.addObserver(daoClient.address);
+			await assert.equal(await store.getObserverCount(), 2);
+			await assert.equal(await store.getObserverAtIndex(0), daoClient.address);
+		});
+	});
 
-    const isMember2 = await daoBase.isGroupMember('Employees', employee1);
-    assert.equal(isMember2, false, 'Permission should be set correctly');
+	describe('getMembersCount()', function () {
+		it('Should return correct value',async() => {
+			await daoBase.addGroupMember("Employees", employee1);
+			assert.equal(await daoBase.getMembersCount("Employees"), 2);
+		});
+	});
 
-    const isCan = await store.isCanDoByGroupMember(addNewProposal, creator);
-    assert.equal(isCan, true, 'Any employee should be able to add new proposal');
+	describe('getGroupMembers()', function () {
+		it('Should return correct value',async() => {
+			await daoBase.addGroupMember("Employees", employee2);
+			let members = await daoBase.getGroupMembers("Employees");
+			assert.equal(members.length, 2);
+		});
+	});
 
-    const isCan2 = await daoBase.isCanDoAction(creator, addNewProposal);
-    assert.equal(isCan2, true, 'Creator should be able to call addNewProposal directly');
-  });
+	describe('removeGroupMember()', function () {
+		it('Should revert due to call whithout rights',async() => {
+			await daoBase.removeGroupMember("Employees", employee2, {from: outsider}).should.be.rejectedWith('revert');
+		});
 
-  it('should return correct permissions for an outsider', async () => {
-    const isCanDo1 = await daoBase.isCanDoAction(outsider, addNewProposal);
-    assert.strictEqual(isCanDo1, false, 'Outsider should not be able to do that ');
+		it('Should remove member from store',async() => {
+			await daoBase.addGroupMember("Employees", employee1);
+			await daoBase.removeGroupMember("Employees", employee1);
+			let members = await daoBase.getGroupMembers("Employees");
+			assert.equal(members.length, 1);
+		});
+	});
 
-    const isCanDo2 = await daoBase.isCanDoAction(outsider, manageGroups);
-    const isCanDo3 = await daoBase.isCanDoAction(outsider, issueTokens);
-    assert.strictEqual(isCanDo2, false, 'Outsider should not be able to do that because he is in majority');
-    assert.strictEqual(isCanDo3, false, 'Outsider should not be able to do that because he is in majority');
-  });
+	describe('isGroupMember()', function () {
+		it('Should return false',async() => {
+			assert.equal(await daoBase.isGroupMember("Employees", outsider), false);
+		});
 
-  it('should return correct permissions for creator', async () => {
-    const isCanDo1 = await daoBase.isCanDoAction(creator, addNewProposal);
-    assert.strictEqual(isCanDo1, true, 'Creator should be able to do that ');
+		it('Should return true',async() => {
+			assert.equal(await daoBase.isGroupMember("Employees", creator), true);
+		});
+	});
 
-    const isCanDo2 = await daoBase.isCanDoAction(creator, manageGroups);
-    const isCanDo3 = await daoBase.isCanDoAction(creator, issueTokens);
-    assert.strictEqual(isCanDo2, true, 'Creator should be able to do that because he is in majority');
-    assert.strictEqual(isCanDo3, true, 'Creator should be able to do that because he is in majority');
-  });
+	describe('getMemberByIndex()', function () {
+		it('Should return creator',async() => {
+			assert.equal(await daoBase.getMemberByIndex("Employees", 0), creator);
+		});
+	});
 
-  it('should not add new vote if not employee', async () => {
-    // employee1 is still not added to DaoBase as an employee
-    let newProposal = 0x123;
-    await daoBase.addNewProposal.sendTransaction(newProposal, { from: employee1 }).should.be.rejectedWith('revert');
-  });
+	describe('allowActionByVoting()', function () {
+		it('Should revert due to call allow action without outsider',async() => {
+			token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+			await daoBase.allowActionByVoting(KECCAK256("Test"), token.address, {from: outsider}).should.be.rejectedWith('revert');
+		});
+	});
+
+	describe('allowActionByShareholder()', function () {
+		it('Should revert due to call allow action without outsider',async() => {
+			await daoBase.allowActionByShareholder(KECCAK256("Test"), token.address, {from: outsider}).should.be.rejectedWith('revert');
+		});
+	});
+
+	describe('allowActionByAddress()', function () {
+		it('Should revert due to call allow action without outsider',async() => {
+			await daoBase.allowActionByShareholder(KECCAK256("Test"), employee3, {from: outsider}).should.be.rejectedWith('revert');
+		});
+
+		it('Should allow action',async() => {
+			await daoBase.allowActionByAddress(KECCAK256("Test"), employee3);
+			assert.equal(await daoBase.isCanDoAction(employee3, KECCAK256("Test")), true);
+		});
+	});
+
+	describe('allowActionByAnyMemberOfGroup()', function () {
+		it('Should revert due to call allow action without outsider',async() => {
+			await daoBase.allowActionByAnyMemberOfGroup(KECCAK256("Test"), employee3, {from: outsider}).should.be.rejectedWith('revert');
+		});
+	});
+
+	describe('addNewProposal()', function () {
+		it('Should revert due to call allow action without outsider',async() => {
+			proposal = await GenericProposal.new(creator, creator, '', []);
+			await daoBase.addNewProposal(proposal.address, {from: outsider}).should.be.rejectedWith('revert');
+		});
+
+		it('Should remove member from store',async() => {
+			proposal = await GenericProposal.new(creator, creator, '', []);
+			await daoBase.addNewProposal(proposal.address);
+		});
+	});
+
+	describe('getProposalAtIndex()', function () {
+		it('Should return correct value',async() => {
+			proposal = await GenericProposal.new(creator, creator, '', []);
+			await daoBase.addNewProposal(proposal.address);
+			assert.equal(await daoBase.getProposalAtIndex(0), proposal.address);
+		});
+	});
+
+	describe('getProposalsCount()', function () {
+		it('Should return correct value',async() => {
+			proposal = await GenericProposal.new(creator, creator, '', []);
+			await daoBase.addNewProposal(proposal.address);
+			let amount = await daoBase.getProposalsCount();
+			assert.equal(amount.toNumber(), 1);
+		});
+	});
+
+	it('should set everything correctly',async() => {
+		const isMember = await daoBase.isGroupMember("Employees", creator);
+		assert.equal(isMember,true,'Permission should be set correctly');
+
+		const isMember2 = await daoBase.isGroupMember("Employees", employee1);
+		assert.equal(isMember2,false,'Permission should be set correctly');
+
+		const isCan = await store.isCanDoByGroupMember(addNewProposal, creator);
+		assert.equal(isCan,true,'Any employee should be able to add new proposal');
+
+		const isCan2 = await daoBase.isCanDoAction(creator, addNewProposal);
+		assert.equal(isCan2,true,'Creator should be able to call addNewProposal directly');
+	});
+
+	it('should return correct permissions for an outsider',async() => {
+		const isCanDo1 = await daoBase.isCanDoAction(outsider,addNewProposal);
+		assert.strictEqual(isCanDo1,false,'Outsider should not be able to do that ');
+
+		const isCanDo2 = await daoBase.isCanDoAction(outsider,manageGroups);
+		const isCanDo3 = await daoBase.isCanDoAction(outsider,issueTokens);
+		assert.strictEqual(isCanDo2,false,'Outsider should not be able to do that because he is in majority');
+		assert.strictEqual(isCanDo3,false,'Outsider should not be able to do that because he is in majority');
+	});
+
+	it('should return correct permissions for creator',async() => {
+		const isCanDo1 = await daoBase.isCanDoAction(creator,addNewProposal);
+		assert.strictEqual(isCanDo1,true,'Creator should be able to do that ');
+
+		const isCanDo2 = await daoBase.isCanDoAction(creator,manageGroups);
+		const isCanDo3 = await daoBase.isCanDoAction(creator,issueTokens);
+		assert.strictEqual(isCanDo2,true,'Creator should be able to do that because he is in majority');
+		assert.strictEqual(isCanDo3,true,'Creator should be able to do that because he is in majority');
+	});
+
+	it('should not add new vote if not employee',async() => {
+		// employee1 is still not added to DaoBase as an employee
+		let newProposal = 0x123;
+		await daoBase.addNewProposal.sendTransaction(newProposal, {from: employee1}).should.be.rejectedWith('revert');
+	});
 
   it('should issue tokens to employee1 and employee2', async () => {
     // currently creator has 1000 tokens, he is in majority, so this should not fail
