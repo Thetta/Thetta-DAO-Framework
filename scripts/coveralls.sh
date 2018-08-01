@@ -1,3 +1,3 @@
 #!/bin/bash
 
-npm run coverage && cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
+npm run coverage && sleep 5 && cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js

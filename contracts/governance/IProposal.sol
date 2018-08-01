@@ -1,7 +1,8 @@
 pragma solidity ^0.4.22;
 
-import './IVoting.sol';
-import '../IDaoBase.sol';
+import "./IVoting.sol";
+import "../IDaoBase.sol";
+
 
 /**
  * @title IProposal 

@@ -8,6 +8,7 @@ import "../IDaoBase.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+
 /**
  * @title FallbackToWeiReceiver
  * @dev Easy-to-use wrapper to convert fallback -> processFunds()
@@ -21,11 +22,12 @@ contract FallbackToWeiReceiver {
 		output = _output;
 	}
 
-	function()public payable{
+	function()public payable {
 		IWeiReceiver iwr = IWeiReceiver(output);
 		iwr.processFunds.value(msg.value)(msg.value);
 	}
 }
+
 
 /**
  * @title MoneyFlow 
@@ -59,24 +61,24 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 
 // IMoneyflow:
 	// will withdraw donations
-	function withdrawDonationsTo(address _out) public isCanDo(WITHDRAW_DONATIONS){
+	function withdrawDonationsTo(address _out) public isCanDo(WITHDRAW_DONATIONS) {
 		emit MoneyFlow_WithdrawDonations(msg.sender, _out, address(donationEndpoint).balance);
 		donationEndpoint.flushTo(_out);
 	}
 
-	function getDonationEndpoint()public constant returns(IWeiReceiver){
+	function getDonationEndpoint()public view returns(IWeiReceiver) {
 		return donationEndpoint;
 	}
 
-	function getRevenueEndpoint()public constant returns(IWeiReceiver){
+	function getRevenueEndpoint()public view returns(IWeiReceiver) {
 		return rootReceiver;
 	}
 
-	function getDonationEndpointAddress()public constant returns(address){
+	function getDonationEndpointAddress()public view returns(address) {
 		return address(donationF2WR);
 	}
 
-	function getRevenueEndpointAddress()public constant returns(address){
+	function getRevenueEndpointAddress()public view returns(address) {
 		return address(revenueF2WR);
 	}
 
@@ -93,7 +95,7 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 // WeiReceivers:
 	// receiver can be a splitter, fund or event task
 	// _receiver can be 0x0!
-	function setRootWeiReceiver(IWeiReceiver _receiver) public isCanDo(SET_ROOT_WEI_RECEIVER){
+	function setRootWeiReceiver(IWeiReceiver _receiver) public isCanDo(SET_ROOT_WEI_RECEIVER) {
 		emit MoneyFlow_SetRootWeiReceiver(msg.sender, address(_receiver));
 		rootReceiver = _receiver;
 		revenueF2WR = new FallbackToWeiReceiver(address(rootReceiver));

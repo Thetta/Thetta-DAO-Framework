@@ -1,5 +1,6 @@
 pragma solidity ^0.4.22;
 
+
 /**
  * @title IVoting 
  * @dev The input is binary (yes or no only)
@@ -40,6 +41,7 @@ contract IVoting {
 	//		2.2 - is quorum reached 
 	function isYes()public view returns(bool);
 }
+
 
 /**
  * @title For "Liquid democracy" 

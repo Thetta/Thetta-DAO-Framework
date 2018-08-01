@@ -7,6 +7,7 @@ import "../governance/Proposals.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+
 /**
  * @title GenericCaller
  * @dev This is a wrapper that help us to do action that CAN require votings
@@ -41,9 +42,8 @@ contract GenericCaller is DaoClient, Ownable {
 
 	// _actionId is something like "issueTokens"
 	// _methodSig some kind of "issueTokens(bytes32[])"
-	function doAction(bytes32 _permissionId, address _target, address _origin, string _methodSig, bytes32[] _params) internal returns(address proposalOut) 
-	{
-		if(dao.isCanDoAction(msg.sender, _permissionId)){
+	function doAction(bytes32 _permissionId, address _target, address _origin, string _methodSig, bytes32[] _params) internal returns(address proposalOut) {
+		if(dao.isCanDoAction(msg.sender, _permissionId)) {
 			emit GenericCaller_DoActionDirectly(_permissionId, _target, _origin, _methodSig);
 
 			// 1 - call immediately?
@@ -68,7 +68,7 @@ contract GenericCaller is DaoClient, Ownable {
 		   */
 
 			return 0x0;
-		}else{
+		}else {
 			// 2 - create proposal + voting first  
 			emit GenericCaller_CreateNewProposal(_permissionId, _target, _origin, _methodSig);
 
@@ -102,7 +102,7 @@ contract GenericCaller is DaoClient, Ownable {
 		votingParams[_permissionIdHash] = params;
 	}
 
-	function createVoting(bytes32 _permissionIdHash, IProposal _proposal, address _origin)public returns(IVoting){
+	function createVoting(bytes32 _permissionIdHash, IProposal _proposal, address _origin)public returns(IVoting) {
 		VotingParams memory vp = votingParams[_permissionIdHash];
 
 		IVoting V = new Voting(dao, _proposal, _origin, vp.votingType,
@@ -116,7 +116,7 @@ contract GenericCaller is DaoClient, Ownable {
 		return V;
 	}
 
-	function bytes32ToString(bytes32 x)pure internal returns(string){
+	function bytes32ToString(bytes32 x)pure internal returns(string) {
 		bytes memory bytesString = new bytes(32);
 		uint charCount = 0;
 		for (uint j = 0; j < 32; j++) {

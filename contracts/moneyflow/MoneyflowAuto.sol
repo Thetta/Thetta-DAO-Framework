@@ -6,6 +6,7 @@ import "./ether/WeiExpense.sol";
 
 import "../utils/GenericCaller.sol";
 
+
 /**
  * @title MoneyflowAuto 
  * @dev This contract is a helper that will create new Proposal (i.e. voting) if the action is not allowed directly.
@@ -38,14 +39,14 @@ contract MoneyflowAuto is GenericCaller {
 	}
    */
 
-	function setRootWeiReceiverAuto(WeiAbsoluteExpense _wt) public returns(address voteOut){
+	function setRootWeiReceiverAuto(WeiAbsoluteExpense _wt) public returns(address voteOut) {
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(address(_wt));
 
 		return doAction(SET_ROOT_WEI_RECEIVER, mf, msg.sender,"setRootWeiReceiverGeneric(bytes32[])",params);
 	}
 
-	function withdrawDonationsToAuto(address _wt) public returns(address voteOut){
+	function withdrawDonationsToAuto(address _wt) public returns(address voteOut) {
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(_wt);
 
