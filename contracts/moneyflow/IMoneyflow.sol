@@ -1,5 +1,6 @@
 pragma solidity ^0.4.22;
 
+
 /**
  * @title IDestination 
  * @dev Keeps all money until flush is called
@@ -9,6 +10,7 @@ contract IDestination {
 	function flush() public;
 	function flushTo(address _to) public;
 }
+
 
 /**
  * @title ISplitter 
@@ -24,6 +26,7 @@ contract ISplitter {
 	function isOpen() public view returns(bool);
 }
 
+
 /**
  * @title IReceiver 
  * @dev Something that needs funds 
@@ -33,11 +36,11 @@ contract IReceiver {
 	// in 1/100th percents of input. Examples:
 	// 12 is 0.12% of input; 
 	// 100 is 1% of input
-	function getPercentsMul100()constant public returns(uint);
+	function getPercentsMul100()view public returns(uint);
 
 	// If this output needs more funds -> will return true
 	// If this output does not need more funds -> will return false 
-	function isNeedsMoney()constant public returns(bool);
+	function isNeedsMoney()view public returns(bool);
 
 	// WeiReceiver should process all tokens here (hold it or send it somewhere else)
 	function processFunds(uint _currentFlow) public payable;
@@ -45,6 +48,7 @@ contract IReceiver {
 	// non payable!
 	function()public;
 }
+
 
 // IWeiReceiver does not store funds!
 //
@@ -60,6 +64,7 @@ contract IWeiReceiver is IReceiver {
 	function getTotalWeiNeeded(uint _inputWei)public view returns(uint);
 }
 
+
 // IErc20Receiver does not store funds!
 //
 // There are 2 types of Outputs:
@@ -73,6 +78,7 @@ contract IErc20Receiver is IReceiver {
 	// In case we have relative output -> will calculate percents of _inputWei 
 	function getTotalTokensNeeded(uint _inputTokens)public view returns(uint);
 }
+
 
 /**
  * @title Moneyflow 

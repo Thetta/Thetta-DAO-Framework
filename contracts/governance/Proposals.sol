@@ -6,6 +6,7 @@ import "../governance/IVoting.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+
 /**
  * @title GenericProposal 
  * @dev This is the implementation of IProposal interface. Each Proposal should have voting attached. 
@@ -60,6 +61,7 @@ contract GenericProposal is IProposal, Ownable {
 		return voting;
 	}
 }
+
 
 /**
  * @title GenericProposal 

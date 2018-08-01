@@ -4,6 +4,7 @@ import "./utils/GenericCaller.sol";
 
 // TODO: convert to library?
 
+
 /**
  * @title DaoBaseAuto
  * @dev This contract is a helper that will create new Proposal (i.e. voting) if the action is not allowed directly.
@@ -24,7 +25,7 @@ contract DaoBaseAuto is GenericCaller {
 	{
 	}
 
-	function addGroupMemberAuto(string _group, address _a) public returns(address proposalOut){
+	function addGroupMemberAuto(string _group, address _a) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
 		params[0] = bytes32(keccak256(abi.encodePacked(_group)));
 		params[1] = bytes32(_a);
@@ -32,7 +33,7 @@ contract DaoBaseAuto is GenericCaller {
 	   return doAction(MANAGE_GROUPS, dao, msg.sender,"addGroupMemberGeneric(bytes32[])",params);
 	}
 
-	function issueTokensAuto(address _token, address _to, uint _amount) public returns(address proposalOut){
+	function issueTokensAuto(address _token, address _to, uint _amount) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](3);
 		params[0] = bytes32(_token);
 		params[1] = bytes32(_to);
@@ -41,7 +42,7 @@ contract DaoBaseAuto is GenericCaller {
 	   return doAction(ISSUE_TOKENS, dao, msg.sender,"issueTokensGeneric(bytes32[])",params);
 	}
 
-	function upgradeDaoContractAuto(address _newMc) public returns(address proposalOut){
+	function upgradeDaoContractAuto(address _newMc) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(_newMc);
 

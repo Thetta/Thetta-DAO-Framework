@@ -6,6 +6,7 @@ import "./tokens/StdDaoToken.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+
 /**
  * @title DaoStorageGroupd
  * @dev This contract is used by DaoStorage below. Do not use it directly
@@ -19,18 +20,18 @@ contract DaoStorageGroups is Ownable {
 	mapping (bytes32=>mapping(bytes32=>bool)) isAllowedActionByGroupMember;
 
 //////////////////
-	function isGroupMember(bytes32 _groupName, address _a) public constant returns(bool){
+	function isGroupMember(bytes32 _groupName, address _a) public view returns(bool) {
 		uint len = addressToGroups[_a].length;
 
-		for(uint i=0; i<len; ++i){
-			if(addressToGroups[_a][i]==_groupName){
+		for(uint i=0; i<len; ++i) {
+			if(addressToGroups[_a][i]==_groupName) {
 				return true;
 			}
 		}
 		return false; 
 	}
 
-	function addGroupMember(bytes32 _groupHash, address _newMember) public onlyOwner{
+	function addGroupMember(bytes32 _groupHash, address _newMember) public onlyOwner {
 		// check if already added 
 		require(!isGroupMember(_groupHash, _newMember));
 
@@ -38,11 +39,11 @@ contract DaoStorageGroups is Ownable {
 		groupToAddresses[_groupHash].push(_newMember);
 	}
 
-	function getMembersCount(bytes32 _groupHash) public view returns(uint){
+	function getMembersCount(bytes32 _groupHash) public view returns(uint) {
 		return groupToAddresses[_groupHash].length;
 	}
 
-	function getGroupMembers(bytes32 _groupHash) public view returns(address[]){
+	function getGroupMembers(bytes32 _groupHash) public view returns(address[]) {
 		return groupToAddresses[_groupHash];
 	}
 
@@ -60,9 +61,9 @@ contract DaoStorageGroups is Ownable {
 		return groupToAddresses[_groupHash][_index];
 	}
 
-	function getIndexOfAddress(address _item, address[] array)internal pure returns(uint){
-		for(uint j=0; j<array.length; ++j){
-			if(array[j]==_item){
+	function getIndexOfAddress(address _item, address[] array)internal pure returns(uint) {
+		for(uint j=0; j<array.length; ++j) {
+			if(array[j]==_item) {
 				return j;
 			}
 		}
@@ -76,7 +77,7 @@ contract DaoStorageGroups is Ownable {
 		// if member is not found -> exception
 		require(index<parts.length); 
 
-		if(index!=(parts.length - 1)){ 
+		if(index!=(parts.length - 1)) { 
 			parts[index] = parts[parts.length-1];
 		}
 
@@ -86,9 +87,9 @@ contract DaoStorageGroups is Ownable {
 		groupToAddresses[_groupHash] = parts;
 	}
 
-	function getIndexOfBytes32(bytes32 _item, bytes32[] array)internal pure returns(uint){
-		for(uint j=0; j<array.length; ++j){
-			if(array[j]==_item){
+	function getIndexOfBytes32(bytes32 _item, bytes32[] array)internal pure returns(uint) {
+		for(uint j=0; j<array.length; ++j) {
+			if(array[j]==_item) {
 				return j;
 			}
 		}
@@ -114,6 +115,7 @@ contract DaoStorageGroups is Ownable {
 	}
 }
 
+
 /**
  * @title DaoStorage
  * @dev This is the basic contract that keeps all data. It is used by DaoBase (controller) on top.
@@ -138,7 +140,7 @@ contract DaoStorage is DaoStorageGroups {
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 	constructor(address[] _tokens) public {
-		for(uint i=0; i<_tokens.length; ++i){
+		for(uint i=0; i<_tokens.length; ++i) {
 			tokens.push(StdDaoToken(_tokens[i]));
 		}
 
@@ -153,11 +155,11 @@ contract DaoStorage is DaoStorageGroups {
 		observers.push(_observer);
 	}
 
-	function getObserverCount() external view returns(uint){
+	function getObserverCount() external view returns(uint) {
 		return observers.length;
 	}
 
-	function getObserverAtIndex(uint _index) external view returns(address){
+	function getObserverAtIndex(uint _index) external view returns(address) {
 		return observers[_index];
 	}
 
@@ -166,13 +168,13 @@ contract DaoStorage is DaoStorageGroups {
 		isAllowedActionByGroupMember[_groupName][_what] = true;
 	}
 
-	function isCanDoByGroupMember(bytes32 _what, address _a /*, bytes32 _groupName*/) public constant returns(bool){
+	function isCanDoByGroupMember(bytes32 _what, address _a /*, bytes32 _groupName*/) public view returns(bool) {
 		uint len = addressToGroups[_a].length;
 
 		// enumerate all groups that _a belongs to
 		for(uint i=0; i<len; ++i){
 			bytes32 groupName = addressToGroups[_a][i];
-			if(isAllowedActionByGroupMember[groupName][_what]){
+			if(isAllowedActionByGroupMember[groupName][_what]) {
 				return true;
 			}
 		}
@@ -192,15 +194,15 @@ contract DaoStorage is DaoStorageGroups {
 		byAddress[_a][_what] = true;
 	}
 
-	function isCanDoByShareholder(bytes32 _permissionName, address _tokenAddress) public constant returns(bool){
+	function isCanDoByShareholder(bytes32 _permissionName, address _tokenAddress) public view returns(bool) {
 		return byShareholder[_tokenAddress][_permissionName];
 	}
 
-	function isCanDoByVoting(bytes32 _permissionName, address _tokenAddress) public constant returns(bool){
+	function isCanDoByVoting(bytes32 _permissionName, address _tokenAddress) public view returns(bool) {
 		return byVoting[_tokenAddress][_permissionName];
 	}
 
-	function isCanDoByAddress(bytes32 _permissionName, address _a) public constant returns(bool){
+	function isCanDoByAddress(bytes32 _permissionName, address _a) public view returns(bool) {
 		return byAddress[_a][_permissionName];
 	}
 
@@ -209,19 +211,19 @@ contract DaoStorage is DaoStorageGroups {
 		proposals.push(_proposal);
 	}
 
-	function getProposalAtIndex(uint _i)public constant returns(IProposal){
+	function getProposalAtIndex(uint _i)public view returns(IProposal) {
 		require(_i<proposals.length);
 		return proposals[_i];
 	}
 
-	function getProposalsCount()public constant returns(uint){
+	function getProposalsCount()public view returns(uint) {
 		return proposals.length;
 	}
 
-	function getProposalVotingResults(address _p) public constant returns (bool isVotingFound, bool votingResult){
+	function getProposalVotingResults(address _p) public view returns (bool isVotingFound, bool votingResult) {
 		// scan all votings and search for the one that is finished
-		for(uint i=0; i<proposals.length; ++i){
-			if(proposals[i]==_p){
+		for(uint i=0; i<proposals.length; ++i) {
+			if(proposals[i]==_p) {
 				IVoting voting = proposals[i].getVoting();
 				return (true, 	voting.isFinished() && voting.isYes());
 			}
@@ -229,7 +231,7 @@ contract DaoStorage is DaoStorageGroups {
 		return (false,false);
 	}
 
-	function getAllTokenAddresses() public view returns (StdDaoToken[]){
+	function getAllTokenAddresses() public view returns (StdDaoToken[]) {
 		return tokens;
 	}
 }

@@ -3,6 +3,7 @@ pragma solidity ^0.4.21;
 import "zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 
+
 /**
  * @title Copy-on-Write (CoW) token 
  * @dev Token that can preserve the balances after some EVENT happens (voting is started, didivends are calculated, etc)
@@ -26,15 +27,15 @@ import "zeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 */
 contract CopyOnWriteToken is MintableToken, BurnableToken {
 	struct Holder {
-        uint256 balance;
-        uint lastUpdateTime;
-    }
+		uint256 balance;
+		uint lastUpdateTime;
+	}
 
 	struct Event {
-	    mapping (address => Holder) holders;
-	    
-	    bool isEventInProgress;
-	    uint eventStartTime;
+		mapping (address => Holder) holders;
+		
+		bool isEventInProgress;
+		uint eventStartTime;
 	}
 
 	mapping (uint => Event) events;
@@ -54,7 +55,7 @@ contract CopyOnWriteToken is MintableToken, BurnableToken {
 	}
 
 // MintableToken override
-	function mint(address _to, uint256 _amount) canMint onlyOwner public returns(bool){
+	function mint(address _to, uint256 _amount) canMint onlyOwner public returns(bool) {
 		updateCopyOnWriteMap(_to);
 		return super.mint(_to, _amount);
 	}
@@ -69,11 +70,11 @@ contract CopyOnWriteToken is MintableToken, BurnableToken {
 
 //// 
 	// TODO: onlyOwner!
-	function startNewEvent() public returns(uint){
-		for(uint i = 0; i < 20; i++){
-			if(!events[i].isEventInProgress){
+	function startNewEvent() public returns(uint) {
+		for(uint i = 0; i < 20; i++) {
+			if(!events[i].isEventInProgress) {
 				events[i].isEventInProgress = true;
-				events[i].eventStartTime = now;
+				events[i].eventStartTime = block.timestamp;
 
 				emit EventStarted(msg.sender, i);
 				return i;
@@ -93,7 +94,7 @@ contract CopyOnWriteToken is MintableToken, BurnableToken {
 	function getBalanceAtEventStart(uint _eventID, address _for) public view returns(uint256) {
 		require(events[_eventID].isEventInProgress);
 
-		if(!isBalanceWasChangedAfterEventStarted(_eventID, _for)){
+		if(!isBalanceWasChangedAfterEventStarted(_eventID, _for)) {
 			return balances[_for];
 		}
 
@@ -107,11 +108,11 @@ contract CopyOnWriteToken is MintableToken, BurnableToken {
 	}
 
 	function updateCopyOnWriteMap(address _for) internal {
-		for(uint i = 0; i < 20; i++){
+		for(uint i = 0; i < 20; i++) {
 			bool res = isNeedToUpdateBalancesMap(i, _for);
-			if(res){
+			if(res) {
 				events[i].holders[_for].balance = balances[_for];
-				events[i].holders[_for].lastUpdateTime = now;
+				events[i].holders[_for].lastUpdateTime = block.timestamp;
 			}
 		}
 	}
@@ -120,7 +121,7 @@ contract CopyOnWriteToken is MintableToken, BurnableToken {
 		return events[_eventID].isEventInProgress && !isBalanceWasChangedAfterEventStarted(_eventID, _for);
 	}
 
-	function isBalanceWasChangedAfterEventStarted(uint _eventID, address _for) internal view returns(bool){
+	function isBalanceWasChangedAfterEventStarted(uint _eventID, address _for) internal view returns(bool) {
 		return (events[_eventID].holders[_for].lastUpdateTime >= events[_eventID].eventStartTime);
 	}
 }

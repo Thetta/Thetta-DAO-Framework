@@ -8,6 +8,7 @@ import "./IDaoBase.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+
 /**
  * @title DaoBase 
  * @dev This is the base contract that you should use.
@@ -139,7 +140,7 @@ contract DaoBase is IDaoBase, Ownable {
 	 *    b. caller is voting and it is succeeded -> allow
 	 * 4. deny
 	*/
-	function isCanDoAction(address _a, bytes32 _permissionNameHash) public constant returns(bool){
+	function isCanDoAction(address _a, bytes32 _permissionNameHash) public view returns(bool) {
 		// 0 - is can do by address?
 		if(store.isCanDoByAddress(_permissionNameHash, _a)) {
 			return true;
@@ -161,12 +162,12 @@ contract DaoBase is IDaoBase, Ownable {
 
 			// 3 - can do action only by starting new vote first?
 			bool isCan = store.isCanDoByVoting(_permissionNameHash, store.getAllTokenAddresses()[i]);
-			if(isCan){
+			if(isCan) {
 				bool isVotingFound = false;
 				bool votingResult = false;
 				(isVotingFound, votingResult) = store.getProposalVotingResults(_a);
 
-				if(isVotingFound){
+				if(isVotingFound) {
 					// if this action can be done by voting, then Proposal can do this action 
 					// from within its context
 					// in this case msg.sender is a Voting!
@@ -178,7 +179,7 @@ contract DaoBase is IDaoBase, Ownable {
 				bool isInMajority = 
 					(store.getAllTokenAddresses()[i].balanceOf(_a)) >
 					(store.getAllTokenAddresses()[i].totalSupply()/2);
-				if(isInMajority){
+				if(isInMajority) {
 					return true;
 				}
 			}
@@ -193,19 +194,19 @@ contract DaoBase is IDaoBase, Ownable {
 		store.addNewProposal(_proposal);
 	}
 
-	function getProposalAtIndex(uint _i)public constant returns(IProposal){
+	function getProposalAtIndex(uint _i)public view returns(IProposal) {
 		return store.getProposalAtIndex(_i);
 	}
 
-	function getProposalsCount()public constant returns(uint){
+	function getProposalsCount()public view returns(uint) {
 		return store.getProposalsCount();
 	}
 
 // Tokens:
 	function issueTokens(address _tokenAddress, address _to, uint _amount)public isCanDo(ISSUE_TOKENS) {
 		emit DaoBase_IssueTokens(_tokenAddress, _to, _amount);
-		for(uint i=0; i<store.getAllTokenAddresses().length; ++i){
-			if(store.getAllTokenAddresses()[i]==_tokenAddress){
+		for(uint i=0; i<store.getAllTokenAddresses().length; ++i) {
+			if(store.getAllTokenAddresses()[i]==_tokenAddress) {
 				// WARNING:
 				// token ownership should be transferred to the current DaoBase to do that!!!
 				store.getAllTokenAddresses()[i].mintFor(_to, _amount);
@@ -220,7 +221,7 @@ contract DaoBase is IDaoBase, Ownable {
 	function burnTokens(address _tokenAddress, address _who, uint _amount)public isCanDo(BURN_TOKENS) {
 		emit DaoBase_BurnTokens(_tokenAddress, _who, _amount);
 
-		for(uint i=0; i<store.getAllTokenAddresses().length; ++i){
+		for(uint i=0; i<store.getAllTokenAddresses().length; ++i) {
 			if(store.getAllTokenAddresses()[i]==_tokenAddress){
 				// WARNING:
 				// token ownership should be transferred to the current DaoBase to do that!!!
@@ -233,6 +234,7 @@ contract DaoBase is IDaoBase, Ownable {
 		revert();
 	}
 }
+
 
 /**
  * @title DaoBaseWithUnpackers
