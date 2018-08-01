@@ -3,6 +3,7 @@ pragma solidity ^0.4.22;
 import "./IVoting.sol";
 import "../IDaoBase.sol";
 
+
 /**
  * @title IProposal 
  * @dev This is the basic DAO Proposal interface. Each Proposal should have voting attached. 

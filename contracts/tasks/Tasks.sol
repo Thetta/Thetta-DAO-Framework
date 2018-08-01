@@ -2,9 +2,10 @@ pragma solidity ^0.4.22;
 
 import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
-import '../moneyflow/ether/WeiExpense.sol';
+import "../moneyflow/ether/WeiExpense.sol";
 
-import '../IDaoBase.sol';
+import "../IDaoBase.sol";
+
 
 /**
  * @title WeiGenericTask 
@@ -94,7 +95,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
    */
 
-   modifier isCanDo(bytes32 _what){
+	modifier isCanDo(bytes32 _what){
 		require(dao.isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
@@ -118,7 +119,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 			require(_isPostpaid); 
 		}
 
-		if(!_isPostpaid){
+		if(!_isPostpaid) {
 			require(_neededWei>0);
 		}
 
@@ -144,23 +145,23 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		output = _output;
 	}
 
-	function getBalance()public view returns(uint){
+	function getBalance()public view returns(uint) {
 		return address(this).balance;
 	}
 
-	function getCurrentState()public view returns(State){
+	function getCurrentState()public view returns(State) {
 		// for Prepaid task -> client should call processFunds method to put money into this task
 		// when state is Init
-		if((State.Init==state) && (neededWei!=0) && (!isPostpaid)){
-			if(neededWei==address(this).balance){
+		if((State.Init==state) && (neededWei!=0) && (!isPostpaid)) {
+			if(neededWei==address(this).balance) {
 				return State.PrePaid;
 			}
 		}
 
 		// for Postpaid task -> client should call processFunds method to put money into this task
 		// when state is Complete. He is confirming the task by doing that (no need to call confirmCompletion)
-		if((State.Complete==state) && (neededWei!=0) && (isPostpaid)){
-			if(neededWei==address(this).balance){
+		if((State.Complete==state) && (neededWei!=0) && (isPostpaid)) {
+			if(neededWei==address(this).balance) {
 				return State.CanGetFunds;
 			}
 		}
@@ -170,7 +171,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 	function cancell() public isCanCancell onlyOwner {
 		require(getCurrentState()==State.Init || getCurrentState()==State.PrePaid);
-		if(getCurrentState()==State.PrePaid){
+		if(getCurrentState()==State.PrePaid) {
 			// return money to 'moneySource'
 			moneySource.transfer(address(this).balance);
 		}
@@ -180,7 +181,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 	function returnMoney() public isDeadlineMissed onlyOwner {
 		require(getCurrentState()==State.InProgress);
-		if(address(this).balance > 0){
+		if(address(this).balance > 0) {
 			// return money to 'moneySource'
 			moneySource.transfer(address(this).balance);
 		}
@@ -191,11 +192,11 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	function notifyThatCompleted() public onlyEmployeeOrOwner {
 		require(getCurrentState()==State.InProgress);
 
-		if((0!=neededWei) || (isDonation)){ // if donation or prePaid - no need in ev-ion; if postpaid with unknown payment - neededWei=0 yet
+		if((0!=neededWei) || (isDonation)) { // if donation or prePaid - no need in ev-ion; if postpaid with unknown payment - neededWei=0 yet
 
 			state = State.Complete;
 			emit WeiGenericTask_StateChanged(state);
-		}else{
+		}else {
 			state = State.CompleteButNeedsEvaluation;
 			emit WeiGenericTask_StateChanged(state);
 		}
@@ -236,9 +237,9 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		if(_to==_to) revert();
 	}
 
-	function processFunds(uint _currentFlow) public payable{
+	function processFunds(uint _currentFlow) public payable {
 		emit WeiGenericTask_ProcessFunds(msg.sender, msg.value, _currentFlow);
-		if(isPostpaid && (0==neededWei) && (State.Complete==state)){
+		if(isPostpaid && (0==neededWei) && (State.Complete==state)) {
 			// this is a donation
 			// client can send any sum!
 			neededWei = msg.value;
@@ -248,9 +249,10 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
 
 	// non-payable
-	function()public{
+	function()public {
 	}
 }
+
 
 /**
  * @title WeiTask 
@@ -269,7 +271,7 @@ contract WeiTask is WeiGenericTask {
 	function startTask(address _employee) public isCanDo(START_TASK) {
 		require(getCurrentState()==State.Init || getCurrentState()==State.PrePaid);
 
-		if(getCurrentState()==State.Init){
+		if(getCurrentState()==State.Init) {
 			// can start only if postpaid task 
 			require(isPostpaid);
 		}
@@ -279,6 +281,7 @@ contract WeiTask is WeiGenericTask {
 		emit WeiGenericTask_StateChanged(state);
 	}
 }
+
 
 /**
  * @title WeiBounty 

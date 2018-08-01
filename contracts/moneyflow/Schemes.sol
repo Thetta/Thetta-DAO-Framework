@@ -8,6 +8,7 @@ import "./ether/WeiFund.sol";
 
 import "../IDaoBase.sol";
 
+
 /**
  * @title FallbackToWeiReceiver
  * @dev This contract should be used to automatically instantiate Default moneyscheme for a DAO.
@@ -81,11 +82,11 @@ contract DefaultMoneyflowScheme is DaoClient {
 		// rest.addChild(dividendsFund);
 	}
 
-	function getRootReceiver()public constant returns(IWeiReceiver){
+	function getRootReceiver()public view returns(IWeiReceiver) {
 		return root;
 	}
 
-	function deployRoot()public{
+	function deployRoot()public {
 		root = new WeiTopDownSplitter("root");
 	}
 
@@ -126,15 +127,16 @@ contract DefaultMoneyflowScheme is DaoClient {
 		// TODO: implement
 	}
 
-	function flushReseveFundTo(address _to) view public isCanDo(FLUSH_RESERVE_FUND_TO){
+	function flushReseveFundTo(address _to) view public isCanDo(FLUSH_RESERVE_FUND_TO) {
 		// TODO:
 	}
 
 	// TODO: Currently dividens fund is just another type of Reserve fund (because DividendFund is not implemented yet) 
-	function flushDividendsFundTo(address _to) view public isCanDo(FLUSH_RESERVE_FUND_TO){
+	function flushDividendsFundTo(address _to) view public isCanDo(FLUSH_RESERVE_FUND_TO) {
 		// TODO:
 	}
 }
+
 
 // TODO:
 contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {

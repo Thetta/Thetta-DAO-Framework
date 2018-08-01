@@ -5,6 +5,7 @@ import "../IMoneyflow.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+
 /**
  * @title WeiExpense
  * @dev Something that needs money (task, salary, bonus, etc)
@@ -41,14 +42,14 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 		isPeriodic = _isPeriodic;
 	}
 
-	function processFunds(uint _currentFlow) public payable{
+	function processFunds(uint _currentFlow) public payable {
 		emit WeiExpense_ProcessFunds(msg.sender, msg.value, _currentFlow);
 		require(isNeedsMoney());
 
 		require(msg.value == getTotalWeiNeeded(_currentFlow));
 
 		// TODO: why not working without if????
-		if(isPeriodic){ 
+		if(isPeriodic) { 
 			momentReceived = uint(now);
 		}
 
@@ -56,38 +57,38 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 		moneySource = msg.sender;
 	}
 
-	function getIsMoneyReceived() public view returns(bool){
+	function getIsMoneyReceived() public view returns(bool) {
 		return isMoneyReceived;
 	}
 
-	function getNeededWei() public view returns(uint){
+	function getNeededWei() public view returns(uint) {
 		return neededWei;
 	}
 
-	function getTotalWeiNeeded(uint _inputWei)public view returns(uint){
-		if(!isNeedsMoney()){
+	function getTotalWeiNeeded(uint _inputWei)public view returns(uint) {
+		if(!isNeedsMoney()) {
 			return 0;
 		}
 
-		if(0!=percentsMul100){
+		if(0!=percentsMul100) {
 			return (getDebtMultiplier()*(percentsMul100 * _inputWei)) / 10000;
 		}else{
 			return getMinWeiNeeded();
 		}
 	}
 
-	function getMinWeiNeeded()public view returns(uint){
-		if(!isNeedsMoney() || (0!=percentsMul100)){
+	function getMinWeiNeeded()public view returns(uint) {
+		if(!isNeedsMoney() || (0!=percentsMul100)) {
 			return 0;
 		}
 		return getDebtMultiplier()*neededWei;
 	}
 
-	function getMomentReceived()public view returns(uint){
+	function getMomentReceived()public view returns(uint) {
 		return momentReceived;
 	}
 
-	function getDebtMultiplier()public view returns(uint){
+	function getDebtMultiplier()public view returns(uint) {
 		if((isAccumulateDebt)&&(0!=momentReceived)){
 			return ((now - momentReceived) / (periodHours * 3600 * 1000));
 		} else{
@@ -95,9 +96,9 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 		}
 	}
 
-	function isNeedsMoney()public view returns(bool){
+	function isNeedsMoney()public view returns(bool) {
 		if(isPeriodic){ // For period Weiexpense
-			if ((uint64(now) - momentReceived) >= periodHours * 3600 * 1000){ 
+			if ((uint64(now) - momentReceived) >= periodHours * 3600 * 1000) { 
 				return true;
 			}
 		}else{
@@ -110,16 +111,16 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 		_; 
 	}
 
-	function getPercentsMul100()public view returns(uint){
+	function getPercentsMul100()public view returns(uint) {
 		return percentsMul100;
 	}
 
 	// TODO: remove from here
-	function getNow()public view returns(uint){
+	function getNow()public view returns(uint) {
 		return now;
 	}
 
-	function flush()public onlyOwner{
+	function flush()public onlyOwner {
 		emit WeiExpense_Flush(owner, address(this).balance);
 		owner.transfer(address(this).balance);
 	}
@@ -139,9 +140,10 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 		percentsMul100 = _percentsMul100;
 	}
 
-	function()public{
+	function()public {
 	}
 }
+
 
 contract WeiAbsoluteExpense is WeiExpense {
 	constructor(uint _neededWei) public 
@@ -149,17 +151,20 @@ contract WeiAbsoluteExpense is WeiExpense {
 	{}
 }
 
+
 contract WeiRelativeExpense is WeiExpense {
 	constructor(uint _percentsMul100)public 
 		WeiExpense(0, _percentsMul100, 0, false, false)
 	{}
 }
 
+
 contract WeiAbsoluteExpenseWithPeriod is WeiExpense { 
 	constructor(uint _neededWei, uint _periodHours, bool _isAccumulateDebt) public
 		WeiExpense(_neededWei, 0, _periodHours, _isAccumulateDebt, true)
 	{}
 }
+
 
 contract WeiRelativeExpenseWithPeriod is WeiExpense {
 	constructor(uint _percentsMul100, uint _periodHours, bool _isAccumulateDebt) public 

@@ -206,7 +206,7 @@ contract Voting is IVoting, Ownable {
 		for(uint i = 0; i < votesCount; ++i) {
 			if(votes[i].isYes) {
 				yesResults += getPowerOf(votes[i].voter);
-			}else{
+			}else {
 				noResults += getPowerOf(votes[i].voter);
 			}		
 		}
