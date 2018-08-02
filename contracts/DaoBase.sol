@@ -5,6 +5,7 @@ import "./DaoStorage.sol";
 import "./tokens/StdDaoToken.sol";
 
 import "./IDaoBase.sol";
+import "./utils/ConversionLib.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -38,6 +39,11 @@ contract DaoBase is IDaoBase, Ownable {
 	bytes32 public ADD_NEW_PROPOSAL = keccak256(abi.encodePacked("addNewProposal"));
 	bytes32 public BURN_TOKENS = keccak256(abi.encodePacked("burnTokens"));
 	bytes32 public UPGRADE_DAO_CONTRACT = keccak256(abi.encodePacked("upgradeDaoContract"));
+	bytes32 public REMOVE_GROUP_MEMBER = keccak256(abi.encodePacked("removeGroupMember"));
+	bytes32 public ALLOW_ACTION_BY_SHAREHOLDER = keccak256(abi.encodePacked("allowActionByShareholder"));
+	bytes32 public ALLOW_ACTION_BY_VOTING = keccak256(abi.encodePacked("allowActionByVoting"));
+	bytes32 public ALLOW_ACTION_BY_ADDRESS = keccak256(abi.encodePacked("allowActionByAddress"));
+	bytes32 public ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP = keccak256(abi.encodePacked("allowActionByAnyMemberOfGroup"));
 
 	constructor(DaoStorage _store) public {
 		store = _store;
@@ -272,7 +278,7 @@ contract DaoBaseWithUnpackers is DaoBase {
 	}
 
 	function removeGroupMemberGeneric(bytes32[] _params) external {
-		string memory _groupName = bytes32ToString(_params[0]);
+		string memory _groupName = ConversionLib.bytes32ToString(_params[0]);
 		address _a = address(_params[1]);
 
 		removeGroupMember(_groupName, _a);
@@ -298,29 +304,11 @@ contract DaoBaseWithUnpackers is DaoBase {
 
 		allowActionByAddress(_what, _a);
 	}
-
+ 
 	function allowActionByAnyMemberOfGroupGeneric(bytes32[] _params) external {
 		bytes32 _what = bytes32(_params[0]);
-		string memory _groupName = bytes32ToString(_params[1]);
+		string memory _groupName = ConversionLib.bytes32ToString(_params[1]);
 
 		allowActionByAnyMemberOfGroup(_what, _groupName);
 	}
-
-	function bytes32ToString(bytes32 x) internal view returns (string) {
-		bytes memory bytesString = new bytes(32);
-		uint charCount = 0;
-		for (uint j = 0; j < 32; j++) {
-			byte char = byte(bytes32(uint(x) * 2 ** (8 * j)));
-			if (char != 0) {
-				bytesString[charCount] = char;
-				charCount++;
-			}
-		}
-		bytes memory bytesStringTrimmed = new bytes(charCount);
-		for (j = 0; j < charCount; j++) {
-			bytesStringTrimmed[j] = bytesString[j];
-		}
-		return string(bytesStringTrimmed);
-	}
-
 }
