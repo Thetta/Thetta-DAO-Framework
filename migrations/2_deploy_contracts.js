@@ -1,12 +1,12 @@
-// var Voting = artifacts.require("./Voting") ;
-// var VotingLib = artifacts.require("./VotingLib") ;
-// var GenericCaller = artifacts.require("./GenericCaller") ;
+var ConversionLib = artifacts.require("./ConversionLib") ;
+// var VotingLib = artifacts.require("./ConversionLib") ;
+var DaoBase = artifacts.require("./DaoBase") ;
 // var MoneyflowAuto = artifacts.require("./MoneyflowAuto") ;
 
 module.exports = function (deployer) {
-  // deployer.deploy(VotingLib).then(() => {
-  // 	deployer.link(VotingLib, Voting);
+	deployer.deploy(ConversionLib).then(() => {
+	deployer.link(ConversionLib, DaoBase);
   // 	deployer.link(VotingLib, GenericCaller);
   // 	deployer.link(VotingLib, MoneyflowAuto);
-  // });
+	});
 };

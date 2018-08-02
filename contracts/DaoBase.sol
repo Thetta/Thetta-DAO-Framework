@@ -5,6 +5,7 @@ import "./DaoStorage.sol";
 import "./tokens/StdDaoToken.sol";
 
 import "./IDaoBase.sol";
+import "./utils/ConversionLib.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -38,6 +39,11 @@ contract DaoBase is IDaoBase, Ownable {
 	bytes32 public ADD_NEW_PROPOSAL = keccak256(abi.encodePacked("addNewProposal"));
 	bytes32 public BURN_TOKENS = keccak256(abi.encodePacked("burnTokens"));
 	bytes32 public UPGRADE_DAO_CONTRACT = keccak256(abi.encodePacked("upgradeDaoContract"));
+	bytes32 public REMOVE_GROUP_MEMBER = keccak256(abi.encodePacked("removeGroupMember"));
+	bytes32 public ALLOW_ACTION_BY_SHAREHOLDER = keccak256(abi.encodePacked("allowActionByShareholder"));
+	bytes32 public ALLOW_ACTION_BY_VOTING = keccak256(abi.encodePacked("allowActionByVoting"));
+	bytes32 public ALLOW_ACTION_BY_ADDRESS = keccak256(abi.encodePacked("allowActionByAddress"));
+	bytes32 public ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP = keccak256(abi.encodePacked("allowActionByAnyMemberOfGroup"));
 
 	constructor(DaoStorage _store) public {
 		store = _store;
@@ -271,12 +277,38 @@ contract DaoBaseWithUnpackers is DaoBase {
 		issueTokens(_tokenAddress, _to, _amount);
 	}
 
-	// TODO: add other methods:
-	/*
-	function removeGroupMember(string _groupName, address _a) public isCanDo("manageGroups"){
-	function allowActionByShareholder(string _what, address _tokenAddress) public isCanDo("manageGroups"){
-	function allowActionByVoting(string _what, address _tokenAddress) public isCanDo("manageGroups"){
-	function allowActionByAddress(string _what, address _a) public isCanDo("manageGroups"){
-	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public isCanDo("manageGroups"){
-   */
+	function removeGroupMemberGeneric(bytes32[] _params) external {
+		string memory _groupName = ConversionLib.bytes32ToString(_params[0]);
+		address _a = address(_params[1]);
+
+		removeGroupMember(_groupName, _a);
+	}
+
+	function allowActionByShareholderGeneric(bytes32[] _params) external {
+		bytes32 _what = bytes32(_params[0]);
+		address _a = address(_params[1]);
+
+		allowActionByShareholder(_what, _a);
+	}
+
+	function allowActionByVotingGeneric(bytes32[] _params) external {
+		bytes32 _what = bytes32(_params[0]);
+		address _tokenAddress = address(_params[1]);
+
+		allowActionByVoting(_what, _tokenAddress);
+	}
+
+	function allowActionByAddressGeneric(bytes32[] _params) external {
+		bytes32 _what = bytes32(_params[0]);
+		address _a = address(_params[1]);
+
+		allowActionByAddress(_what, _a);
+	}
+ 
+	function allowActionByAnyMemberOfGroupGeneric(bytes32[] _params) external {
+		bytes32 _what = bytes32(_params[0]);
+		string memory _groupName = ConversionLib.bytes32ToString(_params[1]);
+
+		allowActionByAnyMemberOfGroup(_what, _groupName);
+	}
 }
