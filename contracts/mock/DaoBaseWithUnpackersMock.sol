@@ -19,101 +19,45 @@ contract DaoBaseWithUnpackersMock is DaoBaseWithUnpackers {
 	{
 	}
 
-	function upgradeDaoContract(IDaoBase _b) public {
+	function upgradeDaoContractGeneric(bytes32[] _params) external {
+		IDaoBase _b = IDaoBase(address(_params[0]));
 		b = _b;
 	}
 
-	function addGroupMember(bytes32 _group, address _a) public {
-		group = _group;
-		member = _a;
-	}
-
-	function issueTokens(address _tokenAddress, address _to, uint _amount) public {
-		a = _to;
-		tokenAddress = _tokenAddress;
-		amount = _amount;
-	}
-
-	function removeGroupMember(string _groupName, address _a) public {
-		groupName = _groupName;
-		a = _a;
-	}
-
-	function allowActionByShareholder(bytes32 _what, address _a) public {
-		group = _what;
-		a = _a;
-	}
-
-	function allowActionByVoting(bytes32 _what, address _a) public {
-		group = _what;
-		a = _a;
-	}
-
-	function allowActionByAddress(bytes32 _what, address _a) public {
-		group = _what;
-		a = _a;
-	}
-
-	function allowActionByAnyMemberOfGroup(bytes32 _what, string _groupName) public {
-		group = _what;
-		groupName = _groupName;
-	}
-
-	function upgradeDaoContractGeneric(bytes32[] _params) external {
-		IDaoBase _b = IDaoBase(address(_params[0]));
-		upgradeDaoContract(_b);
-	}
-
 	function addGroupMemberGeneric(bytes32[] _params) external {
-		bytes32 group = bytes32(_params[0]);
-		address a = address(_params[1]);
-
-		// direct call to storage here, instead of calling DaoBase.addGroupMember(string, address);
-		addGroupMember(group, a);
+		group = bytes32(_params[0]);
+		member = address(_params[1]);
 	}
 
 	function issueTokensGeneric(bytes32[] _params) external {
-		address _tokenAddress = address(_params[0]);
-		address _to = address(_params[1]);
-		uint _amount = uint(_params[2]);
-
-
-		issueTokens(_tokenAddress, _to, _amount);
+		tokenAddress = address(_params[0]);
+		a = address(_params[1]);
+		amount = uint(_params[2]);
 	}
 
 	function removeGroupMemberGeneric(bytes32[] _params) external {
-		string memory _groupName = ConversionLib.bytes32ToString(_params[0]);
-		address _a = address(_params[1]);
-
-		removeGroupMember(_groupName, _a);
+		groupName = ConversionLib.bytes32ToString(_params[0]);
+		a = address(_params[1]);
 	}
 
 	function allowActionByShareholderGeneric(bytes32[] _params) external {
-		bytes32 _what = bytes32(_params[0]);
-		address _a = address(_params[1]);
-
-		allowActionByShareholder(_what, _a);
+		group = bytes32(_params[0]);
+		a = address(_params[1]);
 	}
 
 	function allowActionByVotingGeneric(bytes32[] _params) external {
-		bytes32 _what = bytes32(_params[0]);
-		address _tokenAddress = address(_params[1]);
-
-		allowActionByVoting(_what, _tokenAddress);
+		group = bytes32(_params[0]);
+		a = address(_params[1]);
 	}
 
 	function allowActionByAddressGeneric(bytes32[] _params) external {
-		bytes32 _what = bytes32(_params[0]);
-		address _a = address(_params[1]);
-
-		allowActionByAddress(_what, _a);
+		group = bytes32(_params[0]);
+		a = address(_params[1]);
 	}
  
 	function allowActionByAnyMemberOfGroupGeneric(bytes32[] _params) external {
-		bytes32 _what = bytes32(_params[0]);
-		string memory _groupName = ConversionLib.bytes32ToString(_params[1]);
-
-		allowActionByAnyMemberOfGroup(_what, _groupName);
+		group = bytes32(_params[0]);
+		groupName = ConversionLib.bytes32ToString(_params[1]);
 	}
 
 }

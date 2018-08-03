@@ -1,8 +1,7 @@
-var DaoBaseWithUnpackers = artifacts.require('./DaoBaseWithUnpackers');
 var StdDaoToken = artifacts.require('./StdDaoToken');
 var DaoStorage = artifacts.require('./DaoStorage');
-var DaoBaseWithUnpackers = artifacts.require('./DaoBaseWithUnpackersMock');
-var DaoBaseAuto = artifacts.require('./DaoBaseAutoMock');
+var DaoBaseWithUnpackersMock = artifacts.require('./DaoBaseWithUnpackersMock');
+var DaoBaseAutoMock = artifacts.require('./DaoBaseAutoMock');
 var GenericProposal = artifacts.require("./GenericProposal");
 var DaoClient = artifacts.require("./DaoClient");
 
@@ -51,13 +50,13 @@ contract('DaoBaseWithUnpackers', (accounts) => {
 		await token.mintFor(creator, 1000);
 		store = await DaoStorage.new([token.address],{from: creator});
 
-		daoBase = await DaoBaseWithUnpackers.new(store.address,{from: creator});
-		daoBaseAuto = await DaoBaseAuto.new(daoBase.address,{from: creator});
+		daoBase = await DaoBaseWithUnpackersMock.new(store.address,{from: creator});
+		daoBaseAuto = await DaoBaseAutoMock.new(daoBase.address,{from: creator});
 	});
 
 	describe('upgradeDaoContractGeneric()', function () {
 		it('Should return correct values',async() => {
-			let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{from: creator});
+			let daoBaseNew = await DaoBaseWithUnpackersMock.new(store.address,{from: creator});
 			await daoBaseAuto.upgradeDaoContractAuto(daoBaseNew.address);
 			assert.equal(await daoBase.b(), daoBaseNew.address);
 		});
@@ -73,7 +72,7 @@ contract('DaoBaseWithUnpackers', (accounts) => {
 
 	describe('issueTokensGeneric()', function () {
 		it('Should return correct values',async() => {
-			let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{from: creator});
+			let daoBaseNew = await DaoBaseWithUnpackersMock.new(store.address,{from: creator});
 			await daoBaseAuto.issueTokensAuto(token.address, creator, 100);
 			assert.equal(await daoBase.a(), creator);
 			assert.equal(await daoBase.tokenAddress(), token.address);
@@ -91,7 +90,7 @@ contract('DaoBaseWithUnpackers', (accounts) => {
 
 	describe('allowActionByShareholderAuto()', function () {
 		it('Should return correct values',async() => {
-			let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{from: creator});
+			let daoBaseNew = await DaoBaseWithUnpackersMock.new(store.address,{from: creator});
 			await daoBaseAuto.allowActionByShareholderAuto("Test", token.address);
 			assert.equal(await daoBase.group(), KECCAK256("Test"));
 			assert.equal(await daoBase.a(), token.address);
@@ -100,7 +99,7 @@ contract('DaoBaseWithUnpackers', (accounts) => {
 
 	describe('allowActionByVotingAuto()', function () {
 		it('Should return correct values',async() => {
-			let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{from: creator});
+			let daoBaseNew = await DaoBaseWithUnpackersMock.new(store.address,{from: creator});
 			await daoBaseAuto.allowActionByVotingAuto("Test", token.address);
 			assert.equal(await daoBase.group(), KECCAK256("Test"));
 			assert.equal(await daoBase.a(), token.address);
@@ -109,7 +108,7 @@ contract('DaoBaseWithUnpackers', (accounts) => {
 
 	describe('allowActionByAddressAuto()', function () {
 		it('Should return correct values',async() => {
-			let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{from: creator});
+			let daoBaseNew = await DaoBaseWithUnpackersMock.new(store.address,{from: creator});
 			await daoBaseAuto.allowActionByAddressAuto("Test", employee1);
 			assert.equal(await daoBase.group(), KECCAK256("Test"));
 			assert.equal(await daoBase.a(), employee1);
@@ -118,7 +117,7 @@ contract('DaoBaseWithUnpackers', (accounts) => {
 
 	describe('allowActionByAnyMemberOfGroupAuto()', function () {
 		it('Should return correct values',async() => {
-			let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{from: creator});
+			let daoBaseNew = await DaoBaseWithUnpackersMock.new(store.address,{from: creator});
 			//await daoBaseAuto.allowActionByAnyMemberOfGroupAuto("Test", "TestGroupName"); -> Why not working????
 			//assert.equal(await daoBase.group(), KECCAK256("Test"));
 			//assert.equal(await daoBase.groupName(), "TestGroupName");

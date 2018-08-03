@@ -3,24 +3,11 @@ pragma solidity ^0.4.22;
 import "../DaoBase.sol";
 import "./DaoBaseWithUnpackersMock.sol";
 
-// TODO: convert to library?
-
-
-/**
- * @title DaoBaseAuto
- * @dev This contract is a helper that will create new Proposal (i.e. voting) if the action is not allowed directly.
- * This should be used with DaoBaseWithUnpackers (not with DaoBase) and is completely optional.
- *
- * WARNING: As long as this contract is just an ordinary DaoBase client -> you should provide permissions to it 
- * just like to any other account/contract. So you should give 'manageGroups', 'issueTokens', etc to the DaoBaseAuto! 
- * Please see 'tests' folder for example.
-*/
+// TODO: remove this contract and use DaoBaseAuto instead!
 contract DaoBaseAutoMock {
-
 	IDaoBase dao;
 	
-	constructor(IDaoBase _dao) public
-	{
+	constructor(IDaoBase _dao) public {
 		dao = _dao;
 	}
 
@@ -29,7 +16,7 @@ contract DaoBaseAutoMock {
 		params[0] = bytes32(keccak256(abi.encodePacked(_group)));
 		params[1] = bytes32(_a);
 		DaoBaseWithUnpackersMock(dao).addGroupMemberGeneric(params);
-	   return 0x0;
+		return 0x0;
 	}
 
 	function issueTokensAuto(address _token, address _to, uint _amount) public returns(address proposalOut) {
@@ -38,7 +25,7 @@ contract DaoBaseAutoMock {
 		params[1] = bytes32(_to);
 		params[2] = bytes32(_amount);
 		DaoBaseWithUnpackersMock(dao).issueTokensGeneric(params);
-	   return 0x0;
+		return 0x0;
 	}
 
 	function upgradeDaoContractAuto(address _newMc) public returns(address proposalOut) {
