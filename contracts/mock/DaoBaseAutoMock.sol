@@ -1,7 +1,7 @@
 pragma solidity ^0.4.22;
 
-import "./utils/GenericCaller.sol";
-import "./DaoBase.sol";
+import "../DaoBase.sol";
+import "./DaoBaseWithUnpackersMock.sol";
 
 // TODO: convert to library?
 
@@ -15,7 +15,9 @@ import "./DaoBase.sol";
  * just like to any other account/contract. So you should give 'manageGroups', 'issueTokens', etc to the DaoBaseAuto! 
  * Please see 'tests' folder for example.
 */
-contract DaoBaseAuto is GenericCaller {
+contract DaoBaseAutoMock {
+
+	IDaoBase dao;
 
 	//bytes32 public constant ISSUE_TOKENS = keccak256(abi.encodePacked("issueTokens"));
 	bytes32 constant public ISSUE_TOKENS = 0xe003bf3bc29ae37598e0a6b52d6c5d94b0a53e4e52ae40c01a29cdd0e7816b71;
@@ -34,17 +36,17 @@ contract DaoBaseAuto is GenericCaller {
 	//bytes32 public constant ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP = keccak256(abi.encodePacked("allowActionByAnyMemberOfGroup"));
 	bytes32 constant public ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP = 0xa7889b6adda0a2270859e5c6327f82b987d24f5729de85a5746ce28eed9e0d07;
 
-	constructor(IDaoBase _dao)public
-		GenericCaller(_dao)
+	constructor(IDaoBase _dao) public
 	{
+		dao = _dao;
 	}
 
 	function addGroupMemberAuto(string _group, address _a) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
 		params[0] = bytes32(keccak256(abi.encodePacked(_group)));
 		params[1] = bytes32(_a);
-
-	   return doAction(MANAGE_GROUPS, dao, msg.sender,"addGroupMemberGeneric(bytes32[])",params);
+		DaoBaseWithUnpackersMock(dao).addGroupMemberGeneric(params);
+	   return 0x0;
 	}
 
 	function issueTokensAuto(address _token, address _to, uint _amount) public returns(address proposalOut) {
@@ -52,54 +54,54 @@ contract DaoBaseAuto is GenericCaller {
 		params[0] = bytes32(_token);
 		params[1] = bytes32(_to);
 		params[2] = bytes32(_amount);
-
-	   return doAction(ISSUE_TOKENS, dao, msg.sender,"issueTokensGeneric(bytes32[])",params);
+		DaoBaseWithUnpackersMock(dao).issueTokensGeneric(params);
+	   return 0x0;
 	}
 
 	function upgradeDaoContractAuto(address _newMc) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](1);
 		params[0] = bytes32(_newMc);
-
-		return doAction(UPGRADE_DAO_CONTRACT, dao, msg.sender,"upgradeDaoContractGeneric(bytes32[])",params);
+		DaoBaseWithUnpackersMock(dao).upgradeDaoContractGeneric(params);
+		return 0x0;
 	}
 
-	/*function removeGroupMemberAuto(string _groupName, address _a) public returns(address proposalOut) {
+	function removeGroupMemberAuto(string _groupName, address _a) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
 		params[0] = bytes32(keccak256(abi.encodePacked(_groupName)));
 		params[1] = bytes32(_a);
-
-		return doAction(REMOVE_GROUP_MEMBER, dao, msg.sender,"removeGroupMemberGeneric(bytes32[])",params);
+		DaoBaseWithUnpackersMock(dao).removeGroupMemberGeneric(params);
+		return 0x0;
 	}
 
 	function allowActionByShareholderAuto(string _what, address _tokenAddress) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
 		params[0] = bytes32(keccak256(abi.encodePacked(_what)));
 		params[1] = bytes32(_tokenAddress);
-
-		return doAction(ALLOW_ACTION_BY_SHAREHOLDER, dao, msg.sender,"allowActionByShareholderGeneric(bytes32[])",params);
+		DaoBaseWithUnpackersMock(dao).allowActionByShareholderGeneric(params);
+		return 0x0;
 	}
 
 	function allowActionByVotingAuto(string _what, address _tokenAddress) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
 		params[0] = bytes32(keccak256(abi.encodePacked(_what)));
 		params[1] = bytes32(_tokenAddress);
-
-		return doAction(ALLOW_ACTION_BY_VOTING, dao, msg.sender,"allowActionByVotingGeneric(bytes32[])",params);
+		DaoBaseWithUnpackersMock(dao).allowActionByVotingGeneric(params);
+		return 0x0;
 	}
 
 	function allowActionByAddressAuto(string _what, address _a) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
 		params[0] = bytes32(keccak256(abi.encodePacked(_what)));
 		params[1] = bytes32(_a);
-
-		return doAction(ALLOW_ACTION_BY_ADDRESS, dao, msg.sender,"allowActionByAddressGeneric(bytes32[])",params);
+		DaoBaseWithUnpackersMock(dao).allowActionByAddressGeneric(params);
+		return 0x0;
 	}
 
 	function allowActionByAnyMemberOfGroupAuto(string _what, string _groupName) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
 		params[0] = bytes32(keccak256(abi.encodePacked(_what)));
 		params[1] = bytes32(keccak256(abi.encodePacked(_groupName)));
-
-		return doAction(ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP, dao, msg.sender,"allowActionByAnyMemberOfGroupGeneric(bytes32[])",params);
-	}*/
+		DaoBaseWithUnpackersMock(dao).allowActionByAnyMemberOfGroupGeneric(params);
+		return 0x0;
+	}
 }
