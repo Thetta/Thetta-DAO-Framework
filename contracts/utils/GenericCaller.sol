@@ -4,6 +4,7 @@ import "../IDaoBase.sol";
 
 import "../governance/Voting.sol";
 import "../governance/Proposals.sol";
+import "../utils/ConversionLib.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -107,7 +108,7 @@ contract GenericCaller is DaoClient, Ownable {
 
 		IVoting V = new Voting(dao, _proposal, _origin, vp.votingType,
 			uint(vp.param1), 
-			bytes32ToString(vp.param2),
+			ConversionLib.bytes32ToString(vp.param2),
 			uint(vp.param3), 
 			uint(vp.param4),
 			address(vp.param5)
@@ -115,21 +116,5 @@ contract GenericCaller is DaoClient, Ownable {
 
 		return V;
 	}
-
-	function bytes32ToString(bytes32 x)pure internal returns(string) {
-		bytes memory bytesString = new bytes(32);
-		uint charCount = 0;
-		for (uint j = 0; j < 32; j++) {
-			byte char = byte(bytes32(uint(x) * 2 ** (8 * j)));
-			if (char != 0) {
-				bytesString[charCount] = char;
-				charCount++;
-			}
-		}
-		bytes memory bytesStringTrimmed = new bytes(charCount);
-		for (j = 0; j < charCount; j++) {
-			bytesStringTrimmed[j] = bytesString[j];
-		}
-		return string(bytesStringTrimmed);
-	}
+	
 }
