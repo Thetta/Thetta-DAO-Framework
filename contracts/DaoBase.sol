@@ -47,6 +47,8 @@ contract DaoBase is IDaoBase, Ownable {
 	bytes32 constant public UPGRADE_DAO_CONTRACT = 0x3794eb44dffe1fc69d141df1b355cf30d543d8006634dd7a125d0e5f500b7fb1;
 	//bytes32 public constant REMOVE_GROUP_MEMBER = keccak256(abi.encodePacked("removeGroupMember"));
 	bytes32 constant public REMOVE_GROUP_MEMBER = 0x3a5165e670fb3632ad283cd3622bfca48f4c8202b504a023dafe70df30567075;
+	//bytes32 public constant WITHDRAW_DONATIONS = keccak256(abi.encodePacked("removeGroupMember"));
+	bytes32 constant public WITHDRAW_DONATIONS = 0xfc685f51f68cb86aa29db19c2a8f4e85183375ba55b5e56fb2e89adc5f5e4285;
 	//bytes32 public constant ALLOW_ACTION_BY_SHAREHOLDER = keccak256(abi.encodePacked("allowActionByShareholder"));
 	bytes32 constant public ALLOW_ACTION_BY_SHAREHOLDER = 0xbeaac974e61895532ee7d8efc953d378116d446667765b57f62c791c37b03c8d;
 	//bytes32 public constant ALLOW_ACTION_BY_VOTING = keccak256(abi.encodePacked("allowActionByVoting"));

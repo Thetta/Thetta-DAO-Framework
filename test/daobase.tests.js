@@ -54,16 +54,16 @@ contract('DaoBase', (accounts) => {
 		await token.mintFor(creator, 1000);
 		store = await DaoStorage.new([token.address],{from: creator});
 
-		// add creator as first employee
-		await store.addGroupMember(KECCAK256("Employees"), creator);
-		await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
-
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{from: creator});
 		issueTokens = await daoBase.ISSUE_TOKENS();
 		manageGroups = await daoBase.MANAGE_GROUPS();
 		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
+		withdrawDonations = await daoBase.WITHDRAW_DONATIONS();
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
 		burnTokens = await daoBase.BURN_TOKENS();
+
+		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.allowActionByAddress(manageGroups, creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
@@ -134,30 +134,30 @@ contract('DaoBase', (accounts) => {
 	describe('allowActionByVoting()', function () {
 		it('Should revert due to call allow action without outsider',async() => {
 			token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
-			await daoBase.allowActionByVoting(KECCAK256("Test"), token.address, {from: outsider}).should.be.rejectedWith('revert');
+			await daoBase.allowActionByVoting(addNewProposal, token.address, {from: outsider}).should.be.rejectedWith('revert');
 		});
 	});
 
 	describe('allowActionByShareholder()', function () {
 		it('Should revert due to call allow action without outsider',async() => {
-			await daoBase.allowActionByShareholder(KECCAK256("Test"), token.address, {from: outsider}).should.be.rejectedWith('revert');
+			await daoBase.allowActionByShareholder(addNewProposal, token.address, {from: outsider}).should.be.rejectedWith('revert');
 		});
 	});
 
 	describe('allowActionByAddress()', function () {
 		it('Should revert due to call allow action without outsider',async() => {
-			await daoBase.allowActionByShareholder(KECCAK256("Test"), employee3, {from: outsider}).should.be.rejectedWith('revert');
+			await daoBase.allowActionByShareholder(addNewProposal, employee3, {from: outsider}).should.be.rejectedWith('revert');
 		});
 
 		it('Should allow action',async() => {
-			await daoBase.allowActionByAddress(KECCAK256("Test"), employee3);
-			assert.equal(await daoBase.isCanDoAction(employee3, KECCAK256("Test")), true);
+			await daoBase.allowActionByAddress(addNewProposal, employee3);
+			assert.equal(await daoBase.isCanDoAction(employee3, addNewProposal), true);
 		});
 	});
 
 	describe('allowActionByAnyMemberOfGroup()', function () {
 		it('Should revert due to call allow action without outsider',async() => {
-			await daoBase.allowActionByAnyMemberOfGroup(KECCAK256("Test"), employee3, {from: outsider}).should.be.rejectedWith('revert');
+			await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, employee3, {from: outsider}).should.be.rejectedWith('revert');
 		});
 	});
 
@@ -257,7 +257,7 @@ contract('DaoBase', (accounts) => {
     let moneyflowInstance = await MoneyFlow.new(daoBase.address);
 
     await daoBase.allowActionByAnyMemberOfGroup(upgradeDaoContract, 'Employees');
-    await daoBase.allowActionByAddress(KECCAK256('withdrawDonations'), creator);
+    await daoBase.allowActionByAddress(withdrawDonations, creator);
 
     let a1 = await token.owner();
     assert.equal(a1, daoBase.address, 'Ownership should be set');
