@@ -54,33 +54,33 @@ contract DaoBaseAuto is GenericCaller {
 		return doAction(DaoBase(dao).REMOVE_GROUP_MEMBER(), dao, msg.sender,"removeGroupMemberGeneric(bytes32[])",params);
 	}
 
-	function allowActionByShareholderAuto(string _what, address _tokenAddress) public returns(address proposalOut) {
+	function allowActionByShareholderAuto(bytes32 _what, address _tokenAddress) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
-		params[0] = bytes32(keccak256(abi.encodePacked(_what)));
+		params[0] = _what;
 		params[1] = bytes32(_tokenAddress);
 
 		return doAction(DaoBase(dao).ALLOW_ACTION_BY_SHAREHOLDER(), dao, msg.sender,"allowActionByShareholderGeneric(bytes32[])",params);
 	}
 
-	function allowActionByVotingAuto(string _what, address _tokenAddress) public returns(address proposalOut) {
+	function allowActionByVotingAuto(bytes32 _what, address _tokenAddress) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
-		params[0] = bytes32(keccak256(abi.encodePacked(_what)));
+		params[0] = _what;
 		params[1] = bytes32(_tokenAddress);
 
 		return doAction(DaoBase(dao).ALLOW_ACTION_BY_VOTING(), dao, msg.sender,"allowActionByVotingGeneric(bytes32[])",params);
 	}
 
-	function allowActionByAddressAuto(string _what, address _a) public returns(address proposalOut) {
+	function allowActionByAddressAuto(bytes32 _what, address _a) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
-		params[0] = bytes32(keccak256(abi.encodePacked(_what)));
+		params[0] = _what;
 		params[1] = bytes32(_a);
 
 		return doAction(DaoBase(dao).ALLOW_ACTION_BY_ADDRESS(), dao, msg.sender,"allowActionByAddressGeneric(bytes32[])",params);
 	}
 
-	function allowActionByAnyMemberOfGroupAuto(string _what, string _groupName) public returns(address proposalOut) {
+	function allowActionByAnyMemberOfGroupAuto(bytes32 _what, string _groupName) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
-		params[0] = bytes32(keccak256(abi.encodePacked(_what)));
+		params[0] = _what;
 		params[1] = bytes32(keccak256(abi.encodePacked(_groupName)));
 
 		return doAction(DaoBase(dao).ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP(), dao, msg.sender,"allowActionByAnyMemberOfGroupGeneric(bytes32[])",params);

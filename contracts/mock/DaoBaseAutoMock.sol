@@ -43,33 +43,33 @@ contract DaoBaseAutoMock {
 		return 0x0;
 	}
 
-	function allowActionByShareholderAuto(string _what, address _tokenAddress) public returns(address proposalOut) {
+	function allowActionByShareholderAuto(bytes32 _what, address _tokenAddress) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
-		params[0] = bytes32(keccak256(abi.encodePacked(_what)));
+		params[0] = _what;
 		params[1] = bytes32(_tokenAddress);
 		DaoBaseWithUnpackersMock(dao).allowActionByShareholderGeneric(params);
 		return 0x0;
 	}
 
-	function allowActionByVotingAuto(string _what, address _tokenAddress) public returns(address proposalOut) {
+	function allowActionByVotingAuto(bytes32 _what, address _tokenAddress) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
-		params[0] = bytes32(keccak256(abi.encodePacked(_what)));
+		params[0] = _what;
 		params[1] = bytes32(_tokenAddress);
 		DaoBaseWithUnpackersMock(dao).allowActionByVotingGeneric(params);
 		return 0x0;
 	}
 
-	function allowActionByAddressAuto(string _what, address _a) public returns(address proposalOut) {
+	function allowActionByAddressAuto(bytes32 _what, address _a) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
-		params[0] = bytes32(keccak256(abi.encodePacked(_what)));
+		params[0] = _what;
 		params[1] = bytes32(_a);
 		DaoBaseWithUnpackersMock(dao).allowActionByAddressGeneric(params);
 		return 0x0;
 	}
 
-	function allowActionByAnyMemberOfGroupAuto(string _what, string _groupName) public returns(address proposalOut) {
+	function allowActionByAnyMemberOfGroupAuto(bytes32 _what, string _groupName) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
-		params[0] = bytes32(keccak256(abi.encodePacked(_what)));
+		params[0] = _what;
 		params[1] = bytes32(keccak256(abi.encodePacked(_groupName)));
 		DaoBaseWithUnpackersMock(dao).allowActionByAnyMemberOfGroupGeneric(params);
 		return 0x0;
