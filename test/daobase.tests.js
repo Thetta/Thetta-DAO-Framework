@@ -109,9 +109,13 @@ contract('DaoBase', (accounts) => {
 
 		it('Should remove member from store',async() => {
 			await daoBase.addGroupMember("Employees", employee1);
+			assert.equal(await daoBase.isGroupMember("Employees", employee1), true);
+
 			await daoBase.removeGroupMember("Employees", employee1);
+
 			let members = await daoBase.getGroupMembers("Employees");
 			assert.equal(members.length, 1);
+			assert.equal(await daoBase.isGroupMember("Employees", employee1), false);
 		});
 	});
 
@@ -157,7 +161,15 @@ contract('DaoBase', (accounts) => {
 
 	describe('allowActionByAnyMemberOfGroup()', function () {
 		it('Should revert due to call allow action without outsider',async() => {
-			await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, employee3, {from: outsider}).should.be.rejectedWith('revert');
+			await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees", {from: outsider}).should.be.rejectedWith('revert');
+		});
+
+		it('Should finish with correct result',async() => {
+			await daoBase.addGroupMember("Employees", employee3);
+			assert.equal(await daoBase.isGroupMember("Employees", employee3), true);
+
+			await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees").should.be.fulfilled;
+			assert.equal(await daoBase.isCanDoAction(employee3, addNewProposal), true);
 		});
 	});
 
