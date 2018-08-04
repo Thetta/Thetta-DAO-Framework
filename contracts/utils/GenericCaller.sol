@@ -4,6 +4,7 @@ import "../IDaoBase.sol";
 
 import "../governance/Voting.sol";
 import "../governance/Proposals.sol";
+
 import "../utils/ConversionLib.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -15,10 +16,6 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  * WARNING: should be permitted to add new proposal by the current DaoBase!!!
 */
 contract GenericCaller is DaoClient, Ownable {
-	event consoleAddr(string comment, address a);
-	event consoleB32(string comment, bytes32 a);
-	event consoleUint(string comment, uint a);
-	event consoleStr(string comment, string a);
 	struct VotingParams {
 		Voting.VotingType votingType;
 		bytes32 param1;
@@ -47,7 +44,7 @@ contract GenericCaller is DaoClient, Ownable {
 		if(dao.isCanDoAction(msg.sender, _permissionId)) {
 			emit GenericCaller_DoActionDirectly(_permissionId, _target, _origin, _methodSig);
 
-			// 1 - call immediately?
+			// 1 - call immediately
 			if(!address(_target).call(
 				bytes4(keccak256(_methodSig)),
 				uint256(32),						 // pointer to the length of the array
@@ -56,21 +53,9 @@ contract GenericCaller is DaoClient, Ownable {
 				revert();
 			}
 
-			/*
-			// Delegatecall: 
-			// 1. _target storage will be set to THIS contract
-			// 2. msg.sender will be set to THE CURRENT msg.sender!
-			_target.delegatecall(
-				bytes4(keccak256(_methodSig)),
-				uint256(32),						 // pointer to the length of the array
-				uint256(_params.length),		 // length of the array
-				_params
-			);
-		   */
-
 			return 0x0;
 		}else {
-			// 2 - create proposal + voting first  
+			// 2 - create a proposal + voting first  
 			emit GenericCaller_CreateNewProposal(_permissionId, _target, _origin, _methodSig);
 
 			// _origin is the initial msg.sender (just like tx.origin) 
@@ -106,7 +91,11 @@ contract GenericCaller is DaoClient, Ownable {
 	function createVoting(bytes32 _permissionIdHash, IProposal _proposal, address _origin)public returns(IVoting) {
 		VotingParams memory vp = votingParams[_permissionIdHash];
 
-		IVoting V = new Voting(dao, _proposal, _origin, vp.votingType,
+		IVoting V = new Voting(
+			dao, 
+			_proposal, 
+			_origin, 
+			vp.votingType,
 			uint(vp.param1), 
 			ConversionLib.bytes32ToString(vp.param2),
 			uint(vp.param3), 
@@ -116,5 +105,4 @@ contract GenericCaller is DaoClient, Ownable {
 
 		return V;
 	}
-	
 }

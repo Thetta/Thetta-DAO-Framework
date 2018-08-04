@@ -1,8 +1,6 @@
 pragma solidity ^0.4.22;
 
-import "../DaoStorage.sol";
-import "../DaoBase.sol";
-import "../IDaoBase.sol";
+import "../DaoBaseWithUnpackers.sol";
 
 contract DaoBaseWithUnpackersMock is DaoBaseWithUnpackers {
 	IDaoBase public b;

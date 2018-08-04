@@ -2,6 +2,10 @@ var StdDaoToken = artifacts.require('./StdDaoToken');
 var DaoStorage = artifacts.require('./DaoStorage');
 var DaoBaseWithUnpackersMock = artifacts.require('./DaoBaseWithUnpackersMock');
 var DaoBaseAutoMock = artifacts.require('./DaoBaseAutoMock');
+
+var DaoBaseAuto = artifacts.require('./DaoBaseAuto');
+var GenericCaller = artifacts.require('./GenericCaller');
+
 var GenericProposal = artifacts.require("./GenericProposal");
 var DaoClient = artifacts.require("./DaoClient");
 
@@ -36,7 +40,13 @@ contract('DaoBaseWithUnpackers', (accounts) => {
 		daoBaseMock = await DaoBaseWithUnpackersMock.new(store.address,{from: creator});
 		issueTokens = await daoBaseMock.ISSUE_TOKENS();
 
-		daoBaseAutoMock = await DaoBaseAutoMock.new(daoBaseMock.address,{from: creator});
+		daoBaseAutoMock = await DaoBaseAutoMock.new(daoBaseMock.address,{from: creator, gas: 1000000});
+
+		// 10 millions
+		//daoBaseAuto = await DaoBaseAuto.new(daoBaseMock.address,{from: creator, gas: 15 * 1000000});
+
+		//
+		//genericCaller = await GenericCaller.new(daoBaseMock.address,{from: creator, gas: 10 * 1000000});
 	});
 
 	describe('upgradeDaoContractGeneric()', function () {
@@ -49,7 +59,10 @@ contract('DaoBaseWithUnpackers', (accounts) => {
 
 	describe('addGroupMemberGeneric()', function () {
 		it('Should return correct values',async() => {
-			await daoBaseAutoMock.addGroupMemberAuto("Employees", creator);
+			// TODO: remove, just to run tests...
+			//assert.equal(issueTokens, await daoBaseMock.ISSUE_TOKENS());
+
+			await daoBaseAuto.addGroupMemberAuto("Employees", creator);
 			assert.equal(await daoBaseMock.groupNameHash(), KECCAK256("Employees"));
 			assert.equal(await daoBaseMock.member(), creator);
 		});

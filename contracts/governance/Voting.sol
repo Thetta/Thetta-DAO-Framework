@@ -1,12 +1,12 @@
-
 pragma solidity ^0.4.22;
 
 import "../IDaoBase.sol";
 import "./IVoting.sol";
 import "./IProposal.sol";
-import "../tokens/StdDaoToken.sol";
-import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+import "../tokens/StdDaoToken.sol";
+
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract Voting is IVoting, Ownable {
 	IDaoBase dao;
@@ -14,11 +14,10 @@ contract Voting is IVoting, Ownable {
 
 	uint public minutesToVote;
 	bool finishedWithYes;
-	bool canceled = false;
+	bool canceled;
 	uint64 genesis;
 	uint public quorumPercent;
 	uint public consensusPercent;
-
 	address tokenAddress;
 	uint votingID;
 	string public groupName;
@@ -31,7 +30,7 @@ contract Voting is IVoting, Ownable {
 	mapping(address => bool) voted;
 	mapping(uint => Vote) votes;
 
-	uint votesCount = 0;
+	uint votesCount;
 	VotingType votingType;
 
 	event Voted(address _who, bool _yes);
@@ -67,10 +66,15 @@ contract Voting is IVoting, Ownable {
 	 * @param _groupName
 	 * @param _tokenAddress
 	*/
-	constructor(IDaoBase _dao, IProposal _proposal, 
-		address _origin, VotingType _votingType, 
-		uint _minutesToVote, string _groupName, 
-		uint _quorumPercent, uint _consensusPercent, 
+	constructor(
+		IDaoBase _dao, 
+		IProposal _proposal, 
+		address _origin, 
+		VotingType _votingType, 
+		uint _minutesToVote, 
+		string _groupName, 
+		uint _quorumPercent, 
+		uint _consensusPercent, 
 		address _tokenAddress) public 
 	{
 		require((_quorumPercent <= 100) &&(_quorumPercent> 0));

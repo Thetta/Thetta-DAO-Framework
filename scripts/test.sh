@@ -25,3 +25,4 @@ fi
 
 # truffle migrate
 truffle test $1
+
