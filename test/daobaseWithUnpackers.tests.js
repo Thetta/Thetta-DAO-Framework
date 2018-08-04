@@ -40,7 +40,7 @@ contract('DaoBaseWithUnpackers', (accounts) => {
 		daoBaseMock = await DaoBaseWithUnpackersMock.new(store.address,{from: creator});
 		issueTokens = await daoBaseMock.ISSUE_TOKENS();
 
-		daoBaseAutoMock = await DaoBaseAutoMock.new(daoBaseMock.address,{from: creator, gas: 1000000});
+		daoBaseAutoMock = await DaoBaseAutoMock.new(daoBaseMock.address,{from: creator});
 
 		// 10 millions
 		//daoBaseAuto = await DaoBaseAuto.new(daoBaseMock.address,{from: creator, gas: 15 * 1000000});
@@ -62,7 +62,7 @@ contract('DaoBaseWithUnpackers', (accounts) => {
 			// TODO: remove, just to run tests...
 			//assert.equal(issueTokens, await daoBaseMock.ISSUE_TOKENS());
 
-			await daoBaseAuto.addGroupMemberAuto("Employees", creator);
+			await daoBaseAutoMock.addGroupMemberAuto("Employees", creator);
 			assert.equal(await daoBaseMock.groupNameHash(), KECCAK256("Employees"));
 			assert.equal(await daoBaseMock.member(), creator);
 		});
