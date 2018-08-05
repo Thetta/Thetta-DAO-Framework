@@ -98,8 +98,7 @@ contract('Voting (func)', (accounts) => {
       await token.mintFor(employee4, 1);
       // await token.mintFor(employee5, 1);
 
-      let store = await DaoStorage.new([token.address], { from: creator });
-      daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+      daoBase = await DaoBaseWithUnpackers.new([token.address], { from: creator });
       moneyflowInstance = await MoneyFlow.new(daoBase.address, { from: creator });
       aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
 
@@ -113,13 +112,13 @@ contract('Voting (func)', (accounts) => {
 
       setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
-      await store.addGroupMember(KECCAK256('Employees'), creator);
-      await store.allowActionByAddress(manageGroups, creator);
-      await store.allowActionByAddress(issueTokens, creator);
+      await daoBase.addGroupMember(KECCAK256('Employees'), creator);
+      await daoBase.allowActionByAddress(manageGroups, creator);
+      await daoBase.allowActionByAddress(issueTokens, creator);
 
       // do not forget to transfer ownership
       await token.transferOwnership(daoBase.address);
-      await store.transferOwnership(daoBase.address);
+      await daoBase.transferOwnership(daoBase.address);
 
       // AAC requires special permissions
       await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
@@ -665,8 +664,7 @@ contract('Voting (func)', (accounts) => {
       await token.mintFor(employee4, 16);
       // await token.mint(employee5, 1);
 
-      let store = await DaoStorage.new([token.address], { from: creator });
-      daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+      daoBase = await DaoBaseWithUnpackers.new([token.address], { from: creator });
       moneyflowInstance = await MoneyFlow.new(daoBase.address, { from: creator });
       aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
 
@@ -680,13 +678,13 @@ contract('Voting (func)', (accounts) => {
 
       setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
-      await store.addGroupMember(KECCAK256('Employees'), creator);
-      await store.allowActionByAddress(manageGroups, creator);
-      await store.allowActionByAddress(issueTokens, creator);
+      await daoBase.addGroupMember(KECCAK256('Employees'), creator);
+      await daoBase.allowActionByAddress(manageGroups, creator);
+      await daoBase.allowActionByAddress(issueTokens, creator);
 
       // do not forget to transfer ownership
       await token.transferOwnership(daoBase.address);
-      await store.transferOwnership(daoBase.address);
+      // 
 
       // AAC requires special permissions
       await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
@@ -985,8 +983,7 @@ contract('Voting (func)', (accounts) => {
       await token.mintFor(employee4, 1);
       // await token.mintFor(employee5, 1);
 
-      let store = await DaoStorage.new([token.address], { from: creator });
-      daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+      daoBase = await DaoBaseWithUnpackers.new([token.address], { from: creator });
       moneyflowInstance = await MoneyFlow.new(daoBase.address, { from: creator });
       aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
 
@@ -1000,13 +997,13 @@ contract('Voting (func)', (accounts) => {
 
       setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
-      await store.addGroupMember(KECCAK256('Employees'), creator);
-      await store.allowActionByAddress(manageGroups, creator);
-      await store.allowActionByAddress(issueTokens, creator);
+      await daoBase.addGroupMember(KECCAK256('Employees'), creator);
+      await daoBase.allowActionByAddress(manageGroups, creator);
+      await daoBase.allowActionByAddress(issueTokens, creator);
 
       // do not forget to transfer ownership
       await token.transferOwnership(daoBase.address);
-      await store.transferOwnership(daoBase.address);
+      
 
       // AAC requires special permissions
       await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
@@ -1547,8 +1544,7 @@ contract('Voting (func)', (accounts) => {
       token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
       await token.mintFor(creator, 1000);
 
-      let store = await DaoStorage.new([token.address], { from: creator });
-      daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+      daoBase = await DaoBaseWithUnpackers.new([token.address], { from: creator });
       moneyflowInstance = await MoneyFlow.new(daoBase.address, { from: creator });
       aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
 
@@ -1564,12 +1560,12 @@ contract('Voting (func)', (accounts) => {
 
       setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
-      await store.addGroupMember(KECCAK256('Employees'), creator);
-      await store.allowActionByAddress(manageGroups, creator);
+      await daoBase.addGroupMember(KECCAK256('Employees'), creator);
+      await daoBase.allowActionByAddress(manageGroups, creator);
 
       // do not forget to transfer ownership
       await token.transferOwnership(daoBase.address);
-      await store.transferOwnership(daoBase.address);
+      
 
       // AAC requires special permissions
       await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
@@ -2151,8 +2147,7 @@ contract('Voting (func)', (accounts) => {
       await token.mintFor(employee1, 1);
       await token.mintFor(employee2, 2);
 
-      let store = await DaoStorage.new([token.address], { from: creator });
-      daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+      daoBase = await DaoBaseWithUnpackers.new([token.address]);
     });
 
     it('Shoud return right value when 3 different votings created', async () => {

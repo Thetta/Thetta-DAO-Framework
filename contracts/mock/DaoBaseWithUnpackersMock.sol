@@ -12,8 +12,8 @@ contract DaoBaseWithUnpackersMock is DaoBaseWithUnpackers {
 
 	bytes32 public groupNameHash;
 
-	constructor(DaoStorage _store) public 
-		DaoBaseWithUnpackers(_store)
+	constructor(address[] _tokens) public 
+		DaoBaseWithUnpackers(_tokens)
 	{
 	}
 

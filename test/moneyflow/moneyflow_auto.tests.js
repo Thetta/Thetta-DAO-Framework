@@ -72,24 +72,18 @@ contract('MoneyflowAuto', (accounts) => {
   beforeEach(async () => {
     token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
     await token.mintFor(creator, 1000);
-
-    let store = await DaoStorage.new([token.address], { from: creator });
-    daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+    
+    daoBase = await DaoBaseWithUnpackers.new([token.address], { from: creator });
 
     moneyflowInstance = await MoneyFlow.new(daoBase.address, { from: creator });
 
     aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
 
     issueTokens = await daoBase.ISSUE_TOKENS();
-
     manageGroups = await daoBase.MANAGE_GROUPS();
-
     upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
-
     addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
-
     withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
-
     setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
     /// ////////////////////////////////////////////////
@@ -100,24 +94,21 @@ contract('MoneyflowAuto', (accounts) => {
     await aacInstance.setVotingParams(withdrawDonations, VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8('Employees'), UintToToBytes32(51), UintToToBytes32(50), 0);
     await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8('Employees'), UintToToBytes32(51), UintToToBytes32(50), 0);
     // add creator as first employee
-    await store.addGroupMember(KECCAK256('Employees'), creator);
-    await store.allowActionByAddress(manageGroups, creator);
+    await daoBase.addGroupMember(KECCAK256('Employees'), creator);
+    await daoBase.allowActionByAddress(manageGroups, creator);
 
     // do not forget to transfer ownership
     await token.transferOwnership(daoBase.address);
-    await store.transferOwnership(daoBase.address);
-
     await daoBase.addGroupMember('Employees', employee1);
     await daoBase.addGroupMember('Employees', employee2);
-
     await daoBase.allowActionByAddress(issueTokens, creator);
     await daoBase.allowActionByVoting(withdrawDonations, token.address);
-
     // AAC requires special permissions
     await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
     // these actions required if AAC will call this actions DIRECTLY (without voting)
     await daoBase.allowActionByAddress(withdrawDonations, aacInstance.address);
     await daoBase.allowActionByAddress(setRootWeiReceiver, aacInstance.address);
+    await daoBase.EasyEditOff();
   });
 
   it('should allow to get donations using AAC (direct call)', async () => {

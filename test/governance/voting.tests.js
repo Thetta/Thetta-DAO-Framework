@@ -44,8 +44,7 @@ contract('Voting', (accounts) => {
       await token.mintFor(employee1, 1);
       await token.mintFor(employee2, 2);
 
-      let store = await DaoStorage.new([token.address], { from: creator });
-      daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+      daoBase = await DaoBaseWithUnpackers.new([token.address]);
       proposal = await Genericproposal.new(creator, creator, '', []);
       voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);
     });
@@ -202,8 +201,7 @@ contract('Voting', (accounts) => {
       await token.mintFor(employee1, 1);
       await token.mintFor(employee2, 2);
 
-      let store = await DaoStorage.new([token.address], { from: creator });
-      daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+      daoBase = await DaoBaseWithUnpackers.new([token.address]);
       voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, token.address);
     });
 
@@ -329,8 +327,7 @@ contract('Voting', (accounts) => {
       await token.mintFor(employee1, 9);
       await token.mintFor(employee2, 11);
 
-      let store = await DaoStorage.new([token.address], { from: creator });
-      daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+      daoBase = await DaoBaseWithUnpackers.new([token.address]);
       proposal = await Genericproposal.new(creator, creator, '', []);
       voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_QUADRATIC, 0, 'Test', 100, 100, token.address);
     });
@@ -482,15 +479,14 @@ contract('Voting', (accounts) => {
     beforeEach(async () => {
       token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 100);
 
-      let store = await DaoStorage.new([token.address], { from: creator });
-      daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+      daoBase = await DaoBaseWithUnpackers.new([token.address]);
       proposal = await Genericproposal.new(creator, creator, '', []);
 
       manageGroups = await daoBase.MANAGE_GROUPS();
 
-      await store.addGroupMember(KECCAK256('Test'), creator);
-      await store.allowActionByAddress(manageGroups, creator);
-      await store.transferOwnership(daoBase.address);
+      await daoBase.addGroupMember(KECCAK256('Test'), creator);
+      await daoBase.allowActionByAddress(manageGroups, creator);
+      
 
       await daoBase.addGroupMember('Test', employee1);
       await daoBase.addGroupMember('Test', employee2);

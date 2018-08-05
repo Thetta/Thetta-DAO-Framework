@@ -211,8 +211,7 @@ contract('MoneyflowTable tests', (accounts) => {
 
     await token.mintFor(creator, 1000, { gasPrice: 0 });
 
-    store = await DaoStorage.new([token.address], { from: creator });
-    daoBase = await DaoBase.new(store.address, { from: creator });
+    daoBase = await DaoBase.new([token.address]);
 
     issueTokens = await daoBase.ISSUE_TOKENS();
     manageGroups = await daoBase.MANAGE_GROUPS();
@@ -224,12 +223,12 @@ contract('MoneyflowTable tests', (accounts) => {
     setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
     // add creator as first employee
-    await store.addGroupMember(KECCAK256('Employees'), creator);
-    await store.allowActionByAddress(manageGroups, creator);
+    await daoBase.addGroupMember(KECCAK256('Employees'), creator);
+    await daoBase.allowActionByAddress(manageGroups, creator);
 
     // do not forget to transfer ownership
     await token.transferOwnership(daoBase.address);
-    await store.transferOwnership(daoBase.address);
+    
 
     // manually setup the Default organization
     await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, 'Employees');

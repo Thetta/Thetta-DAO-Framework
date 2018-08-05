@@ -35,8 +35,7 @@ contract('Scheme', (accounts) => {
     token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
     await token.mintFor(creator, 1000);
 
-    store = await DaoStorage.new([token.address], { from: creator });
-    daoBase = await DaoBase.new(store.address, { from: creator });
+    daoBase = await DaoBase.new([token.address]);
     // await web3.eth.sendTransaction({from:creator, to:employee1, amount:990000000000000000000})
     // 50/50 between reserve fund and dividends
 
@@ -57,13 +56,13 @@ contract('Scheme', (accounts) => {
     console.log('wei delta:', b2.toNumber() - b3.toNumber());
     // console.log('wei delta:', b3.toNumber() - b4.toNumber());
     // // add creator as first employee
-    // await store.addGroupMember(KECCAK256("Employees"), creator);
-    // await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
-    // await store.allowActionByAddress(KECCAK256("setRootWeiReceiver"),creator);
+    // await daoBase.addGroupMember(KECCAK256("Employees"), creator);
+    // await daoBase.allowActionByAddress(KECCAK256("manageGroups"),creator);
+    // await daoBase.allowActionByAddress(KECCAK256("setRootWeiReceiver"),creator);
 
     // // do not forget to transfer ownership
     // await token.transferOwnership(daoBase.address);
-    // await store.transferOwnership(daoBase.address);
+    // 
 
     // // Set permissions:
     // await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");

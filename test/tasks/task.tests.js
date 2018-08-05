@@ -57,8 +57,7 @@ contract('Tasks', (accounts) => {
     token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
     await token.mintFor(creator, 1000);
 
-    store = await DaoStorage.new([token.address], { from: creator });
-    daoBase = await DaoBase.new(store.address, { from: creator });
+    daoBase = await DaoBase.new([token.address]);
 
     issueTokens = await daoBase.ISSUE_TOKENS();
 
@@ -69,12 +68,12 @@ contract('Tasks', (accounts) => {
     addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
 
     // add creator as first employee
-    await store.addGroupMember(KECCAK256('Employees'), creator);
-    await store.allowActionByAddress(manageGroups, creator);
+    await daoBase.addGroupMember(KECCAK256('Employees'), creator);
+    await daoBase.allowActionByAddress(manageGroups, creator);
 
     // do not forget to transfer ownership
     await token.transferOwnership(daoBase.address);
-    await store.transferOwnership(daoBase.address);
+    
 
     await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, 'Employees');
 

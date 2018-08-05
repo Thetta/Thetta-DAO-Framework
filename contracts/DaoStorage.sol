@@ -163,7 +163,7 @@ contract DaoStorage is DaoStorageGroups {
 		return observers[_index];
 	}
 
-// Permissions:
+	// Permissions:
 	function allowActionByAnyMemberOfGroup(bytes32 _what, bytes32 _groupName) public onlyOwner {
 		isAllowedActionByGroupMember[_groupName][_what] = true;
 	}

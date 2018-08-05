@@ -11,20 +11,20 @@ import "./DaoBase.sol";
  * After voting is finished -> target method is called and params should be unpacked
 */
 contract DaoBaseWithUnpackers is DaoBase {
-	constructor(DaoStorage _store) public 
-		DaoBase(_store)
-	{
+	using DaoLib for DaoLib.DaoStorage;
+	DaoLib.DaoStorage store;	
+
+	constructor(address[] _tokens) public DaoBase(_tokens){
 	}
 
 	function upgradeDaoContractGeneric(bytes32[] _params) external {
 		IDaoBase _b = IDaoBase(address(_params[0]));
-		upgradeDaoContract(_b);
+		store.upgradeDaoContract(_b);
 	}
 
 	function addGroupMemberGeneric(bytes32[] _params) external {
 		bytes32 group = bytes32(_params[0]);
 		address a = address(_params[1]);
-
 		// direct call to storage here, instead of calling DaoBase.addGroupMember(string, address);
 		store.addGroupMember(group, a);
 	}
@@ -33,42 +33,36 @@ contract DaoBaseWithUnpackers is DaoBase {
 		address _tokenAddress = address(_params[0]);
 		address _to = address(_params[1]);
 		uint _amount = uint(_params[2]);
-
-		issueTokens(_tokenAddress, _to, _amount);
+		store.issueTokens(_tokenAddress, _to, _amount);
 	}
 
 	function removeGroupMemberGeneric(bytes32[] _params) external {
 		string memory _groupName = GenericCallerLib.bytes32ToString(_params[0]);
 		address _a = address(_params[1]);
-
 		removeGroupMember(_groupName, _a);
 	}
 
 	function allowActionByShareholderGeneric(bytes32[] _params) external {
 		bytes32 _what = bytes32(_params[0]);
 		address _a = address(_params[1]);
-
-		allowActionByShareholder(_what, _a);
+		store.allowActionByShareholder(_what, _a);
 	}
 
 	function allowActionByVotingGeneric(bytes32[] _params) external {
 		bytes32 _what = bytes32(_params[0]);
 		address _tokenAddress = address(_params[1]);
-
-		allowActionByVoting(_what, _tokenAddress);
+		store.allowActionByVoting(_what, _tokenAddress);
 	}
 
 	function allowActionByAddressGeneric(bytes32[] _params) external {
 		bytes32 _what = bytes32(_params[0]);
 		address _a = address(_params[1]);
-
-		allowActionByAddress(_what, _a);
+		store.allowActionByAddress(_what, _a);
 	}
  
 	function allowActionByAnyMemberOfGroupGeneric(bytes32[] _params) external {
 		bytes32 _what = bytes32(_params[0]);
 		string memory _groupName = GenericCallerLib.bytes32ToString(_params[1]);
-
 		allowActionByAnyMemberOfGroup(_what, _groupName);
 	}
 }

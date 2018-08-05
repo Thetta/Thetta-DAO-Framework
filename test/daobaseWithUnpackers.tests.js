@@ -35,9 +35,8 @@ contract('DaoBaseWithUnpackers', (accounts) => {
 	beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
 		await token.mintFor(creator, 1000);
-		store = await DaoStorage.new([token.address],{from: creator});
 
-		daoBaseMock = await DaoBaseWithUnpackersMock.new(store.address,{from: creator});
+		daoBaseMock = await DaoBaseWithUnpackersMock.new([token.address],{from: creator});
 		issueTokens = await daoBaseMock.ISSUE_TOKENS();
 
 		daoBaseAutoMock = await DaoBaseAutoMock.new(daoBaseMock.address,{from: creator});
@@ -51,7 +50,7 @@ contract('DaoBaseWithUnpackers', (accounts) => {
 
 	describe('upgradeDaoContractGeneric()', function () {
 		it('Should return correct values',async() => {
-			let daoBaseNew = await DaoBaseWithUnpackersMock.new(store.address,{from: creator});
+			let daoBaseNew = await DaoBaseWithUnpackersMock.new(daoBase.address,{from: creator});
 			await daoBaseAutoMock.upgradeDaoContractAuto(daoBaseNew.address);
 			assert.equal(await daoBaseMock.b(), daoBaseNew.address);
 		});
