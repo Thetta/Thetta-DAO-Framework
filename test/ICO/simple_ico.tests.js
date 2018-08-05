@@ -53,10 +53,12 @@ contract('SimpleICO', function (accounts) {
     issueTokens = await daoBase.ISSUE_TOKENS();
     manageGroups = await daoBase.MANAGE_GROUPS();
     this.crowdsale = await Crowdsale.new(rate, token.address, daoBase.address, minPurchase, maxPurchase, startDate, endDate, softCap, hardCap);
-    await daoBase.addGroupMember(KECCAK256('Employees'), this.crowdsale.address);
+    await daoBase.addGroupMember('Employees', this.crowdsale.address);
     await daoBase.allowActionByAddress(issueTokens, this.crowdsale.address);
     await token.transferOwnership(daoBase.address);
-  });
+  
+		await daoBase.easyEditOff();
+	});
 
   describe('buyTokens()', function () {
     it('should revert when ICO not started', async function () {

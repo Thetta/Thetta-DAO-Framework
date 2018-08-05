@@ -223,7 +223,7 @@ contract('MoneyflowTable tests', (accounts) => {
     setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
     // add creator as first employee
-    await daoBase.addGroupMember(KECCAK256('Employees'), creator);
+    await daoBase.addGroupMember('Employees', creator);
     await daoBase.allowActionByAddress(manageGroups, creator);
 
     // do not forget to transfer ownership
@@ -239,7 +239,9 @@ contract('MoneyflowTable tests', (accounts) => {
     await daoBase.allowActionByVoting(issueTokens, token.address);
 
     await daoBase.allowActionByAddress(withdrawDonations, creator);
-  });
+  
+		await daoBase.easyEditOff();
+	});
 
   it('Gas measurements', async () => {
     var b1 = web3.eth.getBalance(creator);

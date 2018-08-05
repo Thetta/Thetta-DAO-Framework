@@ -56,7 +56,7 @@ contract('Scheme', (accounts) => {
     console.log('wei delta:', b2.toNumber() - b3.toNumber());
     // console.log('wei delta:', b3.toNumber() - b4.toNumber());
     // // add creator as first employee
-    // await daoBase.addGroupMember(KECCAK256("Employees"), creator);
+    // await daoBase.addGroupMember("Employees", creator);
     // await daoBase.allowActionByAddress(KECCAK256("manageGroups"),creator);
     // await daoBase.allowActionByAddress(KECCAK256("setRootWeiReceiver"),creator);
 
@@ -82,7 +82,9 @@ contract('Scheme', (accounts) => {
 
     // const root = await moneyflowScheme.getRootReceiver();
     // await moneyflowInstance.setRootWeiReceiver(root, {from: creator});
-  });
+  
+		await daoBase.easyEditOff();
+	});
 
   it('should set everything correctly', async () => {
     // TODO: test DefaultMoneyflowScheme

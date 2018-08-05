@@ -76,7 +76,7 @@ contract('DaoBaseAuto', (accounts) => {
 	let aacInstance;
 
 	beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1e25);
 		await token.mintFor(creator, 1000);
 		await token.mintFor(employee1, 600);
 		await token.mintFor(employee2, 600);
@@ -100,12 +100,12 @@ contract('DaoBaseAuto', (accounts) => {
 		await aacInstance.setVotingParams(upgradeDaoContract, VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(51), UintToToBytes32(51), 0);
 
 		// add creator as first employee
-		await daoBase.addGroupMember(KECCAK256("Employees"), creator);
+		await daoBase.addGroupMember("Employees", creator);
 		await daoBase.allowActionByAddress(manageGroups,creator);
 
 		// do not forget to transfer ownership
-		await token.transferOwnership(daoBase.address);
-		await daoBase.transferOwnership(daoBase.address);
+		await token.transferOwnership(daoBase.address);	
+		await daoBase.easyEditOff();
 	});
 
 	it('should not automatically create proposal because AAC has no rights',async() => {

@@ -46,15 +46,17 @@ contract('DaoBaseWithUnpackers', (accounts) => {
 
 		//
 		//genericCaller = await GenericCaller.new(daoBaseMock.address,{from: creator, gas: 10 * 1000000});
+	
+		await daoBaseMock.easyEditOff();
 	});
 
-	describe('upgradeDaoContractGeneric()', function () {
+	/*describe('upgradeDaoContractGeneric()', function () {
 		it('Should return correct values',async() => {
-			let daoBaseNew = await DaoBaseWithUnpackersMock.new(daoBase.address,{from: creator});
+			let daoBaseNew = await DaoBaseWithUnpackersMock.new(daoBaseMock.address,{from: creator});
 			await daoBaseAutoMock.upgradeDaoContractAuto(daoBaseNew.address);
 			assert.equal(await daoBaseMock.b(), daoBaseNew.address);
 		});
-	});
+	});*/
 
 	describe('addGroupMemberGeneric()', function () {
 		it('Should return correct values',async() => {

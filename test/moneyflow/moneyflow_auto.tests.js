@@ -94,7 +94,7 @@ contract('MoneyflowAuto', (accounts) => {
     await aacInstance.setVotingParams(withdrawDonations, VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8('Employees'), UintToToBytes32(51), UintToToBytes32(50), 0);
     await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8('Employees'), UintToToBytes32(51), UintToToBytes32(50), 0);
     // add creator as first employee
-    await daoBase.addGroupMember(KECCAK256('Employees'), creator);
+    await daoBase.addGroupMember('Employees', creator);
     await daoBase.allowActionByAddress(manageGroups, creator);
 
     // do not forget to transfer ownership
@@ -108,8 +108,9 @@ contract('MoneyflowAuto', (accounts) => {
     // these actions required if AAC will call this actions DIRECTLY (without voting)
     await daoBase.allowActionByAddress(withdrawDonations, aacInstance.address);
     await daoBase.allowActionByAddress(setRootWeiReceiver, aacInstance.address);
-    await daoBase.EasyEditOff();
-  });
+
+		await daoBase.easyEditOff();
+	});
 
   it('should allow to get donations using AAC (direct call)', async () => {
     // check permissions

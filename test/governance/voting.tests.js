@@ -47,7 +47,9 @@ contract('Voting', (accounts) => {
       daoBase = await DaoBaseWithUnpackers.new([token.address]);
       proposal = await Genericproposal.new(creator, creator, '', []);
       voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);
-    });
+    
+		await daoBase.easyEditOff();
+	});
 
     describe('quorumPercent()', function () {
       it('should return correct value', async () => {
@@ -203,7 +205,9 @@ contract('Voting', (accounts) => {
 
       daoBase = await DaoBaseWithUnpackers.new([token.address]);
       voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, token.address);
-    });
+    
+		await daoBase.easyEditOff();
+	});
 
     describe('getPowerOf()', function () {
       it('should return correct value', async () => {
@@ -330,7 +334,9 @@ contract('Voting', (accounts) => {
       daoBase = await DaoBaseWithUnpackers.new([token.address]);
       proposal = await Genericproposal.new(creator, creator, '', []);
       voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_QUADRATIC, 0, 'Test', 100, 100, token.address);
-    });
+    
+		await daoBase.easyEditOff();
+	});
 
     describe('quorumPercent()', function () {
       it('should return correct value', async () => {
@@ -484,14 +490,16 @@ contract('Voting', (accounts) => {
 
       manageGroups = await daoBase.MANAGE_GROUPS();
 
-      await daoBase.addGroupMember(KECCAK256('Test'), creator);
+      await daoBase.addGroupMember('Test', creator);
       await daoBase.allowActionByAddress(manageGroups, creator);
       
 
       await daoBase.addGroupMember('Test', employee1);
       await daoBase.addGroupMember('Test', employee2);
       voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_1P1V, 0, 'Test', 100, 100, token.address);
-    });
+    
+		await daoBase.easyEditOff();
+	});
 
     describe('quorumPercent()', function () {
       it('should return correct value', async () => {

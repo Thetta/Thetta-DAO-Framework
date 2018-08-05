@@ -112,13 +112,12 @@ contract('Voting (func)', (accounts) => {
 
       setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
-      await daoBase.addGroupMember(KECCAK256('Employees'), creator);
+      await daoBase.addGroupMember('Employees', creator);
       await daoBase.allowActionByAddress(manageGroups, creator);
       await daoBase.allowActionByAddress(issueTokens, creator);
 
       // do not forget to transfer ownership
       await token.transferOwnership(daoBase.address);
-      await daoBase.transferOwnership(daoBase.address);
 
       // AAC requires special permissions
       await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
@@ -138,7 +137,9 @@ contract('Voting (func)', (accounts) => {
       await daoBase.addGroupMember('Employees', employee3);
       await daoBase.addGroupMember('Employees', employee4);
       // await daoBase.addGroupMember("Employees", creator);
-    });
+    
+		await daoBase.easyEditOff();
+	});
 
     it('0. should create new voting', async () => {
       let isGroupMember = await daoBase.isGroupMember('Employees', employee1);
@@ -678,7 +679,7 @@ contract('Voting (func)', (accounts) => {
 
       setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
-      await daoBase.addGroupMember(KECCAK256('Employees'), creator);
+      await daoBase.addGroupMember('Employees', creator);
       await daoBase.allowActionByAddress(manageGroups, creator);
       await daoBase.allowActionByAddress(issueTokens, creator);
 
@@ -704,7 +705,9 @@ contract('Voting (func)', (accounts) => {
       await daoBase.addGroupMember('Employees', employee3);
       await daoBase.addGroupMember('Employees', employee4);
       // await daoBase.addGroupMember("Employees", creator);
-    });
+    
+		await daoBase.easyEditOff();
+	});
 
     it('1.1. Q Scenario: 5 employees, 5/5 voted yes, params(100,100) => isYes==true', async () => {
       await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_QUADRATIC, UintToToBytes32(0), fromUtf8(''), UintToToBytes32(100), UintToToBytes32(100), addressToBytes32(token.address));
@@ -997,7 +1000,7 @@ contract('Voting (func)', (accounts) => {
 
       setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
-      await daoBase.addGroupMember(KECCAK256('Employees'), creator);
+      await daoBase.addGroupMember('Employees', creator);
       await daoBase.allowActionByAddress(manageGroups, creator);
       await daoBase.allowActionByAddress(issueTokens, creator);
 
@@ -1023,7 +1026,9 @@ contract('Voting (func)', (accounts) => {
       await daoBase.addGroupMember('Employees', employee3);
       await daoBase.addGroupMember('Employees', employee4);
       // await daoBase.addGroupMember("Employees", creator);
-    });
+    
+		await daoBase.easyEditOff();
+	});
 
     it('0. should create new voting', async () => {
       let isGroupMember = await daoBase.isGroupMember('Employees', employee1);
@@ -1560,7 +1565,7 @@ contract('Voting (func)', (accounts) => {
 
       setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
-      await daoBase.addGroupMember(KECCAK256('Employees'), creator);
+      await daoBase.addGroupMember('Employees', creator);
       await daoBase.allowActionByAddress(manageGroups, creator);
 
       // do not forget to transfer ownership
@@ -1584,7 +1589,9 @@ contract('Voting (func)', (accounts) => {
       await daoBase.addGroupMember('Employees', employee3);
       await daoBase.addGroupMember('Employees', employee4);
       // await daoBase.addGroupMember("Employees", creator);
-    });
+    
+		await daoBase.easyEditOff();
+	});
 
     it('0. should create new voting', async () => {
       let isGroupMember = await daoBase.isGroupMember('Employees', employee1);
@@ -2148,7 +2155,9 @@ contract('Voting (func)', (accounts) => {
       await token.mintFor(employee2, 2);
 
       daoBase = await DaoBaseWithUnpackers.new([token.address]);
-    });
+    
+		await daoBase.easyEditOff();
+	});
 
     it('Shoud return right value when 3 different votings created', async () => {
       let simpleVoting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_SIMPLE_TOKEN, 60, '', 51, 71, token.address);

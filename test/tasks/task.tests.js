@@ -68,7 +68,7 @@ contract('Tasks', (accounts) => {
     addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
 
     // add creator as first employee
-    await daoBase.addGroupMember(KECCAK256('Employees'), creator);
+    await daoBase.addGroupMember('Employees', creator);
     await daoBase.allowActionByAddress(manageGroups, creator);
 
     // do not forget to transfer ownership
@@ -80,7 +80,11 @@ contract('Tasks', (accounts) => {
     // this is a list of actions that require voting
     await daoBase.allowActionByVoting(manageGroups, token.address);
     await daoBase.allowActionByVoting(issueTokens, token.address);
-  });
+  
+		await daoBase.easyEditOff();
+	
+		await daoBase.easyEditOff();
+	});
 
   it('Tasks: prepaid positive scenario. Task created by creator', async () => {
     // should not create weiTask (prepaid + donation);

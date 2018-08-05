@@ -49,6 +49,8 @@ contract('GenericProposal', (accounts) => {
 		daoBase = await DaoBaseWithUnpackers.new([token.address], { from: creator });
 		proposal = await Genericproposal.new(creator, creator, '', []);
 		voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);	
+	
+		await daoBase.easyEditOff();
 	});
 
 	describe('setVoting()', function () {
@@ -98,6 +100,8 @@ contract('InformalProposal', (accounts) => {
 		daoBase = await DaoBaseWithUnpackers.new([token.address], { from: creator });
 		proposal = await InformalProposal.new(proposalText);
 		voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);	
+	
+		await daoBase.easyEditOff();
 	});
 
 	describe('getProposalText()', function () {

@@ -53,7 +53,18 @@ contract DaoBase is IDaoBase {
 		return keccak256(abi.encodePacked(_s));
 	}
 
-// IDaoBase:
+	function getObserverCount() public view returns(uint) {
+		return store.getObserverCount();
+	}
+
+	function getObserverAtIndex(uint _index) public view returns(address) {
+		return store.getObserverAtIndex(_index);
+	}	
+
+	function isCanDoByGroupMember(bytes32 _what, address _a) public view returns(bool) {
+		return store.isCanDoByGroupMember(_what, _a);
+	}
+	// IDaoBase:
 	function addObserver(IDaoObserver _observer) public {
 		store.addObserver(_observer);
 	}

@@ -238,7 +238,7 @@ contract('Moneyflow', (accounts) => {
     setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
     // add creator as first employee
-    await daoBase.addGroupMember(KECCAK256('Employees'), creator);
+    await daoBase.addGroupMember('Employees', creator);
     await daoBase.allowActionByAddress(manageGroups, creator);
 
     // do not forget to transfer ownership
@@ -257,7 +257,9 @@ contract('Moneyflow', (accounts) => {
 
     // moneyflow will not create Proposals in this case
     // await daoBase.allowActionByAddress("addNewProposal", moneyflowInstance.address);
-  });
+  
+		await daoBase.easyEditOff();
+	});
 
   it('Should revert when some money stays on unsorted splitter (U-> abs-rel50%)', async () => {
     let abs = await WeiAbsoluteExpense.new(1e15);

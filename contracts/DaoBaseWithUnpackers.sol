@@ -33,7 +33,7 @@ contract DaoBaseWithUnpackers is DaoBase {
 		address _tokenAddress = address(_params[0]);
 		address _to = address(_params[1]);
 		uint _amount = uint(_params[2]);
-		store.issueTokens(_tokenAddress, _to, _amount);
+		issueTokens(_tokenAddress, _to, _amount);
 	}
 
 	function removeGroupMemberGeneric(bytes32[] _params) external {

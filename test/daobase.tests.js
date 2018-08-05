@@ -59,7 +59,7 @@ contract('DaoBase', (accounts) => {
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
 		burnTokens = await daoBase.BURN_TOKENS();
 
-		await daoBase.addGroupMember(KECCAK256("Employees"), creator);
+		await daoBase.addGroupMember("Employees", creator);
 		await daoBase.allowActionByAddress(manageGroups, creator);
 
 		// do not forget to transfer ownership
@@ -72,6 +72,8 @@ contract('DaoBase', (accounts) => {
 		await daoBase.allowActionByVoting(manageGroups, token.address);
 		await daoBase.allowActionByVoting(issueTokens, token.address);
 		await daoBase.allowActionByVoting(upgradeDaoContract, token.address);
+	
+		await daoBase.easyEditOff();
 	});
 
 	describe('addObserver()', function () {

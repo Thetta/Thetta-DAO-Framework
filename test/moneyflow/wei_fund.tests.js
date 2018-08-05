@@ -45,7 +45,7 @@ contract('WeiFund', (accounts) => {
   const outsider = accounts[3];
 
   beforeEach(async () => {
-  });
+	});
 
   it('Should not create fund with wrong args', async () => {
     await WeiFund.new(0, false, false, 0).should.be.rejectedWith('revert');
