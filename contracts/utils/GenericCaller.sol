@@ -55,7 +55,7 @@ library GenericCallerLib {
 	}
 	
 	struct VotingParams {
-		Voting.VotingType votingType;
+		VotingLib.VotingType votingType;
 		bytes32 param1;
 		bytes32 param2;
 		bytes32 param3;
@@ -99,7 +99,7 @@ library GenericCallerLib {
 		bytes32 _param1, bytes32 _param2, 
 		bytes32 _param3, bytes32 _param4, bytes32 _param5) public {
 		VotingParams memory params;
-		params.votingType = Voting.VotingType(_votingType);
+		params.votingType = VotingLib.VotingType(_votingType);
 		params.param1 = _param1;
 		params.param2 = _param2;
 		params.param3 = _param3;

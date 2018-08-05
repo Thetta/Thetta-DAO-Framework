@@ -39,15 +39,17 @@ contract('GenericProposal', (accounts) => {
 	let proposal;
 	let voting;
 	let issueTokens;
+	let store;
 
 	let money = web3.toWei(0.001, "ether");
 
 	beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
-		let store = await DaoStorage.new([token.address],{ from: creator });
-		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
-		proposal = await Genericproposal.new(daoBase.address, creator, 'issueTokensGeneric(bytes32[])', [token.address, employee1, 10]);
-		voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);
+		token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
+		await token.mintFor(creator, 1);
+		let store = await DaoStorage.new([token.address], { from: creator });
+		daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+		proposal = await Genericproposal.new(creator, creator, '', []);
+		voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);	
 	});
 
 	describe('setVoting()', function () {
@@ -92,11 +94,12 @@ contract('InformalProposal', (accounts) => {
 	let proposalText = "Test";
 
 	beforeEach(async() => {
-		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
-		let store = await DaoStorage.new([token.address],{ from: creator });
-		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+		token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
+		await token.mintFor(creator, 1);
+		let store = await DaoStorage.new([token.address], { from: creator });
+		daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
 		proposal = await InformalProposal.new(proposalText);
-		voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);
+		voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);	
 	});
 
 	describe('getProposalText()', function () {

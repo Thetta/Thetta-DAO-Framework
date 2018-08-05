@@ -1,5 +1,5 @@
 // var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
-// var StdDaoToken = artifacts.require("./StdDaoToken");
+var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 var DaoBase = artifacts.require("./DaoBase");
 var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
@@ -7,7 +7,7 @@ var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 // // to check how upgrade works with IDaoBase clients
 // var MoneyFlow = artifacts.require("./MoneyFlow");
 // var IWeiReceiver = artifacts.require("./IWeiReceiver");
-// var IProposal = artifacts.require("./IProposal");
+var Genericproposal = artifacts.require("./Genericproposal");
 // // var DaoBaseTest = artifacts.require("./DaoBaseTest");
 // // var DaoBaseWithUnpackersTest = artifacts.require("./DaoBaseWithUnpackersTest");
 // var Splitter = artifacts.require("./Splitter");
@@ -15,7 +15,7 @@ var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 // var MoneyflowCentral = artifacts.require("./MoneyflowCentral");
 var GenericCaller = artifacts.require("./GenericCaller");
 
-// var MoneyflowCentral2 = artifacts.require("./MoneyflowCentral2");
+var Voting = artifacts.require("./Voting");
 
 // var SplitterStorage = artifacts.require("./SplitterStorage");
 // var SplitterMain = artifacts.require("./SplitterMain");
@@ -45,9 +45,21 @@ global.contract('Gas measurements', (accounts) => {
 	});
 
 	global.it('Should estimate gas for WeiTopDownSplitter',async() => {
-		var stor = await DaoStorage.new(['0x0']);
-		var base = await DaoBase.new(stor.address);
-		var gc = await GenericCaller.new(base.address);
+      
+const VOTING_TYPE_1P1V = 1;
+const VOTING_TYPE_SIMPLE_TOKEN = 2;
+const VOTING_TYPE_QUADRATIC = 3;
+const VOTING_TYPE_LIQUID = 4;
+
+      token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
+      await token.mintFor(creator, 1);
+      await token.mintFor(employee1, 1);
+      await token.mintFor(employee2, 2);
+
+      let store = await DaoStorage.new([token.address], { from: creator });
+      daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+      proposal = await Genericproposal.new(creator, creator, '', []);
+      voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);
 	});
 
 	// global.it('Should estimate gas for WeiUnsortedSplitter',async() => {
