@@ -1,4 +1,6 @@
-import "./utils/GenericCaller.sol";
+pragma solidity ^0.4.22;
+
+import "./utils/UtilsLib.sol";
 
 import "./DaoBase.sol";
 
@@ -22,7 +24,7 @@ contract DaoBaseWithUnpackers is DaoBase {
 	}
 
 	function addGroupMemberGeneric(bytes32[] _params) external {
-		string memory _groupName = ConversionLib.bytes32ToString(_params[0]);
+		string memory _groupName = UtilsLib.bytes32ToString(_params[0]);
 		address a = address(_params[1]);
 
 		addGroupMember(_groupName, a);
@@ -37,7 +39,7 @@ contract DaoBaseWithUnpackers is DaoBase {
 	}
 
 	function removeGroupMemberGeneric(bytes32[] _params) external {
-		string memory _groupName = GenericCallerLib.bytes32ToString(_params[0]);
+		string memory _groupName = UtilsLib.bytes32ToString(_params[0]);
 		address _a = address(_params[1]);
 
 		removeGroupMember(_groupName, _a);
@@ -66,7 +68,7 @@ contract DaoBaseWithUnpackers is DaoBase {
  
 	function allowActionByAnyMemberOfGroupGeneric(bytes32[] _params) external {
 		bytes32 _what = bytes32(_params[0]);
-		string memory _groupName = GenericCallerLib.bytes32ToString(_params[1]);
+		string memory _groupName = UtilsLib.bytes32ToString(_params[1]);
 
 		allowActionByAnyMemberOfGroup(_what, _groupName);
 	}
