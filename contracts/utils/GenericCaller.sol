@@ -29,6 +29,7 @@ contract GenericCaller is DaoClient, Ownable {
 
 	event GenericCaller_DoActionDirectly(bytes32 _permissionId, address _target, address _origin, string _methodSig);
 	event GenericCaller_CreateNewProposal(bytes32 _permissionId, address _target, address _origin, string _methodSig);
+	event ContractCreated(address newAddress);
 
 /////
 	constructor(IDaoBase _dao)public
@@ -36,6 +37,7 @@ contract GenericCaller is DaoClient, Ownable {
 		// and will automatically update the 'dao' to the new instance
 		DaoClient(_dao)
 	{
+		emit ContractCreated(this);
 	}
 
 	// _actionId is something like "issueTokens"
