@@ -22,10 +22,10 @@ contract DaoBaseWithUnpackers is DaoBase {
 	}
 
 	function addGroupMemberGeneric(bytes32[] _params) external {
-		bytes32 group = bytes32(_params[0]);
+		string memory _groupName = ConversionLib.bytes32ToString(_params[0]);
 		address a = address(_params[1]);
 
-		addGroupMember(group, a);
+		addGroupMember(_groupName, a);
 	}
 
 	function issueTokensGeneric(bytes32[] _params) external {
