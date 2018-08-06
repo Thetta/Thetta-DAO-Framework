@@ -48,7 +48,7 @@ contract('GenericProposal', (accounts) => {
 		await token.mintFor(creator, 1);
 		let store = await DaoStorage.new([token.address], { from: creator });
 		daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
-		proposal = await Genericproposal.new(creator, creator, '', []);
+		proposal = await Genericproposal.new(creator, creator, 'ANY_SIGNATURE', []);
 		voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);	
 	});
 
@@ -82,6 +82,20 @@ contract('GenericProposal', (accounts) => {
 
 		it('should call action success',async() => {
 			await proposal.action();
+		});
+	});
+
+	describe('getMethodSig()', () => {
+		it('should return method signature', async() => {
+			const sign = await proposal.getMethodSig();
+			assert.equal(sign, 'ANY_SIGNATURE');
+		});
+	});
+
+	describe('getParams()', () => {
+		it('should return method params', async() => {
+			const params = await proposal.getParams();
+			assert.equal(params.length, 0);
 		});
 	});
 });
