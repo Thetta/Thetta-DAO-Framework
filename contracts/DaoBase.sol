@@ -18,35 +18,24 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  * plain ERC20 tokens because we need some extra features like mintFor(), burnFor() and transferOwnership()
 */
 
-
 contract DaoBase is IDaoBase {
 	using DaoLib for DaoLib.DaoStorage;
 	DaoLib.DaoStorage store;
 
-	bytes32 constant public ISSUE_TOKENS = 0xe003bf3bc29ae37598e0a6b52d6c5d94b0a53e4e52ae40c01a29cdd0e7816b71;
-	bytes32 constant public MANAGE_GROUPS = 0x060990aad7751fab616bf14cf6b68ac4c5cdc555f8f06bc9f15ba1b156e81b0b;
-	bytes32 constant public ADD_NEW_PROPOSAL = 0x55c7fa9eebcea37770fd33ec28acf7eacb6ea53052a9e9bc0a98169768578c5f;
-	bytes32 constant public BURN_TOKENS = 0x324cd2c359ecbc6ad92db8d027aab5d643f27c3055619a49702576797bb41fe5;
-	bytes32 constant public UPGRADE_DAO_CONTRACT = 0x3794eb44dffe1fc69d141df1b355cf30d543d8006634dd7a125d0e5f500b7fb1;
-	bytes32 constant public REMOVE_GROUP_MEMBER = 0x3a5165e670fb3632ad283cd3622bfca48f4c8202b504a023dafe70df30567075;
-	bytes32 constant public WITHDRAW_DONATIONS = 0xfc685f51f68cb86aa29db19c2a8f4e85183375ba55b5e56fb2e89adc5f5e4285;
-	bytes32 constant public ALLOW_ACTION_BY_SHAREHOLDER = 0xbeaac974e61895532ee7d8efc953d378116d446667765b57f62c791c37b03c8d;
-	bytes32 constant public ALLOW_ACTION_BY_VOTING = 0x2e0b85549a7529dfca5fb20621fe76f393d05d7fc99be4dd3d996c8e1925ba0b;
-	bytes32 constant public ALLOW_ACTION_BY_ADDRESS = 0x087dfe531c937a5cbe06c1240d8f791b240719b90fd2a4e453a201ce0f00c176;
-	bytes32 constant public ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP = 0xa7889b6adda0a2270859e5c6327f82b987d24f5729de85a5746ce28eed9e0d07;
+	bytes32 public constant ISSUE_TOKENS = 0xe003bf3bc29ae37598e0a6b52d6c5d94b0a53e4e52ae40c01a29cdd0e7816b71;
+	bytes32 public constant MANAGE_GROUPS = 0x060990aad7751fab616bf14cf6b68ac4c5cdc555f8f06bc9f15ba1b156e81b0b;
+	bytes32 public constant ADD_NEW_PROPOSAL = 0x55c7fa9eebcea37770fd33ec28acf7eacb6ea53052a9e9bc0a98169768578c5f;
+	bytes32 public constant BURN_TOKENS = 0x324cd2c359ecbc6ad92db8d027aab5d643f27c3055619a49702576797bb41fe5;
+	bytes32 public constant UPGRADE_DAO_CONTRACT = 0x3794eb44dffe1fc69d141df1b355cf30d543d8006634dd7a125d0e5f500b7fb1;
+	bytes32 public constant REMOVE_GROUP_MEMBER = 0x3a5165e670fb3632ad283cd3622bfca48f4c8202b504a023dafe70df30567075;
+	bytes32 public constant WITHDRAW_DONATIONS = 0xfc685f51f68cb86aa29db19c2a8f4e85183375ba55b5e56fb2e89adc5f5e4285;
+	bytes32 public constant ALLOW_ACTION_BY_SHAREHOLDER = 0xbeaac974e61895532ee7d8efc953d378116d446667765b57f62c791c37b03c8d;
+	bytes32 public constant ALLOW_ACTION_BY_VOTING = 0x2e0b85549a7529dfca5fb20621fe76f393d05d7fc99be4dd3d996c8e1925ba0b;
+	bytes32 public constant ALLOW_ACTION_BY_ADDRESS = 0x087dfe531c937a5cbe06c1240d8f791b240719b90fd2a4e453a201ce0f00c176;
+	bytes32 public constant ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP = 0xa7889b6adda0a2270859e5c6327f82b987d24f5729de85a5746ce28eed9e0d07;
 
 	constructor(address[] _tokens) public {
 		store.libConstructor(_tokens);
-	}
-
-	modifier isCanDo(bytes32 _what){
-		require(store.isCanDoAction(msg.sender,_what)); 
-		_; 
-	}
-
-	modifier onlyOwner() {
-		require(msg.sender == store.owner);
-		_;
 	}
 
 	function stringHash(string _s) public pure returns(bytes32) {
@@ -73,7 +62,7 @@ contract DaoBase is IDaoBase {
 		store.isEasyEdit = false;
 	}
 
-	function upgradeDaoContract(IDaoBase _new) public isCanDo(UPGRADE_DAO_CONTRACT) {
+	function upgradeDaoContract(IDaoBase _new) public {
 		store.upgradeDaoContract(_new);
 	}
 
@@ -82,7 +71,7 @@ contract DaoBase is IDaoBase {
 		return store.getMembersCount(stringHash(_groupName));
 	}
 
-	function addGroupMember(string _groupName, address _a) public isCanDo(MANAGE_GROUPS) {
+	function addGroupMember(string _groupName, address _a) public {
 		store.addGroupMember(stringHash(_groupName), _a);
 	}
 
@@ -90,7 +79,7 @@ contract DaoBase is IDaoBase {
 		return store.getGroupMembers(stringHash(_groupName));
 	}
 
-	function removeGroupMember(string _groupName, address _a) public isCanDo(MANAGE_GROUPS) {
+	function removeGroupMember(string _groupName, address _a) public  {
 		store.removeGroupMember(stringHash(_groupName), _a);
 	}
 
@@ -103,19 +92,19 @@ contract DaoBase is IDaoBase {
 	}
 
 // Actions:
-	function allowActionByShareholder(bytes32 _what, address _tokenAddress) public isCanDo(MANAGE_GROUPS) {
+	function allowActionByShareholder(bytes32 _what, address _tokenAddress) public {
 		store.allowActionByShareholder(_what, _tokenAddress);
 	}
 
-	function allowActionByVoting(bytes32 _what, address _tokenAddress) public isCanDo(MANAGE_GROUPS) {
+	function allowActionByVoting(bytes32 _what, address _tokenAddress) public {
 		store.allowActionByVoting(_what,_tokenAddress);
 	}
 
-	function allowActionByAddress(bytes32 _what, address _a) public isCanDo(MANAGE_GROUPS) {
+	function allowActionByAddress(bytes32 _what, address _a) public {
 		store.allowActionByAddress(_what,_a);
 	}
 
-	function allowActionByAnyMemberOfGroup(bytes32 _what, string _groupName) public isCanDo(MANAGE_GROUPS) {
+	function allowActionByAnyMemberOfGroup(bytes32 _what, string _groupName) public {
 		store.allowActionByAnyMemberOfGroup(_what, stringHash(_groupName));
 	}
 
@@ -135,7 +124,7 @@ contract DaoBase is IDaoBase {
 	}
 
 	// Proposals:
-	function addNewProposal(IProposal _proposal) public isCanDo(ADD_NEW_PROPOSAL) { 
+	function addNewProposal(IProposal _proposal) public { 
 		store.addNewProposal(_proposal);
 	}
 
@@ -148,11 +137,11 @@ contract DaoBase is IDaoBase {
 	}
 
 	// Tokens:
-	function issueTokens(address _tokenAddress, address _to, uint _amount)public isCanDo(ISSUE_TOKENS) {
+	function issueTokens(address _tokenAddress, address _to, uint _amount)public {
 		store.issueTokens(_tokenAddress, _to, _amount);
 	}
 
-	function burnTokens(address _tokenAddress, address _who, uint _amount)public isCanDo(BURN_TOKENS) {
+	function burnTokens(address _tokenAddress, address _who, uint _amount)public {
 		store.burnTokens(_tokenAddress, _who, _amount);	
 	}
 }
@@ -170,17 +159,22 @@ library DaoLib{
 	event DaoBase_BurnTokens(address _tokenAddress, address _who, uint _amount);
 	event OwnershipTransferred(address owner, address newOwner);
 
-	bytes32 constant public ISSUE_TOKENS = 0xe003bf3bc29ae37598e0a6b52d6c5d94b0a53e4e52ae40c01a29cdd0e7816b71;
-	bytes32 constant public MANAGE_GROUPS = 0x060990aad7751fab616bf14cf6b68ac4c5cdc555f8f06bc9f15ba1b156e81b0b;
-	bytes32 constant public ADD_NEW_PROPOSAL = 0x55c7fa9eebcea37770fd33ec28acf7eacb6ea53052a9e9bc0a98169768578c5f;
-	bytes32 constant public BURN_TOKENS = 0x324cd2c359ecbc6ad92db8d027aab5d643f27c3055619a49702576797bb41fe5;
-	bytes32 constant public UPGRADE_DAO_CONTRACT = 0x3794eb44dffe1fc69d141df1b355cf30d543d8006634dd7a125d0e5f500b7fb1;
-	bytes32 constant public REMOVE_GROUP_MEMBER = 0x3a5165e670fb3632ad283cd3622bfca48f4c8202b504a023dafe70df30567075;
-	bytes32 constant public WITHDRAW_DONATIONS = 0xfc685f51f68cb86aa29db19c2a8f4e85183375ba55b5e56fb2e89adc5f5e4285;
-	bytes32 constant public ALLOW_ACTION_BY_SHAREHOLDER = 0xbeaac974e61895532ee7d8efc953d378116d446667765b57f62c791c37b03c8d;
-	bytes32 constant public ALLOW_ACTION_BY_VOTING = 0x2e0b85549a7529dfca5fb20621fe76f393d05d7fc99be4dd3d996c8e1925ba0b;
-	bytes32 constant public ALLOW_ACTION_BY_ADDRESS = 0x087dfe531c937a5cbe06c1240d8f791b240719b90fd2a4e453a201ce0f00c176;
-	bytes32 constant public ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP = 0xa7889b6adda0a2270859e5c6327f82b987d24f5729de85a5746ce28eed9e0d07;
+	bytes32 public constant ISSUE_TOKENS = 0xe003bf3bc29ae37598e0a6b52d6c5d94b0a53e4e52ae40c01a29cdd0e7816b71;
+	bytes32 public constant MANAGE_GROUPS = 0x060990aad7751fab616bf14cf6b68ac4c5cdc555f8f06bc9f15ba1b156e81b0b;
+	bytes32 public constant ADD_NEW_PROPOSAL = 0x55c7fa9eebcea37770fd33ec28acf7eacb6ea53052a9e9bc0a98169768578c5f;
+	bytes32 public constant BURN_TOKENS = 0x324cd2c359ecbc6ad92db8d027aab5d643f27c3055619a49702576797bb41fe5;
+	bytes32 public constant UPGRADE_DAO_CONTRACT = 0x3794eb44dffe1fc69d141df1b355cf30d543d8006634dd7a125d0e5f500b7fb1;
+	bytes32 public constant REMOVE_GROUP_MEMBER = 0x3a5165e670fb3632ad283cd3622bfca48f4c8202b504a023dafe70df30567075;
+	bytes32 public constant WITHDRAW_DONATIONS = 0xfc685f51f68cb86aa29db19c2a8f4e85183375ba55b5e56fb2e89adc5f5e4285;
+	bytes32 public constant ALLOW_ACTION_BY_SHAREHOLDER = 0xbeaac974e61895532ee7d8efc953d378116d446667765b57f62c791c37b03c8d;
+	bytes32 public constant ALLOW_ACTION_BY_VOTING = 0x2e0b85549a7529dfca5fb20621fe76f393d05d7fc99be4dd3d996c8e1925ba0b;
+	bytes32 public constant ALLOW_ACTION_BY_ADDRESS = 0x087dfe531c937a5cbe06c1240d8f791b240719b90fd2a4e453a201ce0f00c176;
+	bytes32 public constant ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP = 0xa7889b6adda0a2270859e5c6327f82b987d24f5729de85a5746ce28eed9e0d07;
+
+	modifier isCanDo(DaoStorage storage store, bytes32 _what){
+		require(isCanDoAction(store, msg.sender, _what)); 
+		_; 
+	}
 
 	struct DaoStorage{
 		StdDaoToken[] tokens;
@@ -211,7 +205,7 @@ library DaoLib{
 		store.isEasyEdit = true;
 	}
 
-	function upgradeDaoContract(DaoStorage storage store, IDaoBase _new) public {
+	function upgradeDaoContract(DaoStorage storage store, IDaoBase _new) public isCanDo(store, UPGRADE_DAO_CONTRACT){
 		emit DaoBase_UpgradeDaoContract(_new); // call observers.onUpgrade() for all observers		
 		for(uint i=0; i<getObserverCount(store); ++i) {
 			IDaoObserver(getObserverAtIndex(store, i)).onUpgrade(_new);
@@ -264,7 +258,7 @@ library DaoLib{
 		return false;
 	}
 
-	function issueTokens(DaoStorage storage store, address _tokenAddress, address _to, uint _amount)public {
+	function issueTokens(DaoStorage storage store, address _tokenAddress, address _to, uint _amount)public isCanDo(store, ISSUE_TOKENS){
 		emit DaoBase_IssueTokens(_tokenAddress, _to, _amount);
 		for(uint i=0; i<getAllTokenAddresses(store).length; ++i) {
 			if(getAllTokenAddresses(store)[i]==_tokenAddress) {
@@ -276,7 +270,7 @@ library DaoLib{
 		revert(); // if not found!
 	}
 
-	function burnTokens(DaoStorage storage store, address _tokenAddress, address _who, uint _amount)public {
+	function burnTokens(DaoStorage storage store, address _tokenAddress, address _who, uint _amount)public isCanDo(store, BURN_TOKENS){
 		emit DaoBase_BurnTokens(_tokenAddress, _who, _amount);
 		for(uint i=0; i<getAllTokenAddresses(store).length; ++i) {
 			if(getAllTokenAddresses(store)[i]==_tokenAddress){
@@ -303,7 +297,7 @@ library DaoLib{
 		return keccak256(abi.encodePacked(_s));
 	}
 
-	function addGroupMember(DaoStorage storage store, bytes32 _groupHash, address _newMember) public {
+	function addGroupMember(DaoStorage storage store, bytes32 _groupHash, address _newMember) public isCanDo(store, MANAGE_GROUPS){
 		// check if already added 
 		require(!isGroupMember(store, _groupHash, _newMember));
 		store.addressToGroups[_newMember].push(_groupHash);
@@ -318,7 +312,7 @@ library DaoLib{
 		return store.groupToAddresses[_groupHash];
 	}
 
-	function removeGroupMember(DaoStorage storage store, bytes32 _groupHash, address _member)public {
+	function removeGroupMember(DaoStorage storage store, bytes32 _groupHash, address _member)public isCanDo(store, MANAGE_GROUPS){
 		require(isGroupMember(store, _groupHash, _member));
 		removeParticipantFromGroup(store, _groupHash, _member);
 		removeGroupFromMemberGroups(store, _groupHash, _member);
@@ -391,7 +385,7 @@ library DaoLib{
 	}
 
 	// Permissions:
-	function allowActionByAnyMemberOfGroup(DaoStorage storage store, bytes32 _what, bytes32 _groupName) public {
+	function allowActionByAnyMemberOfGroup(DaoStorage storage store, bytes32 _what, bytes32 _groupName) public isCanDo(store, MANAGE_GROUPS){
 		store.isAllowedActionByGroupMember[_groupName][_what] = true;
 	}
 
@@ -407,15 +401,15 @@ library DaoLib{
 		return false; 
 	}
 
-	function allowActionByShareholder(DaoStorage storage store, bytes32 _what, address _tokenAddress) public {
+	function allowActionByShareholder(DaoStorage storage store, bytes32 _what, address _tokenAddress) public isCanDo(store, MANAGE_GROUPS){
 		store.byShareholder[_tokenAddress][_what] = true;
 	}
 
-	function allowActionByVoting(DaoStorage storage store, bytes32 _what, address _tokenAddress) public {
+	function allowActionByVoting(DaoStorage storage store, bytes32 _what, address _tokenAddress) public isCanDo(store, MANAGE_GROUPS){
 		store.byVoting[_tokenAddress][_what] = true;
 	}
 
-	function allowActionByAddress(DaoStorage storage store, bytes32 _what, address _a) public {
+	function allowActionByAddress(DaoStorage storage store, bytes32 _what, address _a) public isCanDo(store, MANAGE_GROUPS) {
 		store.byAddress[_a][_what] = true;
 	}
 
@@ -432,7 +426,7 @@ library DaoLib{
 	}
 
 	// Vote:
-	function addNewProposal(DaoStorage storage store, IProposal _proposal) public {
+	function addNewProposal(DaoStorage storage store, IProposal _proposal) public isCanDo(store, ADD_NEW_PROPOSAL){
 		store.proposals.push(_proposal);
 	}
 

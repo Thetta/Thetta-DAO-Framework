@@ -50,8 +50,11 @@ global.contract('Gas measurements', (accounts) => {
 	const VOTING_TYPE_SIMPLE_TOKEN = 2;
 	const VOTING_TYPE_QUADRATIC = 3;
 	const VOTING_TYPE_LIQUID = 4;
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+		await token.mintFor(creator, 1000);
+		daoBase = await DaoBase.new([token.address]);
 
-      token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
+      // token = await DaoBse.new('StdToken', 'STDT', 18, true, true, 1000000000);
       // await token.mintFor(creator, 1);
       // await token.mintFor(employee1, 1);
       // await token.mintFor(employee2, 2);
