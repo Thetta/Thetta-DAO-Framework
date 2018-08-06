@@ -6,6 +6,7 @@ import './IProposal.sol';
 import '../tokens/StdDaoToken.sol';
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+
 // TODO Stacked voting:
 // 1 - client transfers N tokens for D days
 // 2 - client calls vote(_yes, _tokenAmount) 
