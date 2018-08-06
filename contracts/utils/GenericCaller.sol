@@ -5,8 +5,6 @@ import "../IDaoBase.sol";
 import "../governance/Voting.sol";
 import "../governance/Proposals.sol";
 
-// import "../utils/ConversionLib.sol";
-
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
