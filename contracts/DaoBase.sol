@@ -34,8 +34,16 @@ contract DaoBase is IDaoBase {
 	bytes32 public constant ALLOW_ACTION_BY_ADDRESS = 0x087dfe531c937a5cbe06c1240d8f791b240719b90fd2a4e453a201ce0f00c176;
 	bytes32 public constant ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP = 0xa7889b6adda0a2270859e5c6327f82b987d24f5729de85a5746ce28eed9e0d07;
 
+	modifier onlyOwner() {
+		require(msg.sender == store.owner);
+		_;
+	}
 	constructor(address[] _tokens) public {
 		store.libConstructor(_tokens);
+	}
+
+	function transferOwnership(address newOwner) public {
+		store.transferOwnership(newOwner);
 	}
 
 	function stringHash(string _s) public pure returns(bytes32) {
@@ -221,7 +229,6 @@ library DaoLib{
 		if(store.isEasyEdit){
 			return true;
 		}
-
 		if(isCanDoByAddress(store, _permissionNameHash, _a)) {
 			return true;
 		}
