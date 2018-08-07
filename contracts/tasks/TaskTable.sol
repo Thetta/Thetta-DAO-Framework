@@ -31,12 +31,7 @@ contract TaskTable is Ownable {
 	bytes32 constant public START_TASK = keccak256("startTask");
 	bytes32 constant public START_BOUNTY = keccak256("startBounty");
 
-	enum ElementTypes {
-		PrePaid,
-		PostPaid
-	}
-
-	event ElementAdded(uint _eId, ElementTypes _eType);
+	event ElementAdded(uint _eId, State _eType);
 	event TaskTable_SetEmployee(address _employee);
 	event TaskTable_SetOutput(address _output);
 	event TaskTable_StateChanged(State _state);
@@ -49,6 +44,7 @@ contract TaskTable is Ownable {
 		// only for (isPostpaid==false) tasks
 		// anyone can use 'processFunds' to send money to this task
 		PrePaid,
+		PostPaid,
 
 		// These are set by Employee:
 		InProgress,
@@ -81,7 +77,6 @@ contract TaskTable is Ownable {
 		uint funds;
 	}
 
-	mapping (uint => ElementTypes) elementsType;
 	mapping (uint => Task) Tasks;
 
 	modifier onlyWhenStarted(uint _id) { 
@@ -95,7 +90,7 @@ contract TaskTable is Ownable {
 	}
 
 	modifier isCanCancell(uint _id) { 
-		require (block.timestamp - Tasks[_id].creationTime >= Tasks[_id].timeToCancell); 
+		require (block.timestamp - Tasks[_id].creationTime <= Tasks[_id].timeToCancell); 
 		_; 
 	}
 
@@ -118,12 +113,12 @@ contract TaskTable is Ownable {
 		Tasks[elementsCount] = Task(_dao, _caption, _desc, _isPostpaid, _isDonation, _neededWei, _deadlineTime * 1 hours, _timeToCancell * 1 hours, State.Init, address(0), address(0), msg.sender, 0, block.timestamp, 0);
 
 		if(_isPostpaid){
-			elementsType[elementsCount] = ElementTypes.PostPaid;
+			Tasks[elementsCount].state = State.PostPaid;
 		} else {
-			elementsType[elementsCount] = ElementTypes.PrePaid;
+			Tasks[elementsCount].state = State.PrePaid;
 		}
 
-		emit ElementAdded(elementsCount, elementsType[elementsCount]);
+		emit ElementAdded(elementsCount, Tasks[elementsCount].state);
 		elementsCount += 1;
 
 		return elementsCount-1;
@@ -132,9 +127,9 @@ contract TaskTable is Ownable {
 	function addNewBounty (IDaoBase _dao, string _caption, string _desc, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) external returns(uint){
 		Tasks[elementsCount] = Task(_dao, _caption, _desc, false, false, _neededWei, _deadlineTime * 1 hours, _timeToCancell * 1 hours, State.Init, address(0), address(0), msg.sender, 0, block.timestamp, 0);
 
-		elementsType[elementsCount] = ElementTypes.PrePaid;
+		Tasks[elementsCount].state = State.PrePaid;
 
-		emit ElementAdded(elementsCount, elementsType[elementsCount]);
+		emit ElementAdded(elementsCount, Tasks[elementsCount].state);
 		elementsCount += 1;
 
 		return elementsCount-1;
