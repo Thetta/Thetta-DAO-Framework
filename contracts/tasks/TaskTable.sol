@@ -1,30 +1,8 @@
 pragma solidity ^0.4.22;
 
-import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-
-import "../moneyflow/ether/WeiExpense.sol";
 
 import "../IDaoBase.sol";
 
-import "zeppelin-solidity/contracts/ownership/Ownable.sol";
-
-/**
- * @title WeiGenericTask 
- * @dev Basic contract for WeiTask and WeiBounty
- *
- * 4 types of tasks:
- *		PrePaid 
- *		PostPaid with known neededWei amount 
- *		PostPaid with unknown neededWei amount. Task is evaluated AFTER work is complete
- *		PostPaid donation - client pays any amount he wants AFTER work is complete
- * 
- * WeiAbsoluteExpense:
- *		has 'owner'	(i.e. "admin")
- *		has 'moneySource' (i.e. "client")
- *		has 'neededWei'
- *		has 'processFunds(uint _currentFlow)' payable function 
- *		has 'setNeededWei(uint _neededWei)' 
-*/ 
 contract TaskTable {
 	uint public elementsCount = 0;
 
@@ -99,7 +77,7 @@ contract TaskTable {
 		_; 
 	}
 
-	modifier onlyByMoneySource(uint _id) { 
+	modifier onlyByMoneySource(uint _id) {
 		require (Tasks[_id].moneySource == msg.sender); 
 		_; 
 	}
