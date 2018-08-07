@@ -60,6 +60,14 @@ contract GenericProposal is IProposal, Ownable {
 	function getVoting() public view returns(IVoting) {
 		return voting;
 	}
+
+	function getMethodSig() public view returns(string) {
+		return methodSig;
+	}
+
+	function getParams() public view returns(bytes32[]) {
+		return params;
+	}
 }
 
 
