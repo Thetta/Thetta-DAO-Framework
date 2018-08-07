@@ -427,16 +427,17 @@ contract('Moneyflow', (accounts) => {
     assert.equal(revEndpoint2, fund.address, 'Endpoint should be non zero now');
 
     // now send some money to the revenue endpoint
-    await fund.processFunds(money, { from: creator, value: money });
+    await fund.processFunds(money, { from: creator, value: money, gasPrice: 0});
 
     // money should end up in the fund
     let fundBalance = await web3.eth.getBalance(fund.address);
-    assert.equal(fundBalance, 1000000000000000, 'Money should be transferred to the fund');
+    assert.equal(fundBalance, money, 'Money should be transferred to the fund');
 
     let firstCreatorBalance = await web3.eth.getBalance(creator);
     await fund.flush({ from: creator, gasPrice: 0 });
 
     let secondCreatorBalance = await web3.eth.getBalance(creator);
+    
     let creatorBalanceDelta = secondCreatorBalance.toNumber() - firstCreatorBalance.toNumber();
     assert.equal(creatorBalanceDelta, money, 'creator gets all money by flush();');
 
