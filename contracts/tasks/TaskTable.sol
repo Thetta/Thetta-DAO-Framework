@@ -25,7 +25,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  *		has 'processFunds(uint _currentFlow)' payable function 
  *		has 'setNeededWei(uint _neededWei)' 
 */ 
-contract TaskTable is Ownable {
+contract TaskTable {
 	uint public elementsCount = 0;
 
 	bytes32 constant public START_TASK = keccak256("startTask");
@@ -84,8 +84,8 @@ contract TaskTable is Ownable {
 		_; 
 	}
 
-	modifier onlyEmployeeOrOwner(uint _id) { 
-		require(msg.sender== Tasks[_id].employee || msg.sender==owner); 
+	modifier onlyEmployeeOrMoneySource(uint _id) { 
+		require(msg.sender== Tasks[_id].employee || msg.sender==Tasks[_id].moneySource); 
 		_; 
 	}
 
@@ -158,13 +158,13 @@ contract TaskTable is Ownable {
 	}
 
 	// who will complete this task
-	function setEmployee(uint _id, address _employee) onlyOwner public {
+	function setEmployee(uint _id, address _employee) onlyByMoneySource(_id) public {
 		emit TaskTable_SetEmployee(_employee);
 		Tasks[_id].employee = _employee;
 	}
 
 	// where to send money
-	function setOutput(uint _id, address _output) onlyOwner public {
+	function setOutput(uint _id, address _output) onlyByMoneySource(_id) public {
 		emit TaskTable_SetOutput(_output);
 		Tasks[_id].output = _output;
 	}
@@ -193,7 +193,7 @@ contract TaskTable is Ownable {
 		return Tasks[_id].state;
 	}
 
-	function cancell(uint _id) onlyOwner isCanCancell(_id) public {
+	function cancell(uint _id) onlyByMoneySource(_id) isCanCancell(_id) public {
 		require(getCurrentState(_id)==State.Init || getCurrentState(_id)==State.PrePaid);
 		if(getCurrentState(_id)==State.PrePaid) {
 			// return money to 'moneySource'
@@ -203,7 +203,7 @@ contract TaskTable is Ownable {
 		emit TaskTable_StateChanged(Tasks[_id].state);
 	}
 
-	function returnMoney(uint _id) isDeadlineMissed(_id) onlyOwner public {
+	function returnMoney(uint _id) isDeadlineMissed(_id) onlyByMoneySource(_id) public {
 		require(getCurrentState(_id)==State.InProgress);
 		if(address(this).balance >= Tasks[_id].funds) {
 			// return money to 'moneySource'
@@ -213,7 +213,7 @@ contract TaskTable is Ownable {
 		emit TaskTable_StateChanged(Tasks[_id].state);
 	}
 
-	function notifyThatCompleted(uint _id) public onlyEmployeeOrOwner(_id) {
+	function notifyThatCompleted(uint _id) public onlyEmployeeOrMoneySource(_id) {
 		require(getCurrentState(_id)==State.InProgress);
 
 		if((0!=Tasks[_id].neededWei) || (Tasks[_id].isDonation)) { // if donation or prePaid - no need in ev-ion; if postpaid with unknown payment - neededWei=0 yet
@@ -225,7 +225,7 @@ contract TaskTable is Ownable {
 		}
 	}
 
-	function evaluateAndSetNeededWei(uint _id, uint _neededWei) public onlyOwner {
+	function evaluateAndSetNeededWei(uint _id, uint _neededWei) public onlyByMoneySource(_id) {
 		require(getCurrentState(_id)==State.CompleteButNeedsEvaluation);
 		require(0==Tasks[_id].neededWei);
 
