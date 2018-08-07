@@ -3,7 +3,7 @@ var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 
 var Voting = artifacts.require("./Voting");
-var Genericproposal = artifacts.require("./GenericProposal");
+var GenericProposal = artifacts.require("./GenericProposal");
 var InformalProposal = artifacts.require("./InformalProposal");
 
 const BigNumber = web3.BigNumber;
@@ -47,17 +47,19 @@ contract('GenericProposal', (accounts) => {
 		token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
 		await token.mintFor(creator, 1);
 		let store = await DaoStorage.new([token.address], { from: creator });
-		daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
-		proposal = await Genericproposal.new(creator, creator, 'ANY_SIGNATURE', []);
-		voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);	
+		daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });	
 	});
 
 	describe('setVoting()', function () {
 		it('should revert when not owner call',async() => {
+			proposal = await GenericProposal.new(creator, creator, '', []);
+			voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);
 			await proposal.setVoting(voting.address, {from: employee1}).should.be.rejectedWith('revert');
 		});
 
 		it('should set voting',async() => {
+			proposal = await GenericProposal.new(creator, creator, '', []);
+			voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);
 			await proposal.setVoting(voting.address);
 			assert.equal(await proposal.getVoting(), voting.address, 'address should be the same');
 		});
@@ -65,10 +67,13 @@ contract('GenericProposal', (accounts) => {
 
 	describe('getVoting()', function () {
 		it('should get voting 0x0 when it is not setted',async() => {
+			proposal = await GenericProposal.new(creator, creator, '', []);
 			assert.equal(await proposal.getVoting(), 0x0, 'address should be the same');
 		});
 
 		it('should get voting',async() => {
+			proposal = await GenericProposal.new(creator, creator, '', []);
+			voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);
 			await proposal.setVoting(voting.address);
 			assert.equal(await proposal.getVoting(), voting.address, 'address should be the same');
 		});
@@ -76,17 +81,21 @@ contract('GenericProposal', (accounts) => {
 
 	describe('action()', function () {
 		it('should revert when call is not from voting',async() => {
+			proposal = await GenericProposal.new(creator, creator, '', []);
+			voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);
 			await proposal.setVoting(voting.address);
 			await proposal.action().should.be.rejectedWith('revert');
 		});
 
 		it('should call action success',async() => {
+			proposal = await GenericProposal.new(creator, creator, '', []);
 			await proposal.action();
 		});
 	});
 
 	describe('getMethodSig()', () => {
 		it('should return method signature', async() => {
+			proposal = await GenericProposal.new(creator, creator, 'ANY_SIGNATURE', []);
 			const sign = await proposal.getMethodSig();
 			assert.equal(sign, 'ANY_SIGNATURE');
 		});
@@ -94,6 +103,7 @@ contract('GenericProposal', (accounts) => {
 
 	describe('getParams()', () => {
 		it('should return method params', async() => {
+			proposal = await GenericProposal.new(creator, creator, '', []);
 			const params = await proposal.getParams();
 			assert.equal(params.length, 0);
 		});
