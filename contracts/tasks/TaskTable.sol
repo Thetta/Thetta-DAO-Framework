@@ -5,11 +5,14 @@ import "../IDaoBase.sol";
 
 contract TaskTable {
 	uint public elementsCount = 0;
+	IDaoBase dao;
 
-	bytes32 constant public START_TASK = keccak256("startTask");
-	bytes32 constant public START_BOUNTY = keccak256("startBounty");
+	//bytes32 constant public START_TASK = keccak256("startTask");
+	bytes32 constant public START_TASK = 0x437e6b65d0608a0fe9c825ff4057ee9aef5baaa03f6eec7cf85e76e979099b12;
+	//bytes32 constant public START_BOUNTY = keccak256("startBounty");
+	bytes32 constant public START_BOUNTY = 0x79533ccfda313ec99b8522f2b18f04c46a6a6ac854db0c234fa8d207626d4fb9;
 
-	event ElementAdded(uint _eId, State _eType);
+	event TaskTable_ElementAdded(uint _eId, State _eType);
 	event TaskTable_SetEmployee(address _employee);
 	event TaskTable_SetOutput(address _output);
 	event TaskTable_StateChanged(State _state);
@@ -37,8 +40,6 @@ contract TaskTable {
 	}
 
 	struct Task {
-		IDaoBase dao;
-
 		string caption;
 		string desc;
 		bool isPostpaid;
@@ -83,12 +84,29 @@ contract TaskTable {
 	}
 	
 	modifier isCanDo(uint _id, bytes32 _what){
-		require(Tasks[_id].dao.isCanDoAction(msg.sender,_what)); 
+		require(dao.isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
 
-	function addNewTask(IDaoBase _dao, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) external returns(uint){
-		Tasks[elementsCount] = Task(_dao, _caption, _desc, _isPostpaid, _isDonation, _neededWei, _deadlineTime * 1 hours, _timeToCancell * 1 hours, State.Init, address(0), address(0), msg.sender, 0, block.timestamp, 0);
+	constructor(IDaoBase _dao) public {
+		dao = _dao;
+	}
+
+	function addNewTask(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) external returns(uint){
+		Tasks[elementsCount] = Task(_caption, 
+			_desc, 
+			_isPostpaid, 
+			_isDonation, 
+			_neededWei, 
+			_deadlineTime * 1 hours, 
+			_timeToCancell * 1 hours, 
+			State.Init, 
+			address(0), 
+			address(0), 
+			msg.sender, 
+			0, 
+			block.timestamp, 
+			0);
 
 		if(_isPostpaid){
 			Tasks[elementsCount].state = State.PostPaid;
@@ -96,21 +114,33 @@ contract TaskTable {
 			Tasks[elementsCount].state = State.PrePaid;
 		}
 
-		emit ElementAdded(elementsCount, Tasks[elementsCount].state);
+		emit TaskTable_ElementAdded(elementsCount, Tasks[elementsCount].state);
 		elementsCount += 1;
 
-		return elementsCount-1;
+		return (elementsCount - 1);
 	}
 
-	function addNewBounty (IDaoBase _dao, string _caption, string _desc, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) external returns(uint){
-		Tasks[elementsCount] = Task(_dao, _caption, _desc, false, false, _neededWei, _deadlineTime * 1 hours, _timeToCancell * 1 hours, State.Init, address(0), address(0), msg.sender, 0, block.timestamp, 0);
+	function addNewBounty (string _caption, string _desc, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) external returns(uint){
+		Tasks[elementsCount] = Task(_caption, 
+			_desc, 
+			false, 
+			false, 
+			_neededWei, 
+			_deadlineTime * 1 hours, 
+			_timeToCancell * 1 hours, 
+			State.Init, address(0), 
+			address(0),
+			msg.sender, 
+			0, 
+			block.timestamp, 
+			0);
 
 		Tasks[elementsCount].state = State.PrePaid;
 
-		emit ElementAdded(elementsCount, Tasks[elementsCount].state);
+		emit TaskTable_ElementAdded(elementsCount, Tasks[elementsCount].state);
 		elementsCount += 1;
 
-		return elementsCount-1;
+		return (elementsCount - 1);
 	}
 
 	function startTask(uint _id, address _employee) public isCanDo(_id, START_TASK) {
@@ -151,24 +181,46 @@ contract TaskTable {
 		return Tasks[_id].funds;
 	}
 
+	function getCaption(uint _id) public view returns(string) {
+		return Tasks[_id].caption;
+	}
+
+	function getDescription(uint _id) public view returns(string) {
+		return Tasks[_id].desc;
+	}
+
 	function getCurrentState(uint _id) public view returns(State) {
 		// for Prepaid task -> client should call processFunds method to put money into this task
 		// when state is Init
-		if((State.Init==Tasks[_id].state) && (Tasks[_id].neededWei!=0) && (!Tasks[_id].isPostpaid)) {
-			if(Tasks[_id].neededWei==Tasks[_id].funds && Tasks[_id].funds <= address(this).balance) {
-				return State.PrePaid;
-			}
+		if(isTaskPrepaid(_id)) {
+			return State.PrePaid;
 		}
 
 		// for Postpaid task -> client should call processFunds method to put money into this task
 		// when state is Complete. He is confirming the task by doing that (no need to call confirmCompletion)
-		if((State.Complete==Tasks[_id].state) && (Tasks[_id].neededWei!=0) && (Tasks[_id].isPostpaid)) {
-			if(Tasks[_id].neededWei==Tasks[_id].funds && Tasks[_id].funds <= address(this).balance) {
+		if(isTaskPostpaidAndCompleted(_id)) {
 				return State.CanGetFunds;
-			}
 		}
 
 		return Tasks[_id].state;
+	}
+
+	function isTaskPrepaid(uint _id) internal returns(bool){
+		if((State.Init==Tasks[_id].state) && (Tasks[_id].neededWei!=0) && (!Tasks[_id].isPostpaid)) {
+			if(Tasks[_id].neededWei==Tasks[_id].funds && Tasks[_id].funds <= address(this).balance) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	function isTaskPostpaidAndCompleted(uint _id) internal returns(bool){
+		if((State.Complete==Tasks[_id].state) && (Tasks[_id].neededWei!=0) && (Tasks[_id].isPostpaid)) {
+			if(Tasks[_id].neededWei==Tasks[_id].funds && Tasks[_id].funds <= address(this).balance) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	function cancell(uint _id) onlyByMoneySource(_id) isCanCancell(_id) public {
@@ -236,13 +288,22 @@ contract TaskTable {
 
 	function processFunds(uint _id) public payable {
 		emit TaskTable_ProcessFunds(msg.sender, msg.value, _id);
-		if(Tasks[_id].isPostpaid && (0==Tasks[_id].neededWei) && (State.Complete==Tasks[_id].state)) {
+		if(isCanSetNeededWei(_id)) {
 			// this is a donation
 			// client can send any sum!
 			Tasks[_id].neededWei = msg.value;
 		}
 		Tasks[_id].funds += msg.value;
 	}
+
+	function isCanSetNeededWei(uint _id) internal returns(bool){
+		if(Tasks[_id].isPostpaid && (0==Tasks[_id].neededWei) && (State.Complete==Tasks[_id].state)){
+			return true;
+		}
+
+		return false;
+	}
+	
 
 	// non-payable
 	function()public {
