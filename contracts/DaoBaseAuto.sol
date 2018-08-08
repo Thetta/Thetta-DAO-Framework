@@ -2,6 +2,7 @@ pragma solidity ^0.4.22;
 
 import "./utils/GenericCaller.sol";
 import "./DaoBase.sol";
+import "./utils/UtilsLib.sol";
 
 // TODO: convert to library?
 
@@ -23,7 +24,8 @@ contract DaoBaseAuto is GenericCaller {
 
 	function addGroupMemberAuto(string _group, address _a) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
-		params[0] = bytes32(_group);
+
+		params[0] = UtilsLib.stringToBytes32(_group);
 		params[1] = bytes32(_a);
 
 	   return doAction(DaoBase(dao).MANAGE_GROUPS(), dao, msg.sender,"addGroupMemberGeneric(bytes32[])",params);
@@ -47,7 +49,7 @@ contract DaoBaseAuto is GenericCaller {
 
 	function removeGroupMemberAuto(string _groupName, address _a) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
-		params[0] = bytes32(_groupName);
+		params[0] = UtilsLib.stringToBytes32(_groupName);
 		params[1] = bytes32(_a);
 
 		return doAction(DaoBase(dao).REMOVE_GROUP_MEMBER(), dao, msg.sender,"removeGroupMemberGeneric(bytes32[])",params);
@@ -80,7 +82,7 @@ contract DaoBaseAuto is GenericCaller {
 	function allowActionByAnyMemberOfGroupAuto(bytes32 _what, string _groupName) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
 		params[0] = _what;
-		params[1] = bytes32(_groupName);
+		params[1] = UtilsLib.stringToBytes32(_groupName);
 
 		return doAction(DaoBase(dao).ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP(), dao, msg.sender,"allowActionByAnyMemberOfGroupGeneric(bytes32[])",params);
 	}

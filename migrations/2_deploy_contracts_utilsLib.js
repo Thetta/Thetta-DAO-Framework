@@ -14,7 +14,7 @@ module.exports = function (deployer) {
 		deployer.link(UtilsLib, DaoBaseWithUnpackers);
 		deployer.link(UtilsLib, GenericCaller);
 		// deployer.link(UtilsLib, MoneyflowAuto);
-		// deployer.link(UtilsLib, DaoBaseAuto);
+		deployer.link(UtilsLib, DaoBaseAuto);
 		// deployer.link(UtilsLib, Voting);
 		// deployer.link(UtilsLib, VotingLib);
 	});

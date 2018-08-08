@@ -71,7 +71,6 @@ contract DaoBase is IDaoBase {
 
 	function upgradeDaoContract(IDaoBase _new) public {
 		emit DaoBase_UpgradeDaoContract(_new); // call observers.onUpgrade() for all observers		
-
 		store.upgradeDaoContract(_new);
 	}
 
@@ -82,7 +81,6 @@ contract DaoBase is IDaoBase {
 
 	function addGroupMember(string _groupName, address _a) public {
 		emit DaoBase_AddGroupMember(_groupName, _a);
-
 		store.addGroupMember(stringHash(_groupName), _a);
 	}
 
@@ -92,7 +90,6 @@ contract DaoBase is IDaoBase {
 
 	function removeGroupMember(string _groupName, address _a) public  {
 		emit DaoBase_RemoveGroupMember(_groupName, _a);
-
 		store.removeGroupMember(stringHash(_groupName), _a);
 	}
 
@@ -107,25 +104,21 @@ contract DaoBase is IDaoBase {
 // Actions:
 	function allowActionByShareholder(bytes32 _what, address _tokenAddress) public {
 		emit DaoBase_AllowActionByShareholder(_what, _tokenAddress);
-
 		store.allowActionByShareholder(_what, _tokenAddress);
 	}
 
 	function allowActionByVoting(bytes32 _what, address _tokenAddress) public {
 		emit DaoBase_AllowActionByVoting(_what, _tokenAddress);
-
 		store.allowActionByVoting(_what,_tokenAddress);
 	}
 
 	function allowActionByAddress(bytes32 _what, address _a) public {
 		emit DaoBase_AllowActionByAddress(_what, _a);
-
 		store.allowActionByAddress(_what,_a);
 	}
 
 	function allowActionByAnyMemberOfGroup(bytes32 _what, string _groupName) public {
 		emit DaoBase_AllowActionByAnyMemberOfGroup(_what, _groupName);
-
 		store.allowActionByAnyMemberOfGroup(_what, stringHash(_groupName));
 	}
 
@@ -147,7 +140,6 @@ contract DaoBase is IDaoBase {
 	// Proposals:
 	function addNewProposal(IProposal _proposal) public { 
 		emit DaoBase_AddNewProposal(_proposal); 
-
 		store.addNewProposal(_proposal);
 	}
 
@@ -162,13 +154,11 @@ contract DaoBase is IDaoBase {
 	// Tokens:
 	function issueTokens(address _tokenAddress, address _to, uint _amount)public {
 		emit DaoBase_IssueTokens(_tokenAddress, _to, _amount);
-
 		store.issueTokens(_tokenAddress, _to, _amount);
 	}
 
 	function burnTokens(address _tokenAddress, address _who, uint _amount)public {
 		emit DaoBase_BurnTokens(_tokenAddress, _who, _amount);
-
 		store.burnTokens(_tokenAddress, _who, _amount);	
 	}
 }
