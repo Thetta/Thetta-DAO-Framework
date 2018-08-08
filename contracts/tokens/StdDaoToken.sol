@@ -6,6 +6,7 @@ import "zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 import "./CopyOnWriteToken.sol";
 import "./ITokenVotingSupport.sol";
 
+
 /**
  * @title StdDaoToken 
  * @dev Currently DaoBase works only with StdDaoToken. It does not support working with 
@@ -76,7 +77,7 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 
 // 
 	function transfer(address _to, uint256 _value) public whenNotPaused returns (bool) {
-		if(!isHolder[_to]){
+		if(!isHolder[_to]) {
 			holders.push(_to);
 			isHolder[_to] = true;
 		}
@@ -84,16 +85,16 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 	}
 
 	function transferFrom(address _from, address _to, uint256 _value) public whenNotPaused returns (bool) {
-		if(!isHolder[_to]){
+		if(!isHolder[_to]) {
 			holders.push(_to);
 			isHolder[_to] = true;
 		}
 		return super.transferFrom(_from, _to, _value);
 	}
 
-	function getVotingTotalForQuadraticVoting() public view returns(uint){
+	function getVotingTotalForQuadraticVoting() public view returns(uint) {
 		uint votersTotal = 0;
-		for(uint k=0; k<holders.length; k++){
+		for(uint k=0; k<holders.length; k++) {
 			votersTotal += sqrt(this.balanceOf(holders[k]));
 		}
 		return votersTotal;
@@ -101,14 +102,14 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 	
 // MintableToken override
 	// @dev do not call this method. Instead use mintFor()
-	function mint(address _to, uint256 _amount) canMint onlyOwner public returns(bool){
+	function mint(address _to, uint256 _amount) canMint onlyOwner public returns(bool) {
 		revert();
 	}
 
-	function mintFor(address _to, uint256 _amount) canMint onlyOwner public returns(bool){
+	function mintFor(address _to, uint256 _amount) canMint onlyOwner public returns(bool) {
 		require(totalSupply_.add(_amount) <= cap);
 
-		if(!isHolder[_to]){
+		if(!isHolder[_to]) {
 			holders.push(_to);
 			isHolder[_to] = true;
 		}
@@ -117,21 +118,21 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 
 // BurnableToken override
 	// @dev do not call this method. Instead use burnFor()
-   function burn(uint256 _value) public {
+	function burn(uint256 _value) public {
 		revert();
-   }
+	}
 
-	function burnFor(address _who, uint256 _value) isBurnable_ onlyOwner public{
+	function burnFor(address _who, uint256 _value) isBurnable_ onlyOwner public {
 		super._burn(_who, _value);
 	}
 
 	// this is an override of PausableToken method
-	function pause() isPausable_ onlyOwner public{
+	function pause() isPausable_ onlyOwner public {
 		super.pause();
 	}
 
 	// this is an override of PausableToken method
-	function unpause() isPausable_ onlyOwner  public{
+	function unpause() isPausable_ onlyOwner  public {
 		super.unpause();
 	}
 

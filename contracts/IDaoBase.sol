@@ -1,6 +1,7 @@
 pragma solidity ^0.4.22;
 
-import './governance/IProposal.sol';
+import "./governance/IProposal.sol";
+
 
 /**
  * @title IDaoObserver, can be called IDaoClient really.
@@ -9,6 +10,7 @@ import './governance/IProposal.sol';
 contract IDaoObserver {
 	function onUpgrade(address _newAddress) public;
 }
+
 
 /**
  * @title This is the base interface that you should use.
@@ -22,8 +24,8 @@ contract IDaoBase {
 // Groups
 	function addGroupMember(string _groupName, address _a) public;
 	function removeGroupMember(string _groupName, address _a) public;
-	function getMembersCount(string _groupName) public constant returns(uint);
-	function isGroupMember(string _groupName,address _a)public constant returns(bool);
+	function getMembersCount(string _groupName) public view returns(uint);
+	function isGroupMember(string _groupName,address _a)public view returns(bool);
 	function getMemberByIndex(string _groupName, uint _index) public view returns (address);
 
 // Permissions
@@ -32,7 +34,7 @@ contract IDaoBase {
 	function allowActionByAddress(bytes32 _what, address _a) public;
 	function allowActionByAnyMemberOfGroup(bytes32 _what, string _groupName) public;
 
-	function isCanDoAction(address _a, bytes32 _permissionName)public constant returns(bool);
+	function isCanDoAction(address _a, bytes32 _permissionName)public view returns(bool);
 
 // Tokens
 	// ???? TODO: needed
@@ -42,9 +44,10 @@ contract IDaoBase {
 
 // Governance/Proposals
 	function addNewProposal(IProposal _proposal) public;
-	function getProposalAtIndex(uint _i)public constant returns(IProposal);
-	function getProposalsCount()public constant returns(uint);
+	function getProposalAtIndex(uint _i)public view returns(IProposal);
+	function getProposalsCount()public view returns(uint);
 }
+
 
 /**
  * @title DaoClient, just an easy-to-use wrapper.

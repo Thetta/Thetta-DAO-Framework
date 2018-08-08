@@ -38,6 +38,6 @@ npm install -g truffle@4.1.12
 # test
 npm run test
 
-# coverage via coveralls.io
-npm run coveralls
+# coverage via coveralls.io, run only for master and dev branches
+if [ "$CI_BRANCH" == "master" ] || [ "$CI_BRANCH" == "dev" ]; then npm run coveralls; fi
 ```

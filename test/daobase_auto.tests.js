@@ -1,4 +1,4 @@
-/*var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
+var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 
@@ -10,6 +10,11 @@ var IProposal = artifacts.require("./IProposal");
 function KECCAK256 (x){
 	return web3.sha3(x);
 }
+
+require('chai')
+  .use(require('chai-as-promised'))
+  .use(require('chai-bignumber')(web3.BigNumber))
+  .should();
 
 var utf8 = require('utf8');
 
@@ -70,33 +75,20 @@ contract('DaoBaseAuto', (accounts) => {
 	let store;
 	let aacInstance;
 
-	before(async() => {
-
-	});
-
 	beforeEach(async() => {
-
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
-
 		await token.mintFor(creator, 1000);
 		await token.mintFor(employee1, 600);
 		await token.mintFor(employee2, 600);
 		await token.mintFor(employee3, 600);
 
 		store = await DaoStorage.new([token.address],{ from: creator });
-
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
-
 		aacInstance = await DaoBaseAuto.new(daoBase.address, {from: creator});
-
-		issueTokens = await aacInstance.ISSUE_TOKENS();
-
-		manageGroups = await aacInstance.MANAGE_GROUPS();
-
-		upgradeDaoContract = await aacInstance.UPGRADE_DAO_CONTRACT();
-
+		issueTokens = await daoBase.ISSUE_TOKENS();
+		manageGroups = await daoBase.MANAGE_GROUPS();
+		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
-
 		burnTokens = await daoBase.BURN_TOKENS();
 
 		///////////////////////////////////////////////////
@@ -118,13 +110,9 @@ contract('DaoBaseAuto', (accounts) => {
 
 	it('should not automatically create proposal because AAC has no rights',async() => {
 		// Set permissions:
-
 			await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
-
 			await daoBase.allowActionByVoting(manageGroups, token.address);
-
 			await daoBase.allowActionByVoting(issueTokens, token.address);
-
 		// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
 		// because of this AAC can't add new proposal!
 		//
@@ -165,7 +153,7 @@ contract('DaoBaseAuto', (accounts) => {
 
 		// even creator cant issue token directly!
 		// Even creator cant issue tokens
-    await daoBase.issueTokens.sendTransaction(token.address, employee1, 1500, {from:creator}).should.be.rejectedWith('revert');
+   		 await daoBase.issueTokens.sendTransaction(token.address, employee1, 1500, {from:creator}).should.be.rejectedWith('revert');
 
 		const proposalsCount1 = await daoBase.getProposalsCount();
 		assert.equal(proposalsCount1,0,'No proposals should be added');
@@ -192,7 +180,6 @@ contract('DaoBaseAuto', (accounts) => {
 		// new proposal should be added
 		await aacInstance.issueTokensAuto(token.address,employee1,1200,{from: employee1, gasPrice:0});
 
-
 		// STOP!!!
 		//assert.equal(0,1,'STOP');
 
@@ -214,14 +201,13 @@ contract('DaoBaseAuto', (accounts) => {
 
 		// already voted!
 		// dont vote again!
-    await voting.vote.sendTransaction(true, 0, {from: employee1}).should.be.rejectedWith('revert');
+    await voting.vote.sendTransaction(true, {from: employee1}).should.be.rejectedWith('revert');
 		// vote by employee 2
 		await voting.vote(true,{from:employee2});
 
 		const r2 = await voting.getVotingStats();
 		assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
 		assert.equal(r2[1],0,'no');
-
 
 		// vote by employee 3
 		await voting.vote(true,{from:employee3});
@@ -290,7 +276,6 @@ contract('DaoBaseAuto', (accounts) => {
 		assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
 		assert.equal(r2[1],0,'no');
 
-
 		// get voting results again
 		assert.strictEqual(await voting.isFinished(),true,'Voting is finished now');
 		assert.strictEqual(await voting.isYes(),true,'Voting result is yes!');
@@ -300,7 +285,7 @@ contract('DaoBaseAuto', (accounts) => {
 
 		// should not call vote again
 		// Should not call action again
-		await voting.vote.sendTransaction(true, 0, {from: employee1}).should.be.rejectedWith('revert');
+		await voting.vote.sendTransaction(true, {from: employee1}).should.be.rejectedWith('revert');
 	});
 
 	it('should be able to upgrade with AAC',async() => {
@@ -336,7 +321,6 @@ contract('DaoBaseAuto', (accounts) => {
 		const r2 = await voting.getVotingStats();
 		assert.equal(r2[0].toNumber(),2,'yes');			// 1 already voted (who started the voting)
 		assert.equal(r2[1].toNumber(),0,'no');
-
 
 		// get voting results again
 		assert.strictEqual(await voting.isFinished(),true,'Voting is still not finished');
@@ -374,4 +358,4 @@ contract('DaoBaseAuto', (accounts) => {
 		const proposalsCount2 = await daoBase.getProposalsCount();
 		assert.equal(proposalsCount2,1,'New proposal should be added');
 	});
-});*/
+});

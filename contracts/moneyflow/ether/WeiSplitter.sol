@@ -5,6 +5,7 @@ import "../IMoneyflow.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+
 /**
  * @title SplitterBase 
  * @dev Splitter has multiple outputs (allows to send money only to THESE addresses)
@@ -27,25 +28,25 @@ contract SplitterBase is ISplitter, Ownable {
 	}
 
 	// ISplitter:
-	function open() public onlyOwner{
+	function open() public onlyOwner {
 		emit SplitterBase_Open(msg.sender);
 		opened = true;
 	}
 
-	function close() public onlyOwner{
+	function close() public onlyOwner {
 		emit SplitterBase_Close(msg.sender);
 		opened = false;
 	}
 
-	function isOpen() public view returns(bool){
+	function isOpen() public view returns(bool) {
 		return opened;
 	}
 
-	function getChildrenCount()public view returns(uint){
+	function getChildrenCount()public view returns(uint) {
 		return childrenCount;
 	}
 
-	function getChild(uint _index)public view returns(address){
+	function getChild(uint _index)public view returns(address) {
 		return children[_index];
 	}
 
@@ -55,6 +56,7 @@ contract SplitterBase is ISplitter, Ownable {
 		childrenCount = childrenCount + 1;	
 	}
 }
+
 
 /**
  * @title WeiTopDownSplitter 
@@ -68,66 +70,66 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 // IWeiReceiver:
 	// calculate only absolute outputs, but do not take into account the Percents
 
-	function getMinWeiNeeded()public view returns(uint){
-		if(!isOpen()){
+	function getMinWeiNeeded()public view returns(uint) {
+		if(!isOpen()) {
 			return 0;
 		}
 		uint out = 0;
-		for(uint j=childrenCount; j>0; --j){
+		for(uint j=childrenCount; j>0; --j) {
 			IWeiReceiver c = IWeiReceiver(children[j-1]);
-			if(c.getPercentsMul100()>0){
+			if(c.getPercentsMul100()>0) {
 				out = 10000 * out / c.getPercentsMul100();
-			}else{
+			}else {
 				out += c.getMinWeiNeeded();
 			}
 		}
 		return out;		
 	}
 
-	function getTotalWeiNeeded(uint _inputWei)public view returns(uint){
-		if(!isOpen()){
+	function getTotalWeiNeeded(uint _inputWei)public view returns(uint) {
+		if(!isOpen()) {
 			return 0;
 		}
 
 		uint total = 0;
-		for(uint i=0; i<childrenCount; ++i){
+		for(uint i=0; i<childrenCount; ++i) {
 			IWeiReceiver c = IWeiReceiver(children[i]);
 			uint needed = c.getTotalWeiNeeded(_inputWei);
 			total = total + needed;
 
 			// this should be reduced because next child can get only '_inputWei minus what prev. child got'
-			if(_inputWei>needed){
+			if(_inputWei>needed) {
 				_inputWei-=needed;
-			}else{
+			}else {
 				_inputWei = 0;
 			}
 		}
 		return total;
 	}
 
-	function getPercentsMul100()public view returns(uint){
+	function getPercentsMul100()public view returns(uint) {
 		uint total = 0;
-		for(uint i=0; i<childrenCount; ++i){
+		for(uint i=0; i<childrenCount; ++i) {
 			IWeiReceiver c = IWeiReceiver(children[i]);
 			total = total + c.getPercentsMul100();	
 		}
 
 		// truncate, no more than 100% allowed!
-		if(total>10000){
+		if(total>10000) {
 			return 10000;
 		}
 		return total;
 	}
 
-	function isNeedsMoney()constant public returns(bool){
-		if(!isOpen()){
+	function isNeedsMoney()view public returns(bool) {
+		if(!isOpen()) {
 			return false;
 		}
 
-		for(uint i=0; i<childrenCount; ++i){
+		for(uint i=0; i<childrenCount; ++i) {
 			IWeiReceiver c = IWeiReceiver(children[i]);
 			// if at least 1 child needs money -> return true
-			if(c.isNeedsMoney()){
+			if(c.isNeedsMoney()) {
 				return true;
 			}
 		}
@@ -142,7 +144,7 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 	// we can get the 'terminal' items and send money DIRECTLY FROM the signle source
 	// this will save gas 
 	// See this - https://github.com/Thetta/SmartContracts/issues/40
-	function processFunds(uint _currentFlow) public payable{
+	function processFunds(uint _currentFlow) public payable {
 		require(isOpen());
 		emit SplitterBase_ProcessFunds(msg.sender, msg.value, _currentFlow);
 		uint amount = _currentFlow;
@@ -155,26 +157,26 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 
 		// DO NOT SEND LESS!
 		// DO NOT SEND MORE!
-		for(uint i=0; i<childrenCount; ++i){
+		for(uint i=0; i<childrenCount; ++i) {
 			IWeiReceiver c = IWeiReceiver(children[i]);
 			uint needed = c.getTotalWeiNeeded(amount);
 
 			// send money. can throw!
 			// we sent needed money but specifying TOTAL amount of flow
 			// this help relative Splitters to calculate how to split money
-			if(needed>0){
+			if(needed>0) {
 				c.processFunds.value(needed)(amount);
 
 				// this should be reduced because next child can get only 'amount minus what prev. child got'
-				if(amount>=needed){
+				if(amount>=needed) {
 					amount = amount - needed;
-				}else{
+				}else {
 					amount = 0;
 				}
 			}
 		}
 
-		if(this.balance>0){
+		if(this.balance>0) {
 			revert();
 		}
 	}
@@ -182,6 +184,7 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 	function() public {
 	}
 }
+
 
 /**
  * @title WeiUnsortedSplitter 
@@ -195,36 +198,36 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 
 	// IWeiReceiver:
 	// calculate only absolute outputs, but do not take into account the Percents
-	function getMinWeiNeeded()public view returns(uint){
-		if(!isOpen()){
+	function getMinWeiNeeded()public view returns(uint) {
+		if(!isOpen()) {
 			return 0;
 		}
 
 		uint absSum = 0;
 		uint percentsMul100ReverseSum = 10000;
 
-		for(uint i=0; i<childrenCount; ++i){
-			if(0!=IWeiReceiver(children[i]).getPercentsMul100()){
+		for(uint i=0; i<childrenCount; ++i) {
+			if(0!=IWeiReceiver(children[i]).getPercentsMul100()) {
 				percentsMul100ReverseSum -= IWeiReceiver(children[i]).getPercentsMul100();
-			}else{
+			}else {
 				absSum += IWeiReceiver(children[i]).getMinWeiNeeded();
 			}
 		}
 
-		if(percentsMul100ReverseSum==0){
+		if(percentsMul100ReverseSum==0) {
 			return 0;
-		}else{
+		}else {
 			return 10000*absSum/percentsMul100ReverseSum;
 		}		
 	}
 
-	function getTotalWeiNeeded(uint _inputWei)public view returns(uint){
-		if(!isOpen()){
+	function getTotalWeiNeeded(uint _inputWei)public view returns(uint) {
+		if(!isOpen()) {
 			return 0;
 		}
 
 		uint total = 0;
-		for(uint i=0; i<childrenCount; ++i){
+		for(uint i=0; i<childrenCount; ++i) {
 			IWeiReceiver c = IWeiReceiver(children[i]);
 			uint needed = c.getTotalWeiNeeded(_inputWei);
 			total = total + needed;
@@ -232,9 +235,9 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 		return total;
 	}
 
-	function getPercentsMul100()public view returns(uint){
+	function getPercentsMul100()public view returns(uint) {
 		uint total = 0;
-		for(uint i=0; i<childrenCount; ++i){
+		for(uint i=0; i<childrenCount; ++i) {
 			IWeiReceiver c = IWeiReceiver(children[i]);
 			total = total + c.getPercentsMul100();
 		}
@@ -246,15 +249,15 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 		return total;
 	}
 
-	function isNeedsMoney()public view returns(bool){
-		if(!isOpen()){
+	function isNeedsMoney()public view returns(bool) {
+		if(!isOpen()) {
 			return false;
 		}
 
-		for(uint i=0; i<childrenCount; ++i){
+		for(uint i=0; i<childrenCount; ++i) {
 			IWeiReceiver c = IWeiReceiver(children[i]);
 			// if at least 1 child needs money -> return true
-			if(c.isNeedsMoney()){
+			if(c.isNeedsMoney()) {
 				return true;
 			}
 		}
@@ -264,7 +267,7 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 	// WeiSplitter allows to receive money from ANY address
 	// WeiSplitter should not hold any funds. Instead - it should split immediately
 	// If WeiSplitter receives less or more money than needed -> exception 
-	function processFunds(uint _currentFlow) public payable{
+	function processFunds(uint _currentFlow) public payable {
 		require(isOpen());
 		emit SplitterBase_ProcessFunds(msg.sender, msg.value, _currentFlow);
 		uint amount = msg.value;
@@ -275,19 +278,19 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 
 		// DO NOT SEND LESS!
 		// DO NOT SEND MORE!
-		for(uint i=0; i<childrenCount; ++i){
+		for(uint i=0; i<childrenCount; ++i) {
 			IWeiReceiver c = IWeiReceiver(children[i]);
 			uint needed = c.getTotalWeiNeeded(_currentFlow);
 
 			// send money. can throw!
 			// we sent needed money but specifying TOTAL amount of flow
 			// this help relative Splitters to calculate how to split money
-			if(needed>0){
+			if(needed>0) {
 				c.processFunds.value(needed)(_currentFlow);
 			}		
 		}	
 
-		if(this.balance>0){
+		if(this.balance>0) {
 			revert();
 		}	
 	}
