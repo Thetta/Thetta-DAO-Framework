@@ -14,7 +14,6 @@ import "./DaoBase.sol";
 */
 contract DaoBaseWithUnpackers is DaoBase {
 	using DaoLib for DaoLib.DaoStorage;
-	DaoLib.DaoStorage store;	
 
 	constructor(address[] _tokens) public DaoBase(_tokens){
 	}
