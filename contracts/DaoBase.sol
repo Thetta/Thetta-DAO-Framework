@@ -175,7 +175,7 @@ contract DaoBase is IDaoBase {
 
 library DaoLib{
 	// TODO: remove duplicates!
-	//bytes32 public constant ISSUE_TOKENS = 0xe003bf3bc29ae37598e0a6b52d6c5d94b0a53e4e52ae40c01a29cdd0e7816b71;
+	bytes32 public constant ISSUE_TOKENS = 0xe003bf3bc29ae37598e0a6b52d6c5d94b0a53e4e52ae40c01a29cdd0e7816b71;
 	bytes32 public constant MANAGE_GROUPS = 0x060990aad7751fab616bf14cf6b68ac4c5cdc555f8f06bc9f15ba1b156e81b0b;
 	bytes32 public constant ADD_NEW_PROPOSAL = 0x55c7fa9eebcea37770fd33ec28acf7eacb6ea53052a9e9bc0a98169768578c5f;
 	bytes32 public constant BURN_TOKENS = 0x324cd2c359ecbc6ad92db8d027aab5d643f27c3055619a49702576797bb41fe5;
@@ -202,7 +202,6 @@ library DaoLib{
 		mapping (address=>bytes32[]) addressToGroups; // member -> group names
 		mapping (bytes32=>address[]) groupToAddresses; // group name -> members
 		mapping (bytes32=>mapping(bytes32=>bool)) isAllowedActionByGroupMember; // group name -> permission -> flag
-		address owner;
 		bool isEasyEdit;
 	}
 
