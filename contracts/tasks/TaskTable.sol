@@ -83,8 +83,8 @@ contract TaskTable {
 		_; 
 	}
 	
-	modifier isCanDo(uint _id, bytes32 _what){
-		require(dao.isCanDoAction(msg.sender,_what)); 
+	modifier isCanDo(bytes32 _what){
+		require(dao.isCanDoAction(tx.origin,_what)); 
 		_; 
 	}
 
@@ -108,11 +108,7 @@ contract TaskTable {
 			block.timestamp, 
 			0);
 
-		if(_isPostpaid){
-			Tasks[elementsCount].state = State.PostPaid;
-		} else {
-			Tasks[elementsCount].state = State.PrePaid;
-		}
+			Tasks[elementsCount].state = State.Init;
 
 		emit TaskTable_ElementAdded(elementsCount, Tasks[elementsCount].state);
 		elementsCount += 1;
@@ -143,7 +139,7 @@ contract TaskTable {
 		return (elementsCount - 1);
 	}
 
-	function startTask(uint _id, address _employee) public isCanDo(_id, START_TASK) {
+	function startTask(uint _id, address _employee) public isCanDo(START_TASK) {
 		require(getCurrentState(_id)==State.Init || getCurrentState(_id)==State.PrePaid);
 
 		if(getCurrentState(_id)==State.Init) {
@@ -157,7 +153,7 @@ contract TaskTable {
 	}
 
 	// callable by anyone
-	function startBounty(uint _id) public isCanDo(_id, START_BOUNTY) {
+	function startBounty(uint _id) public isCanDo(START_BOUNTY) {
 		require(getCurrentState(_id)==State.PrePaid);
 		Tasks[_id].startTime = block.timestamp;
 		Tasks[_id].employee = msg.sender;
