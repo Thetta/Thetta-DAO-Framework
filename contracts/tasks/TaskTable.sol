@@ -205,7 +205,7 @@ contract TaskTable {
 		return Tasks[_id].state;
 	}
 
-	function isTaskPrepaid(uint _id) internal returns(bool){
+	function isTaskPrepaid(uint _id) internal view returns(bool){
 		if((State.Init==Tasks[_id].state) && (Tasks[_id].neededWei!=0) && (!Tasks[_id].isPostpaid)) {
 			if(Tasks[_id].neededWei==Tasks[_id].funds && Tasks[_id].funds <= address(this).balance) {
 				return true;
@@ -214,7 +214,7 @@ contract TaskTable {
 		return false;
 	}
 
-	function isTaskPostpaidAndCompleted(uint _id) internal returns(bool){
+	function isTaskPostpaidAndCompleted(uint _id) internal view returns(bool){
 		if((State.Complete==Tasks[_id].state) && (Tasks[_id].neededWei!=0) && (Tasks[_id].isPostpaid)) {
 			if(Tasks[_id].neededWei==Tasks[_id].funds && Tasks[_id].funds <= address(this).balance) {
 				return true;
@@ -296,7 +296,7 @@ contract TaskTable {
 		Tasks[_id].funds += msg.value;
 	}
 
-	function isCanSetNeededWei(uint _id) internal returns(bool){
+	function isCanSetNeededWei(uint _id) internal view returns(bool){
 		if(Tasks[_id].isPostpaid && (0==Tasks[_id].neededWei) && (State.Complete==Tasks[_id].state)){
 			return true;
 		}
