@@ -1,11 +1,8 @@
 pragma solidity ^0.4.22;
 
-// import "./store.sol";
 import "./IDaoBase.sol";
 
 import "./tokens/StdDaoToken.sol";
-
-import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
  * @title DaoBase 
@@ -17,10 +14,20 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
  * 2. Currently DaoBase works only with StdDaoToken. It does not support working with 
  * plain ERC20 tokens because we need some extra features like mintFor(), burnFor() and transferOwnership()
 */
-
 contract DaoBase is IDaoBase {
 	using DaoLib for DaoLib.DaoStorage;
 	DaoLib.DaoStorage store;
+
+	event DaoBase_UpgradeDaoContract(address _new);
+	event DaoBase_AddGroupMember(string _groupName, address _a);
+	event DaoBase_RemoveGroupMember(string _groupName, address _a);
+	event DaoBase_AllowActionByShareholder(bytes32 _what, address _tokenAddress);
+	event DaoBase_AllowActionByVoting(bytes32 _what, address _tokenAddress);
+	event DaoBase_AllowActionByAddress(bytes32 _what, address _a);
+	event DaoBase_AllowActionByAnyMemberOfGroup(bytes32 _what, string _groupName);
+	event DaoBase_AddNewProposal(address _proposal);
+	event DaoBase_IssueTokens(address _tokenAddress, address _to, uint _amount);
+	event DaoBase_BurnTokens(address _tokenAddress, address _who, uint _amount);
 
 	bytes32 public constant ISSUE_TOKENS = 0xe003bf3bc29ae37598e0a6b52d6c5d94b0a53e4e52ae40c01a29cdd0e7816b71;
 	bytes32 public constant MANAGE_GROUPS = 0x060990aad7751fab616bf14cf6b68ac4c5cdc555f8f06bc9f15ba1b156e81b0b;
@@ -34,16 +41,8 @@ contract DaoBase is IDaoBase {
 	bytes32 public constant ALLOW_ACTION_BY_ADDRESS = 0x087dfe531c937a5cbe06c1240d8f791b240719b90fd2a4e453a201ce0f00c176;
 	bytes32 public constant ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP = 0xa7889b6adda0a2270859e5c6327f82b987d24f5729de85a5746ce28eed9e0d07;
 
-	modifier onlyOwner() {
-		require(msg.sender == store.owner);
-		_;
-	}
 	constructor(address[] _tokens) public {
 		store.libConstructor(_tokens);
-	}
-
-	function transferOwnership(address newOwner) public {
-		store.transferOwnership(newOwner);
 	}
 
 	function stringHash(string _s) public pure returns(bytes32) {
@@ -71,6 +70,8 @@ contract DaoBase is IDaoBase {
 	}
 
 	function upgradeDaoContract(IDaoBase _new) public {
+		emit DaoBase_UpgradeDaoContract(_new); // call observers.onUpgrade() for all observers		
+
 		store.upgradeDaoContract(_new);
 	}
 
@@ -80,6 +81,8 @@ contract DaoBase is IDaoBase {
 	}
 
 	function addGroupMember(string _groupName, address _a) public {
+		emit DaoBase_AddGroupMember(_groupName, _a);
+
 		store.addGroupMember(stringHash(_groupName), _a);
 	}
 
@@ -88,6 +91,8 @@ contract DaoBase is IDaoBase {
 	}
 
 	function removeGroupMember(string _groupName, address _a) public  {
+		emit DaoBase_RemoveGroupMember(_groupName, _a);
+
 		store.removeGroupMember(stringHash(_groupName), _a);
 	}
 
@@ -101,18 +106,26 @@ contract DaoBase is IDaoBase {
 
 // Actions:
 	function allowActionByShareholder(bytes32 _what, address _tokenAddress) public {
+		emit DaoBase_AllowActionByShareholder(_what, _tokenAddress);
+
 		store.allowActionByShareholder(_what, _tokenAddress);
 	}
 
 	function allowActionByVoting(bytes32 _what, address _tokenAddress) public {
+		emit DaoBase_AllowActionByVoting(_what, _tokenAddress);
+
 		store.allowActionByVoting(_what,_tokenAddress);
 	}
 
 	function allowActionByAddress(bytes32 _what, address _a) public {
+		emit DaoBase_AllowActionByAddress(_what, _a);
+
 		store.allowActionByAddress(_what,_a);
 	}
 
 	function allowActionByAnyMemberOfGroup(bytes32 _what, string _groupName) public {
+		emit DaoBase_AllowActionByAnyMemberOfGroup(_what, _groupName);
+
 		store.allowActionByAnyMemberOfGroup(_what, stringHash(_groupName));
 	}
 
@@ -133,6 +146,8 @@ contract DaoBase is IDaoBase {
 
 	// Proposals:
 	function addNewProposal(IProposal _proposal) public { 
+		emit DaoBase_AddNewProposal(_proposal); 
+
 		store.addNewProposal(_proposal);
 	}
 
@@ -146,28 +161,21 @@ contract DaoBase is IDaoBase {
 
 	// Tokens:
 	function issueTokens(address _tokenAddress, address _to, uint _amount)public {
+		emit DaoBase_IssueTokens(_tokenAddress, _to, _amount);
+
 		store.issueTokens(_tokenAddress, _to, _amount);
 	}
 
 	function burnTokens(address _tokenAddress, address _who, uint _amount)public {
+		emit DaoBase_BurnTokens(_tokenAddress, _who, _amount);
+
 		store.burnTokens(_tokenAddress, _who, _amount);	
 	}
 }
 
 library DaoLib{
-	event DaoBase_UpgradeDaoContract(address _new);
-	event DaoBase_AddGroupMember(string _groupName, address _a);
-	event DaoBase_RemoveGroupMember(address _new);
-	event DaoBase_AllowActionByShareholder(bytes32 _what, address _tokenAddress);
-	event DaoBase_AllowActionByVoting(bytes32 _what, address _tokenAddress);
-	event DaoBase_AllowActionByAddress(bytes32 _what, address _a);
-	event DaoBase_AllowActionByAnyMemberOfGroup(bytes32 _what, string _groupName);
-	event DaoBase_AddNewProposal(address _proposal);
-	event DaoBase_IssueTokens(address _tokenAddress, address _to, uint _amount);
-	event DaoBase_BurnTokens(address _tokenAddress, address _who, uint _amount);
-	event OwnershipTransferred(address owner, address newOwner);
-
-	bytes32 public constant ISSUE_TOKENS = 0xe003bf3bc29ae37598e0a6b52d6c5d94b0a53e4e52ae40c01a29cdd0e7816b71;
+	// TODO: remove duplicates!
+	//bytes32 public constant ISSUE_TOKENS = 0xe003bf3bc29ae37598e0a6b52d6c5d94b0a53e4e52ae40c01a29cdd0e7816b71;
 	bytes32 public constant MANAGE_GROUPS = 0x060990aad7751fab616bf14cf6b68ac4c5cdc555f8f06bc9f15ba1b156e81b0b;
 	bytes32 public constant ADD_NEW_PROPOSAL = 0x55c7fa9eebcea37770fd33ec28acf7eacb6ea53052a9e9bc0a98169768578c5f;
 	bytes32 public constant BURN_TOKENS = 0x324cd2c359ecbc6ad92db8d027aab5d643f27c3055619a49702576797bb41fe5;
@@ -198,27 +206,18 @@ library DaoLib{
 		bool isEasyEdit;
 	}
 
-	function transferOwnership(DaoStorage storage store, address newOwner) public {
-		require(msg.sender == store.owner);
-		require(newOwner != address(0));
-		emit OwnershipTransferred(store.owner, newOwner);
-		store.owner = newOwner;
-	}
-
-	function libConstructor(DaoStorage storage store, address[] _tokens) public{
+	// TODO: can be called by anyone???
+	function libConstructor(DaoStorage storage store, address[] _tokens) public {
 		for(uint i=0; i<_tokens.length; ++i) {
 			store.tokens.push(StdDaoToken(_tokens[i]));
 		}
-		store.owner = msg.sender;
 		store.isEasyEdit = true;
 	}
 
 	function upgradeDaoContract(DaoStorage storage store, IDaoBase _new) public isCanDo(store, UPGRADE_DAO_CONTRACT){
-		emit DaoBase_UpgradeDaoContract(_new); // call observers.onUpgrade() for all observers		
 		for(uint i=0; i<getObserverCount(store); ++i) {
 			IDaoObserver(getObserverAtIndex(store, i)).onUpgrade(_new);
 		}	
-		transferOwnership(store, _new); // transfer ownership of the store (this -> _new)	
 		for(i=0; i<getAllTokenAddresses(store).length; ++i) { // transfer ownership of all tokens (this -> _new)
 			getAllTokenAddresses(store)[i].transferOwnership(_new);
 		}
@@ -266,7 +265,6 @@ library DaoLib{
 	}
 
 	function issueTokens(DaoStorage storage store, address _tokenAddress, address _to, uint _amount)public isCanDo(store, ISSUE_TOKENS){
-		emit DaoBase_IssueTokens(_tokenAddress, _to, _amount);
 		for(uint i=0; i<getAllTokenAddresses(store).length; ++i) {
 			if(getAllTokenAddresses(store)[i]==_tokenAddress) {
 				// WARNING: token ownership should be transferred to the current DaoBase to do that!!!
@@ -278,7 +276,6 @@ library DaoLib{
 	}
 
 	function burnTokens(DaoStorage storage store, address _tokenAddress, address _who, uint _amount)public isCanDo(store, BURN_TOKENS){
-		emit DaoBase_BurnTokens(_tokenAddress, _who, _amount);
 		for(uint i=0; i<getAllTokenAddresses(store).length; ++i) {
 			if(getAllTokenAddresses(store)[i]==_tokenAddress){
 				// WARNING: token ownership should be transferred to the current DaoBase to do that!!!
