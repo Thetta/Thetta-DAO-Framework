@@ -14,14 +14,13 @@ import "./DaoBase.sol";
 */
 contract DaoBaseWithUnpackers is DaoBase {
 	using DaoLib for DaoLib.DaoStorage;
-	DaoLib.DaoStorage store;	
 
 	constructor(address[] _tokens) public DaoBase(_tokens){
 	}
 
 	function upgradeDaoContractGeneric(bytes32[] _params) external {
 		IDaoBase _b = IDaoBase(address(_params[0]));
-		store.upgradeDaoContract(_b);
+		upgradeDaoContract(_b);
 	}
 
 	function addGroupMemberGeneric(bytes32[] _params) external {
@@ -46,19 +45,19 @@ contract DaoBaseWithUnpackers is DaoBase {
 	function allowActionByShareholderGeneric(bytes32[] _params) external {
 		bytes32 _what = bytes32(_params[0]);
 		address _a = address(_params[1]);
-		store.allowActionByShareholder(_what, _a);
+		allowActionByShareholder(_what, _a);
 	}
 
 	function allowActionByVotingGeneric(bytes32[] _params) external {
 		bytes32 _what = bytes32(_params[0]);
 		address _tokenAddress = address(_params[1]);
-		store.allowActionByVoting(_what, _tokenAddress);
+		allowActionByVoting(_what, _tokenAddress);
 	}
 
 	function allowActionByAddressGeneric(bytes32[] _params) external {
 		bytes32 _what = bytes32(_params[0]);
 		address _a = address(_params[1]);
-		store.allowActionByAddress(_what, _a);
+		allowActionByAddress(_what, _a);
 	}
  
 	function allowActionByAnyMemberOfGroupGeneric(bytes32[] _params) external {
