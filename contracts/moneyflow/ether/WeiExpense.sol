@@ -1,6 +1,7 @@
 pragma solidity ^0.4.15;
 
-import "../IMoneyflow.sol";
+import "../IDestination.sol";
+import "../IWeiReceiver.sol";
 
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -142,32 +143,4 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 
 	function()public {
 	}
-}
-
-
-contract WeiAbsoluteExpense is WeiExpense {
-	constructor(uint _neededWei) public 
-		WeiExpense(_neededWei, 0, 0, false, false)
-	{}
-}
-
-
-contract WeiRelativeExpense is WeiExpense {
-	constructor(uint _percentsMul100)public 
-		WeiExpense(0, _percentsMul100, 0, false, false)
-	{}
-}
-
-
-contract WeiAbsoluteExpenseWithPeriod is WeiExpense { 
-	constructor(uint _neededWei, uint _periodHours, bool _isAccumulateDebt) public
-		WeiExpense(_neededWei, 0, _periodHours, _isAccumulateDebt, true)
-	{}
-}
-
-
-contract WeiRelativeExpenseWithPeriod is WeiExpense {
-	constructor(uint _percentsMul100, uint _periodHours, bool _isAccumulateDebt) public 
-		WeiExpense(0, _percentsMul100, _periodHours, _isAccumulateDebt, true)
-	{}
 }
