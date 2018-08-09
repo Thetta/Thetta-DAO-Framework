@@ -1,3 +1,5 @@
+const BigNumber = web3.BigNumber;
+
 require('chai')
   .use(require('chai-as-promised'))
   .use(require('chai-bignumber')(BigNumber))
@@ -11,8 +13,6 @@ var TaskTable = artifacts.require('./TaskTable');
 var DaoBase = artifacts.require('./DaoBase');
 var StdDaoToken = artifacts.require('./StdDaoToken');
 var DaoStorage = artifacts.require('./DaoStorage');
-
-const BigNumber = web3.BigNumber;
 
 function KECCAK256 (x) {
   return web3.sha3(x);
