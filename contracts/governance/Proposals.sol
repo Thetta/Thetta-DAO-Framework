@@ -33,7 +33,7 @@ contract GenericProposal is IProposal, Ownable {
 
 // IVoting implementation
 	function action() public {
-		emit GenericProposal_Action(voting, _target, _methodSig, _params);
+		emit GenericProposal_Action(voting, target, methodSig, params);
 
 		// in some cases voting is still not set
 		if(0x0!=address(voting)) {
