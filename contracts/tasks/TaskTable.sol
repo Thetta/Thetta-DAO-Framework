@@ -56,7 +56,7 @@ contract TaskTable {
 		uint funds;
 	}
 
-	mapping (uint => Task) public Tasks;
+	mapping (uint => Task) Tasks;
 
 	modifier onlyWhenStarted(uint _id) { 
 		require (Tasks[_id].startTime >= block.timestamp); 
