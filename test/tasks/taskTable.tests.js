@@ -1,3 +1,8 @@
+require('chai')
+  .use(require('chai-as-promised'))
+  .use(require('chai-bignumber')(BigNumber))
+  .should();
+
 var increaseTimeTo = require('../utils/increaseTime');
 var latestTime = require('../utils/latestTime');
 var advanceBlock = require('../utils/advanceToBlock');
@@ -12,11 +17,6 @@ const BigNumber = web3.BigNumber;
 function KECCAK256 (x) {
   return web3.sha3(x);
 }
-
-require('chai')
-  .use(require('chai-as-promised'))
-  .use(require('chai-bignumber')(BigNumber))
-  .should();
 
 const duration = {
   seconds: function (val) { return val; },
