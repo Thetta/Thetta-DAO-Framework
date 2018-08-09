@@ -56,7 +56,7 @@ contract TaskTable {
 		uint funds;
 	}
 
-	mapping (uint => Task) Tasks;
+	mapping (uint => Task) public Tasks;
 
 	modifier onlyWhenStarted(uint _id) { 
 		require (Tasks[_id].startTime >= block.timestamp); 
@@ -84,7 +84,7 @@ contract TaskTable {
 	}
 	
 	modifier isCanDo(bytes32 _what){
-		require(dao.isCanDoAction(tx.origin,_what)); 
+		require(dao.isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
 
