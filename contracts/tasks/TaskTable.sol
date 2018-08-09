@@ -68,7 +68,7 @@ contract TaskTable {
 		_; 
 	}
 
-	modifier isCanCancell(uint _id) { 
+	modifier isCanCancel(uint _id) { 
 		require (block.timestamp - Tasks[_id].creationTime <= Tasks[_id].timeToCancell); 
 		_; 
 	}
@@ -212,14 +212,14 @@ contract TaskTable {
 
 	function isTaskPostpaidAndCompleted(uint _id) internal view returns(bool){
 		if((State.Complete==Tasks[_id].state) && (Tasks[_id].neededWei!=0) && (Tasks[_id].isPostpaid)) {
-			if(Tasks[_id].neededWei==Tasks[_id].funds && Tasks[_id].funds <= address(this).balance) {
+			if(Tasks[_id].neededWei <= Tasks[_id].funds && Tasks[_id].funds <= address(this).balance) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	function cancell(uint _id) onlyByMoneySource(_id) isCanCancell(_id) public {
+	function cancel(uint _id) onlyByMoneySource(_id) isCanCancel(_id) public {
 		require(getCurrentState(_id)==State.Init || getCurrentState(_id)==State.PrePaid);
 		if(getCurrentState(_id)==State.PrePaid) {
 			// return money to 'moneySource'
@@ -236,7 +236,7 @@ contract TaskTable {
 			Tasks[_id].moneySource.transfer(Tasks[_id].funds);
 		}
 		Tasks[_id].state = State.DeadlineMissed;
-		emit TaskTable_StateChanged(Tasks[_id].state);
+		emit TaskTable_StateChanged(Tasks[_id].state); 
 	}
 
 	function notifyThatCompleted(uint _id) public onlyEmployeeOrMoneySource(_id) {
