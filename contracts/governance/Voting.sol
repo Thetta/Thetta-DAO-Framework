@@ -228,7 +228,7 @@ library VotingLib {
 
 	function libVote(VotingStorage storage store, address _voter, bool _isYes) public {
 		require(!isFinished(store));
-		require(!store.voted[msg.sender]);
+		require(!store.voted[_voter]);
 
 		if(VotingType.Voting1p1v == store.votingType) {
 			require(store.dao.isGroupMember(store.groupName, _voter));
@@ -237,7 +237,7 @@ library VotingLib {
 		store.votes[store.votesCount] = Vote(_voter, _isYes);
 		store.voted[_voter] = true;	
 		store.votesCount += 1;
-		emit Voted(msg.sender, _isYes);
+		emit Voted(_voter, _isYes);
 		callActionIfEnded(store);
 	}
 
