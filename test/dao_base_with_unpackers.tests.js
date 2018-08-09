@@ -1,11 +1,9 @@
+const { fromUtf8, padToBytes32, uintToBytes32 } = require('./utils/helpers');
+
 const StdDaoToken = artifacts.require('./StdDaoToken');
 const DaoStorage = artifacts.require('./DaoStorage');
 const DaoBaseWithUnpackers = artifacts.require('./DaoBaseWithUnpackers');
-
-require('chai')
-  .use(require('chai-as-promised'))
-  .use(require('chai-bignumber')(web3.BigNumber))
-  .should();
+const DaoBaseWithUnpackersMock = artifacts.require('./DaoBaseWithUnpackersMock');
 
 contract('DaoBaseWithUnpackers', (accounts) => {
 	let token;
@@ -23,6 +21,7 @@ contract('DaoBaseWithUnpackers', (accounts) => {
 		store = await DaoStorage.new([token.address],{from: creator});
 
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{from: creator});
+		daoBaseMock = await DaoBaseWithUnpackersMock.new(store.address,{from: creator});
 
 		await store.allowActionByAddress(await daoBase.MANAGE_GROUPS(), creator);
 		await store.allowActionByAddress(await daoBase.UPGRADE_DAO_CONTRACT(), creator);
@@ -35,51 +34,115 @@ contract('DaoBaseWithUnpackers', (accounts) => {
 	describe('upgradeDaoContractGeneric()', () => {
 		it('should upgrade dao contract', async() => {
 			let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{from: creator});
-			await daoBase.upgradeDaoContractGeneric([daoBaseNew.address]).should.be.fulfilled;
+			await daoBase.upgradeDaoContractGeneric([padToBytes32(daoBaseNew.address, 'left')]).should.be.fulfilled;
+		});
+
+		it('should unpack params', async() => {
+			let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{from: creator});
+			await daoBaseMock.upgradeDaoContractGeneric([padToBytes32(daoBaseNew.address, 'left')]).should.be.fulfilled;
+
+			assert.equal(await daoBaseMock.paramAddress1(), daoBaseNew.address);
 		});
 	});
 
 	describe('addGroupMemberGeneric()', () => {
 		it('should add a new group member', async() => {
-			await daoBase.addGroupMemberGeneric(["ANY_GROUP", 0x01]).should.be.fulfilled;
+			await daoBase.addGroupMemberGeneric([fromUtf8("ANY_GROUP"), padToBytes32(employee1, 'left')]).should.be.fulfilled;
+		});
+
+		it('should unpack params', async() => {
+			await daoBaseMock.addGroupMemberGeneric([fromUtf8("ANY_GROUP"), padToBytes32(employee1, 'left')]).should.be.fulfilled;
+
+			assert.equal(await daoBaseMock.paramString1(), "ANY_GROUP");
+			assert.equal(await daoBaseMock.paramAddress1(), employee1);
 		});
 	});
 
-	// TODO: convert address to bytes32
-	// describe('issueTokensGeneric()', () => {
-	// 	it('should issue tokens', async () => {
-	// 		await daoBase.issueTokensGeneric([token.address, employee1, 1]).should.be.fulfilled;
-	// 	});
-	// });
+	describe('issueTokensGeneric()', () => {
+		it('should issue tokens', async () => {
+			await daoBase.issueTokensGeneric([
+				padToBytes32(token.address, 'left'), 
+				padToBytes32(employee1, 'left'), 
+				uintToBytes32(1)
+			]).should.be.fulfilled;
+		});
+
+		it('should unpack params', async() => {
+			await daoBaseMock.issueTokensGeneric([
+				padToBytes32(token.address, 'left'), 
+				padToBytes32(employee1, 'left'), 
+				uintToBytes32(1)
+			]).should.be.fulfilled;
+
+			assert.equal(await daoBaseMock.paramAddress1(), token.address);
+			assert.equal(await daoBaseMock.paramAddress2(), employee1);
+			assert.equal(await daoBaseMock.paramUint1(), 1);
+		});
+	});
 
 	describe('removeGroupMemberGeneric()', () => {
 		it('should remove group member', async() => {
-			await daoBase.addGroupMemberGeneric(["GROUP1", employee1]).should.be.fulfilled;
-			await daoBase.removeGroupMemberGeneric(["GROUP1", employee1]).should.be.fulfilled;
+			await daoBase.addGroupMemberGeneric([fromUtf8("GROUP1"), padToBytes32(employee1, 'left')]).should.be.fulfilled;
+			await daoBase.removeGroupMemberGeneric([fromUtf8("GROUP1"), padToBytes32(employee1, 'left')]).should.be.fulfilled;
+		});
+
+		it('should unpack params', async() => {
+			await daoBaseMock.removeGroupMemberGeneric([fromUtf8("GROUP1"), padToBytes32(employee1, 'left')]).should.be.fulfilled;
+
+			assert.equal(await daoBaseMock.paramString1(), "GROUP1");
+			assert.equal(await daoBaseMock.paramAddress1(), employee1);
 		});
 	});
 
 	describe('allowActionByShareholderGeneric()', () => {
 		it('should allow action by shareholder', async() => {
-			await daoBase.allowActionByShareholderGeneric(["ANY_ACTION", creator]).should.be.fulfilled;
+			await daoBase.allowActionByShareholderGeneric([fromUtf8("ANY_ACTION"), padToBytes32(creator, 'left')]).should.be.fulfilled;
+		});
+
+		it('should unpack params', async() => {
+			await daoBaseMock.allowActionByShareholderGeneric([fromUtf8("ANY_ACTION"), padToBytes32(creator, 'left')]).should.be.fulfilled;
+
+			assert.equal(await daoBaseMock.paramBytes1(), fromUtf8("ANY_ACTION"));
+			assert.equal(await daoBaseMock.paramAddress1(), creator);
 		});
 	});
 
 	describe('allowActionByVotingGeneric()', () => {
 		it('should allow action by voting', async () => {
-			await daoBase.allowActionByVotingGeneric(["ANY_ACTION", token.address]);
+			await daoBase.allowActionByVotingGeneric([fromUtf8("ANY_ACTION"), padToBytes32(token.address, 'left')]).should.be.fulfilled;
+		});
+
+		it('should unpack params', async() => {
+			await daoBaseMock.allowActionByVotingGeneric([fromUtf8("ANY_ACTION"), padToBytes32(token.address, 'left')]).should.be.fulfilled;
+
+			assert.equal(await daoBaseMock.paramBytes1(), fromUtf8("ANY_ACTION"));
+			assert.equal(await daoBaseMock.paramAddress1(), token.address);
 		});
 	});
 
 	describe('allowActionByAddressGeneric()', () => {
 		it('should allow action by address', async () => {
-			await daoBase.allowActionByAddressGeneric(["ANY_ACTION", creator]);
+			await daoBase.allowActionByAddressGeneric([fromUtf8("ANY_ACTION"), padToBytes32(creator, 'left')]).should.be.fulfilled;
+		});
+
+		it('should unpack params', async() => {
+			await daoBaseMock.allowActionByAddressGeneric([fromUtf8("ANY_ACTION"), padToBytes32(creator, 'left')]).should.be.fulfilled;
+
+			assert.equal(await daoBaseMock.paramBytes1(), fromUtf8("ANY_ACTION"));
+			assert.equal(await daoBaseMock.paramAddress1(), creator);
 		});
 	});
 
 	describe('allowActionByAnyMemberOfGroupGeneric', () => {
 		it('should allow action by any member of group', async() => {
-			await daoBase.allowActionByAnyMemberOfGroupGeneric(["ANY_ACTION", "ANY_GROUP"]);
+			await daoBase.allowActionByAnyMemberOfGroupGeneric([fromUtf8("ANY_ACTION"), fromUtf8("ANY_GROUP")]).should.be.fulfilled;
+		});
+
+		it('should unpack params', async() => {
+			await daoBaseMock.allowActionByAnyMemberOfGroupGeneric([fromUtf8("ANY_ACTION"), fromUtf8("ANY_GROUP")]).should.be.fulfilled;
+
+			assert.equal(await daoBaseMock.paramBytes1(), fromUtf8("ANY_ACTION"));
+			assert.equal(await daoBaseMock.paramString1(), "ANY_GROUP");
 		});
 	});
 });
