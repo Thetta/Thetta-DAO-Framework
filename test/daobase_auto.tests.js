@@ -1,3 +1,5 @@
+const assert = require('chai').assert;
+
 const { uintToBytes32, fromUtf8, padToBytes32 } = require('./utils/helpers');
 
 const DaoBaseAuto = artifacts.require("DaoBaseAuto");
