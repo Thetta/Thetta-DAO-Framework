@@ -32,14 +32,6 @@ let daoBaseMock;
 let store;
 
 contract('TaskTable', (accounts) => {
-  var firstContractBalance;
-  var firstEmployeeBalance;
-  var firstCreatorBalance;
-
-  var secondContractBalance;
-  var secondEmployeeBalance;
-  var secondCreatorBalance;
-
   let startTask;
   let startBounty;
   let manageGroups;
@@ -51,9 +43,6 @@ contract('TaskTable', (accounts) => {
   const creator = accounts[0];
   const employee = accounts[1];
   const outsider = accounts[2];
-  const someAddress = accounts[3];
-
-  const ETH = 1000000000000000000;
 
   const neededWei = 1000000;
 
@@ -69,14 +58,6 @@ contract('TaskTable', (accounts) => {
     daoBaseMock = await DaoBaseMock.new(store.address, { from: creator });
 
     taskTable = await TaskTable.new(daoBaseMock.address);
-
-    manageGroups = await daoBaseMock.MANAGE_GROUPS();
-    startTask = await taskTable.START_TASK();
-    startBounty = await taskTable.START_BOUNTY();
-
-    // add creator as first employee
-    await store.addGroupMember(KECCAK256('Employees'), creator);
-    await store.allowActionByAddress(manageGroups, creator);
   });
 
   describe('addNewTask', () => {
