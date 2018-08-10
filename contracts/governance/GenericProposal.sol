@@ -1,11 +1,9 @@
-pragma solidity ^0.4.22;
-
-import "../IDaoBase.sol";
-
-import "../governance/IVoting.sol";
+pragma solidity ^0.4.23;
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+import "../IDaoBase.sol";
+import "../governance/IVoting.sol";
 
 /**
  * @title GenericProposal 
@@ -60,38 +58,12 @@ contract GenericProposal is IProposal, Ownable {
 	function getVoting() public view returns(IVoting) {
 		return voting;
 	}
-}
 
-
-/**
- * @title GenericProposal 
- * @dev This is the implementation of IProposal interface. Each Proposal should have voting attached. 
- * This proposal has no action and no consequences 
- * It should be used just for informal purps. 
- * i.e. with messages like "Lets switch to Slack?"
-*/
-contract InformalProposal is IProposal, Ownable {
-	string proposalText = "";
-	IVoting voting;
-
-	constructor(string _proposalText) public {
-		proposalText = _proposalText;
+	function getMethodSig() public view returns(string) {
+		return methodSig;
 	}
 
-	function getProposalText() public view returns(string) {
-		return proposalText;
-	}
-
-// IVoting implementation
-	function setVoting(IVoting _voting) public onlyOwner {
-		voting = _voting;
-	}
-
-	function getVoting() public view returns(IVoting) {
-		return voting;
-	}
-
-	function action() public {
-		return;
+	function getParams() public view returns(bytes32[]) {
+		return params;
 	}
 }

@@ -1,10 +1,9 @@
 pragma solidity ^0.4.23;
 
-
+import "../DaoClient.sol";
 import "../IDaoBase.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
-
 
 
 contract SimpleICO is DaoClient, Ownable {

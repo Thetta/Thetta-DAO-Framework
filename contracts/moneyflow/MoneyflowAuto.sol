@@ -3,6 +3,7 @@ pragma solidity ^0.4.22;
 import "./IMoneyflow.sol";
 
 import "./ether/WeiExpense.sol";
+import "./ether/WeiAbsoluteExpense.sol";
 
 import "../utils/GenericCaller.sol";
 

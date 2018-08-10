@@ -1,33 +1,15 @@
 pragma solidity ^0.4.22;
 import "./IMoneyflow.sol";
 
+import "./FallbackToWeiReceiver.sol";
 import "./ether/WeiFund.sol";
 import "./ether/WeiExpense.sol";
+import "./ether/WeiRelativeExpenseWithPeriod.sol";
 
+import "../DaoClient.sol";
 import "../IDaoBase.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
-
-
-/**
- * @title FallbackToWeiReceiver
- * @dev Easy-to-use wrapper to convert fallback -> processFunds()
- * fallback -> processFunds
-*/
-contract FallbackToWeiReceiver {
-	address output = 0x0;
-
-	// _output should be IWeiReceiver
-	constructor(address _output) public {
-		output = _output;
-	}
-
-	function()public payable {
-		IWeiReceiver iwr = IWeiReceiver(output);
-		iwr.processFunds.value(msg.value)(msg.value);
-	}
-}
-
 
 /**
  * @title MoneyFlow 
