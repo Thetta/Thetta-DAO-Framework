@@ -1,13 +1,10 @@
-pragma solidity ^0.4.22;
+pragma solidity ^0.4.23;
 
-import "./IMoneyflow.sol";
-
-import "./ether/WeiSplitter.sol";
-import "./ether/WeiExpense.sol";
-import "./ether/WeiFund.sol";
-
+import "./ether/WeiRelativeExpenseWithPeriod.sol";
+import "./ether/WeiTopDownSplitter.sol";
+import "./ether/WeiUnsortedSplitter.sol";
+import "../DaoClient.sol";
 import "../IDaoBase.sol";
-
 
 /**
  * @title FallbackToWeiReceiver
@@ -135,25 +132,4 @@ contract DefaultMoneyflowScheme is DaoClient {
 	function flushDividendsFundTo(address _to) view public isCanDo(FLUSH_RESERVE_FUND_TO) {
 		// TODO:
 	}
-}
-
-
-// TODO:
-contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
-	constructor(
-			IDaoBase _dao, 
-			address _fundOutput, 
-			uint _percentsReserve, 
-			uint _dividendsReserve) public 
-		DefaultMoneyflowScheme(_dao,_fundOutput,_percentsReserve,_dividendsReserve)
-	{
-
-	}
-
-	function addNewTaskGeneric(bytes32[] _params) view public {
-		IWeiReceiver _iwr = IWeiReceiver(address(_params[0]));
-		addNewTask(_iwr);
-	}
-
-	// TODO: add unpackers for all methods of the Scheme
 }
