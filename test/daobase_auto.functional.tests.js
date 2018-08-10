@@ -82,8 +82,8 @@ contract('DaoBaseAuto', (accounts) => {
 		await token.mintFor(employee2, 600);
 		await token.mintFor(employee3, 600);
 
-		store = await DaoStorage.new([token.address],{ from: creator });
-		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+		// store = await DaoStorage.new([token.address],{ from: creator });
+		daoBase = await DaoBaseWithUnpackers.new([token.address],{ from: creator });
 		aacInstance = await DaoBaseAuto.new(daoBase.address, {from: creator});
 		issueTokens = await daoBase.ISSUE_TOKENS();
 		manageGroups = await daoBase.MANAGE_GROUPS();
@@ -100,12 +100,13 @@ contract('DaoBaseAuto', (accounts) => {
 		await aacInstance.setVotingParams(upgradeDaoContract, VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(51), UintToToBytes32(51), 0);
 
 		// add creator as first employee
-		await store.addGroupMember(KECCAK256("Employees"), creator);
-		await store.allowActionByAddress(manageGroups,creator);
+		await daoBase.addGroupMember("Employees", creator);
+		await daoBase.allowActionByAddress(manageGroups,creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
-		await store.transferOwnership(daoBase.address);
+		// await store.transferOwnership(daoBase.address);
+		await daoBase.easyEditOff();
 	});
 
 	it('should not automatically create proposal because AAC has no rights',async() => {
@@ -306,7 +307,7 @@ contract('DaoBaseAuto', (accounts) => {
 		await daoBase.allowActionByAddress(upgradeDaoContract, aacInstance.address);
 
 		// should be able to upgrde microcompany directly without voting (creator is in majority!)
-		let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+		let daoBaseNew = await DaoBaseWithUnpackers.new([token.address],{ from: creator });
 		await aacInstance.upgradeDaoContractAuto(daoBaseNew.address,{from: employee1});
 
 		const pa = await daoBase.getProposalAtIndex(0);

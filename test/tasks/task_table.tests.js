@@ -54,8 +54,8 @@ contract('TaskTable', (accounts) => {
     token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
     await token.mintFor(creator, 1000);
 
-    store = await DaoStorage.new([token.address], { from: creator });
-    daoBaseMock = await DaoBaseMock.new(store.address, { from: creator });
+    // store = await DaoStorage.new([token.address], { from: creator });
+    daoBaseMock = await DaoBaseMock.new([token.address], { from: creator });
 
     taskTable = await TaskTable.new(daoBaseMock.address);
   });

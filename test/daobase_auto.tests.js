@@ -49,6 +49,7 @@ contract('DaoBaseAuto', (accounts) => {
 		await daoBase.addGroupMember('Employees', creator);
 		await daoBase.addGroupMember('Employees', employee1);
 		await daoBase.addGroupMember('Employees', employee2);
+		await daoBase.easyEditOff();
 	});
 
 	describe('addGroupMemberAuto()', () => {
@@ -65,7 +66,7 @@ contract('DaoBaseAuto', (accounts) => {
 			const proposal = GenericProposal.at(proposalAddr);
 			const params = await proposal.getParams();
 
-			assert.equal(params[0], web3.sha3('Employees'));
+			assert.equal(params[0], fromUtf8('Employees'));
 			assert.equal(params[1], padToBytes32(outsider1, 'left'))
 		});
 	});
@@ -124,7 +125,7 @@ contract('DaoBaseAuto', (accounts) => {
 			const proposal = GenericProposal.at(proposalAddr);
 			const params = await proposal.getParams();
 			
-			assert.equal(params[0], web3.sha3('Employees'));
+			assert.equal(params[0], fromUtf8('Employees'));
 			assert.equal(params[1], padToBytes32(employee1, 'left'));
 		});
 	});
@@ -201,7 +202,7 @@ contract('DaoBaseAuto', (accounts) => {
 			const params = await proposal.getParams();
 			
 			assert.equal(params[0], fromUtf8('ANY_ACTION'));
-			assert.equal(params[1], web3.sha3('ANY_GROUP'));
+			assert.equal(params[1], fromUtf8('ANY_GROUP'));
 		});
 	});
 });

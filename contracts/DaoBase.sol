@@ -46,7 +46,7 @@ contract DaoBase is IDaoBase {
 	}
 
 	function stringHash(string _s) public pure returns(bytes32) {
-		return keccak256(abi.encodePacked(_s));
+		return keccak256(_s);
 	}
 
 	function getObserverCount() public view returns(uint) {

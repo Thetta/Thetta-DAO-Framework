@@ -3,14 +3,12 @@ pragma solidity ^0.4.22;
 import "../DaoBaseWithUnpackers.sol";
 
 contract DaoBaseWithUnpackersMock is DaoBaseWithUnpackers {
-	IDaoBase public b;
-	bytes32 public permission;
-	address public a;
-	address public member;
-	address public tokenAddress;
-	uint public amount;
 
-	bytes32 public groupNameHash;
+	address public paramAddress1;
+	address public paramAddress2;
+	string public paramString1;
+	uint public paramUint1;
+	bytes32 public paramBytes1;
 
 	constructor(address[] _tokens) public 
 		DaoBaseWithUnpackers(_tokens)
@@ -18,43 +16,42 @@ contract DaoBaseWithUnpackersMock is DaoBaseWithUnpackers {
 	}
 
 	function upgradeDaoContractGeneric(bytes32[] _params) external {
-		IDaoBase _b = IDaoBase(address(_params[0]));
-		b = _b;
+		paramAddress1 = IDaoBase(address(_params[0]));
 	}
 
 	function addGroupMemberGeneric(bytes32[] _params) external {
-		groupNameHash = bytes32(_params[0]);
-		member = address(_params[1]);
+		paramString1 = UtilsLib.bytes32ToString(_params[0]);
+		paramAddress1 = address(_params[1]);
 	}
 
 	function issueTokensGeneric(bytes32[] _params) external {
-		tokenAddress = address(_params[0]);
-		a = address(_params[1]);
-		amount = uint(_params[2]);
+		paramAddress1 = address(_params[0]);
+		paramAddress2 = address(_params[1]);
+		paramUint1 = uint(_params[2]);
 	}
 
 	function removeGroupMemberGeneric(bytes32[] _params) external {
-		groupNameHash = bytes32(_params[0]);
-		a = address(_params[1]);
+		paramString1 = UtilsLib.bytes32ToString(_params[0]);
+		paramAddress1 = address(_params[1]);
 	}
 
 	function allowActionByShareholderGeneric(bytes32[] _params) external {
-		permission = bytes32(_params[0]);
-		a = address(_params[1]);
+		paramBytes1 = bytes32(_params[0]);
+		paramAddress1 = address(_params[1]);
 	}
 
 	function allowActionByVotingGeneric(bytes32[] _params) external {
-		permission = bytes32(_params[0]);
-		a = address(_params[1]);
+		paramBytes1 = bytes32(_params[0]);
+		paramAddress1 = address(_params[1]);
 	}
 
 	function allowActionByAddressGeneric(bytes32[] _params) external {
-		permission = bytes32(_params[0]);
-		a = address(_params[1]);
+		paramBytes1 = bytes32(_params[0]);
+		paramAddress1 = address(_params[1]);
 	}
- 
+
 	function allowActionByAnyMemberOfGroupGeneric(bytes32[] _params) external {
-		permission = bytes32(_params[0]);
-		groupNameHash = bytes32(_params[1]);
+		paramBytes1 = bytes32(_params[0]);
+		paramString1 = UtilsLib.bytes32ToString(_params[1]);
 	}
 }

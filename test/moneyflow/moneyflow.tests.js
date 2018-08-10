@@ -439,7 +439,7 @@ contract('Moneyflow', (accounts) => {
     let secondCreatorBalance = await web3.eth.getBalance(creator);
     
     let creatorBalanceDelta = secondCreatorBalance.toNumber() - firstCreatorBalance.toNumber();
-    assert.equal(creatorBalanceDelta, money, 'creator gets all money by flush();');
+    assert.equal((creatorBalanceDelta-money)*(creatorBalanceDelta-money)<0.1,true, 'creator gets all money by flush();');
 
     let fundBalance2 = await web3.eth.getBalance(fund.address);
     let fundBalanceDelta = fundBalance.toNumber() - fundBalance2.toNumber();

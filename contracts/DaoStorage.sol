@@ -3,7 +3,7 @@ pragma solidity ^0.4.22;
 import "./DaoStorageGroups.sol";
 import "./governance/IProposal.sol";
 import "./tokens/StdDaoToken.sol";
-
+import "./IDaoObserver.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
