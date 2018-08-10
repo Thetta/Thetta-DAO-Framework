@@ -104,7 +104,15 @@ contract('TaskTable', (accounts) => {
       tx = await taskTable.cancel(id, {from: employee}).should.be.rejectedWith('revert');
   });
 
-  it('Client (money source) cancel task before starting', async () => {
+  it('Client (money source) cancel task before startin now > creationTime + timeToCancell - should be revert', async () => {
+      let tx = await taskTable.addNewTask("Test", "Task for tests", true, false, neededWei, 1, 1);
+      let events = tx.logs.filter(l => l.event === 'TaskTable_ElementAdded');
+      let id = events[0].args._eId;
+      await increaseTimeTo(duration.hours(2));
+      tx = await taskTable.cancel(id).should.be.rejectedWith('revert');
+  });
+
+  it('Client (money source) cancel task before startin now < creationTime + timeToCancell', async () => {
       let tx = await taskTable.addNewTask("Test", "Task for tests", true, false, neededWei, 1, 1);
       let events = tx.logs.filter(l => l.event === 'TaskTable_ElementAdded');
       let id = events[0].args._eId;
