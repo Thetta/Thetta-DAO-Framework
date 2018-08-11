@@ -49,9 +49,14 @@ library GenericCallerLib {
 			IVoting voting = createVoting(store, _permissionId, prop, _origin);
 			prop.setVoting(voting);
 
+			// 3 - add the proposal
 			// WARNING: should be permitted to add new proposal by the current contract address!!!
 			// check your permissions or see examples (tests) how to do that correctly
 			store.dao.addNewProposal(prop);
+
+			// 4 - do first vote 
+			// voting can be finished immediately and action can be called right here ->
+			voting.voteFromOriginPositive();
 			return prop;
 		}
 	}
