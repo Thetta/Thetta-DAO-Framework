@@ -145,6 +145,7 @@ contract('Voting (func)', (accounts) => {
       let isGroupMember = await daoBase.isGroupMember('Employees', employee1);
       assert.equal(isGroupMember, true, 'Creator is ein the group');
       let voting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_SIMPLE_TOKEN, 60, '', 51, 71, token.address);
+      await voting.vote(true, { from: employee1});
       let quorumPercent = await voting.quorumPercent();
       let consensusPercent = await voting.consensusPercent();
       assert.equal(quorumPercent.toNumber(), 51, 'quorumPercent should be 51');
@@ -187,7 +188,8 @@ contract('Voting (func)', (accounts) => {
       assert.strictEqual(await voting.isFinished(), false, 'Voting should be finished');
       assert.strictEqual(await voting.isYes(), false, 'Voting is finished');
 
-      await voting.vote(true);
+      await voting.vote(true, {from: creator});
+
       r2 = await voting.getVotingStats();
       assert.equal(r2[0].toNumber(), 5, 'yes');
       assert.equal(r2[1].toNumber(), 0, 'no');
@@ -1032,6 +1034,8 @@ contract('Voting (func)', (accounts) => {
       let isGroupMember = await daoBase.isGroupMember('Employees', employee1);
       assert.equal(isGroupMember, true, 'Creator is ein the group');
       let voting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_LIQUID, 60, '', 51, 71, token.address);
+      await voting.vote(true, { from: employee1});
+
       let quorumPercent = await voting.quorumPercent();
       let consensusPercent = await voting.consensusPercent();
       assert.equal(quorumPercent.toNumber(), 51, 'quorumPercent should be 51');
@@ -1594,6 +1598,8 @@ contract('Voting (func)', (accounts) => {
       let isGroupMember = await daoBase.isGroupMember('Employees', employee1);
       assert.equal(isGroupMember, true, 'Creator is ein the group');
       let voting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_1P1V, 60, 'Employees', 51, 71, token.address);
+      await voting.vote(true, { from: employee1});
+
       let quorumPercent = await voting.quorumPercent();
       let consensusPercent = await voting.consensusPercent();
       let groupName = await voting.groupName();
@@ -1606,6 +1612,7 @@ contract('Voting (func)', (accounts) => {
       await daoBase.addGroupMember('Employees', employee5);
       let proposal = await InformalProposal.new('Take the money and run again', { from: creator });
       let voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_1P1V, 0, 'Employees', 51, 90, token.address);
+      await voting.vote(true, { from: creator});
 
       // vote by first, check results  (getVotingStats, isFinished, isYes, etc)
       await voting.vote(true, { from: employee1 });
@@ -2157,7 +2164,9 @@ contract('Voting (func)', (accounts) => {
 
     it('Shoud return right value when 3 different votings created', async () => {
       let simpleVoting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_SIMPLE_TOKEN, 60, '', 51, 71, token.address);
+      await simpleVoting.vote(true, { from: employee1});
       let qudraticVoting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_QUADRATIC, 60, '', 51, 71, token.address);
+      await quadraticVoting.vote(true, { from: employee1});
 
       r2 = await simpleVoting.getPowerOf(creator);
       assert.equal(r2.toNumber(), 1, 'yes');
