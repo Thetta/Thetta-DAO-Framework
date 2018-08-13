@@ -69,7 +69,7 @@ contract DaoBaseImpersonated is ImpersonationCaller {
 		params[1] = bytes32(_to);
 		params[2] = bytes32(_amount);
 
-	    doActionOnBehalfOf(_hash, _sig, DaoBase(dao).ISSUE_TOKENS(), "issueTokensGeneric(bytes32[])", params);
+		doActionOnBehalfOf(_hash, _sig, DaoBase(dao).ISSUE_TOKENS(), "issueTokensGeneric(bytes32[])", params);
 	}
 
 	function upgradeDaoContractImp(bytes32 _hash, bytes _sig, address _newMc) public {
