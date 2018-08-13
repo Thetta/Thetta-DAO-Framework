@@ -1,11 +1,9 @@
-pragma solidity ^0.4.22;
+pragma solidity ^0.4.23;
 
 import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
-import "../moneyflow/ether/WeiExpense.sol";
-
 import "../IDaoBase.sol";
-
+import "../moneyflow/ether/WeiAbsoluteExpense.sol";
 
 /**
  * @title WeiGenericTask 
@@ -250,59 +248,5 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 	// non-payable
 	function()public {
-	}
-}
-
-
-/**
- * @title WeiTask 
- * @dev Can be prepaid or postpaid. 
-*/
-contract WeiTask is WeiGenericTask {
-
-	bytes32 constant public START_TASK = keccak256("startTask");
-
-	constructor(IDaoBase _dao, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) public 
-		WeiGenericTask(_dao, _caption, _desc, _isPostpaid, _isDonation, _neededWei, _deadlineTime, _timeToCancell) 
-	{
-	}
-
-	// callable by any Employee of the current DaoBase or Owner
-	function startTask(address _employee) public isCanDo(START_TASK) {
-		require(getCurrentState()==State.Init || getCurrentState()==State.PrePaid);
-
-		if(getCurrentState()==State.Init) {
-			// can start only if postpaid task 
-			require(isPostpaid);
-		}
-		startTime = now;
-		employee = _employee;
-		state = State.InProgress;
-		emit WeiGenericTask_StateChanged(state);
-	}
-}
-
-
-/**
- * @title WeiBounty 
- * @dev Bounty is when you put money, then someone outside the DAO works
- * That is why bounty is always prepaid 
-*/
-contract WeiBounty is WeiGenericTask {
-
-	bytes32 constant public START_BOUNTY = keccak256("startBounty");
-	
-	constructor(IDaoBase _dao, string _caption, string _desc, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) public 
-		WeiGenericTask(_dao, _caption, _desc, false, false, _neededWei, _deadlineTime, _timeToCancell) 
-	{
-	}
-
-	// callable by anyone
-	function startTask() public isCanDo(START_BOUNTY) {
-		require(getCurrentState()==State.PrePaid);
-		startTime = now;
-		employee = msg.sender;
-		state = State.InProgress;
-		emit WeiGenericTask_StateChanged(state);
 	}
 }
