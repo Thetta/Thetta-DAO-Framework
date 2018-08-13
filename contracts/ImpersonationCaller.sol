@@ -12,10 +12,7 @@ import "./IDaoBase.sol";
  * @dev This is a convenient wrapper that is used by the contract below (see DaoBaseImpersonated). Do not use it directly.
 */
 contract ImpersonationCaller is DaoClient {
-
-	bytes32 public ISSUE_TOKENS = keccak256(abi.encodePacked("issueTokens"));
-	
-	constructor(IDaoBase _dao) public DaoClient(_dao) {
+  constructor(IDaoBase _dao) public DaoClient(_dao) {
 
 	}
 
@@ -25,9 +22,11 @@ contract ImpersonationCaller is DaoClient {
    * @param _sig bytes signature, the signature is generated using web3.eth.sign()
    */
 	function doActionOnBehalfOf(bytes32 _hash, bytes _sig, bytes32 _action, string _methodSig, bytes32[] _params) internal {
+		bytes memory prefix = "\x19Ethereum Signed Message:\n32";
+    bytes32 prefixedHash = keccak256(prefix, _hash);
 
 		// 1 - get the address of the client
-		address client = ECRecovery.recover(_hash, _sig);
+		address client = ECRecovery.recover(prefixedHash, _sig);
 
 		// 2 - should be allowed to call action by a client
 		require(dao.isCanDoAction(client, _action));
