@@ -1,6 +1,7 @@
 var UtilsLib = artifacts.require("./UtilsLib");
 
 //var DaoBase = artifacts.require("./DaoBase");
+var DaoBaseImpersonated = artifacts.require("./DaoBaseImpersonated");
 var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 var GenericCaller = artifacts.require("./GenericCaller");
 var GenericCallerLib = artifacts.require("./GenericCallerLib");
@@ -11,6 +12,7 @@ var DaoBaseAuto = artifacts.require("./DaoBaseAuto");
 
 module.exports = function (deployer) {
 	deployer.deploy(UtilsLib).then(() => {
+		deployer.link(UtilsLib, DaoBaseImpersonated);
 		deployer.link(UtilsLib, DaoBaseWithUnpackers);
 		deployer.link(UtilsLib, GenericCaller);
 		// deployer.link(UtilsLib, MoneyflowAuto);
