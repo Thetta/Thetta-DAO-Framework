@@ -370,7 +370,7 @@ contract('Voting', (accounts) => {
 
 			await voting.voteFromOriginPositive().should.be.fulfilled;
 			const r2 = await voting.getVotingStats();
-			assert.equal(r2[0].toNumber(), 1, 'yes');
+			assert.equal(r2[0].toNumber(), 2, 'yes');
       });
     });
 
