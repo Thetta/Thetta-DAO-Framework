@@ -20,30 +20,28 @@ contract('DaoBaseWithUnpackers', (accounts) => {
 		token = await StdDaoToken.new("StdToken","STDT", 18, true, true, 100 * 10^18);
 		// store = await DaoStorage.new([token.address],{from: creator});
 
-		daoBase = await DaoBaseWithUnpackers.new([token.address],{from: creator});
+		store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBaseWithUnpackers.new(store.address,{from: creator});
 		daoBaseMock = await DaoBaseWithUnpackersMock.new([token.address],{from: creator});
 
-		await daoBase.allowActionByAddress(await daoBase.MANAGE_GROUPS(), creator);
-		await daoBase.allowActionByAddress(await daoBase.UPGRADE_DAO_CONTRACT(), creator);
-		await daoBase.allowActionByAddress(await daoBase.ISSUE_TOKENS(), creator);
-
-
-		await daoBaseMock.allowActionByAddress(await daoBase.MANAGE_GROUPS(), creator);
-		await daoBaseMock.allowActionByAddress(await daoBase.UPGRADE_DAO_CONTRACT(), creator);
-		await daoBaseMock.allowActionByAddress(await daoBase.ISSUE_TOKENS(), creator);
+		await store.allowActionByAddress(await daoBase.MANAGE_GROUPS(), creator);
+		await store.allowActionByAddress(await daoBase.UPGRADE_DAO_CONTRACT(), creator);
+		await store.allowActionByAddress(await daoBase.ISSUE_TOKENS(), creator);
 
 		await token.transferOwnership(daoBase.address);
-		// await store.transferOwnership(daoBase.address);
+		await store.transferOwnership(daoBase.address);
 	});
 
 	describe('upgradeDaoContractGeneric()', () => {
 		it('should upgrade dao contract', async() => {
-			let daoBaseNew = await DaoBaseWithUnpackers.new([token.address],{from: creator});
+			store = await DaoStorage.new([token.address],{from: creator});
+		let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{from: creator});
 			await daoBase.upgradeDaoContractGeneric([padToBytes32(daoBaseNew.address, 'left')]).should.be.fulfilled;
 		});
 
 		it('should unpack params', async() => {
-			let daoBaseNew = await DaoBaseWithUnpackers.new([token.address],{from: creator});
+			store = await DaoStorage.new([token.address],{from: creator});
+		let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{from: creator});
 			await daoBaseMock.upgradeDaoContractGeneric([padToBytes32(daoBaseNew.address, 'left')]).should.be.fulfilled;
 
 			assert.equal(await daoBaseMock.paramAddress1(), daoBaseNew.address);

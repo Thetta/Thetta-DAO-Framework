@@ -21,7 +21,7 @@ contract DaoClient is IDaoObserver {
 
 	constructor(IDaoBase _dao) public {
 		dao = _dao;
-		dao.addObserver(this);
+		dao.addObserver(IDaoObserver(this));
 	}
 
 	/**

@@ -49,15 +49,16 @@ contract('SimpleICO', function (accounts) {
     startDate = latestTime() + duration.weeks(1);
     endDate = startDate + duration.weeks(1);
     token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 10e28);
-    daoBase = await DaoBaseWithUnpackers.new([token.address], { from: creator });
+    store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
     issueTokens = await daoBase.ISSUE_TOKENS();
     manageGroups = await daoBase.MANAGE_GROUPS();
     this.crowdsale = await Crowdsale.new(rate, token.address, daoBase.address, minPurchase, maxPurchase, startDate, endDate, softCap, hardCap);
-    await daoBase.addGroupMember('Employees', this.crowdsale.address);
-    await daoBase.allowActionByAddress(issueTokens, this.crowdsale.address);
+    await store.addGroupMember(web3.sha3('Employees'), this.crowdsale.address);
+    await store.allowActionByAddress(issueTokens, this.crowdsale.address);
     await token.transferOwnership(daoBase.address);
   
-		await daoBase.easyEditOff();
+		await store.transferOwnership(daoBase.address);
 	});
 
   describe('buyTokens()', function () {

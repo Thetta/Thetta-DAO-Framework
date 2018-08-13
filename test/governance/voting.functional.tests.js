@@ -81,6 +81,7 @@ contract('Voting (func)', (accounts) => {
   let daoBase;
   let moneyflowInstance;
   let aacInstance;
+  let store;
 
   let issueTokens;
   let manageGroups;
@@ -98,26 +99,24 @@ contract('Voting (func)', (accounts) => {
       await token.mintFor(employee4, 1);
       // await token.mintFor(employee5, 1);
 
-      daoBase = await DaoBaseWithUnpackers.new([token.address], { from: creator });
+      store = await DaoStorage.new([token.address],{from: creator});
+		  daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
       moneyflowInstance = await MoneyFlow.new(daoBase.address, { from: creator });
       aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
 
       issueTokens = await daoBase.ISSUE_TOKENS();
-
       manageGroups = await daoBase.MANAGE_GROUPS();
-
       addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
-
       withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
-
       setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
-      await daoBase.addGroupMember('Employees', creator);
-      await daoBase.allowActionByAddress(manageGroups, creator);
-      await daoBase.allowActionByAddress(issueTokens, creator);
+      await store.addGroupMember(web3.sha3('Employees'), creator);
+      await store.allowActionByAddress(manageGroups, creator);
+      await store.allowActionByAddress(issueTokens, creator);
 
       // do not forget to transfer ownership
       await token.transferOwnership(daoBase.address);
+      await store.transferOwnership(daoBase.address);
 
       // AAC requires special permissions
       await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
@@ -126,7 +125,6 @@ contract('Voting (func)', (accounts) => {
 
       // do not forget to transfer ownership
       await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, 'Employees');
-
       await daoBase.allowActionByVoting(manageGroups, token.address);
       await daoBase.allowActionByVoting(issueTokens, token.address);
       await daoBase.allowActionByVoting(addNewProposal, token.address);
@@ -136,9 +134,9 @@ contract('Voting (func)', (accounts) => {
       await daoBase.addGroupMember('Employees', employee2);
       await daoBase.addGroupMember('Employees', employee3);
       await daoBase.addGroupMember('Employees', employee4);
-      // await daoBase.addGroupMember("Employees", creator);
+      // await store.addGroupMember(web3.sha3("Employees"), creator);
     
-		await daoBase.easyEditOff();
+		
 	});
 
     it('0. should create new voting', async () => {
@@ -665,7 +663,8 @@ contract('Voting (func)', (accounts) => {
       await token.mintFor(employee4, 16);
       // await token.mint(employee5, 1);
 
-      daoBase = await DaoBaseWithUnpackers.new([token.address], { from: creator });
+      store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
       moneyflowInstance = await MoneyFlow.new(daoBase.address, { from: creator });
       aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
 
@@ -679,12 +678,13 @@ contract('Voting (func)', (accounts) => {
 
       setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
-      await daoBase.addGroupMember('Employees', creator);
-      await daoBase.allowActionByAddress(manageGroups, creator);
-      await daoBase.allowActionByAddress(issueTokens, creator);
+      await store.addGroupMember(web3.sha3('Employees'), creator);
+      await store.allowActionByAddress(manageGroups, creator);
+      await store.allowActionByAddress(issueTokens, creator);
 
       // do not forget to transfer ownership
       await token.transferOwnership(daoBase.address);
+      await store.transferOwnership(daoBase.address);
       // 
 
       // AAC requires special permissions
@@ -704,9 +704,9 @@ contract('Voting (func)', (accounts) => {
       await daoBase.addGroupMember('Employees', employee2);
       await daoBase.addGroupMember('Employees', employee3);
       await daoBase.addGroupMember('Employees', employee4);
-      // await daoBase.addGroupMember("Employees", creator);
+      // await daoBase.addGroupMember(web3.sha3("Employees"), creator);
     
-		await daoBase.easyEditOff();
+		
 	});
 
     it('1.1. Q Scenario: 5 employees, 5/5 voted yes, params(100,100) => isYes==true', async () => {
@@ -986,7 +986,8 @@ contract('Voting (func)', (accounts) => {
       await token.mintFor(employee4, 1);
       // await token.mintFor(employee5, 1);
 
-      daoBase = await DaoBaseWithUnpackers.new([token.address], { from: creator });
+      store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
       moneyflowInstance = await MoneyFlow.new(daoBase.address, { from: creator });
       aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
 
@@ -1000,34 +1001,34 @@ contract('Voting (func)', (accounts) => {
 
       setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
-      await daoBase.addGroupMember('Employees', creator);
-      await daoBase.allowActionByAddress(manageGroups, creator);
-      await daoBase.allowActionByAddress(issueTokens, creator);
+      await store.addGroupMember(web3.sha3('Employees'), creator);
+      await store.allowActionByAddress(manageGroups, creator);
+      await store.allowActionByAddress(issueTokens, creator);
 
       // do not forget to transfer ownership
       await token.transferOwnership(daoBase.address);
       
 
       // AAC requires special permissions
-      await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
-      await daoBase.allowActionByAddress(withdrawDonations, aacInstance.address);
-      await daoBase.allowActionByAddress(setRootWeiReceiver, aacInstance.address);
+      await store.allowActionByAddress(addNewProposal, aacInstance.address);
+      await store.allowActionByAddress(withdrawDonations, aacInstance.address);
+      await store.allowActionByAddress(setRootWeiReceiver, aacInstance.address);
 
       // do not forget to transfer ownership
-      await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, 'Employees');
+      await store.allowActionByAnyMemberOfGroup(addNewProposal, 'Employees');
 
-      await daoBase.allowActionByVoting(manageGroups, token.address);
-      await daoBase.allowActionByVoting(issueTokens, token.address);
-      await daoBase.allowActionByVoting(addNewProposal, token.address);
+      await store.allowActionByVoting(manageGroups, token.address);
+      await store.allowActionByVoting(issueTokens, token.address);
+      await store.allowActionByVoting(addNewProposal, token.address);
 
       // check permissions (permissions must be blocked)
-      await daoBase.addGroupMember('Employees', employee1);
-      await daoBase.addGroupMember('Employees', employee2);
-      await daoBase.addGroupMember('Employees', employee3);
-      await daoBase.addGroupMember('Employees', employee4);
-      // await daoBase.addGroupMember("Employees", creator);
+      await store.addGroupMember(web3.sha3('Employees'), employee1);
+      await store.addGroupMember(web3.sha3('Employees'), employee2);
+      await store.addGroupMember(web3.sha3('Employees'), employee3);
+      await store.addGroupMember(web3.sha3('Employees'), employee4);
+      // await store.addGroupMember(web3.sha3("Employees"), creator);
     
-		await daoBase.easyEditOff();
+		await store.transferOwnership(daoBase.address);
 	});
 
     it('0. should create new voting', async () => {
@@ -1549,48 +1550,44 @@ contract('Voting (func)', (accounts) => {
       token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
       await token.mintFor(creator, 1000);
 
-      daoBase = await DaoBaseWithUnpackers.new([token.address], { from: creator });
+      store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
       moneyflowInstance = await MoneyFlow.new(daoBase.address, { from: creator });
       aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
 
       issueTokens = await daoBase.ISSUE_TOKENS();
-
       manageGroups = await daoBase.MANAGE_GROUPS();
-
       addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
-
       burnTokens = await daoBase.BURN_TOKENS();
-
       withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
-
       setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
-      await daoBase.addGroupMember('Employees', creator);
-      await daoBase.allowActionByAddress(manageGroups, creator);
+      await store.addGroupMember(web3.sha3('Employees'), creator);
+      await store.allowActionByAddress(manageGroups, creator);
 
       // do not forget to transfer ownership
       await token.transferOwnership(daoBase.address);
       
 
       // AAC requires special permissions
-      await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
-      await daoBase.allowActionByAddress(withdrawDonations, aacInstance.address);
-      await daoBase.allowActionByAddress(setRootWeiReceiver, aacInstance.address);
+      await store.allowActionByAddress(addNewProposal, aacInstance.address);
+      await store.allowActionByAddress(withdrawDonations, aacInstance.address);
+      await store.allowActionByAddress(setRootWeiReceiver, aacInstance.address);
 
       // do not forget to transfer ownership
-      await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, 'Employees');
+      await store.allowActionByAnyMemberOfGroup(addNewProposal, web3.sha3('Employees'));
 
-      await daoBase.allowActionByVoting(manageGroups, token.address);
-      await daoBase.allowActionByVoting(issueTokens, token.address);
+      await store.allowActionByVoting(manageGroups, token.address);
+      await store.allowActionByVoting(issueTokens, token.address);
 
       // check permissions (permissions must be blocked)
-      await daoBase.addGroupMember('Employees', employee1);
-      await daoBase.addGroupMember('Employees', employee2);
-      await daoBase.addGroupMember('Employees', employee3);
-      await daoBase.addGroupMember('Employees', employee4);
-      // await daoBase.addGroupMember("Employees", creator);
+      await store.addGroupMember(web3.sha3('Employees'), employee1);
+      await store.addGroupMember(web3.sha3('Employees'), employee2);
+      await store.addGroupMember(web3.sha3('Employees'), employee3);
+      await store.addGroupMember(web3.sha3('Employees'), employee4);
+      // await store.addGroupMember(web3.sha3("Employees"), creator);
     
-		await daoBase.easyEditOff();
+		await store.transferOwnership(daoBase.address);
 	});
 
     it('0. should create new voting', async () => {
@@ -2154,9 +2151,10 @@ contract('Voting (func)', (accounts) => {
       await token.mintFor(employee1, 1);
       await token.mintFor(employee2, 2);
 
-      daoBase = await DaoBaseWithUnpackers.new([token.address]);
+      store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBaseWithUnpackers.new(store.address);
     
-		await daoBase.easyEditOff();
+		await store.transferOwnership(daoBase.address);
 	});
 
     it('Shoud return right value when 3 different votings created', async () => {

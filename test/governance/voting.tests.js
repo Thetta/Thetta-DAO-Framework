@@ -33,6 +33,7 @@ contract('Voting', (accounts) => {
   let r2;
   let token;
   let daoBase;
+  let store;
   let proposal;
   let voting;
   let manageGroups;
@@ -44,11 +45,12 @@ contract('Voting', (accounts) => {
       await token.mintFor(employee1, 1);
       await token.mintFor(employee2, 2);
 
-      daoBase = await DaoBaseWithUnpackers.new([token.address]);
+      store = await DaoStorage.new([token.address],{from: creator});
+		  daoBase = await DaoBaseWithUnpackers.new(store.address);
       proposal = await GenericProposal.new(creator, creator, '', []);
       voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);
     
-		await daoBase.easyEditOff();
+		  await store.transferOwnership(daoBase.address);
 	});
 
     describe('quorumPercent()', function () {
@@ -203,10 +205,11 @@ contract('Voting', (accounts) => {
       await token.mintFor(employee1, 1);
       await token.mintFor(employee2, 2);
 
-      daoBase = await DaoBaseWithUnpackers.new([token.address]);
+      store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBaseWithUnpackers.new(store.address);
       voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, token.address);
     
-		await daoBase.easyEditOff();
+		await store.transferOwnership(daoBase.address);
 	});
 
     describe('getPowerOf()', function () {
@@ -331,11 +334,12 @@ contract('Voting', (accounts) => {
       await token.mintFor(employee1, 9);
       await token.mintFor(employee2, 11);
 
-      daoBase = await DaoBaseWithUnpackers.new([token.address]);
+      store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBaseWithUnpackers.new(store.address);
       proposal = await GenericProposal.new(creator, creator, '', []);
       voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_QUADRATIC, 0, 'Test', 100, 100, token.address);
     
-		await daoBase.easyEditOff();
+		await store.transferOwnership(daoBase.address);
 	});
 
     describe('quorumPercent()', function () {
@@ -485,20 +489,21 @@ contract('Voting', (accounts) => {
     beforeEach(async () => {
       token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 100);
 
-      daoBase = await DaoBaseWithUnpackers.new([token.address]);
+      store = await DaoStorage.new([token.address],{from: creator});
+		  daoBase = await DaoBaseWithUnpackers.new(store.address);
       proposal = await GenericProposal.new(creator, creator, '', []);
 
       manageGroups = await daoBase.MANAGE_GROUPS();
 
-      await daoBase.addGroupMember('Test', creator);
-      await daoBase.allowActionByAddress(manageGroups, creator);
+      await store.addGroupMember(web3.sha3('Test'), creator);
+      await store.allowActionByAddress(manageGroups, creator);
       
 
-      await daoBase.addGroupMember('Test', employee1);
-      await daoBase.addGroupMember('Test', employee2);
+      await store.addGroupMember(web3.sha3('Test'), employee1);
+      await store.addGroupMember(web3.sha3('Test'), employee2);
       voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_1P1V, 0, 'Test', 100, 100, token.address);
     
-		await daoBase.easyEditOff();
+		  await store.transferOwnership(daoBase.address);
 	});
 
     describe('quorumPercent()', function () {

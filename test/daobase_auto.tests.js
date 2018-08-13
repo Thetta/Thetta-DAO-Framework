@@ -26,14 +26,14 @@ contract('DaoBaseAuto', (accounts) => {
 		await token.mintFor(employee2, 1);
 
 		// store = await DaoStorage.new([token.address], {from: creator});
-		daoBase = await DaoBaseWithUnpackers.new([token.address], {from: creator});
+		store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBaseWithUnpackers.new(store.address, {from: creator});
 		daoBaseAuto = await DaoBaseAuto.new(daoBase.address, {from: creator});
-
-		await daoBase.allowActionByAddress(await daoBase.MANAGE_GROUPS(), creator);
+		const MANAGE_GROUPS = await daoBase.MANAGE_GROUPS();
+		await store.allowActionByAddress(MANAGE_GROUPS, creator);
 
 		await token.transferOwnership(daoBase.address);
-		// await store.transferOwnership(daoBase.address);
-
+		await store.transferOwnership(daoBase.address);
 		const VOTING_TYPE_1P1V = 1;
 		await daoBaseAuto.setVotingParams(await daoBase.MANAGE_GROUPS(), VOTING_TYPE_1P1V, uintToBytes32(0), fromUtf8("Employees"), uintToBytes32(51), uintToBytes32(51), 0);
 		await daoBaseAuto.setVotingParams(await daoBase.ISSUE_TOKENS(), VOTING_TYPE_1P1V, uintToBytes32(0), fromUtf8("Employees"), uintToBytes32(51), uintToBytes32(51), 0);
@@ -49,7 +49,7 @@ contract('DaoBaseAuto', (accounts) => {
 		await daoBase.addGroupMember('Employees', creator);
 		await daoBase.addGroupMember('Employees', employee1);
 		await daoBase.addGroupMember('Employees', employee2);
-		await daoBase.easyEditOff();
+		
 	});
 
 	describe('addGroupMemberAuto()', () => {

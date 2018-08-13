@@ -5,8 +5,8 @@ import "../DaoBase.sol";
 
 contract DaoBaseMock is DaoBase {
 
-	constructor(address[] _tokens) public 
-		DaoBase(_tokens)
+	constructor(DaoStorage _daoStorage) public 
+		DaoBase(_daoStorage)
 	{
 	}
 

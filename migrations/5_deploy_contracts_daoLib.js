@@ -9,8 +9,7 @@ module.exports = function (deployer) {
 		deployer.link(DaoLib, DaoBase);
 		deployer.link(DaoLib, DaoBaseWithUnpackers);
 		deployer.link(DaoLib, DaoBaseWithUnpackersMock);
-		deployer.link(DaoLib, DaoBaseMock);
-		
+		deployer.link(DaoLib, DaoBaseMock);	
 	});
 };
 

@@ -35,7 +35,8 @@ contract('Scheme', (accounts) => {
     token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
     await token.mintFor(creator, 1000);
 
-    daoBase = await DaoBase.new([token.address]);
+    store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBase.new(store.address);
     // await web3.eth.sendTransaction({from:creator, to:employee1, amount:990000000000000000000})
     // 50/50 between reserve fund and dividends
 
@@ -56,34 +57,34 @@ contract('Scheme', (accounts) => {
     console.log('wei delta:', b2.toNumber() - b3.toNumber());
     // console.log('wei delta:', b3.toNumber() - b4.toNumber());
     // // add creator as first employee
-    // await daoBase.addGroupMember("Employees", creator);
-    // await daoBase.allowActionByAddress(KECCAK256("manageGroups"),creator);
-    // await daoBase.allowActionByAddress(KECCAK256("setRootWeiReceiver"),creator);
+    // await store.addGroupMember(web3.sha3("Employees"), creator);
+    // await store.allowActionByAddress(KECCAK256("manageGroups"),creator);
+    // await store.allowActionByAddress(KECCAK256("setRootWeiReceiver"),creator);
 
     // // do not forget to transfer ownership
     // await token.transferOwnership(daoBase.address);
     // 
 
     // // Set permissions:
-    // await daoBase.allowActionByAnyMemberOfGroup("addNewProposal","Employees");
-    // await daoBase.allowActionByAnyMemberOfGroup("startTask","Employees");
-    // await daoBase.allowActionByAnyMemberOfGroup("startBounty","Employees");
-    // await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
+    // await store.allowActionByAnyMemberOfGroup("addNewProposal", web3.sha3("Employees"));
+    // await store.allowActionByAnyMemberOfGroup("startTask", web3.sha3("Employees"));
+    // await store.allowActionByAnyMemberOfGroup("startBounty", web3.sha3("Employees"));
+    // await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme", web3.sha3("Employees"));
 
-    // await daoBase.allowActionByVoting("manageGroups", token.address);
-    // await daoBase.allowActionByVoting("addNewTask", token.address);
-    // await daoBase.allowActionByVoting("issueTokens", token.address);
+    // await store.allowActionByVoting("manageGroups", token.address);
+    // await store.allowActionByVoting("addNewTask", token.address);
+    // await store.allowActionByVoting("issueTokens", token.address);
 
     // // for moneyscheme!
-    // await daoBase.allowActionByAnyMemberOfGroup("modifyMoneyscheme","Employees");
-    // await daoBase.allowActionByVoting("withdrawDonations", token.address);
+    // await store.allowActionByAnyMemberOfGroup("modifyMoneyscheme", web3.sha3("Employees"));
+    // await store.allowActionByVoting("withdrawDonations", token.address);
 
     // moneyflowInstance = await MoneyFlow.new(daoBase.address);
 
     // const root = await moneyflowScheme.getRootReceiver();
     // await moneyflowInstance.setRootWeiReceiver(root, {from: creator});
   
-		await daoBase.easyEditOff();
+		await store.transferOwnership(daoBase.address);
 	});
 
   it('should set everything correctly', async () => {

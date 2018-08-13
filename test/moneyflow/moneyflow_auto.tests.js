@@ -73,7 +73,8 @@ contract('MoneyflowAuto', (accounts) => {
     token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
     await token.mintFor(creator, 1000);
     
-    daoBase = await DaoBaseWithUnpackers.new([token.address], { from: creator });
+    store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
 
     moneyflowInstance = await MoneyFlow.new(daoBase.address, { from: creator });
 
@@ -94,22 +95,22 @@ contract('MoneyflowAuto', (accounts) => {
     await aacInstance.setVotingParams(withdrawDonations, VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8('Employees'), UintToToBytes32(51), UintToToBytes32(50), 0);
     await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8('Employees'), UintToToBytes32(51), UintToToBytes32(50), 0);
     // add creator as first employee
-    await daoBase.addGroupMember('Employees', creator);
-    await daoBase.allowActionByAddress(manageGroups, creator);
+    await store.addGroupMember(web3.sha3('Employees'), creator);
+    await store.allowActionByAddress(manageGroups, creator);
 
     // do not forget to transfer ownership
     await token.transferOwnership(daoBase.address);
-    await daoBase.addGroupMember('Employees', employee1);
-    await daoBase.addGroupMember('Employees', employee2);
-    await daoBase.allowActionByAddress(issueTokens, creator);
-    await daoBase.allowActionByVoting(withdrawDonations, token.address);
+    await store.addGroupMember(web3.sha3('Employees'), employee1);
+    await store.addGroupMember(web3.sha3('Employees'), employee2);
+    await store.allowActionByAddress(issueTokens, creator);
+    await store.allowActionByVoting(withdrawDonations, token.address);
     // AAC requires special permissions
-    await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
+    await store.allowActionByAddress(addNewProposal, aacInstance.address);
     // these actions required if AAC will call this actions DIRECTLY (without voting)
-    await daoBase.allowActionByAddress(withdrawDonations, aacInstance.address);
-    await daoBase.allowActionByAddress(setRootWeiReceiver, aacInstance.address);
+    await store.allowActionByAddress(withdrawDonations, aacInstance.address);
+    await store.allowActionByAddress(setRootWeiReceiver, aacInstance.address);
 
-		await daoBase.easyEditOff();
+		await store.transferOwnership(daoBase.address);
 	});
 
   it('should allow to get donations using AAC (direct call)', async () => {

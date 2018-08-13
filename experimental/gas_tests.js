@@ -2,6 +2,7 @@
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 var DaoBase = artifacts.require("./DaoBase");
+var DaoBaseAuto = artifacts.require("./DaoBaseAuto");
 var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 
 // // to check how upgrade works with IDaoBase clients
@@ -44,47 +45,53 @@ global.contract('Gas measurements', (accounts) => {
 	global.beforeEach(async() => {
 	});
 
-	global.it('Should estimate gas for WeiTopDownSplitter',async() => {
-      
-	const VOTING_TYPE_1P1V = 1;
-	const VOTING_TYPE_SIMPLE_TOKEN = 2;
-	const VOTING_TYPE_QUADRATIC = 3;
-	const VOTING_TYPE_LIQUID = 4;
+	global.it('Should estimate gas for WeiUnsortedSplitter',async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
-		await token.mintFor(creator, 1000);
-		daoBase = await DaoBase.new([token.address]);
-
-      // token = await DaoBse.new('StdToken', 'STDT', 18, true, true, 1000000000);
-      // await token.mintFor(creator, 1);
-      // await token.mintFor(employee1, 1);
-      // await token.mintFor(employee2, 2);
-
-      // let store = await DaoStorage.new([token.address], { from: creator });
-      // await token.mintFor(creator, 1);
-      // await token.mintFor(employee1, 1);
-      // await token.mintFor(employee2, 2);
-
-      // daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
-      // proposal = await Genericproposal.new(creator, creator, '', []);
-      // voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);
+		// await token.mintFor(creator, 1000);
+		// store = await DaoStorage.new([token.address], { from: creator });
+		// daoBase = await DaoBase.new(store.address);
+		// var aac = await DaoBaseAuto.new(daoBase.address);
 	});
 
-	// global.it('Should estimate gas for WeiUnsortedSplitter',async() => {
-	// 	var b1 = await web3.eth.getBalance(creator);
-	// 	var td = await WeiUnsortedSplitter.new('a',{from: creator, gasPrice:1})
-	// 	var b2 = await web3.eth.getBalance(creator);
-	// 	var td = await WeiUnsortedSplitter.new('a',{from: creator, gasPrice:1})
-	// 	var b3 = await web3.eth.getBalance(creator);
-	// 	var td = await WeiUnsortedSplitter.new('a',{from: creator, gasPrice:1})
-	// 	var b4 = await web3.eth.getBalance(creator);
-	// 	var td = await WeiUnsortedSplitter.new('a',{from: creator, gasPrice:1})
-	// 	var b5 = await web3.eth.getBalance(creator);
-	// 	var td = await WeiUnsortedSplitter.new('a',{from: creator, gasPrice:1})
-	// 	console.log('WeiUnsortedSplitter 1:', b1.toNumber() - b2.toNumber());
-	// 	console.log('WeiUnsortedSplitter 2:', b2.toNumber() - b3.toNumber());
-	// 	console.log('WeiUnsortedSplitter 3:', b3.toNumber() - b4.toNumber());
-	// 	console.log('WeiUnsortedSplitter 4:', b4.toNumber() - b5.toNumber());
-	// });
+	global.it('Should estimate gas for WeiUnsortedSplitter',async() => {
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+		await token.mintFor(creator, 1000);
+		// store = await DaoStorage.new([token.address], { from: creator });
+		// daoBase = await DaoBase.new(store.address);
+		// var aac = await DaoBaseAuto.new(daoBase.address);
+	});
+
+	global.it('Should estimate gas for WeiUnsortedSplitter',async() => {
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+		await token.mintFor(creator, 1000);
+		store = await DaoStorage.new([token.address], { from: creator });
+		// daoBase = await DaoBase.new(store.address);
+		// var aac = await DaoBaseAuto.new(daoBase.address);
+	});
+
+	global.it('Should estimate gas for WeiUnsortedSplitter',async() => {
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+		await token.mintFor(creator, 1000);
+		store = await DaoStorage.new([token.address], { from: creator });
+		daoBase = await DaoBase.new(store.address);
+		// var aac = await DaoBaseAuto.new(daoBase.address);
+	});
+
+	global.it('Should estimate gas for WeiUnsortedSplitter',async() => {
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+		await token.mintFor(creator, 1000);
+		store = await DaoStorage.new([token.address], { from: creator });
+		daoBase = await DaoBase.new(store.address);
+		var aac = await DaoBaseAuto.new(daoBase.address);
+	});
+
+	global.it('Should estimate gas for WeiUnsortedSplitter',async() => {
+		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+		await token.mintFor(creator, 1000);
+		store = await DaoStorage.new([token.address], { from: creator });
+		daoBase = await DaoBase.new(store.address);
+		var aac = await GenericCaller.new(daoBase.address);
+	});
 
 	// global.it('Should estimate gas for MoneyflowCentral',async() => {
 	// 	var b1 = await web3.eth.getBalance(creator);

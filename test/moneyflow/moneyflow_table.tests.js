@@ -211,7 +211,8 @@ contract('MoneyflowTable tests', (accounts) => {
 
     await token.mintFor(creator, 1000, { gasPrice: 0 });
 
-    daoBase = await DaoBase.new([token.address]);
+    store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBase.new(store.address);
 
     issueTokens = await daoBase.ISSUE_TOKENS();
     manageGroups = await daoBase.MANAGE_GROUPS();
@@ -223,11 +224,12 @@ contract('MoneyflowTable tests', (accounts) => {
     setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
     // add creator as first employee
-    await daoBase.addGroupMember('Employees', creator);
-    await daoBase.allowActionByAddress(manageGroups, creator);
+    await store.addGroupMember(web3.sha3('Employees'), creator);
+    await store.allowActionByAddress(manageGroups, creator);
 
     // do not forget to transfer ownership
     await token.transferOwnership(daoBase.address);
+    await store.transferOwnership(daoBase.address);
     
 
     // manually setup the Default organization
@@ -240,22 +242,8 @@ contract('MoneyflowTable tests', (accounts) => {
 
     await daoBase.allowActionByAddress(withdrawDonations, creator);
   
-		await daoBase.easyEditOff();
+		
 	});
-
-  it('Gas measurements', async () => {
-    var b1 = web3.eth.getBalance(creator);
-    let moneyflowTable = await MoneyflowTable.new({ gasPrice: 1 });
-    var b2 = web3.eth.getBalance(creator);
-    await moneyflowTable.addTopdownSplitter({ gasPrice: 1 });
-    var b3 = web3.eth.getBalance(creator);
-    await moneyflowTable.addAbsoluteExpense(neededAmount, isPeriodic, isAccumulateDebt, periodHours, output, { gasPrice: 1 });
-    var b4 = web3.eth.getBalance(creator);
-
-    console.log('moneyflowTable:', b1.toNumber() - b2.toNumber());
-    console.log('splitter:', b2.toNumber() - b3.toNumber());
-    console.log('expense:', b3.toNumber() - b4.toNumber());
-  });
 
   // 0->•abs
   it('should process money with WeiTopDownSplitter + 3 WeiAbsoluteExpense', async () => {

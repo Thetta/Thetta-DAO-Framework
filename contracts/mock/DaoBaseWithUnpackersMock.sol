@@ -10,8 +10,8 @@ contract DaoBaseWithUnpackersMock is DaoBaseWithUnpackers {
 	uint public paramUint1;
 	bytes32 public paramBytes1;
 
-	constructor(address[] _tokens) public 
-		DaoBaseWithUnpackers(_tokens)
+	constructor(DaoStorage _daoStorage) public 
+		DaoBaseWithUnpackers(_daoStorage)
 	{
 	}
 

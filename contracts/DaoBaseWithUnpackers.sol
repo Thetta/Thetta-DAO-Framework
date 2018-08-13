@@ -13,9 +13,7 @@ import "./DaoBase.sol";
  * After voting is finished -> target method is called and params should be unpacked
 */
 contract DaoBaseWithUnpackers is DaoBase {
-	using DaoLib for DaoLib.DaoStorage;
-
-	constructor(address[] _tokens) public DaoBase(_tokens){
+	constructor(DaoStorage _daoStorage) public DaoBase(_daoStorage){
 	}
 
 	function upgradeDaoContractGeneric(bytes32[] _params) external {

@@ -219,7 +219,8 @@ contract('Moneyflow', (accounts) => {
 
     await token.mintFor(creator, 1000, { gasPrice: 0 });
 
-    daoBase = await DaoBase.new([token.address], { from: creator, gasPrice: 0 });
+    store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBase.new(store.address, { from: creator, gasPrice: 0 });
 
     issueTokens = await daoBase.ISSUE_TOKENS();
 
@@ -238,27 +239,27 @@ contract('Moneyflow', (accounts) => {
     setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
 
     // add creator as first employee
-    await daoBase.addGroupMember('Employees', creator);
-    await daoBase.allowActionByAddress(manageGroups, creator);
+    await store.addGroupMember(web3.sha3('Employees'), creator);
+    await store.allowActionByAddress(manageGroups, creator);
 
     // do not forget to transfer ownership
     await token.transferOwnership(daoBase.address);
     
 
     // manually setup the Default organization
-    await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, 'Employees');
-    await daoBase.allowActionByAnyMemberOfGroup(setRootWeiReceiver, 'Employees');
+    await store.allowActionByAnyMemberOfGroup(addNewProposal, web3.sha3('Employees'));
+    await store.allowActionByAnyMemberOfGroup(setRootWeiReceiver, web3.sha3('Employees'));
 
     // this is a list of actions that require voting
-    await daoBase.allowActionByVoting(manageGroups, token.address);
-    await daoBase.allowActionByVoting(issueTokens, token.address);
+    await store.allowActionByVoting(manageGroups, token.address);
+    await store.allowActionByVoting(issueTokens, token.address);
 
-    await daoBase.allowActionByAddress(withdrawDonations, creator);
+    await store.allowActionByAddress(withdrawDonations, creator);
 
     // moneyflow will not create Proposals in this case
-    // await daoBase.allowActionByAddress("addNewProposal", moneyflowInstance.address);
+    // await store.allowActionByAddress("addNewProposal", moneyflowInstance.address);
   
-		await daoBase.easyEditOff();
+		await store.transferOwnership(daoBase.address);
 	});
 
   it('Should revert when some money stays on unsorted splitter (U-> abs-rel50%)', async () => {
@@ -420,7 +421,7 @@ contract('Moneyflow', (accounts) => {
     assert.equal(revEndpoint, 0x0, 'Endpoint should be zero');
 
     const isEnableFlushTo = true;
-    let fund = await await WeiRelativeExpenseWithPeriod.new(10000, 0, false);
+    let fund = await WeiRelativeExpenseWithPeriod.new(10000, 0, false);
     await moneyflowInstance.setRootWeiReceiver(fund.address);
 
     const revEndpoint2 = await moneyflowInstance.getRevenueEndpoint();
