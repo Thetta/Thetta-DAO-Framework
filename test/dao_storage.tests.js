@@ -1,12 +1,12 @@
+const DaoStorage = artifacts.require('./DaoStorage');
+const StdDaoToken = artifacts.require('./StdDaoToken');
+const InformalProposal = artifacts.require('./InformalProposal');
+
 require('chai')
   .use(require('chai-as-promised'))
   .use(require('chai-bignumber')(web3.BigNumber))
   .should();
 
-
-const DaoStorage = artifacts.require('./DaoStorage');
-const StdDaoToken = artifacts.require('./StdDaoToken');
-const InformalProposal = artifacts.require('./InformalProposal');
 contract('DaoStorage', (accounts) => {
 	const creatorAddress = accounts[0];
 	const outsider = accounts[1];
@@ -18,11 +18,6 @@ contract('DaoStorage', (accounts) => {
 	let additionalToken;
 	let proposal;
 
-	let tokenIndex = 0;
-	let proposalIndex = 0;
-	let memberIndex = 0;
-	let observerIndex = 0;
-	let groupIndex	 = 0;
 	const WITHDRAW_DONATIONS = '0xfc685f51f68cb86aa29db19c2a8f4e85183375ba55b5e56fb2e89adc5f5e4285';
 	const permissionHash = WITHDRAW_DONATIONS;
 	let groupHash = '0x060990aad7751fab616bf14cf6b68ac4c5cdc555f8f06bc9f15ba1b156e81b0b';
@@ -336,7 +331,7 @@ contract('DaoStorage', (accounts) => {
 
 		it('should accept outsider`s getMembersGroupAtIndex call', async () => {
 			await store.addGroupMember(groupHash, member);
-			await store.getMembersGroupAtIndex(member, groupIndex, {from:outsider}).should.be.fulfilled;
+			await store.getMembersGroupAtIndex(member, 0, {from:outsider}).should.be.fulfilled;
 		});
 
 		it('should call getMembersGroupAtIndex', async () => {
