@@ -31,15 +31,15 @@ contract DaoStorage is Ownable{
 		return actionAvailabilityByVoting[_tokenAddress][_permissionHash];
 	}
 
-	function isAllowedActionByAddress(bytes32 _permissionHash, address _a) external view returns(bool) {
-		return actionAvailabilityByAddress[_a][_permissionHash];
+	function isAllowedActionByAddress(bytes32 _permissionHash, address _targetAddress) external view returns(bool) {
+		return actionAvailabilityByAddress[_targetAddress][_permissionHash];
 	}
 
-	function isAllowedActionByMembership(bytes32 _permissionHash, address _a) external view returns(bool isAllowed) {
+	function isAllowedActionByMembership(bytes32 _permissionHash, address _targetAddress) external view returns(bool isAllowed) {
 		isAllowed = false;
-		for(uint i = 0; i < addressToGroups[_a].length; ++i) {
-			bytes32 groupName = addressToGroups[_a][i];
-			if(actionAvailabilityByMembership[groupName][_permissionHash]) {
+		for(uint i = 0; i < addressToGroups[_targetAddress].length; ++i) {
+			bytes32 groupHash = addressToGroups[_targetAddress][i];
+			if(actionAvailabilityByMembership[groupHash][_permissionHash]) {
 				isAllowed = true;
 			}
 		}
@@ -85,10 +85,12 @@ contract DaoStorage is Ownable{
 	}
 
 	function getGroupsMemberAtIndex(bytes32 _groupHash, uint _memberIndex) public view returns(address) {
+		require(_memberIndex < groupToAddresses[_groupHash].length);
 		return groupToAddresses[_groupHash][_memberIndex];
 	}
 
 	function getMembersGroupAtIndex(address _member, uint _groupIndex) public view returns(bytes32) {
+		require(_groupIndex < addressToGroups[_member].length);
 		return addressToGroups[_member][_groupIndex];
 	}
 
@@ -162,7 +164,7 @@ contract DaoStorage is Ownable{
 		actionAvailabilityByAddress[_targetAddress][_permissionHash] = false;
 	}
 
-	function restrictActionByGroupMembership(bytes32 _groupHash, bytes32 _permissionHash) external onlyOwner {
+	function restrictActionByGroupMembership(bytes32 _permissionHash, bytes32 _groupHash) external onlyOwner {
 		actionAvailabilityByMembership[_groupHash][_permissionHash] = false;
 	}
 
