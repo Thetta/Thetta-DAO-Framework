@@ -14,7 +14,7 @@ import "./IDaoObserver.sol";
 contract DaoClient is IDaoObserver {
 	IDaoBase dao;
 
-	modifier isCanDo(bytes32 _what){
+	modifier isCanDo(bytes32 _what) {
 		require(dao.isCanDoAction(msg.sender, _what)); 
 		_; 
 	}

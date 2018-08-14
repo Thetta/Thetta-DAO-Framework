@@ -2,7 +2,7 @@ pragma solidity ^0.4.22;
 
 import "./IDaoBase.sol";
 import "./DaoStorage.sol";
-import "./DaoLib.sol";
+import "./DaoBaseLib.sol";
 
 contract DaoBase is IDaoBase {
 	event DaoBase_UpgradeDaoContract(address _new);
@@ -19,7 +19,7 @@ contract DaoBase is IDaoBase {
 	DaoStorage daoStorage;
 
 	modifier isCanDo(bytes32 _permissionName){
-		require(DaoLib.isCanDoAction(daoStorage, msg.sender, _permissionName)); 
+		require(DaoBaseLib.isCanDoAction(daoStorage, msg.sender, _permissionName)); 
 		_; 
 	}
 
@@ -131,7 +131,7 @@ contract DaoBase is IDaoBase {
 	 * 4. deny
 	*/
 	function isCanDoAction(address _a, bytes32 _permissionNameHash) public view returns(bool) {
-		return DaoLib.isCanDoAction(daoStorage, _a, _permissionNameHash);
+		return DaoBaseLib.isCanDoAction(daoStorage, _a, _permissionNameHash);
 	}
 
 	// Proposals:
@@ -151,11 +151,11 @@ contract DaoBase is IDaoBase {
 	// Tokens:
 	function issueTokens(address _tokenAddress, address _to, uint _amount)public isCanDo(ISSUE_TOKENS) {
 		emit DaoBase_IssueTokens(_tokenAddress, _to, _amount);
-		DaoLib.issueTokens(daoStorage, _tokenAddress, _to, _amount);
+		DaoBaseLib.issueTokens(daoStorage, _tokenAddress, _to, _amount);
 	}
 
 	function burnTokens(address _tokenAddress, address _who, uint _amount)public isCanDo(BURN_TOKENS) {
 		emit DaoBase_BurnTokens(_tokenAddress, _who, _amount);
-		DaoLib.burnTokens(daoStorage, _tokenAddress, _who, _amount);	
+		DaoBaseLib.burnTokens(daoStorage, _tokenAddress, _who, _amount);	
 	}
 }
