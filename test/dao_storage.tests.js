@@ -26,98 +26,100 @@ contract('DaoStorage', (accounts) => {
 		token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
 		additionalToken = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
 		store = await DaoStorage.new([token.address], { from: creatorAddress });
-		let proposalContract = await InformalProposal.new('text');
-		proposal = proposalContract.address;
 	});
 
 // SETTERS
-	describe('test allowActionByShareholder()', ()=> {
-		it('should restrict allowActionByShareholder call from outsider', async () => {
+	describe('allowActionByShareholder()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.allowActionByShareholder(permissionHash, token.address, {from:outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('should call allowActionByShareholder', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.allowActionByShareholder(permissionHash, token.address).should.be.fulfilled;
 		});
 	});
 
-	describe('test allowActionByVoting()', ()=> {
-		it('should restrict allowActionByVoting call from outsider', async () => {
+	describe('allowActionByVoting()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.allowActionByVoting(permissionHash, token.address, {from:outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('should call allowActionByVoting', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.allowActionByVoting(permissionHash, token.address).should.be.fulfilled;
 		});
 	});
 
-	describe('test allowActionByAddress()', ()=> {
+	describe('allowActionByAddress()', ()=> {
 		it('should restrict allowActionByAddress call', async () => {
 			await store.allowActionByAddress(permissionHash, creatorAddress, {from:outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('should call allowActionByAddress', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.allowActionByAddress(permissionHash, creatorAddress).should.be.fulfilled;
 		});			
 	});
 
-	describe('test allowActionByAnyMemberOfGroup()', ()=> {
+	describe('allowActionByAnyMemberOfGroup()', ()=> {
 		it('should restrict allowActionByAnyMemberOfGroup call', async () => {
 			await store.allowActionByAnyMemberOfGroup(permissionHash, groupHash, {from:outsider}).should.be.rejectedWith('revert'); 
 		});
 
-		it('should call allowActionByAnyMemberOfGroup', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.allowActionByAnyMemberOfGroup(permissionHash, groupHash).should.be.fulfilled;
 		});
 	});
 
-	describe('test addToken()', ()=> {
-		it('should restrict addToken call from outsider', async () => {
+	describe('addToken()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.addToken(additionalToken.address, {from:outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('should call addToken', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.addToken(additionalToken.address).should.be.fulfilled;
 		});
 	});
 
-	describe('test addProposal()', ()=> {
-		it('restrict addProposal call from outsider', async () => {
+	describe('addProposal()', ()=> {
+		it('should fail if called by a person without permission', async () => {
+			let proposalContract = await InformalProposal.new('text');
+			proposal = proposalContract.address;
 			await store.addProposal(proposal, {from:outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('call addProposal', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
+			let proposalContract = await InformalProposal.new('text');
+			proposal = proposalContract.address;			
 			await store.addProposal(proposal).should.be.fulfilled;
 		});
 	});
 
-	describe('test addObserver()', ()=> {
+	describe('addObserver()', ()=> {
 		it('should revert while trying to get nonexistent observer', async () => {
 			await store.getObserverAtIndex(0).should.be.rejectedWith('revert');
 		});
 
-		it('call addObserver', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.addObserver(observer).should.be.fulfilled;
 		});
 	});
 
-	describe('test addGroupMember()', ()=> {
-		it('restrict addGroupMember call from outsider', async () => {
+	describe('addGroupMember()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.addGroupMember(groupHash, member, {from:outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('should add GroupMember', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.addGroupMember(groupHash, member).should.be.fulfilled;
 		});
 	});
 
 // GETTERS
-	describe('test isAllowedActionByShareholder()', ()=> {
-		it('should accept outsider`s isAllowedActionByShareholder call', async () => {
+	describe('isAllowedActionByShareholder()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.isAllowedActionByShareholder(permissionHash, token.address,{from:outsider}).should.be.fulfilled;
 		});	
 
-		it('should be allowed', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			var isAllowed = await store.isAllowedActionByShareholder(permissionHash, token.address);
 			assert.isFalse(isAllowed);
 			await store.allowActionByShareholder(permissionHash, token.address);
@@ -129,12 +131,12 @@ contract('DaoStorage', (accounts) => {
 		});
 	});
 
-	describe('test isAllowedActionByVoting()', ()=> {
-		it('should accept outsider`s isAllowedActionByVoting call', async () => {
+	describe('isAllowedActionByVoting()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.isAllowedActionByVoting(permissionHash, token.address,{from:outsider}).should.be.fulfilled;
 		});	
 
-		it('should be allowed', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			var isAllowed = await store.isAllowedActionByVoting(permissionHash, token.address);
 			assert.isFalse(isAllowed);
 			await store.allowActionByVoting(permissionHash, token.address);
@@ -146,12 +148,12 @@ contract('DaoStorage', (accounts) => {
 		});
 	});
 
-	describe('test isAllowedActionByAddress()', ()=> {
-		it('should accept outsider`s isAllowedActionByAddress call', async () => {
+	describe('isAllowedActionByAddress()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.isAllowedActionByAddress(permissionHash, creatorAddress,{from:outsider}).should.be.fulfilled;
 		});	
 
-		it('should be allowed', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			var isAllowed = await store.isAllowedActionByAddress(permissionHash, creatorAddress);
 			assert.isFalse(isAllowed);
 			await store.allowActionByAddress(permissionHash, creatorAddress);
@@ -163,12 +165,12 @@ contract('DaoStorage', (accounts) => {
 		});		
 	});
 
-	describe('test isAllowedActionByMembership()', ()=> {
-		it('should accept outsider`s isAllowedActionByMembership call', async () => {
+	describe('isAllowedActionByMembership()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.isAllowedActionByMembership(permissionHash, member,{from:outsider}).should.be.fulfilled;
 		});	
 
-		it('should be allowed', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.addGroupMember(groupHash, member);
 			var isAllowed = await store.isAllowedActionByMembership(permissionHash, member);
 			assert.isFalse(isAllowed);
@@ -181,8 +183,8 @@ contract('DaoStorage', (accounts) => {
 		});	
 	});
 
-	describe('test getTokenAtIndex()', ()=> {
-		it('should accept outsider`s getTokenAtIndex call', async () => {
+	describe('getTokenAtIndex()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.getTokenAtIndex(0,{from:outsider}).should.be.fulfilled;
 		});
 
@@ -190,15 +192,17 @@ contract('DaoStorage', (accounts) => {
 			await store.getTokenAtIndex(1).should.be.rejectedWith('revert');
 		});
 
-		it('should get token', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.addToken(additionalToken.address).should.be.fulfilled;
 			let receivedToken = await store.getTokenAtIndex(1);
 			assert.equal(receivedToken, additionalToken.address);
 		});
 	});
 
-	describe('test getProposalAtIndex()', ()=> {
-		it('should accept outsider`s getProposalAtIndex call', async () => {
+	describe('getProposalAtIndex()', ()=> {
+		it('should fail if called by a person without permission', async () => {
+			let proposalContract = await InformalProposal.new('text');
+			proposal = proposalContract.address;				
 			await store.addProposal(proposal);
 			await store.getProposalAtIndex(0,{from:outsider}).should.be.fulfilled;
 		});
@@ -207,15 +211,17 @@ contract('DaoStorage', (accounts) => {
 			await store.getProposalAtIndex(0).should.be.rejectedWith('revert');
 		});
 
-		it('should get proposal', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
+			let proposalContract = await InformalProposal.new('text');
+			proposal = proposalContract.address;				
 			await store.addProposal(proposal);
 			let receivedProposal = await store.getProposalAtIndex(0);
 			assert.equal(receivedProposal, proposal);
 		});
 	});
 
-	describe('test getObserverAtIndex()', ()=> {
-		it('should accept outsider`s getObserverAtIndex call', async () => {
+	describe('getObserverAtIndex()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.addObserver(observer);
 			await store.getObserverAtIndex(0,{from:outsider}).should.be.fulfilled;
 		});
@@ -224,15 +230,15 @@ contract('DaoStorage', (accounts) => {
 			await store.getObserverAtIndex(0).should.be.rejectedWith('revert');
 		});
 
-		it('should get observer', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.addObserver(observer);
 			let receivedObserver = await store.getObserverAtIndex(0);
 			assert.equal(receivedObserver, observer);
 		});
 	});
 
-	describe('test getGroupsMemberAtIndex()', ()=> {
-		it('should accept outsider`s getGroupsMemberAtIndex call', async () => {
+	describe('getGroupsMemberAtIndex()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.addGroupMember(groupHash, member);
 			await store.getGroupsMemberAtIndex(groupHash, 0,{from:outsider}).should.be.fulfilled;
 		});
@@ -241,67 +247,73 @@ contract('DaoStorage', (accounts) => {
 			await store.getGroupsMemberAtIndex(groupHash, 0).should.be.rejectedWith('revert');
 		});
 
-		it('should get groupMember', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.addGroupMember(groupHash, member);
 			let groupMember = await store.getGroupsMemberAtIndex(groupHash, 0);
 			assert.equal(groupMember, member);
 		});
 	});	
 
-	describe('test getTokensCount()', ()=> {
-		it('should accept outsider`s getTokensCount call', async () => {
+	describe('getTokensCount()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.getTokensCount({from:outsider}).should.be.fulfilled;
 		});
 
-		it('should get TokensCount', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			let count = await store.getTokensCount();
 			assert.equal(count,1);
 		});
 	});
 
-	describe('test getProposalsCount()', ()=> {
-		it('should accept outsider`s getProposalsCount call', async () => {
+	describe('getProposalsCount()', ()=> {
+		it('should fail if called by a person without permission', async () => {
+			let proposalContract = await InformalProposal.new('text');
+			proposal = proposalContract.address;				
 			await store.addProposal(proposal);
 			await store.getTokensCount({from:outsider}).should.be.fulfilled;
 		});
 
-		it('should get proposal count', async () => {
+		it('should succeed if called by a person that has correct permission set count', async () => {
+			let proposalContract = await InformalProposal.new('text');
+			proposal = proposalContract.address;				
 			await store.addProposal(proposal);
 			let count = await store.getTokensCount().should.be.fulfilled;
 			assert.equal(count,1);		
 		});		
 	});
 
-	describe('test getObserversCount()', ()=> {
-		it('should accept outsider`s getProposalsCount call', async () => {
+	describe('getObserversCount()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.addObserver(observer);
 			await store.getObserversCount({from:outsider}).should.be.fulfilled;
 		});
 
-		it('should get proposal count', async () => {
+		it('should succeed if called by a person that has correct permission set count', async () => {
 			await store.addObserver(observer);
 			let count = await store.getObserversCount().should.be.fulfilled;
 			assert.equal(count,1);		
 		});	
 	});
 
-	describe('test getAllTokenAddresses()', ()=> {
-		it('should accept outsider`s getAllTokenAddresses call', async () => {
+	describe('getAllTokenAddresses()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.getAllTokenAddresses({from:outsider}).should.be.fulfilled;
 		});
 
-		it('should call getAllTokenAddresses', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			var all = await store.getAllTokenAddresses();
 			assert.equal(all.length, 1);
 		});
 	});
 
-	describe('test getAllProposals()', ()=> {
-		it('should accept outsider`s getAllProposals call', async () => {
+	describe('getAllProposals()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.getAllProposals({from:outsider}).should.be.fulfilled;
 		});
 
-		it('should call getAllProposals', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
+			let proposalContract = await InformalProposal.new('text');
+			proposal = proposalContract.address;				
 			var all = await store.getAllProposals();
 			assert.equal(all.length, 0);
 			await store.addProposal(proposal);
@@ -310,12 +322,12 @@ contract('DaoStorage', (accounts) => {
 		});
 	});
 
-	describe('test getAllObservers()', ()=> {
-		it('should accept outsider`s getAllObservers call', async () => {
+	describe('getAllObservers()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.getAllObservers({from:outsider}).should.be.fulfilled;
 		});
 
-		it('should call getAllObservers', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			var all = await store.getAllObservers();
 			assert.equal(all.length, 0);
 			await store.addObserver(observer);
@@ -324,30 +336,30 @@ contract('DaoStorage', (accounts) => {
 		});
 	});
 
-	describe('test getMembersGroupAtIndex()', ()=> {
+	describe('getMembersGroupAtIndex()', ()=> {
 		it('should revert while trying to get nonexistent member group', async () => {
 			await store.getMembersGroupAtIndex(member, 0).should.be.rejectedWith('revert');
 		});		
 
-		it('should accept outsider`s getMembersGroupAtIndex call', async () => {
+		it('should fail if called by a person without permission', async () => {
 			await store.addGroupMember(groupHash, member);
 			await store.getMembersGroupAtIndex(member, 0, {from:outsider}).should.be.fulfilled;
 		});
 
-		it('should call getMembersGroupAtIndex', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.addGroupMember(groupHash, member);
 			let group = await store.getMembersGroupAtIndex(member, 0);
 			assert.equal(group, groupHash);
 		});
 	});
 
-	describe('test getMembersCount()', ()=> {
-		it('should accept outsider`s getMembersCount call', async () => {
+	describe('getMembersCount()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.addGroupMember(groupHash, creatorAddress);
 			await store.getMembersCount(groupHash, {from:outsider}).should.be.fulfilled;
 		});
 
-		it('should  get MembersCount', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			var count = await store.getMembersCount(groupHash);
 			assert.equal(count, 0);
 			await store.addGroupMember(groupHash, creatorAddress);
@@ -356,13 +368,13 @@ contract('DaoStorage', (accounts) => {
 		});
 	});
 
-	describe('test getMembersGroupCount()', ()=> {
-		it('should accept outsider`s getMembersGroupCount call', async () => {
+	describe('getMembersGroupCount()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.addGroupMember(groupHash, member);
 			await store.getMembersGroupCount(member, {from:outsider}).should.be.fulfilled;
 		});
 
-		it('should call getMembersGroupAtIndex', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			var count = await store.getMembersGroupCount(member);
 			assert.equal(count, 0);
 			await store.addGroupMember(groupHash, member);
@@ -371,12 +383,12 @@ contract('DaoStorage', (accounts) => {
 		});
 	});
 
-	describe('test getGroupMembers()', ()=> {
-		it('should accept outsider`s getGroupMembers call', async () => {
+	describe('getGroupMembers()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.getGroupMembers(groupHash, {from:outsider}).should.be.fulfilled
 		});
 
-		it('should call getGroupMembers', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			var groupArr = await store.getGroupMembers(groupHash);
 			assert.equal(groupArr.length, 0);			
 			await store.addGroupMember(groupHash, member);
@@ -385,12 +397,12 @@ contract('DaoStorage', (accounts) => {
 		});
 	});
 
-	describe('test getMemberGroups()', ()=> {
-		it('should accept outsider`s getMemberGroups call', async () => {
+	describe('getMemberGroups()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.getMemberGroups(member, {from:outsider}).should.be.fulfilled;
 		});
 
-		it('should call getMemberGroups', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			var groupArr = await store.getMemberGroups(member);
 			assert.equal(groupArr.length, 0);			
 			await store.addGroupMember(groupHash, member);
@@ -399,12 +411,12 @@ contract('DaoStorage', (accounts) => {
 		});
 	});
 
-	describe('test isGroupMember()', ()=> {
-		it('should accept outsider`s isGroupMember call', async () => {
+	describe('isGroupMember()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.isGroupMember(groupHash, member, {from:outsider}) 
 		});
 
-		it('should call isGroupMember', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			var isMember = await store.isGroupMember(groupHash, member);
 			assert.isFalse(isMember);
 			await store.addGroupMember(groupHash, member);
@@ -414,97 +426,103 @@ contract('DaoStorage', (accounts) => {
 	});
 
 // REMOVE
-	describe('test restrictActionByShareholder()', ()=> {
-		it('should restrict restrictActionByShareholder call from outsider', async () => {
+	describe('restrictActionByShareholder()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.allowActionByShareholder(permissionHash, token.address);
 			await store.restrictActionByShareholder(permissionHash, token.address, {from:outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('should call restrict ActionByShareholder', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.allowActionByShareholder(permissionHash, token.address);
 			await store.restrictActionByShareholder(permissionHash, token.address).should.be.fulfilled;
 		});
 	});
 
-	describe('test restrictActionByVoting()', ()=> {
-		it('should restrictActionByShareholder call from outsider', async () => {
+	describe('restrictActionByVoting()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.allowActionByVoting(permissionHash, token.address);
 			await store.restrictActionByVoting(permissionHash, token.address, {from:outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('should call restrict ActionByShareholder', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.allowActionByVoting(permissionHash, token.address);
 			await store.restrictActionByVoting(permissionHash, token.address).should.be.fulfilled;
 		});
 	});
 
-	describe('test restrictActionByAddress()', ()=> {
-		it('should restrict restrictActionByShareholder call from outsider', async () => {
+	describe('restrictActionByAddress()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.allowActionByShareholder(permissionHash, creatorAddress);
 			await store.restrictActionByShareholder(permissionHash, creatorAddress, {from:outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('should call restrict ActionByShareholder', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.allowActionByShareholder(permissionHash, creatorAddress);
 			await store.restrictActionByShareholder(permissionHash, creatorAddress).should.be.fulfilled;
 		});
 	});
 
-	describe('test restrictActionByGroupMembership()', ()=> {
-		it('should restrict restrictActionByShareholder call from outsider', async () => {
+	describe('restrictActionByGroupMembership()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.allowActionByAnyMemberOfGroup(groupHash, permissionHash);
 			await store.restrictActionByGroupMembership(groupHash, permissionHash, {from:outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('should call restrict ActionByShareholder', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.allowActionByAnyMemberOfGroup(groupHash, permissionHash);
 			await store.restrictActionByGroupMembership(groupHash, permissionHash).should.be.fulfilled;
 		});
 	});
 
-	describe('test removeGroupMember()', ()=> {
-		it('should restrict removeGroupMember call from outsider', async () => {
+	describe('removeGroupMember()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.addGroupMember(groupHash, member);
 			await store.removeGroupMember(groupHash, member, {from:outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('should restrict removeGroupMember if not exist', async () => {
+		it('should restrict if not exist', async () => {
 			await store.removeGroupMember(groupHash, member).should.be.rejectedWith('revert');
 		});
 
-		it('should call removeGroupMember', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.addGroupMember(groupHash, member);
 			await store.removeGroupMember(groupHash, member).should.be.fulfilled;
 		});
 	});
 
-	describe('test removeProposal()', ()=> {
-		it('should restrict removeProposal call from outsider', async () => {
+	describe('removeProposal()', ()=> {
+		it('should fail if called by a person without permission', async () => {
+			let proposalContract = await InformalProposal.new('text');
+			proposal = proposalContract.address;				
 			await store.addProposal(proposal);
 			await store.removeProposal(proposal, {from:outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('should restrict removeProposal if not exist', async () => {
+		it('should restrict if not exist', async () => {
+			let proposalContract = await InformalProposal.new('text');
+			proposal = proposalContract.address;				
 			await store.removeProposal(proposal).should.be.rejectedWith('revert');
 		});
 
-		it('should call removeProposal', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
+			let proposalContract = await InformalProposal.new('text');
+			proposal = proposalContract.address;				
 			await store.addProposal(proposal);
 			await store.removeProposal(proposal).should.be.fulfilled;
 		});
 	});
 
-	describe('test removeObserver()', ()=> {
-		it('should restrict removeObserver call from outsider', async () => {
+	describe('removeObserver()', ()=> {
+		it('should fail if called by a person without permission', async () => {
 			await store.addObserver(observer);
 			await store.removeObserver(observer, {from:outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('should restrict removeObserver if not exist', async () => {
+		it('should restrict if not exist', async () => {
 			await store.removeObserver(observer).should.be.rejectedWith('revert');
 		});
 
-		it('should call removeObserver', async () => {
+		it('should succeed if called by a person that has correct permission set', async () => {
 			await store.addObserver(observer);
 			await store.removeObserver(observer).should.be.fulfilled;
 		});
