@@ -25,8 +25,7 @@ contract('CopyOnWriteToken', (accounts) => {
   const account5 = accounts[5];
 		
   beforeEach(async function () {
-
-  });
+	});
 
   describe('mint()', function () {
     it('should fail due to not owner call', async function () {
