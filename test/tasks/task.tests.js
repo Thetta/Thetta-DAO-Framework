@@ -12,6 +12,11 @@ function KECCAK256 (x) {
   return web3.sha3(x);
 }
 
+require('chai')
+  .use(require('chai-as-promised'))
+  .use(require('chai-bignumber')(web3.BigNumber))
+  .should();
+
 const duration = {
   seconds: function (val) { return val; },
   minutes: function (val) { return val * this.seconds(60); },
@@ -57,8 +62,8 @@ contract('Tasks', (accounts) => {
     token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
     await token.mintFor(creator, 1000);
 
-    store = await DaoStorage.new([token.address], { from: creator });
-    daoBase = await DaoBase.new(store.address, { from: creator });
+    store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBase.new(store.address);
 
     issueTokens = await daoBase.ISSUE_TOKENS();
 
@@ -69,19 +74,22 @@ contract('Tasks', (accounts) => {
     addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
 
     // add creator as first employee
-    await store.addGroupMember(KECCAK256('Employees'), creator);
+    await store.addGroupMember(web3.sha3('Employees'), creator);
     await store.allowActionByAddress(manageGroups, creator);
 
     // do not forget to transfer ownership
     await token.transferOwnership(daoBase.address);
-    await store.transferOwnership(daoBase.address);
+        await store.transferOwnership(daoBase.address);
+    
 
     await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, 'Employees');
 
     // this is a list of actions that require voting
     await daoBase.allowActionByVoting(manageGroups, token.address);
     await daoBase.allowActionByVoting(issueTokens, token.address);
-  });
+  
+
+	});
 
   it('Tasks: prepaid positive scenario. Task created by creator', async () => {
     // should not create weiTask (prepaid + donation);

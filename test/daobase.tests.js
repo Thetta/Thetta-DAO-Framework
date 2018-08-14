@@ -22,9 +22,8 @@ require('chai')
 
 contract('DaoBase', (accounts) => {
 	let token;
-	let store;
 	let daoBase;
-
+	let store;
 	let issueTokens;
 	let manageGroups;
 	let addNewProposal;
@@ -53,8 +52,8 @@ contract('DaoBase', (accounts) => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
 		await token.mintFor(creator, 1000);
 		store = await DaoStorage.new([token.address],{from: creator});
-
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{from: creator});
+		
 		issueTokens = await daoBase.ISSUE_TOKENS();
 		manageGroups = await daoBase.MANAGE_GROUPS();
 		upgradeDaoContract = await daoBase.UPGRADE_DAO_CONTRACT();
@@ -62,7 +61,7 @@ contract('DaoBase', (accounts) => {
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
 		burnTokens = await daoBase.BURN_TOKENS();
 
-		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.addGroupMember(web3.sha3("Employees"), creator);
 		await store.allowActionByAddress(manageGroups, creator);
 
 		// do not forget to transfer ownership
@@ -70,20 +69,22 @@ contract('DaoBase', (accounts) => {
 		await store.transferOwnership(daoBase.address);
 
 		// Set permissions:
-		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees");
 		await daoBase.allowActionByAnyMemberOfGroup(burnTokens, "Employees");
+    		await daoBase.allowActionByAnyMemberOfGroup(upgradeDaoContract, 'Employees');
+    		await daoBase.allowActionByAddress(withdrawDonations, creator);
 
 		await daoBase.allowActionByVoting(manageGroups, token.address);
 		await daoBase.allowActionByVoting(issueTokens, token.address);
-		await daoBase.allowActionByVoting(upgradeDaoContract, token.address);
+		await daoBase.allowActionByVoting(upgradeDaoContract, token.address);	
 	});
 
 	describe('addObserver()', function () {
-		it('Should add observer to store',async() => {
+		it('Should add observer to daoBase',async() => {
 			daoClient = await DaoClient.new(daoBase.address);
 			await daoBase.addObserver(daoClient.address);
-			await assert.equal(await store.getObserverCount(), 2);
-			await assert.equal(await store.getObserverAtIndex(0), daoClient.address);
+			await assert.equal(await daoBase.getObserversCount(), 2);
+			await assert.equal(await daoBase.getObserverAtIndex(0), daoClient.address);
 		});
 	});
 
@@ -107,7 +108,7 @@ contract('DaoBase', (accounts) => {
 			await daoBase.removeGroupMember("Employees", employee2, {from: outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('Should remove member from store',async() => {
+		it('Should remove member from daoBase',async() => {
 			await daoBase.addGroupMember("Employees", employee1);
 			assert.equal(await daoBase.isGroupMember("Employees", employee1), true);
 
@@ -179,7 +180,7 @@ contract('DaoBase', (accounts) => {
 			await daoBase.addNewProposal(proposal.address, {from: outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('Should remove member from store',async() => {
+		it('Should remove member from daoBase',async() => {
 			proposal = await GenericProposal.new(creator, creator, '', []);
 			await daoBase.addNewProposal(proposal.address);
 		});
@@ -209,7 +210,7 @@ contract('DaoBase', (accounts) => {
 		const isMember2 = await daoBase.isGroupMember("Employees", employee1);
 		assert.equal(isMember2,false,'Permission should be set correctly');
 
-		const isCan = await store.isCanDoByGroupMember(addNewProposal, creator);
+		const isCan = await daoBase.isCanDoByGroupMember(addNewProposal, creator);
 		assert.equal(isCan,true,'Any employee should be able to add new proposal');
 
 		const isCan2 = await daoBase.isCanDoAction(creator, addNewProposal);
@@ -268,9 +269,6 @@ contract('DaoBase', (accounts) => {
     // one client of the IDaoBase (to test how upgrade works with it)
     let moneyflowInstance = await MoneyFlow.new(daoBase.address);
 
-    await daoBase.allowActionByAnyMemberOfGroup(upgradeDaoContract, 'Employees');
-    await daoBase.allowActionByAddress(withdrawDonations, creator);
-
     let a1 = await token.owner();
     assert.equal(a1, daoBase.address, 'Ownership should be set');
 
@@ -292,7 +290,7 @@ contract('DaoBase', (accounts) => {
     assert.strictEqual(isEmployeeAdded, true, 'employee1 should be added as the company`s employee');
 
     // Should not add new employee to old MC
-    await daoBase.addGroupMember('Employees', employee2, { from: creator }).should.be.rejectedWith('revert');
+    await daoBase.addGroupMember(web3.sha3('Employees'), employee2, { from: creator }).should.be.rejectedWith('revert');
     // Should not issue tokens through MC
     await daoBase.issueTokens(token.address, employee2, 100, { from: creator }).should.be.rejectedWith('revert');
 

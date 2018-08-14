@@ -27,11 +27,11 @@ contract GenericProposal is IProposal, Ownable {
 		}
 	}
 
-	event GenericProposal_Action(IVoting _voting);
+	event GenericProposal_Action(IVoting _voting, address _target, string _methodSig, bytes32[] _params);
 
 // IVoting implementation
 	function action() public {
-		emit GenericProposal_Action(voting);
+		emit GenericProposal_Action(voting, target, methodSig, params);
 
 		// in some cases voting is still not set
 		if(0x0!=address(voting)) {
@@ -47,7 +47,7 @@ contract GenericProposal is IProposal, Ownable {
 			uint256(params.length), // length of the array
 			params)
 		){
-			//revert();
+			// revert();
 		}
 	}
 

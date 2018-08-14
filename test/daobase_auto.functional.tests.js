@@ -1,7 +1,6 @@
 var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
-
 var DaoBaseAuto = artifacts.require("./DaoBaseAuto");
 
 var IVoting = artifacts.require("./IVoting");
@@ -82,7 +81,8 @@ contract('DaoBaseAuto', (accounts) => {
 		await token.mintFor(employee2, 600);
 		await token.mintFor(employee3, 600);
 
-		store = await DaoStorage.new([token.address],{ from: creator });
+		// store = await DaoStorage.new([token.address],{ from: creator });
+		store = await DaoStorage.new([token.address],{from: creator});
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
 		aacInstance = await DaoBaseAuto.new(daoBase.address, {from: creator});
 		issueTokens = await daoBase.ISSUE_TOKENS();
@@ -100,17 +100,18 @@ contract('DaoBaseAuto', (accounts) => {
 		await aacInstance.setVotingParams(upgradeDaoContract, VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(51), UintToToBytes32(51), 0);
 
 		// add creator as first employee
-		await store.addGroupMember(KECCAK256("Employees"), creator);
+		await store.addGroupMember(web3.sha3("Employees"), creator);
 		await store.allowActionByAddress(manageGroups,creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
+		// await store.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
 	});
 
 	it('should not automatically create proposal because AAC has no rights',async() => {
 		// Set permissions:
-			await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
+			await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees");
 			await daoBase.allowActionByVoting(manageGroups, token.address);
 			await daoBase.allowActionByVoting(issueTokens, token.address);
 		// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
@@ -136,7 +137,7 @@ contract('DaoBaseAuto', (accounts) => {
 	});
 
 	it('should not issue tokens automatically because issueTokens cant be called even with voting',async() => {
-		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees");
 		await daoBase.allowActionByVoting(manageGroups, token.address);
 
 		// SEE this -> this permissions is commented! So even if AAC has rights to add proposal,
@@ -221,7 +222,7 @@ contract('DaoBaseAuto', (accounts) => {
 	});
 
 	it('should automatically create proposal and 1P1V voting to issue more tokens',async() => {
-		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees");
 
 		await daoBase.allowActionByVoting(manageGroups, token.address);
 		await daoBase.allowActionByVoting(issueTokens, token.address);
@@ -306,7 +307,8 @@ contract('DaoBaseAuto', (accounts) => {
 		await daoBase.allowActionByAddress(upgradeDaoContract, aacInstance.address);
 
 		// should be able to upgrde microcompany directly without voting (creator is in majority!)
-		let daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
+		store = await DaoStorage.new([token.address],{from: creator});
+		let daoBaseNew = await DaoBaseWithUnpackers.new(daoBase.address,{ from: creator });
 		await aacInstance.upgradeDaoContractAuto(daoBaseNew.address,{from: employee1});
 
 		const pa = await daoBase.getProposalAtIndex(0);
@@ -328,7 +330,7 @@ contract('DaoBaseAuto', (accounts) => {
 	});
 
 	it('should create SimpleTokenVoting to issue more tokens',async() => {
-		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
+		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees");
 		await daoBase.allowActionByVoting(manageGroups, token.address);
 		await daoBase.allowActionByVoting(issueTokens, token.address);
 

@@ -14,14 +14,14 @@ import "./IDaoObserver.sol";
 contract DaoClient is IDaoObserver {
 	IDaoBase dao;
 
-	modifier isCanDo(bytes32 _what){
+	modifier isCanDo(bytes32 _what) {
 		require(dao.isCanDoAction(msg.sender, _what)); 
 		_; 
 	}
 
 	constructor(IDaoBase _dao) public {
 		dao = _dao;
-		dao.addObserver(this);
+		dao.addObserver(IDaoObserver(this));
 	}
 
 	/**

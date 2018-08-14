@@ -41,23 +41,23 @@ contract Voting is IVoting, Ownable {
 		store.generalConstructor(_dao, _proposal, _origin, _votingType, _minutesToVote, _groupName, _quorumPercent, _consensusPercent, _tokenAddress);
 	}
 
-	function quorumPercent()view returns(uint){
+	function quorumPercent()view returns(uint) {
 		return store.quorumPercent;
 	}
 
-	function consensusPercent()view returns(uint){
+	function consensusPercent()view returns(uint) {
 		return store.consensusPercent;
 	}	
 
-	function groupName()view returns(string){
+	function groupName()view returns(string) {
 		return store.groupName;
 	}		
 
-	function getVotersTotal() view returns(uint){
+	function getVotersTotal() view returns(uint) {
 		return store.getVotersTotal();
 	}
 
-	function getPowerOf(address _voter) view returns(uint){
+	function getPowerOf(address _voter) view returns(uint) {
 		return store.getPowerOf(_voter);
 	}
 
@@ -69,15 +69,15 @@ contract Voting is IVoting, Ownable {
 		store.callActionIfEnded();
 	}
 
-	function isFinished() public view returns(bool){
+	function isFinished() public view returns(bool) {
 		return store.isFinished();
 	}
 
-	function isYes() public view returns(bool){
+	function isYes() public view returns(bool) {
 		return store.isYes();
 	}
 
-	function getVotingStats() public constant returns(uint yesResults, uint noResults, uint votersTotal){
+	function getVotingStats() public constant returns(uint yesResults, uint noResults, uint votersTotal) {
 		return store.getVotingStats();
 	}
 
