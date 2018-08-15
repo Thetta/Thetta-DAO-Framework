@@ -2,6 +2,7 @@ pragma solidity ^0.4.23;
 
 import '../IDaoBase.sol';
 import './IProposal.sol';
+import '../utils/UtilsLib.sol';
 import '../tokens/StdDaoToken.sol';
 
 library VotingLib {
@@ -103,7 +104,7 @@ library VotingLib {
 		}else if(VotingType.VotingSimpleToken==store.votingType){
 			return StdDaoToken(store.tokenAddress).getBalanceAtVoting(store.votingID, _voter);
 		}else if(VotingType.VotingQuadratic==store.votingType){
-			return sqrt(StdDaoToken(store.tokenAddress).getBalanceAtVoting(store.votingID, _voter));
+			return UtilsLib.sqrt(StdDaoToken(store.tokenAddress).getBalanceAtVoting(store.votingID, _voter));
 		}else if(VotingType.VotingLiquid==store.votingType){
 			uint res = StdDaoToken(store.tokenAddress).getBalanceAtVoting(store.votingID, _voter);
 			for(uint i = 0; i < store.delegations[_voter].length; i++){
@@ -116,15 +117,6 @@ library VotingLib {
 			return  res;
 		}else{
 			revert();
-		}
-	}
-
-	function sqrt(uint x) public pure returns (uint y){
-		uint z = (x+1)/2;
-		y = x;
-		while (z<y){
-			y = z;
-			z = (x/z+z)/2;
 		}
 	}
 

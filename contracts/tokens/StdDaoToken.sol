@@ -5,7 +5,7 @@ import "zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 
 import "./CopyOnWriteToken.sol";
 import "./ITokenVotingSupport.sol";
-
+import "../utils/UtilsLib.sol";
 
 /**
  * @title StdDaoToken 
@@ -95,7 +95,7 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 	function getVotingTotalForQuadraticVoting() public view returns(uint) {
 		uint votersTotal = 0;
 		for(uint k=0; k<holders.length; k++) {
-			votersTotal += sqrt(this.balanceOf(holders[k]));
+			votersTotal += UtilsLib.sqrt(this.balanceOf(holders[k]));
 		}
 		return votersTotal;
 	}
@@ -134,14 +134,5 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 	// this is an override of PausableToken method
 	function unpause() isPausable_ onlyOwner  public {
 		super.unpause();
-	}
-
-	function sqrt(uint x) internal pure returns (uint y) {
-		uint z = (x + 1) / 2;
-		y = x;
-		while (z < y) {
-			y = z;
-			z = (x / z + z) / 2;
-		}
 	}
 }
