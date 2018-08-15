@@ -3,7 +3,7 @@ var StdDaoToken = artifacts.require('./StdDaoToken');
 var DaoStorage = artifacts.require('./DaoStorage');
 
 var Voting = artifacts.require('./Voting');
-var GenericProposal = artifacts.require('./GenericProposal');
+var Genericproposal = artifacts.require('./GenericProposal');
 
 const BigNumber = web3.BigNumber;
 
@@ -33,7 +33,6 @@ contract('Voting', (accounts) => {
 	let r2;
 	let token;
 	let daoBase;
-	let store;
 	let proposal;
 	let voting;
 	let manageGroups;
@@ -45,13 +44,22 @@ contract('Voting', (accounts) => {
 			await token.mintFor(employee1, 1);
 			await token.mintFor(employee2, 2);
 
-			store = await DaoStorage.new([token.address],{from: creator});
-			daoBase = await DaoBaseWithUnpackers.new(store.address);
-			proposal = await GenericProposal.new(creator, creator, '', []);
+			let store = await DaoStorage.new([token.address], { from: creator });
+			daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+			proposal = await Genericproposal.new(creator, creator, '', []);
 			voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);
-		
-			await store.transferOwnership(daoBase.address);
-	});
+		});
+
+		describe('voteFromOriginPositive()', function () {
+			it('should vote', async () => {
+			const r1 = await voting.getVotingStats();
+			assert.equal(r1[0].toNumber(), 0, 'yes');
+
+			await voting.voteFromOriginPositive().should.be.fulfilled;
+			const r2 = await voting.getVotingStats();
+			assert.equal(r2[0].toNumber(), 1, 'yes');
+			});
+		});
 
 		describe('quorumPercent()', function () {
 			it('should return correct value', async () => {
@@ -90,6 +98,7 @@ contract('Voting', (accounts) => {
 		// from here
 		describe('vote()', function () {
 			it('Should revert when voting is finished()', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				await voting.vote(true, { from: employee2 });
 				r2 = await voting.getVotingStats();
@@ -99,10 +108,12 @@ contract('Voting', (accounts) => {
 			});
 
 			it('Should revert when account already voted', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true).should.be.rejectedWith('revert');
 			});
 
 			it('Should pass()', async () => {
+				await voting.vote(true, { from: creator});
 				r2 = await voting.getVotingStats();
 				assert.equal(r2[0].toNumber(), 1, 'yes');
 			});
@@ -115,6 +126,7 @@ contract('Voting', (accounts) => {
 			});
 
 			it('Should return true due to voting finishedWithYes = true', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				await voting.vote(true, { from: employee2 });
 				assert.equal(await voting.isFinished(), true, 'finished');
@@ -122,13 +134,9 @@ contract('Voting', (accounts) => {
 
 			it('Should return true due to time elapsed', async () => {
 				voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 60, 'Test', 100, 100, token.address);
-				await increaseTime(36000 * 1000);
-				assert.equal(await voting.isFinished(), true, 'finished');
-			});
+				await voting.vote(true, { from: creator});
 
-			it('Should return true due to quorum reached', async () => {
-				await voting.vote(true, { from: employee1 });
-				await voting.vote(true, { from: employee2 });
+				await increaseTime(36000 * 1000);
 				assert.equal(await voting.isFinished(), true, 'finished');
 			});
 		});
@@ -141,6 +149,7 @@ contract('Voting', (accounts) => {
 			});
 
 			it('Should return false due to voting not finished yet', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				assert.equal(await voting.isFinished(), false, 'false');
 				assert.equal(await voting.isYes(), false, 'yes');
@@ -148,17 +157,20 @@ contract('Voting', (accounts) => {
 
 			it('Should return false due to quorum not reached', async () => {
 				voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 70, 100, token.address);
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				assert.equal(await voting.isYes(), false, 'yes');
 			});
 
 			it('Should return false due to consensus not reached', async () => {
 				voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 70, token.address);
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				assert.equal(await voting.isYes(), false, 'yes');
 			});
 
 			it('Should return true due to voting finishedWithYes = true', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				await voting.vote(true, { from: employee2 });
 				let tx = await voting.callActionIfEnded();
@@ -168,6 +180,7 @@ contract('Voting', (accounts) => {
 			});
 
 			it('Should return true', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				await voting.vote(true, { from: employee2 });
 				assert.equal(await voting.isYes(), true, 'yes');
@@ -176,6 +189,7 @@ contract('Voting', (accounts) => {
 
 		describe('getVotingStats()', function () {
 			it('Should pass', async () => {
+				await voting.vote(true, { from: creator});
 				r2 = await voting.getVotingStats();
 				assert.equal(r2[0].toNumber(), 1, 'yes');
 				await voting.vote(false, { from: employee1 });
@@ -205,12 +219,21 @@ contract('Voting', (accounts) => {
 			await token.mintFor(employee1, 1);
 			await token.mintFor(employee2, 2);
 
-			store = await DaoStorage.new([token.address],{from: creator});
-		daoBase = await DaoBaseWithUnpackers.new(store.address);
+			let store = await DaoStorage.new([token.address], { from: creator });
+			daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
 			voting = await Voting.new(daoBase.address, creator, creator, VOTING_TYPE_LIQUID, 0, '', 100, 100, token.address);
-		
-		await store.transferOwnership(daoBase.address);
-	});
+		});
+
+		describe('voteFromOriginPositive()', function () {
+			it('should vote', async () => {
+			const r1 = await voting.getVotingStats();
+			assert.equal(r1[0].toNumber(), 0, 'yes');
+
+			await voting.voteFromOriginPositive().should.be.fulfilled;
+			const r2 = await voting.getVotingStats();
+			assert.equal(r2[0].toNumber(), 1, 'yes');
+			});
+		});
 
 		describe('getPowerOf()', function () {
 			it('should return correct value', async () => {
@@ -334,13 +357,22 @@ contract('Voting', (accounts) => {
 			await token.mintFor(employee1, 9);
 			await token.mintFor(employee2, 11);
 
-			store = await DaoStorage.new([token.address],{from: creator});
-		daoBase = await DaoBaseWithUnpackers.new(store.address);
-			proposal = await GenericProposal.new(creator, creator, '', []);
+			let store = await DaoStorage.new([token.address], { from: creator });
+			daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+			proposal = await Genericproposal.new(creator, creator, '', []);
 			voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_QUADRATIC, 0, 'Test', 100, 100, token.address);
-		
-		await store.transferOwnership(daoBase.address);
-	});
+		});
+
+		describe('voteFromOriginPositive()', function () {
+			it('should vote', async () => {
+			const r1 = await voting.getVotingStats();
+			assert.equal(r1[0].toNumber(), 0, 'yes');
+
+			await voting.voteFromOriginPositive().should.be.fulfilled;
+			const r2 = await voting.getVotingStats();
+			assert.equal(r2[0].toNumber(), 2, 'yes');
+			});
+		});
 
 		describe('quorumPercent()', function () {
 			it('should return correct value', async () => {
@@ -379,6 +411,7 @@ contract('Voting', (accounts) => {
 
 		describe('vote()', function () {
 			it('Should revert when voting is finished()', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				await voting.vote(true, { from: employee2 });
 				r2 = await voting.getVotingStats();
@@ -388,10 +421,12 @@ contract('Voting', (accounts) => {
 			});
 
 			it('Should revert when account already voted', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true).should.be.rejectedWith('revert');
 			});
 
 			it('Should pass()', async () => {
+				await voting.vote(true, { from: creator});
 				r2 = await voting.getVotingStats();
 				assert.equal(r2[0].toNumber(), 2, 'yes');
 			});
@@ -404,6 +439,7 @@ contract('Voting', (accounts) => {
 			});
 
 			it('Should return true due to voting finishedWithYes = true', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				await voting.vote(true, { from: employee2 });
 				assert.equal(await voting.isFinished(), true, 'finished');
@@ -416,6 +452,7 @@ contract('Voting', (accounts) => {
 			});
 
 			it('Should return true due to quorum reached', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				await voting.vote(true, { from: employee2 });
 				assert.equal(await voting.isFinished(), true, 'finished');
@@ -430,6 +467,7 @@ contract('Voting', (accounts) => {
 			});
 
 			it('Should return false due to voting not finished yet', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				assert.equal(await voting.isFinished(), false, 'false');
 				assert.equal(await voting.isYes(), false, 'yes');
@@ -446,6 +484,7 @@ contract('Voting', (accounts) => {
 			});
 
 			it('Should return true due to voting finishedWithYes = true', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				await voting.vote(true, { from: employee2 });
 				let tx = await voting.callActionIfEnded();
@@ -455,6 +494,7 @@ contract('Voting', (accounts) => {
 			});
 
 			it('Should return true', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				await voting.vote(true, { from: employee2 });
 				assert.equal(await voting.isYes(), true, 'yes');
@@ -463,6 +503,7 @@ contract('Voting', (accounts) => {
 
 		describe('getVotingStats()', function () {
 			it('should return correct value', async () => {
+				await voting.vote(true, { from: creator});
 				r2 = await voting.getVotingStats();
 				assert.equal(r2[0].toNumber(), 2, 'yes');
 				await voting.vote(false, { from: employee1 });
@@ -489,22 +530,31 @@ contract('Voting', (accounts) => {
 		beforeEach(async () => {
 			token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 100);
 
-			store = await DaoStorage.new([token.address],{from: creator});
-			daoBase = await DaoBaseWithUnpackers.new(store.address);
-			proposal = await GenericProposal.new(creator, creator, '', []);
+			let store = await DaoStorage.new([token.address], { from: creator });
+			daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+			proposal = await Genericproposal.new(creator, creator, '', []);
 
 			manageGroups = await daoBase.MANAGE_GROUPS();
 
-			await store.addGroupMember(web3.sha3('Test'), creator);
+			await store.addGroupMember(KECCAK256('Test'), creator);
 			await store.allowActionByAddress(manageGroups, creator);
-			
-
-			await store.addGroupMember(web3.sha3('Test'), employee1);
-			await store.addGroupMember(web3.sha3('Test'), employee2);
-			voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_1P1V, 0, 'Test', 100, 100, token.address);
-		
 			await store.transferOwnership(daoBase.address);
-	});
+
+			await daoBase.addGroupMember('Test', employee1);
+			await daoBase.addGroupMember('Test', employee2);
+			voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_1P1V, 0, 'Test', 100, 100, token.address);
+		});
+
+		describe('voteFromOriginPositive()', function () {
+			it('should vote', async () => {
+			const r1 = await voting.getVotingStats();
+			assert.equal(r1[0].toNumber(), 0, 'yes');
+
+			await voting.voteFromOriginPositive().should.be.fulfilled;
+			const r2 = await voting.getVotingStats();
+			assert.equal(r2[0].toNumber(), 1, 'yes');
+			});
+		});
 
 		describe('quorumPercent()', function () {
 			it('should return correct value', async () => {
@@ -548,6 +598,7 @@ contract('Voting', (accounts) => {
 		// from here
 		describe('vote()', function () {
 			it('Should revert when voting is finished()', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				await voting.vote(true, { from: employee2 });
 				r2 = await voting.getVotingStats();
@@ -557,10 +608,12 @@ contract('Voting', (accounts) => {
 			});
 
 			it('Should revert when account already voted', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true).should.be.rejectedWith('revert');
 			});
 
 			it('Should pass()', async () => {
+				await voting.vote(true, { from: creator});
 				r2 = await voting.getVotingStats();
 				assert.equal(r2[0].toNumber(), 1, 'yes');
 			});
@@ -573,6 +626,7 @@ contract('Voting', (accounts) => {
 			});
 
 			it('Should return true due to voting finishedWithYes = true', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				await voting.vote(true, { from: employee2 });
 				assert.equal(await voting.isFinished(), true, 'finished');
@@ -585,6 +639,7 @@ contract('Voting', (accounts) => {
 			});
 
 			it('Should return true due to quorum reached', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				await voting.vote(true, { from: employee2 });
 				assert.equal(await voting.isFinished(), true, 'finished');
@@ -599,6 +654,7 @@ contract('Voting', (accounts) => {
 			});
 
 			it('Should return false due to voting not finished yet', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				assert.equal(await voting.isFinished(), false, 'false');
 				assert.equal(await voting.isYes(), false, 'yes');
@@ -617,12 +673,14 @@ contract('Voting', (accounts) => {
 			});
 
 			it('Should return true due to voting finishedWithYes = true', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				await voting.vote(true, { from: employee2 });
 				assert.equal(await voting.isYes(), true, 'yes');
 			});
 
 			it('Should return true', async () => {
+				await voting.vote(true, { from: creator});
 				await voting.vote(true, { from: employee1 });
 				await voting.vote(true, { from: employee2 });
 				assert.equal(await voting.isYes(), true, 'yes');
@@ -631,6 +689,7 @@ contract('Voting', (accounts) => {
 
 		describe('getVotingStats()', function () {
 			it('Should pass', async () => {
+				await voting.vote(true, { from: creator});
 				r2 = await voting.getVotingStats();
 				assert.equal(r2[0].toNumber(), 1, 'yes');
 				await voting.vote(false, { from: employee1 });
