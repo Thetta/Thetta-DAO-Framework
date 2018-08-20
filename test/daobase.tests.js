@@ -60,7 +60,7 @@ contract('DaoBase', (accounts) => {
 		withdrawDonations = await daoBase.WITHDRAW_DONATIONS();
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
 		burnTokens = await daoBase.BURN_TOKENS();
-		
+
 		await store.addGroupMember(web3.sha3("Employees"), creator);
 
 		// do not forget to transfer ownership
@@ -76,7 +76,7 @@ contract('DaoBase', (accounts) => {
 		await daoBase.allowActionByVoting(issueTokens, token.address);
 		await daoBase.allowActionByVoting(upgradeDaoContract, token.address);	
 
-		await daoBase.transferOwnership(0x0);
+		await daoBase.renounceOwnership();
 	});
 
 	describe('addObserver()', function () {

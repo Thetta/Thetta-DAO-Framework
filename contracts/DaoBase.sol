@@ -3,9 +3,8 @@ pragma solidity ^0.4.22;
 import "./IDaoBase.sol";
 import "./DaoStorage.sol";
 import "./DaoBaseLib.sol";
-import "./utils/OwnableImpl.sol";
 
-contract DaoBase is IDaoBase, OwnableImpl {
+contract DaoBase is IDaoBase, Ownable {
 	event DaoBase_UpgradeDaoContract(address _new);
 	event DaoBase_AddGroupMember(string _groupName, address _a);
 	event DaoBase_RemoveGroupMember(string _groupName, address _a);

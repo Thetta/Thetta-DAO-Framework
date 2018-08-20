@@ -50,7 +50,7 @@ contract('DaoBaseAuto', (accounts) => {
 		await daoBase.addGroupMember('Employees', employee1);
 		await daoBase.addGroupMember('Employees', employee2);
 
-		await daoBase.transferOwnership(0x0);
+		await daoBase.renounceOwnership();
 	});
 
 	describe('addGroupMemberAuto()', () => {

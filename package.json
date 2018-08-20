@@ -45,7 +45,7 @@
     "growl": "^1.10.0",
     "solidity-coverage": "^0.5.5",
     "solium": "^1.1.7",
-    "truffle": "^4.1.8",
-    "zeppelin-solidity": "^1.9.0"
+    "truffle": "^4.1.14",
+    "zeppelin-solidity": "^1.12.0"
   }
 }
