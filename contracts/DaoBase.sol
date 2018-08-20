@@ -3,9 +3,7 @@ pragma solidity ^0.4.22;
 import "./IDaoBase.sol";
 import "./DaoStorage.sol";
 import "./DaoBaseLib.sol";
-
 import "./utils/OwnableImpl.sol";
-
 
 contract DaoBase is IDaoBase, OwnableImpl {
 	event DaoBase_UpgradeDaoContract(address _new);
