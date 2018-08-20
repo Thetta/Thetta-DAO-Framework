@@ -108,14 +108,6 @@ contract('DaoBaseAuto', (accounts) => {
 		await store.transferOwnership(daoBase.address);
 	});
 
-	it('should not be able to allow any action because creator has no rights',async() => {
-		await daoBase.renounceOwnership();
-		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees").should.be.rejectedWith("revert");
-		await daoBase.allowActionByVoting(manageGroups, token.address).should.be.rejectedWith("revert");
-		await daoBase.allowActionByAddress(manageGroups, aacInstance.address).should.be.rejectedWith("revert");
-		await daoBase.addGroupMember("Employees",employee1).should.be.rejectedWith("revert");
-	});
-
 	it('should not automatically create proposal because AAC has no rights',async() => {
 		// Set permissions:
 			await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees");
