@@ -4,7 +4,10 @@ import "./IDaoBase.sol";
 import "./DaoStorage.sol";
 import "./DaoBaseLib.sol";
 
-contract DaoBase is IDaoBase {
+import "./utils/OwnableImpl.sol";
+
+
+contract DaoBase is IDaoBase, OwnableImpl {
 	event DaoBase_UpgradeDaoContract(address _new);
 	event DaoBase_AddGroupMember(string _groupName, address _a);
 	event DaoBase_RemoveGroupMember(string _groupName, address _a);
@@ -21,6 +24,11 @@ contract DaoBase is IDaoBase {
 	modifier isCanDo(bytes32 _permissionName){
 		require(DaoBaseLib.isCanDoAction(daoStorage, msg.sender, _permissionName)); 
 		_; 
+	}
+
+	modifier isCanDoOrByOwner(bytes32 _what){
+		require(msg.sender==owner || DaoBaseLib.isCanDoAction(daoStorage, msg.sender, _what));
+		_;
 	}
 
 	bytes32 public constant ISSUE_TOKENS = 0xe003bf3bc29ae37598e0a6b52d6c5d94b0a53e4e52ae40c01a29cdd0e7816b71;
@@ -77,7 +85,7 @@ contract DaoBase is IDaoBase {
 		return daoStorage.getMembersCount(stringHash(_groupName));
 	}
 
-	function addGroupMember(string _groupName, address _a) public isCanDo(MANAGE_GROUPS){
+	function addGroupMember(string _groupName, address _a) public isCanDoOrByOwner(MANAGE_GROUPS){
 		daoStorage.addGroupMember(stringHash(_groupName), _a);
 	}
 
@@ -85,7 +93,7 @@ contract DaoBase is IDaoBase {
 		return daoStorage.getGroupMembers(stringHash(_groupName));
 	}
 
-	function removeGroupMember(string _groupName, address _a) public isCanDo(MANAGE_GROUPS){
+	function removeGroupMember(string _groupName, address _a) public isCanDoOrByOwner(MANAGE_GROUPS){
 		emit DaoBase_RemoveGroupMember(_groupName, _a);
 		daoStorage.removeGroupMember(stringHash(_groupName), _a);
 	}
@@ -99,22 +107,22 @@ contract DaoBase is IDaoBase {
 	}
 
 // Actions:
-	function allowActionByShareholder(bytes32 _permissionName, address _tokenAddress) public isCanDo(MANAGE_GROUPS){
+	function allowActionByShareholder(bytes32 _permissionName, address _tokenAddress) public isCanDoOrByOwner(MANAGE_GROUPS){
 		emit DaoBase_AllowActionByShareholder(_permissionName, _tokenAddress);
 		daoStorage.allowActionByShareholder(_permissionName, _tokenAddress);
 	}
 
-	function allowActionByVoting(bytes32 _permissionName, address _tokenAddress) public isCanDo(MANAGE_GROUPS){
+	function allowActionByVoting(bytes32 _permissionName, address _tokenAddress) public isCanDoOrByOwner(MANAGE_GROUPS){
 		emit DaoBase_AllowActionByVoting(_permissionName, _tokenAddress);
 		daoStorage.allowActionByVoting(_permissionName,_tokenAddress);
 	}
 
-	function allowActionByAddress(bytes32 _permissionName, address _a) public isCanDo(MANAGE_GROUPS){
+	function allowActionByAddress(bytes32 _permissionName, address _a) public isCanDoOrByOwner(MANAGE_GROUPS){
 		emit DaoBase_AllowActionByAddress(_permissionName, _a);
 		daoStorage.allowActionByAddress(_permissionName,_a);
 	}
 
-	function allowActionByAnyMemberOfGroup(bytes32 _permissionName, string _groupName) public isCanDo(MANAGE_GROUPS){
+	function allowActionByAnyMemberOfGroup(bytes32 _permissionName, string _groupName) public isCanDoOrByOwner(MANAGE_GROUPS){
 		emit DaoBase_AllowActionByAnyMemberOfGroup(_permissionName, _groupName);
 		daoStorage.allowActionByAnyMemberOfGroup(_permissionName, stringHash(_groupName));
 	}

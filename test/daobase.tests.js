@@ -60,9 +60,8 @@ contract('DaoBase', (accounts) => {
 		withdrawDonations = await daoBase.WITHDRAW_DONATIONS();
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
 		burnTokens = await daoBase.BURN_TOKENS();
-
+		
 		await store.addGroupMember(web3.sha3("Employees"), creator);
-		await store.allowActionByAddress(manageGroups, creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
@@ -71,12 +70,13 @@ contract('DaoBase', (accounts) => {
 		// Set permissions:
 		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees");
 		await daoBase.allowActionByAnyMemberOfGroup(burnTokens, "Employees");
-    		await daoBase.allowActionByAnyMemberOfGroup(upgradeDaoContract, 'Employees');
-    		await daoBase.allowActionByAddress(withdrawDonations, creator);
-
+		await daoBase.allowActionByAnyMemberOfGroup(upgradeDaoContract, 'Employees');
+		await daoBase.allowActionByAddress(withdrawDonations, creator);
 		await daoBase.allowActionByVoting(manageGroups, token.address);
 		await daoBase.allowActionByVoting(issueTokens, token.address);
 		await daoBase.allowActionByVoting(upgradeDaoContract, token.address);	
+
+		await daoBase.transferOwnership(0x0);
 	});
 
 	describe('addObserver()', function () {

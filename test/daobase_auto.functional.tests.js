@@ -101,7 +101,6 @@ contract('DaoBaseAuto', (accounts) => {
 
 		// add creator as first employee
 		await store.addGroupMember(web3.sha3("Employees"), creator);
-		await store.allowActionByAddress(manageGroups,creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
@@ -125,6 +124,8 @@ contract('DaoBaseAuto', (accounts) => {
 
 		// add new employee1
 		await daoBase.addGroupMember("Employees",employee1);
+		await daoBase.transferOwnership(0x0);
+
 		const isEmployeeAdded = await daoBase.isGroupMember("Employees", employee1);
 		assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
 
@@ -162,6 +163,7 @@ contract('DaoBaseAuto', (accounts) => {
 		await daoBase.addGroupMember("Employees",employee1);
 		await daoBase.addGroupMember("Employees",employee2);
 		await daoBase.addGroupMember("Employees",employee3);
+		await daoBase.transferOwnership(0x0);
 
 		const isEmployeeAdded = await daoBase.isGroupMember("Employees",employee1);
 		assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
@@ -243,6 +245,7 @@ contract('DaoBaseAuto', (accounts) => {
 		assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
 
 		await daoBase.addGroupMember("Employees",employee2);
+		await daoBase.transferOwnership(0x0);
 
 		// employee1 is NOT in the majority
 		const isCanDo1 = await daoBase.isCanDoAction(employee1,issueTokens);
@@ -305,6 +308,7 @@ contract('DaoBaseAuto', (accounts) => {
 		await daoBase.allowActionByAddress(manageGroups, aacInstance.address);
 		await daoBase.allowActionByAddress(issueTokens, aacInstance.address);
 		await daoBase.allowActionByAddress(upgradeDaoContract, aacInstance.address);
+		await daoBase.transferOwnership(0x0);
 
 		// should be able to upgrde microcompany directly without voting (creator is in majority!)
 		store = await DaoStorage.new([token.address],{from: creator});
@@ -346,6 +350,7 @@ contract('DaoBaseAuto', (accounts) => {
 
 		// add new employee1
 		await daoBase.addGroupMember("Employees",employee1);
+		await daoBase.transferOwnership(0x0);
 		const isEmployeeAdded = await daoBase.isGroupMember("Employees",employee1);
 		assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
 

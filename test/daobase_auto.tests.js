@@ -30,7 +30,7 @@ contract('DaoBaseAuto', (accounts) => {
 		daoBase = await DaoBaseWithUnpackers.new(store.address, {from: creator});
 		daoBaseAuto = await DaoBaseAuto.new(daoBase.address, {from: creator});
 		const MANAGE_GROUPS = await daoBase.MANAGE_GROUPS();
-		await store.allowActionByAddress(MANAGE_GROUPS, creator);
+		//await store.allowActionByAddress(MANAGE_GROUPS, creator);
 
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
@@ -49,6 +49,8 @@ contract('DaoBaseAuto', (accounts) => {
 		await daoBase.addGroupMember('Employees', creator);
 		await daoBase.addGroupMember('Employees', employee1);
 		await daoBase.addGroupMember('Employees', employee2);
+
+		await daoBase.transferOwnership(0x0);
 		
 	});
 
