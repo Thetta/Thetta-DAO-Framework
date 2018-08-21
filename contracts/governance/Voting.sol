@@ -1,10 +1,10 @@
 pragma solidity ^0.4.22;
 
-import '../IDaoBase.sol';
-import './IVoting.sol';
-import './IProposal.sol';
-import './VotingLib.sol';
-import '../tokens/StdDaoToken.sol';
+import "../IDaoBase.sol";
+import "./IVoting.sol";
+import "./IProposal.sol";
+import "./VotingLib.sol";
+import "../tokens/StdDaoToken.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 
@@ -38,30 +38,40 @@ contract Voting is IVoting, Ownable {
 		uint _quorumPercent, uint _consensusPercent, 
 		address _tokenAddress) public 
 	{
-		store.generalConstructor(_dao, _proposal, _origin, _votingType, _minutesToVote, _groupName, _quorumPercent, _consensusPercent, _tokenAddress);
+		store.generalConstructor(
+			_dao,
+			_proposal, 
+			_origin, 
+			_votingType, 
+			_minutesToVote, 
+			_groupName, 
+			_quorumPercent, 
+			_consensusPercent, 
+			_tokenAddress
+		);
 	}
 
-	function quorumPercent()view returns(uint) {
+	function quorumPercent() public view returns(uint) {
 		return store.quorumPercent;
 	}
 
-	function consensusPercent()view returns(uint) {
+	function consensusPercent() public view returns(uint) {
 		return store.consensusPercent;
 	}	
 
-	function groupName()view returns(string) {
+	function groupName() public view returns(string) {
 		return store.groupName;
 	}		
 
-	function getVotersTotal() view returns(uint) {
+	function getVotersTotal() public view returns(uint) {
 		return store.getVotersTotal();
 	}
 
-	function getPowerOf(address _voter) view returns(uint) {
+	function getPowerOf(address _voter) public view returns(uint) {
 		return store.getPowerOf(_voter);
 	}
 
-	function vote(bool _isYes) public{
+	function vote(bool _isYes) public {
 		store.libVote(msg.sender, _isYes);
 	}
 
@@ -77,7 +87,7 @@ contract Voting is IVoting, Ownable {
 		return store.isYes();
 	}
 
-	function getVotingStats() public constant returns(uint yesResults, uint noResults, uint votersTotal) {
+	function getVotingStats() public view returns(uint yesResults, uint noResults, uint votersTotal) {
 		return store.getVotingStats();
 	}
 
