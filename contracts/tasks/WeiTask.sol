@@ -27,6 +27,6 @@ contract WeiTask is WeiGenericTask {
 		startTime = block.timestamp;
 		employee = _employee;
 		state = State.InProgress;
-		emit WeiGenericTask_StateChanged(state);
+		emit WeiGenericTaskStateChanged(state);
 	}
 }
