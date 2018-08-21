@@ -2,6 +2,7 @@ pragma solidity ^0.4.23;
 
 import "./WeiGenericTask.sol";
 
+
 /**
  * @title WeiBounty 
  * @dev Bounty is when you put money, then someone outside the DAO works
@@ -19,7 +20,7 @@ contract WeiBounty is WeiGenericTask {
 	// callable by anyone
 	function startTask() public isCanDo(START_BOUNTY) {
 		require(getCurrentState()==State.PrePaid);
-		startTime = now;
+		startTime = block.timestamp;
 		employee = msg.sender;
 		state = State.InProgress;
 		emit WeiGenericTask_StateChanged(state);

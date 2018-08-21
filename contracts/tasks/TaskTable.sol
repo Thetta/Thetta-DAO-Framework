@@ -3,6 +3,7 @@ pragma solidity ^0.4.22;
 
 import "../IDaoBase.sol";
 
+
 contract TaskTable {
 	uint public elementsCount = 0;
 	IDaoBase dao;
@@ -12,11 +13,11 @@ contract TaskTable {
 	//bytes32 constant public START_BOUNTY = keccak256("startBounty");
 	bytes32 constant public START_BOUNTY = 0x79533ccfda313ec99b8522f2b18f04c46a6a6ac854db0c234fa8d207626d4fb9;
 
-	event TaskTable_ElementAdded(uint _eId, State _eType);
-	event TaskTable_SetEmployee(address _employee);
-	event TaskTable_SetOutput(address _output);
-	event TaskTable_StateChanged(State _state);
-	event TaskTable_ProcessFunds(address _client, uint _value, uint _id);
+	event TaskTableElementAdded(uint _eId, State _eType);
+	event TaskTableSetEmployee(address _employee);
+	event TaskTableSetOutput(address _output);
+	event TaskTableStateChanged(State _state);
+	event TaskTableProcessFunds(address _client, uint _value, uint _id);
 	
 
 	enum State {
@@ -92,8 +93,17 @@ contract TaskTable {
 		dao = _dao;
 	}
 
-	function addNewTask(string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) external returns(uint){
-		Tasks[elementsCount] = Task(_caption, 
+	function addNewTask(
+		string _caption, 
+		string _desc, 
+		bool _isPostpaid, 
+		bool _isDonation, 
+		uint _neededWei, 
+		uint64 _deadlineTime, 
+		uint64 _timeToCancell) external returns(uint) 
+	{
+		Tasks[elementsCount] = Task(
+			_caption, 
 			_desc, 
 			_isPostpaid, 
 			_isDonation, 
@@ -106,18 +116,20 @@ contract TaskTable {
 			msg.sender, 
 			0, 
 			block.timestamp, 
-			0);
+			0
+		);
 
-			Tasks[elementsCount].state = State.Init;
+		Tasks[elementsCount].state = State.Init;
 
-		emit TaskTable_ElementAdded(elementsCount, Tasks[elementsCount].state);
+		emit TaskTableElementAdded(elementsCount, Tasks[elementsCount].state);
 		elementsCount += 1;
 
 		return (elementsCount - 1);
 	}
 
-	function addNewBounty (string _caption, string _desc, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) external returns(uint){
-		Tasks[elementsCount] = Task(_caption, 
+	function addNewBounty (string _caption, string _desc, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) external returns(uint) {
+		Tasks[elementsCount] = Task(
+			_caption, 
 			_desc, 
 			false, 
 			false, 
@@ -129,11 +141,12 @@ contract TaskTable {
 			msg.sender, 
 			0, 
 			block.timestamp, 
-			0);
+			0
+		);
 
 		Tasks[elementsCount].state = State.PrePaid;
 
-		emit TaskTable_ElementAdded(elementsCount, Tasks[elementsCount].state);
+		emit TaskTableElementAdded(elementsCount, Tasks[elementsCount].state);
 		elementsCount += 1;
 
 		return (elementsCount - 1);
@@ -149,7 +162,7 @@ contract TaskTable {
 		Tasks[_id].startTime = block.timestamp;
 		Tasks[_id].employee = _employee;
 		Tasks[_id].state = State.InProgress;
-		emit TaskTable_StateChanged(Tasks[_id].state);
+		emit TaskTableStateChanged(Tasks[_id].state);
 	}
 
 	// callable by anyone
@@ -158,18 +171,18 @@ contract TaskTable {
 		Tasks[_id].startTime = block.timestamp;
 		Tasks[_id].employee = msg.sender;
 		Tasks[_id].state = State.InProgress;
-		emit TaskTable_StateChanged(Tasks[_id].state);
+		emit TaskTableStateChanged(Tasks[_id].state);
 	}
 
 	// who will complete this task
 	function setEmployee(uint _id, address _employee) onlyByMoneySource(_id) public {
-		emit TaskTable_SetEmployee(_employee);
+		emit TaskTableSetEmployee(_employee);
 		Tasks[_id].employee = _employee;
 	}
 
 	// where to send money
 	function setOutput(uint _id, address _output) onlyByMoneySource(_id) public {
-		emit TaskTable_SetOutput(_output);
+		emit TaskTableSetOutput(_output);
 		Tasks[_id].output = _output;
 	}
 
@@ -195,13 +208,13 @@ contract TaskTable {
 		// for Postpaid task -> client should call processFunds method to put money into this task
 		// when state is Complete. He is confirming the task by doing that (no need to call confirmCompletion)
 		if(isTaskPostpaidAndCompleted(_id)) {
-				return State.CanGetFunds;
+			return State.CanGetFunds;
 		}
 
 		return Tasks[_id].state;
 	}
 
-	function isTaskPrepaid(uint _id) internal view returns(bool){
+	function isTaskPrepaid(uint _id) internal view returns(bool) {
 		if((State.Init==Tasks[_id].state) && (Tasks[_id].neededWei!=0) && (!Tasks[_id].isPostpaid)) {
 			if(Tasks[_id].neededWei==Tasks[_id].funds && Tasks[_id].funds <= address(this).balance) {
 				return true;
@@ -210,7 +223,7 @@ contract TaskTable {
 		return false;
 	}
 
-	function isTaskPostpaidAndCompleted(uint _id) internal view returns(bool){
+	function isTaskPostpaidAndCompleted(uint _id) internal view returns(bool) {
 		if((State.Complete==Tasks[_id].state) && (Tasks[_id].neededWei!=0) && (Tasks[_id].isPostpaid)) {
 			if(Tasks[_id].neededWei <= Tasks[_id].funds && Tasks[_id].funds <= address(this).balance) {
 				return true;
@@ -226,7 +239,7 @@ contract TaskTable {
 			Tasks[_id].moneySource.transfer(Tasks[_id].funds);
 		}
 		Tasks[_id].state = State.Cancelled;
-		emit TaskTable_StateChanged(Tasks[_id].state);
+		emit TaskTableStateChanged(Tasks[_id].state);
 	}
 
 	function returnMoney(uint _id) isDeadlineMissed(_id) onlyByMoneySource(_id) public {
@@ -236,7 +249,7 @@ contract TaskTable {
 			Tasks[_id].moneySource.transfer(Tasks[_id].funds);
 		}
 		Tasks[_id].state = State.DeadlineMissed;
-		emit TaskTable_StateChanged(Tasks[_id].state); 
+		emit TaskTableStateChanged(Tasks[_id].state); 
 	}
 
 	function notifyThatCompleted(uint _id) public onlyEmployeeOrMoneySource(_id) {
@@ -244,10 +257,10 @@ contract TaskTable {
 
 		if((0!=Tasks[_id].neededWei) || (Tasks[_id].isDonation)) { // if donation or prePaid - no need in ev-ion; if postpaid with unknown payment - neededWei=0 yet
 			Tasks[_id].state = State.Complete;
-			emit TaskTable_StateChanged(Tasks[_id].state);
+			emit TaskTableStateChanged(Tasks[_id].state);
 		}else {
 			Tasks[_id].state = State.CompleteButNeedsEvaluation;
-			emit TaskTable_StateChanged(Tasks[_id].state);
+			emit TaskTableStateChanged(Tasks[_id].state);
 		}
 	}
 
@@ -257,7 +270,7 @@ contract TaskTable {
 
 		Tasks[_id].neededWei = _neededWei;
 		Tasks[_id].state = State.Complete;
-		emit TaskTable_StateChanged(Tasks[_id].state);
+		emit TaskTableStateChanged(Tasks[_id].state);
 	}
 
 	// for Prepaid tasks only! 
@@ -268,7 +281,7 @@ contract TaskTable {
 		require(0!=Tasks[_id].neededWei);
 
 		Tasks[_id].state = State.CanGetFunds;
-		emit TaskTable_StateChanged(Tasks[_id].state);
+		emit TaskTableStateChanged(Tasks[_id].state);
 	}
 
 // IDestination overrides:
@@ -279,11 +292,11 @@ contract TaskTable {
 
 		Tasks[_id].output.transfer(Tasks[_id].funds);
 		Tasks[_id].state = State.Finished;
-		emit TaskTable_StateChanged(Tasks[_id].state);
+		emit TaskTableStateChanged(Tasks[_id].state);
 	}
 
 	function processFunds(uint _id) public payable {
-		emit TaskTable_ProcessFunds(msg.sender, msg.value, _id);
+		emit TaskTableProcessFunds(msg.sender, msg.value, _id);
 		if(isCanSetNeededWei(_id)) {
 			// this is a donation
 			// client can send any sum!
@@ -292,14 +305,13 @@ contract TaskTable {
 		Tasks[_id].funds += msg.value;
 	}
 
-	function isCanSetNeededWei(uint _id) internal view returns(bool){
-		if(Tasks[_id].isPostpaid && (0==Tasks[_id].neededWei) && (State.Complete==Tasks[_id].state)){
+	function isCanSetNeededWei(uint _id) internal view returns(bool) {
+		if(Tasks[_id].isPostpaid && (0==Tasks[_id].neededWei) && (State.Complete==Tasks[_id].state)) {
 			return true;
 		}
 
 		return false;
 	}
-	
 
 	// non-payable
 	function()public {
