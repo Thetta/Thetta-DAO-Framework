@@ -102,7 +102,7 @@ library GenericCallerLib {
 	{
 		VotingParams memory vp = store.votingParams[_permissionIdHash];
 
-		IVoting V = new Voting(
+		IVoting v = new Voting(
 			store.dao, 
 			_proposal, 
 			_origin, 
@@ -114,7 +114,7 @@ library GenericCallerLib {
 			address(vp.param5)
 		);
 
-		return V;
+		return v;
 	}
 
 	function bytes32ToString(bytes32 x) public pure returns (string) {
