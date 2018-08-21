@@ -92,7 +92,7 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 	// See this - https://github.com/Thetta/SmartContracts/issues/40
 	function processFunds(uint _currentFlow) public payable {
 		require(isOpen());
-		emit SplitterBase_ProcessFunds(msg.sender, msg.value, _currentFlow);
+		emit SplitterBaseProcessFunds(msg.sender, msg.value, _currentFlow);
 		uint amount = _currentFlow;
 
 		// TODO: can remove this line?
