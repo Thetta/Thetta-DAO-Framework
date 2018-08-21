@@ -10,6 +10,7 @@ import "../governance/Voting.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+
 /**
  * @title GenericCaller
  * @dev This is a wrapper that help us to do action that CAN require votings
@@ -34,9 +35,15 @@ contract GenericCaller is DaoClient, Ownable {
 	// address _origin, uint _minutesToVote,
 	// uint _quorumPercent, uint _consensusPercent, VotingType _votingType,
 	// string _groupName, address _tokenAddress
-	function setVotingParams(bytes32 _permissionIdHash, uint _votingType, 
-		bytes32 _param1, bytes32 _param2, 
-		bytes32 _param3, bytes32 _param4, bytes32 _param5) public onlyOwner {
+	function setVotingParams(
+		bytes32 _permissionIdHash, 
+		uint _votingType, 
+		bytes32 _param1, 
+		bytes32 _param2, 
+		bytes32 _param3, 
+		bytes32 _param4, 
+		bytes32 _param5) public onlyOwner 
+	{
 		store.setVotingParams(_permissionIdHash, _votingType, 
 			_param1, _param2, _param3, _param4, _param5);
 	}

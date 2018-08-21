@@ -7,6 +7,7 @@ import "./CopyOnWriteToken.sol";
 import "./ITokenVotingSupport.sol";
 import "../utils/UtilsLib.sol";
 
+
 /**
  * @title StdDaoToken 
  * @dev Currently DaoBase works only with StdDaoToken. It does not support working with 
