@@ -47,7 +47,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 
 	// -------------------- INTERNAL IWEIRECEIVER FUNCTIONS -------------------- for elements
 
-	function _getPercentsMul100(uint _eId)view internal returns(uint) {
+	function _getPercentsMul100(uint _eId) internal view returns(uint) {
 		if(ElementTypes.RelativeExpense == elementsType[_eId]) {
 			return expenses[_eId].neededPercentsMul100;
 		}else {
@@ -55,7 +55,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 		}
 	}
 
-	function _isNeedsMoney(uint _eId)view internal returns(bool) {
+	function _isNeedsMoney(uint _eId) internal view returns(bool) {
 		if(splitters[_eId].isOpen) {
 			return _isNeedsMoneySplitter(_eId);
 		}else if(expenses[_eId].isOpen) {
@@ -65,7 +65,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 		}
 	}
 
-	function _isNeedsMoneySplitter(uint _eId)view internal returns(bool) {
+	function _isNeedsMoneySplitter(uint _eId) internal view returns(bool) {
 		for(uint i=0; i<splitters[_eId].outputs.length; ++i) { // if at least 1 child needs money -> return true
 			if(_isNeedsMoney(splitters[_eId].outputs[i])) {
 				return true;
@@ -74,7 +74,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 		return false;
 	}
 
-	function _isNeedsMoneyExpense(uint _eId)view internal returns(bool) {
+	function _isNeedsMoneyExpense(uint _eId) internal view returns(bool) {
 		if(expenses[_eId].isPeriodic) { // For period Weiexpense
 			if ((uint64(block.timestamp) - expenses[_eId].momentReceived) >= expenses[_eId].periodHours * 3600 * 1000) { 
 				return true;
@@ -87,7 +87,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 	function _processFunds(uint _eId, uint _currentFlow, uint _amount) internal {
 		if(splitters[_eId].isOpen) {
 			return _processFundsSplitter(_eId, _currentFlow, _amount);
-		}else if(expenses[_eId].isOpen&&_isNeedsMoney(_eId)) {
+		}else if(expenses[_eId].isOpen && _isNeedsMoney(_eId)) {
 			return _processFundsExpense(_eId, _currentFlow, _amount);
 		}else {}
 	}
@@ -100,8 +100,8 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 			uint needed = _getTotalWeiNeeded(splitters[_eId].outputs[i], currentFlow);
 			_processFunds(splitters[_eId].outputs[i], currentFlow, needed);
 		
-			if(ElementTypes.TopdownSplitter==elementsType[_eId]) {
-				if(currentFlow>=needed) {
+			if(ElementTypes.TopdownSplitter == elementsType[_eId]) {
+				if(currentFlow >= needed) {
 					currentFlow = currentFlow - needed;
 				}else {
 					currentFlow = 0;
@@ -112,21 +112,21 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 
 	function _processFundsExpense(uint _eId, uint _currentFlow, uint _amount) internal {
 		require(_isNeedsMoney(_eId));
-		require(_amount==_getTotalWeiNeeded(_eId, _currentFlow));
+		require(_amount == _getTotalWeiNeeded(_eId, _currentFlow));
 		expenses[_eId].momentReceived = uint(block.timestamp);
 		expenses[_eId].balance += _amount;
 		expenses[_eId].isMoneyReceived = true;
 	}
 	
-	function getMinWeiNeededForElement(uint _eId)external view returns(uint) {
+	function getMinWeiNeededForElement(uint _eId) external view returns(uint) {
 		return _getMinWeiNeeded(_eId);
 	}
 
-	function _getMinWeiNeeded(uint _eId)internal view returns(uint) {
-		if((splitters[_eId].isOpen)&&(ElementTypes.TopdownSplitter==elementsType[_eId])) {
+	function _getMinWeiNeeded(uint _eId) internal view returns(uint) {
+		if((splitters[_eId].isOpen) && (ElementTypes.TopdownSplitter == elementsType[_eId])) {
 			return _getMinWeiNeededTopdownSplitter(_eId);
 	
-		}else if((splitters[_eId].isOpen)&&(ElementTypes.UnsortedSplitter==elementsType[_eId])) {
+		}else if((splitters[_eId].isOpen) && (ElementTypes.UnsortedSplitter == elementsType[_eId])) {
 			return _getMinWeiNeededUnsortedSplitter(_eId);
 
 		}else if(expenses[_eId].isOpen && _isNeedsMoney(_eId)) {
@@ -142,7 +142,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 		uint percentsMul100ReverseSum = 10000;
 
 		for(uint i=0; i<splitters[_eId].outputs.length; ++i) {
-			if(ElementTypes.RelativeExpense==elementsType[splitters[_eId].outputs[i]]) {
+			if(ElementTypes.RelativeExpense == elementsType[splitters[_eId].outputs[i]]) {
 				percentsMul100ReverseSum -= expenses[splitters[_eId].outputs[i]].neededPercentsMul100;
 			}else {
 				absSum += _getMinWeiNeeded(splitters[_eId].outputs[i]);
@@ -156,10 +156,10 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 		}
 	}
 
-	function _getMinWeiNeededTopdownSplitter(uint _eId)internal view returns(uint) {
+	function _getMinWeiNeededTopdownSplitter(uint _eId) internal view returns(uint) {
 		uint out = 0;
 		for(uint j=splitters[_eId].outputs.length;  j>0; --j) {
-			if(ElementTypes.RelativeExpense==elementsType[splitters[_eId].outputs[j-1]]) {
+			if(ElementTypes.RelativeExpense == elementsType[splitters[_eId].outputs[j-1]]) {
 				out = 10000 * out / expenses[splitters[_eId].outputs[j-1]].neededPercentsMul100;
 			}else {
 				out += _getMinWeiNeeded(splitters[_eId].outputs[j-1]);
@@ -168,26 +168,26 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 		return out;
 	}
 
-	function _getMinWeiNeededExpense(uint _eId)internal view returns(uint) {
-		if(!_isNeedsMoney(_eId)||(ElementTypes.RelativeExpense==elementsType[_eId])) {
+	function _getMinWeiNeededExpense(uint _eId) internal view returns(uint) {
+		if(!_isNeedsMoney(_eId) || (ElementTypes.RelativeExpense == elementsType[_eId])) {
 			return 0;
 		}
 		return _getDebtMultiplier(_eId)*expenses[_eId].neededAmount;
 	}
 
-	function _getDebtMultiplier(uint _eId)internal view returns(uint) {
-		if((expenses[_eId].isAccumulateDebt)&&(0!=expenses[_eId].momentReceived)) {
+	function _getDebtMultiplier(uint _eId) internal view returns(uint) {
+		if((expenses[_eId].isAccumulateDebt)&&(0 != expenses[_eId].momentReceived)) {
 			return ((block.timestamp - expenses[_eId].momentReceived) / (expenses[_eId].periodHours * 3600 * 1000));
 		} else {
 			return 1;
 		}
 	}
 
-	function getTotalWeiNeededForElement(uint _eId, uint _currentFlow)external view returns(uint) {
+	function getTotalWeiNeededForElement(uint _eId, uint _currentFlow) external view returns(uint) {
 		return _getTotalWeiNeeded(_eId, _currentFlow);
 	}
 
-	function _getTotalWeiNeeded(uint _eId, uint _currentFlow)internal view returns(uint) {
+	function _getTotalWeiNeeded(uint _eId, uint _currentFlow) internal view returns(uint) {
 		if(splitters[_eId].isOpen) {
 			return _getTotalWeiNeededSplitter(_eId, _currentFlow);
 		}else if(expenses[_eId].isOpen) {

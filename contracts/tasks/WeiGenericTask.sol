@@ -72,7 +72,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	event WeiGenericTaskStateChanged(State _state);
 
 	modifier onlyEmployeeOrOwner() { 
-		require(msg.sender==employee || msg.sender==owner); 
+		require(msg.sender == employee || msg.sender == owner); 
 		_; 
 	}
 
@@ -119,7 +119,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		}
 
 		if(!_isPostpaid) {
-			require(_neededWei>0);
+			require(_neededWei > 0);
 		}
 
 		creationTime = block.timestamp;
@@ -144,23 +144,23 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		output = _output;
 	}
 
-	function getBalance()public view returns(uint) {
+	function getBalance() public view returns(uint) {
 		return address(this).balance;
 	}
 
-	function getCurrentState()public view returns(State) {
+	function getCurrentState() public view returns(State) {
 		// for Prepaid task -> client should call processFunds method to put money into this task
 		// when state is Init
-		if((State.Init==state) && (neededWei!=0) && (!isPostpaid)) {
-			if(neededWei==address(this).balance) {
+		if((State.Init == state) && (neededWei != 0) && (!isPostpaid)) {
+			if(neededWei == address(this).balance) {
 				return State.PrePaid;
 			}
 		}
 
 		// for Postpaid task -> client should call processFunds method to put money into this task
 		// when state is Complete. He is confirming the task by doing that (no need to call confirmCompletion)
-		if((State.Complete==state) && (neededWei!=0) && (isPostpaid)) {
-			if(neededWei==address(this).balance) {
+		if((State.Complete == state) && (neededWei != 0) && (isPostpaid)) {
+			if(neededWei == address(this).balance) {
 				return State.CanGetFunds;
 			}
 		}
@@ -169,8 +169,8 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
 
 	function cancell() public isCanCancell onlyOwner {
-		require(getCurrentState()==State.Init || getCurrentState()==State.PrePaid);
-		if(getCurrentState()==State.PrePaid) {
+		require(getCurrentState() == State.Init || getCurrentState() == State.PrePaid);
+		if(getCurrentState() == State.PrePaid) {
 			// return money to 'moneySource'
 			moneySource.transfer(address(this).balance);
 		}
@@ -179,7 +179,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
 
 	function returnMoney() public isDeadlineMissed onlyOwner {
-		require(getCurrentState()==State.InProgress);
+		require(getCurrentState() == State.InProgress);
 		if(address(this).balance > 0) {
 			// return money to 'moneySource'
 			moneySource.transfer(address(this).balance);
@@ -189,7 +189,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
 
 	function notifyThatCompleted() public onlyEmployeeOrOwner {
-		require(getCurrentState()==State.InProgress);
+		require(getCurrentState() == State.InProgress);
 
 		if((0!=neededWei) || (isDonation)) { // if donation or prePaid - no need in ev-ion; if postpaid with unknown payment - neededWei=0 yet
 
@@ -202,8 +202,8 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
 
 	function evaluateAndSetNeededWei(uint _neededWei) public onlyOwner {
-		require(getCurrentState()==State.CompleteButNeedsEvaluation);
-		require(0==neededWei);
+		require(getCurrentState() == State.CompleteButNeedsEvaluation);
+		require(0 == neededWei);
 
 		neededWei = _neededWei;
 		state = State.Complete;
@@ -213,9 +213,9 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	// for Prepaid tasks only! 
 	// for Postpaid: call processFunds and transfer money instead!
 	function confirmCompletion() public onlyByMoneySource {
-		require(getCurrentState()==State.Complete);
+		require(getCurrentState() == State.Complete);
 		require(!isPostpaid);
-		require(0!=neededWei);
+		require(0 != neededWei);
 
 		state = State.CanGetFunds;
 		emit WeiGenericTaskStateChanged(state);
@@ -224,8 +224,8 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 // IDestination overrides:
 	// pull model
 	function flush() public {
-		require(getCurrentState()==State.CanGetFunds);
-		require(0x0!=output);
+		require(getCurrentState() == State.CanGetFunds);
+		require(0x0 != output);
 
 		output.transfer(address(this).balance);
 		state = State.Finished;
@@ -233,14 +233,14 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
 
 	function flushTo(address _to) public {
-		if(_to==_to) {
+		if(_to == _to) {
 			revert();
 		}
 	}
 
 	function processFunds(uint _currentFlow) public payable {
 		emit WeiGenericTaskProcessFunds(msg.sender, msg.value, _currentFlow);
-		if(isPostpaid && (0==neededWei) && (State.Complete==state)) {
+		if(isPostpaid && (0 == neededWei) && (State.Complete == state)) {
 			neededWei = msg.value; // this is a donation. client can send any sum!
 		}
 

@@ -47,11 +47,13 @@ contract DefaultMoneyflowScheme is DaoClient {
 	bytes32 public constant FLUSH_RESERVE_FUND_TO = 0x5f2a319d6055192f7a6f19e5f7e6c637b4f9b6517dc9c9c00e84824a329bd197;
 
 /////
-	constructor(IDaoBase _dao, address _fundOutput, 
-		uint _percentsReserve, uint _dividendsReserve) public 
-		DaoClient(_dao)											  
+	constructor(
+		IDaoBase _dao, 
+		address _fundOutput, 
+		uint _percentsReserve, 
+		uint _dividendsReserve) public DaoClient(_dao)											  
 	{
-		require(0x0!=_fundOutput);
+		require(0x0 != _fundOutput);
 
 		// root = new WeiTopDownSplitter("root");
 
@@ -83,11 +85,11 @@ contract DefaultMoneyflowScheme is DaoClient {
 		// rest.addChild(dividendsFund);
 	}
 
-	function getRootReceiver()public view returns(IWeiReceiver) {
+	function getRootReceiver() public view returns(IWeiReceiver) {
 		return root;
 	}
 
-	function deployRoot()public {
+	function deployRoot() public {
 		root = new WeiTopDownSplitter("root");
 	}
 

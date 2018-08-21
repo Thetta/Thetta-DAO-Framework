@@ -19,7 +19,7 @@ contract WeiBounty is WeiGenericTask {
 
 	// callable by anyone
 	function startTask() public isCanDo(START_BOUNTY) {
-		require(getCurrentState()==State.PrePaid);
+		require(getCurrentState() == State.PrePaid);
 		startTime = block.timestamp;
 		employee = msg.sender;
 		state = State.InProgress;

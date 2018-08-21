@@ -65,7 +65,7 @@ contract TaskTable {
 	}
 
 	modifier onlyEmployeeOrMoneySource(uint _id) { 
-		require(msg.sender== tasks[_id].employee || msg.sender==tasks[_id].moneySource); 
+		require(msg.sender== tasks[_id].employee || msg.sender == tasks[_id].moneySource); 
 		_; 
 	}
 
@@ -153,9 +153,9 @@ contract TaskTable {
 	}
 
 	function startTask(uint _id, address _employee) public isCanDo(START_TASK) {
-		require(getCurrentState(_id)==State.Init || getCurrentState(_id)==State.PrePaid);
+		require(getCurrentState(_id) == State.Init || getCurrentState(_id) == State.PrePaid);
 
-		if(getCurrentState(_id)==State.Init) {
+		if(getCurrentState(_id) == State.Init) {
 			// can start only if postpaid task 
 			require(tasks[_id].isPostpaid);
 		}
@@ -167,7 +167,7 @@ contract TaskTable {
 
 	// callable by anyone
 	function startBounty(uint _id) public isCanDo(START_BOUNTY) {
-		require(getCurrentState(_id)==State.PrePaid);
+		require(getCurrentState(_id) == State.PrePaid);
 		tasks[_id].startTime = block.timestamp;
 		tasks[_id].employee = msg.sender;
 		tasks[_id].state = State.InProgress;
@@ -216,7 +216,7 @@ contract TaskTable {
 
 	function isTaskPrepaid(uint _id) internal view returns(bool) {
 		if((State.Init==tasks[_id].state) && (tasks[_id].neededWei!=0) && (!tasks[_id].isPostpaid)) {
-			if(tasks[_id].neededWei==tasks[_id].funds && tasks[_id].funds <= address(this).balance) {
+			if(tasks[_id].neededWei == tasks[_id].funds && tasks[_id].funds <= address(this).balance) {
 				return true;
 			}
 		}
@@ -233,8 +233,8 @@ contract TaskTable {
 	}
 
 	function cancel(uint _id) onlyByMoneySource(_id) isCanCancel(_id) public {
-		require(getCurrentState(_id)==State.Init || getCurrentState(_id)==State.PrePaid);
-		if(getCurrentState(_id)==State.PrePaid) {
+		require(getCurrentState(_id) == State.Init || getCurrentState(_id) == State.PrePaid);
+		if(getCurrentState(_id) == State.PrePaid) {
 			// return money to 'moneySource'
 			tasks[_id].moneySource.transfer(tasks[_id].funds);
 		}
@@ -243,7 +243,7 @@ contract TaskTable {
 	}
 
 	function returnMoney(uint _id) isDeadlineMissed(_id) onlyByMoneySource(_id) public {
-		require(getCurrentState(_id)==State.InProgress);
+		require(getCurrentState(_id) == State.InProgress);
 		if(address(this).balance >= tasks[_id].funds) {
 			// return money to 'moneySource'
 			tasks[_id].moneySource.transfer(tasks[_id].funds);
@@ -253,7 +253,7 @@ contract TaskTable {
 	}
 
 	function notifyThatCompleted(uint _id) public onlyEmployeeOrMoneySource(_id) {
-		require(getCurrentState(_id)==State.InProgress);
+		require(getCurrentState(_id) == State.InProgress);
 
 		if((0!=tasks[_id].neededWei) || (tasks[_id].isDonation)) { // if donation or prePaid - no need in ev-ion; if postpaid with unknown payment - neededWei=0 yet
 			tasks[_id].state = State.Complete;
@@ -265,7 +265,7 @@ contract TaskTable {
 	}
 
 	function evaluateAndSetNeededWei(uint _id, uint _neededWei) public onlyByMoneySource(_id) {
-		require(getCurrentState(_id)==State.CompleteButNeedsEvaluation);
+		require(getCurrentState(_id) == State.CompleteButNeedsEvaluation);
 		require(0==tasks[_id].neededWei);
 
 		tasks[_id].neededWei = _neededWei;
@@ -276,9 +276,9 @@ contract TaskTable {
 	// for Prepaid tasks only! 
 	// for Postpaid: call processFunds and transfer money instead!
 	function confirmCompletion(uint _id) public onlyByMoneySource(_id) {
-		require(getCurrentState(_id)==State.Complete);
+		require(getCurrentState(_id) == State.Complete);
 		require(!tasks[_id].isPostpaid);
-		require(0!=tasks[_id].neededWei);
+		require(0 != tasks[_id].neededWei);
 
 		tasks[_id].state = State.CanGetFunds;
 		emit TaskTableStateChanged(tasks[_id].state);
@@ -287,7 +287,7 @@ contract TaskTable {
 // IDestination overrides:
 	// pull model
 	function flush(uint _id) public {
-		require(getCurrentState(_id)==State.CanGetFunds);
+		require(getCurrentState(_id) == State.CanGetFunds);
 		require(0x0!=tasks[_id].output);
 
 		tasks[_id].output.transfer(tasks[_id].funds);
@@ -306,7 +306,7 @@ contract TaskTable {
 	}
 
 	function isCanSetNeededWei(uint _id) internal view returns(bool) {
-		if(tasks[_id].isPostpaid && (0==tasks[_id].neededWei) && (State.Complete==tasks[_id].state)) {
+		if(tasks[_id].isPostpaid && (0 == tasks[_id].neededWei) && (State.Complete==tasks[_id].state)) {
 			return true;
 		}
 
