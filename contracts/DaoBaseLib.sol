@@ -1,4 +1,5 @@
 pragma solidity ^0.4.22;
+
 import "./utils/UtilsLib.sol";
 import "./DaoStorage.sol";
 
@@ -54,7 +55,7 @@ library DaoBaseLib {
 		return false;
 	}
 
-	function issueTokens(DaoStorage _daoStorage, address _tokenAddress, address _to, uint _amount)public {
+	function issueTokens(DaoStorage _daoStorage, address _tokenAddress, address _to, uint _amount) public {
 		for(uint i=0; i<DaoStorage(_daoStorage).getTokensCount(); ++i) {
 			if(DaoStorage(_daoStorage).getTokenAtIndex(i)==_tokenAddress) {
 				// WARNING: token ownership should be transferred to the current DaoBase to do that!!!
@@ -65,7 +66,7 @@ library DaoBaseLib {
 		revert(); // if not found!
 	}
 
-	function burnTokens(DaoStorage _daoStorage, address _tokenAddress, address _who, uint _amount)public {
+	function burnTokens(DaoStorage _daoStorage, address _tokenAddress, address _who, uint _amount) public {
 		for(uint i=0; i<DaoStorage(_daoStorage).getTokensCount(); ++i) {
 			if(DaoStorage(_daoStorage).getTokenAtIndex(i)==_tokenAddress) {
 				// WARNING: token ownership should be transferred to the current DaoBase to do that!!!

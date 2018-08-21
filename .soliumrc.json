@@ -2,6 +2,8 @@
   "extends": "solium:all",
   "plugins": ["security"],
   "rules": {
+	 "mixedcase": ["error"],
+	 "blank-lines": ["error"],
     "quotes": ["error", "double"],
     "no-empty-blocks": "off",
     "indentation": ["error", "tab"],

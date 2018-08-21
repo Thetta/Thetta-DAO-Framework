@@ -60,6 +60,7 @@ contract DaoBase is IDaoBase, Ownable {
 	function isCanDoByGroupMember(bytes32 _permissionName, address _a) public view returns(bool) {
 		return daoStorage.isAllowedActionByMembership(_permissionName, _a);
 	}
+
 	// IDaoBase:
 	function addObserver(IDaoObserver _observer) public {
 		daoStorage.addObserver(_observer);
