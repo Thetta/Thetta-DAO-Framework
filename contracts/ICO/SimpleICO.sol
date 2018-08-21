@@ -105,7 +105,6 @@ contract SimpleICO is DaoClient, Ownable {
 			weiAmount,
 			tokens
 		);
-
 	}
 
 	function _getTokenAmount(uint256 _weiAmount)
@@ -128,9 +127,9 @@ contract SimpleICO is DaoClient, Ownable {
 	}
 
 	function distributeBeforeICO(address[] _addresses, uint256[] _tokenAmounts) onlyOwner public {
-		require (block.timestamp < startDate);
-		require (_addresses.length > 0);
-		require (_addresses.length == _tokenAmounts.length);
+		require(block.timestamp < startDate);
+		require(_addresses.length > 0);
+		require(_addresses.length == _tokenAmounts.length);
 
 		for(uint256 i = 0; i < _addresses.length; i++) {
 			dao.issueTokens(tokenAddress, _addresses[i], _tokenAmounts[i]);
