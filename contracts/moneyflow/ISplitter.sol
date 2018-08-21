@@ -1,5 +1,6 @@
 pragma solidity ^0.4.23;
 
+
 /**
  * @title ISplitter 
  * @dev does not store funds. Splits them between the children

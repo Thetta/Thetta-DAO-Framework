@@ -3,6 +3,7 @@ pragma solidity ^0.4.22;
 import "../DaoStorage.sol";
 import "../DaoBase.sol";
 
+
 contract DaoBaseMock is DaoBase {
 
 	constructor(DaoStorage _daoStorage) public 

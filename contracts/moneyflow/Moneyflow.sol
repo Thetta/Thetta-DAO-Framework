@@ -11,6 +11,7 @@ import "../IDaoBase.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+
 /**
  * @title MoneyFlow 
  * @dev Reference (typical example) implementation of IMoneyflow
@@ -30,8 +31,8 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	bytes32 constant public WITHDRAW_DONATIONS = keccak256("withdrawDonations");
 	bytes32 constant public SET_ROOT_WEI_RECEIVER = keccak256("setRootWeiReceiver");
 
-	event MoneyFlow_WithdrawDonations(address _by, address _to, uint _balance);
-	event MoneyFlow_SetRootWeiReceiver(address _sender, address _receiver);
+	event MoneyFlowWithdrawDonations(address _by, address _to, uint _balance);
+	event MoneyFlowSetRootWeiReceiver(address _sender, address _receiver);
 
 	constructor(IDaoBase _dao) public
 		DaoClient(_dao)
@@ -44,7 +45,7 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 // IMoneyflow:
 	// will withdraw donations
 	function withdrawDonationsTo(address _out) public isCanDo(WITHDRAW_DONATIONS) {
-		emit MoneyFlow_WithdrawDonations(msg.sender, _out, address(donationEndpoint).balance);
+		emit MoneyFlowWithdrawDonations(msg.sender, _out, address(donationEndpoint).balance);
 		donationEndpoint.flushTo(_out);
 	}
 
@@ -78,7 +79,7 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	// receiver can be a splitter, fund or event task
 	// _receiver can be 0x0!
 	function setRootWeiReceiver(IWeiReceiver _receiver) public isCanDo(SET_ROOT_WEI_RECEIVER) {
-		emit MoneyFlow_SetRootWeiReceiver(msg.sender, address(_receiver));
+		emit MoneyFlowSetRootWeiReceiver(msg.sender, address(_receiver));
 		rootReceiver = _receiver;
 		revenueF2WR = new FallbackToWeiReceiver(address(rootReceiver));
 	}

@@ -1,5 +1,6 @@
 pragma solidity ^0.4.23;
 
+
 /**
  * @title IDestination 
  * @dev Keeps all money until flush is called

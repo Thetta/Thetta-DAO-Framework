@@ -6,6 +6,7 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "../IMoneyflow.sol";
 import "../ISplitter.sol";
 
+
 /**
  * @title SplitterBase 
  * @dev Splitter has multiple outputs (allows to send money only to THESE addresses)
@@ -18,10 +19,10 @@ contract SplitterBase is ISplitter, Ownable {
 
 	string public name = "";
 
-	event SplitterBase_ProcessFunds(address _sender, uint _value, uint _currentFlow);
-	event SplitterBase_Open(address _sender);
-	event SplitterBase_Close(address _sender);
-	event SplitterBase_AddChild(address _newChild);
+	event SplitterBaseProcessFunds(address _sender, uint _value, uint _currentFlow);
+	event SplitterBaseOpen(address _sender);
+	event SplitterBaseClose(address _sender);
+	event SplitterBaseAddChild(address _newChild);
 
 	constructor(string _name) public {
 		name = _name;
@@ -29,12 +30,12 @@ contract SplitterBase is ISplitter, Ownable {
 
 	// ISplitter:
 	function open() public onlyOwner {
-		emit SplitterBase_Open(msg.sender);
+		emit SplitterBaseOpen(msg.sender);
 		opened = true;
 	}
 
 	function close() public onlyOwner {
-		emit SplitterBase_Close(msg.sender);
+		emit SplitterBaseClose(msg.sender);
 		opened = false;
 	}
 
@@ -51,7 +52,7 @@ contract SplitterBase is ISplitter, Ownable {
 	}
 
 	function addChild(address _newChild) public onlyOwner {
-		emit SplitterBase_AddChild(_newChild);
+		emit SplitterBaseAddChild(_newChild);
 		children[childrenCount] = _newChild;
 		childrenCount = childrenCount + 1;	
 	}

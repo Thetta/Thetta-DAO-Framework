@@ -2,6 +2,7 @@ pragma solidity ^0.4.22;
 
 import "./IReceiver.sol";
 
+
 // IErc20Receiver does not store funds!
 //
 // There are 2 types of Outputs:
