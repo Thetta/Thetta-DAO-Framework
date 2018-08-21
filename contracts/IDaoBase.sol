@@ -3,6 +3,7 @@ pragma solidity ^0.4.22;
 import "./IDaoObserver.sol";
 import "./governance/IProposal.sol";
 
+
 /**
  * @title This is the base interface that you should use.
  * @dev Derive your DAO from it and provide the method implementation or 

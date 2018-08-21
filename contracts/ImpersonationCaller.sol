@@ -7,12 +7,13 @@ import "./IDaoBase.sol";
 
 // TODO: convert to library?
 
+
 /**
  * @title ImpersonationCaller 
  * @dev This is a convenient wrapper that is used by the contract below (see DaoBaseImpersonated). Do not use it directly.
 */
 contract ImpersonationCaller is DaoClient {
-  constructor(IDaoBase _dao) public DaoClient(_dao) {
+	constructor(IDaoBase _dao) public DaoClient(_dao) {
 
 	}
 
@@ -23,7 +24,7 @@ contract ImpersonationCaller is DaoClient {
    */
 	function doActionOnBehalfOf(bytes32 _hash, bytes _sig, bytes32 _action, string _methodSig, bytes32[] _params) internal {
 		bytes memory prefix = "\x19Ethereum Signed Message:\n32";
-    bytes32 prefixedHash = keccak256(prefix, _hash);
+		bytes32 prefixedHash = keccak256(prefix, _hash);
 
 		// 1 - get the address of the client
 		address client = ECRecovery.recover(prefixedHash, _sig);
