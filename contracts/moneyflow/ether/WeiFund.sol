@@ -100,12 +100,12 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {//
 	// -------------- IDestination
 
 	function flushTo(address _to) public onlyOwner {
-		emit WeiFund_FlushTo(_to, this.balance);
+		emit WeiFundFlushTo(_to, this.balance);
 		_to.transfer(this.balance);
 	}
 
 	function flush() public onlyOwner {
-		emit WeiFund_FlushTo(owner, this.balance);
+		emit WeiFundFlushTo(owner, this.balance);
 		owner.transfer(this.balance);
 	}	
 
