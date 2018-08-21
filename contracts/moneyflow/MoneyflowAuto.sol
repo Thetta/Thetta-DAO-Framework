@@ -20,10 +20,12 @@ import "../utils/GenericCaller.sol";
 contract MoneyflowAuto is GenericCaller {
 	IMoneyflow mf;
 
-	bytes32 constant public WITHDRAW_DONATIONS = keccak256("withdrawDonations");
-	bytes32 constant public SET_ROOT_WEI_RECEIVER = keccak256("setRootWeiReceiver");
+	//bytes32 constant public WITHDRAW_DONATIONS = keccak256("withdrawDonations");
+	bytes32 constant public WITHDRAW_DONATIONS = 0xfc685f51f68cb86aa29db19c2a8f4e85183375ba55b5e56fb2e89adc5f5e4285;
+	//bytes32 constant public SET_ROOT_WEI_RECEIVER = keccak256("setRootWeiReceiver");
+	bytes32 constant public SET_ROOT_WEI_RECEIVER = 0xcb02529cf7b85f6f804884cd47d35cf58a3ffbee0b87a019fe725b688923c627;
 
-	constructor(IDaoBase _dao, IMoneyflow _mf)public 
+	constructor(IDaoBase _dao, IMoneyflow _mf) public 
 		GenericCaller(_dao)
 	{
 		mf = _mf;

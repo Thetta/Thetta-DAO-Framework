@@ -24,7 +24,7 @@ contract DaoBase is IDaoBase, Ownable {
 		_; 
 	}
 
-	modifier isCanDoOrByOwner(bytes32 _what){
+	modifier isCanDoOrByOwner(bytes32 _what) {
 		require(msg.sender==owner || DaoBaseLib.isCanDoAction(daoStorage, msg.sender, _what));
 		_;
 	}
@@ -148,16 +148,16 @@ contract DaoBase is IDaoBase, Ownable {
 		daoStorage.addProposal(_proposal);
 	}
 
-	function getProposalAtIndex(uint _i)public view returns(IProposal) {
+	function getProposalAtIndex(uint _i) public view returns(IProposal) {
 		return daoStorage.getProposalAtIndex(_i);
 	}
 
-	function getProposalsCount()public view returns(uint) {
+	function getProposalsCount() public view returns(uint) {
 		return daoStorage.getProposalsCount();
 	}
 
 	// Tokens:
-	function issueTokens(address _tokenAddress, address _to, uint _amount)public isCanDo(ISSUE_TOKENS) {
+	function issueTokens(address _tokenAddress, address _to, uint _amount) public isCanDo(ISSUE_TOKENS) {
 		emit DaoBaseIssueTokens(_tokenAddress, _to, _amount);
 		DaoBaseLib.issueTokens(
 			daoStorage,
@@ -167,12 +167,13 @@ contract DaoBase is IDaoBase, Ownable {
 		);
 	}
 
-	function burnTokens(address _tokenAddress, address _who, uint _amount)public isCanDo(BURN_TOKENS) {
+	function burnTokens(address _tokenAddress, address _who, uint _amount) public isCanDo(BURN_TOKENS) {
 		emit DaoBaseBurnTokens(_tokenAddress, _who, _amount);
 		DaoBaseLib.burnTokens(
 			daoStorage,
 			_tokenAddress, 
 			_who, 
-			_amount);	
+			_amount
+		);	
 	}
 }

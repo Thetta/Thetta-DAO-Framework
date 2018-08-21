@@ -10,9 +10,9 @@ import "./IReceiver.sol";
 // "Relative": percents of input 
 contract IErc20Receiver is IReceiver {
 	// Will calculate only absolute outputs, but not take into account the Percents
-	function getMinTokensNeeded()public view returns(uint);
+	function getMinTokensNeeded() public view returns(uint);
 
 	// In case we have absolute output -> will return fixed amount that is equal to 'getMinTokensNeeded'
 	// In case we have relative output -> will calculate percents of _inputWei 
-	function getTotalTokensNeeded(uint _inputTokens)public view returns(uint);
+	function getTotalTokensNeeded(uint _inputTokens) public view returns(uint);
 }

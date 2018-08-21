@@ -18,12 +18,13 @@ contract WeiTask is WeiGenericTask {
 
 	// callable by any Employee of the current DaoBase or Owner
 	function startTask(address _employee) public isCanDo(START_TASK) {
-		require(getCurrentState()==State.Init || getCurrentState()==State.PrePaid);
+		require(getCurrentState() == State.Init || getCurrentState() == State.PrePaid);
 
-		if(getCurrentState()==State.Init) {
+		if(getCurrentState() == State.Init) {
 			// can start only if postpaid task 
 			require(isPostpaid);
 		}
+		
 		startTime = block.timestamp;
 		employee = _employee;
 		state = State.InProgress;

@@ -13,8 +13,8 @@ import "./IDaoBase.sol";
  * @dev This is a convenient wrapper that is used by the contract below (see DaoBaseImpersonated). Do not use it directly.
 */
 contract ImpersonationCaller is DaoClient {
-	constructor(IDaoBase _dao) public DaoClient(_dao) {
-
+	constructor(IDaoBase _dao) public DaoClient(_dao) 
+	{
 	}
 
   /**
