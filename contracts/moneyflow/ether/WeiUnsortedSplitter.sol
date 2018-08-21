@@ -2,12 +2,13 @@ pragma solidity ^0.4.23;
 
 import "./SplitterBase.sol";
 
+
 /**
  * @title WeiUnsortedSplitter 
  * @dev Will split money (order does not matter!). 
 */
 contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
-	event consoleUint(string a, uint b);
+	event ConsoleUint(string a, uint b);
 
 	constructor(string _name) SplitterBase(_name) public {
 	}
@@ -59,7 +60,7 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 		}
 
 		// truncate, no more than 100% allowed!
-		if(total>10000){
+		if(total>10000) {
 			return 10000;
 		}
 		return total;

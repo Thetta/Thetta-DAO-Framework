@@ -76,7 +76,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 
 	function _isNeedsMoneyExpense(uint _eId)view internal returns(bool) {
 		if(Expenses[_eId].isPeriodic) { // For period Weiexpense
-			if ((uint64(now) - Expenses[_eId].momentReceived) >= Expenses[_eId].periodHours * 3600 * 1000) { 
+			if ((uint64(block.timestamp) - Expenses[_eId].momentReceived) >= Expenses[_eId].periodHours * 3600 * 1000) { 
 				return true;
 			}
 		}else {
@@ -89,22 +89,22 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 			return _processFundsSplitter(_eId, _currentFlow, _amount);
 		}else if(Expenses[_eId].isOpen&&_isNeedsMoney(_eId)) {
 			return _processFundsExpense(_eId, _currentFlow, _amount);
-		}else {
-		}
+		}else {}
 	}
 
 	function _processFundsSplitter(uint _eId, uint _currentFlow, uint _amount) internal {
 		require(_amount>=_getTotalWeiNeeded(_eId, _currentFlow));
+		uint currentFlow = _currentFlow;
 
 		for(uint i=0; i<Splitters[_eId].outputs.length; ++i) {
-			uint needed = _getTotalWeiNeeded(Splitters[_eId].outputs[i], _currentFlow);
-			_processFunds(Splitters[_eId].outputs[i], _currentFlow, needed);
+			uint needed = _getTotalWeiNeeded(Splitters[_eId].outputs[i], currentFlow);
+			_processFunds(Splitters[_eId].outputs[i], currentFlow, needed);
 		
 			if(ElementTypes.TopdownSplitter==elementsType[_eId]) {
-	 			if(_currentFlow>=needed) {
-					_currentFlow = _currentFlow - needed;
+				if(currentFlow>=needed) {
+					currentFlow = currentFlow - needed;
 				}else {
-					_currentFlow = 0;
+					currentFlow = 0;
 				}
 			}
 		}
@@ -113,7 +113,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 	function _processFundsExpense(uint _eId, uint _currentFlow, uint _amount) internal {
 		require(_isNeedsMoney(_eId));
 		require(_amount==_getTotalWeiNeeded(_eId, _currentFlow));
-		Expenses[_eId].momentReceived = uint(now);
+		Expenses[_eId].momentReceived = uint(block.timestamp);
 		Expenses[_eId].balance += _amount;
 		Expenses[_eId].isMoneyReceived = true;
 	}
@@ -177,7 +177,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 
 	function _getDebtMultiplier(uint _eId)internal view returns(uint) {
 		if((Expenses[_eId].isAccumulateDebt)&&(0!=Expenses[_eId].momentReceived)) {
-			return ((now - Expenses[_eId].momentReceived) / (Expenses[_eId].periodHours * 3600 * 1000));
+			return ((block.timestamp - Expenses[_eId].momentReceived) / (Expenses[_eId].periodHours * 3600 * 1000));
 		} else {
 			return 1;
 		}
@@ -198,16 +198,17 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 	}
 
 	function _getTotalWeiNeededSplitter(uint _eId, uint _currentFlow)internal view returns(uint) {
+		uint currentFlow = _currentFlow;
 		uint total = 0;
-		for(uint i=0; i<Splitters[_eId].outputs.length; ++i){
-			uint needed = _getTotalWeiNeeded(Splitters[_eId].outputs[i], _currentFlow);
+		for(uint i=0; i<Splitters[_eId].outputs.length; ++i) {
+			uint needed = _getTotalWeiNeeded(Splitters[_eId].outputs[i], currentFlow);
 			total = total + needed;
 
 			if(ElementTypes.TopdownSplitter==elementsType[_eId]) { // this should be reduced because next child can get only '_inputWei minus what prev. child got'
-				if(_currentFlow>needed) {
-					_currentFlow-=needed;
+				if(currentFlow>needed) {
+					currentFlow-=needed;
 				}else {
-					_currentFlow = 0;
+					currentFlow = 0;
 				}
 			}
 		}
@@ -215,7 +216,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 	}
 
 	function _getTotalWeiNeededExpense(uint _eId, uint _currentFlow)internal view returns(uint) {
-		if(!_isNeedsMoney(_eId)){
+		if(!_isNeedsMoney(_eId)) {
 			return 0;
 		}
 
@@ -229,7 +230,6 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 	function getElementBalance(uint _eId)external view returns(uint) {
 		return Expenses[_eId].balance;
 	}
-
 
 	// -------------------- EXTERNAL IWEIRECEIVER FUNCTIONS -------------------- for all table
 
@@ -325,7 +325,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 		}else if(_isSplitter(_eId)) {
 			Splitters[_eId].isOpen = true;
 
-		}else  {
+		}else {
 			revert();
 		}
 	}
@@ -337,19 +337,19 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 		}else if(_isSplitter(_eId)) {
 			Splitters[_eId].isOpen = false;
 
-		}else{
+		}else {
 			revert();
 		}	
 	}
 
 	function isOpen(uint _eId) external view returns(bool) {
-		if(_isExpense(_eId)){
+		if(_isExpense(_eId)) {
 			return Expenses[_eId].isOpen;
 
 		}else if(_isSplitter(_eId)) {
 			return Splitters[_eId].isOpen;
 
-		}else{
+		}else {
 			revert();
 		}
 

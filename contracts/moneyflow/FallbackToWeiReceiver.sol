@@ -2,6 +2,7 @@ pragma solidity ^0.4.23;
 
 import "./IWeiReceiver.sol";
 
+
 /**
  * @title FallbackToWeiReceiver
  * @dev Easy-to-use wrapper to convert fallback -> processFunds()
