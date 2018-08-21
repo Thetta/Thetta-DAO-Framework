@@ -6,11 +6,12 @@ import "../governance/GenericProposal.sol";
 import "../governance/Voting.sol";
 import "../governance/VotingLib.sol";
 
-library GenericCallerLib {
-	event GenericCaller_DoActionDirectly(bytes32 _permissionId, address _target, address _origin, string _methodSig);
-	event GenericCaller_CreateNewProposal(bytes32 _permissionId, address _target, address _origin, string _methodSig);
 
-	struct GenericCallerStorage{
+library GenericCallerLib {
+	event GenericCallerDoActionDirectly(bytes32 _permissionId, address _target, address _origin, string _methodSig);
+	event GenericCallerCreateNewProposal(bytes32 _permissionId, address _target, address _origin, string _methodSig);
+
+	struct GenericCallerStorage {
 		IDaoBase dao;
 		mapping (bytes32=>VotingParams) votingParams;	
 	}
@@ -24,10 +25,21 @@ library GenericCallerLib {
 		bytes32 param5;
 	}
 
-	function doAction(GenericCallerStorage storage store, bytes32 _permissionId, address _target, address _origin, string _methodSig, bytes32[] _params) internal returns(address proposalOut) {
-		
+	function doAction(
+		GenericCallerStorage storage store, 
+		bytes32 _permissionId, 
+		address _target, 
+		address _origin, 
+		string _methodSig, 
+		bytes32[] _params) internal returns(address proposalOut) 
+	{
 		if(store.dao.isCanDoAction(msg.sender, _permissionId)) {
-			emit GenericCaller_DoActionDirectly(_permissionId, _target, _origin, _methodSig);
+			emit GenericCallerDoActionDirectly(
+				_permissionId, 
+				_target, 
+				_origin, 
+				_methodSig
+			);
 
 			// 1 - call immediately
 			if(!address(_target).call(
@@ -41,7 +53,12 @@ library GenericCallerLib {
 			return 0x0;
 		}else {
 			// 2 - create a proposal + voting first  
-			emit GenericCaller_CreateNewProposal(_permissionId, _target, _origin, _methodSig);
+			emit GenericCallerCreateNewProposal(
+				_permissionId, 
+				_target, 
+				_origin, 
+				_methodSig
+			);
 
 			// _origin is the initial msg.sender (just like tx.origin) 
 			GenericProposal prop = new GenericProposal(_target, _origin, _methodSig, _params);
@@ -56,9 +73,16 @@ library GenericCallerLib {
 		}
 	}
 
-	function setVotingParams(GenericCallerStorage storage store, bytes32 _permissionIdHash, uint _votingType, 
-		bytes32 _param1, bytes32 _param2, 
-		bytes32 _param3, bytes32 _param4, bytes32 _param5) public {
+	function setVotingParams(
+		GenericCallerStorage storage store, 
+		bytes32 _permissionIdHash, 
+		uint _votingType, 
+		bytes32 _param1, 
+		bytes32 _param2, 
+		bytes32 _param3, 
+		bytes32 _param4, 
+		bytes32 _param5) public 
+	{
 		VotingParams memory params;
 		params.votingType = VotingLib.VotingType(_votingType);
 		params.param1 = _param1;
@@ -70,8 +94,12 @@ library GenericCallerLib {
 		store.votingParams[_permissionIdHash] = params;
 	}
 
-	function createVoting(GenericCallerStorage storage store, 
-		bytes32 _permissionIdHash, IProposal _proposal, address _origin)public returns(IVoting) {
+	function createVoting(
+		GenericCallerStorage storage store, 
+		bytes32 _permissionIdHash, 
+		IProposal _proposal, 
+		address _origin) public returns(IVoting) 
+	{
 		VotingParams memory vp = store.votingParams[_permissionIdHash];
 
 		IVoting V = new Voting(
