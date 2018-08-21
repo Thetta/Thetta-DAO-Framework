@@ -23,6 +23,6 @@ contract WeiBounty is WeiGenericTask {
 		startTime = block.timestamp;
 		employee = msg.sender;
 		state = State.InProgress;
-		emit WeiGenericTask_StateChanged(state);
+		emit WeiGenericTaskStateChanged(state);
 	}
 }
