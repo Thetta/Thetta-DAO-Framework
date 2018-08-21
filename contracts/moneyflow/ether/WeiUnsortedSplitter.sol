@@ -86,7 +86,7 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 	// If WeiSplitter receives less or more money than needed -> exception 
 	function processFunds(uint _currentFlow) public payable {
 		require(isOpen());
-		emit SplitterBase_ProcessFunds(msg.sender, msg.value, _currentFlow);
+		emit SplitterBaseProcessFunds(msg.sender, msg.value, _currentFlow);
 		uint amount = msg.value;
 
 		// TODO: can remove this line?
