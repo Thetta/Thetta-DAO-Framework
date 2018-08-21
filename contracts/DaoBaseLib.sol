@@ -2,6 +2,7 @@ pragma solidity ^0.4.22;
 import "./utils/UtilsLib.sol";
 import "./DaoStorage.sol";
 
+
 library DaoBaseLib {
 	function upgradeDaoContract(DaoStorage _daoStorage, IDaoBase _new) public {
 		for(uint i=0; i<_daoStorage.getObserversCount(); ++i) {
@@ -66,7 +67,7 @@ library DaoBaseLib {
 
 	function burnTokens(DaoStorage _daoStorage, address _tokenAddress, address _who, uint _amount)public {
 		for(uint i=0; i<DaoStorage(_daoStorage).getTokensCount(); ++i) {
-			if(DaoStorage(_daoStorage).getTokenAtIndex(i)==_tokenAddress){
+			if(DaoStorage(_daoStorage).getTokenAtIndex(i)==_tokenAddress) {
 				// WARNING: token ownership should be transferred to the current DaoBase to do that!!!
 				DaoStorage(_daoStorage).getTokenAtIndex(i).burnFor(_who, _amount);
 				return;

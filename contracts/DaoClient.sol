@@ -3,6 +3,7 @@ pragma solidity ^0.4.23;
 import "./IDaoBase.sol";
 import "./IDaoObserver.sol";
 
+
 /**
  * @title DaoClient, just an easy-to-use wrapper.
  * @dev This contract provides you with internal 'dao' variable. 
