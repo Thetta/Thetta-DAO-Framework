@@ -5,6 +5,7 @@ import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "../IDaoBase.sol";
 import "../moneyflow/ether/WeiAbsoluteExpense.sol";
 
+
 /**
  * @title WeiGenericTask 
  * @dev Basic contract for WeiTask and WeiBounty
@@ -65,10 +66,10 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	// Use 'getCurrentState' method instead to access state outside of contract
 	State state = State.Init;
 
-	event WeiGenericTask_SetEmployee(address  _employee);
-	event WeiGenericTask_SetOutput(address _output);
-	event WeiGenericTask_ProcessFunds(address _sender, uint _value, uint _currentFlow);
-	event WeiGenericTask_StateChanged(State _state);
+	event WeiGenericTaskSetEmployee(address  _employee);
+	event WeiGenericTaskSetOutput(address _output);
+	event WeiGenericTaskProcessFunds(address _sender, uint _value, uint _currentFlow);
+	event WeiGenericTaskStateChanged(State _state);
 
 	modifier onlyEmployeeOrOwner() { 
 		require(msg.sender==employee || msg.sender==owner); 
@@ -76,12 +77,12 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
 
 	modifier isCanCancell() { 
-		require (now - creationTime >= timeToCancell); 
+		require (block.timestamp - creationTime >= timeToCancell); 
 		_; 
 	}
 
 	modifier isDeadlineMissed() { 
-		require (now - startTime >= deadlineTime); 
+		require (block.timestamp - startTime >= deadlineTime); 
 		_; 
 	}
 	
@@ -93,7 +94,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
    */
 
-	modifier isCanDo(bytes32 _what){
+	modifier isCanDo(bytes32 _what) {
 		require(dao.isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
@@ -121,7 +122,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 			require(_neededWei>0);
 		}
 
-		creationTime = now;
+		creationTime = block.timestamp;
 		dao = _dao;
 		caption = _caption;
 		desc = _desc;
@@ -133,13 +134,13 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 	// who will complete this task
 	function setEmployee(address _employee) public onlyOwner {
-		emit WeiGenericTask_SetEmployee(_employee);
+		emit WeiGenericTaskSetEmployee(_employee);
 		employee = _employee;
 	}
 
 	// where to send money
 	function setOutput(address _output) public onlyOwner {
-		emit WeiGenericTask_SetOutput(_output);
+		emit WeiGenericTaskSetOutput(_output);
 		output = _output;
 	}
 
@@ -174,7 +175,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 			moneySource.transfer(address(this).balance);
 		}
 		state = State.Cancelled;
-		emit WeiGenericTask_StateChanged(state);
+		emit WeiGenericTaskStateChanged(state);
 	}
 
 	function returnMoney() public isDeadlineMissed onlyOwner {
@@ -184,7 +185,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 			moneySource.transfer(address(this).balance);
 		}
 		state = State.DeadlineMissed;
-		emit WeiGenericTask_StateChanged(state);
+		emit WeiGenericTaskStateChanged(state);
 	}
 
 	function notifyThatCompleted() public onlyEmployeeOrOwner {
@@ -193,10 +194,10 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		if((0!=neededWei) || (isDonation)) { // if donation or prePaid - no need in ev-ion; if postpaid with unknown payment - neededWei=0 yet
 
 			state = State.Complete;
-			emit WeiGenericTask_StateChanged(state);
+			emit WeiGenericTaskStateChanged(state);
 		}else {
 			state = State.CompleteButNeedsEvaluation;
-			emit WeiGenericTask_StateChanged(state);
+			emit WeiGenericTaskStateChanged(state);
 		}
 	}
 
@@ -206,7 +207,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 		neededWei = _neededWei;
 		state = State.Complete;
-		emit WeiGenericTask_StateChanged(state);
+		emit WeiGenericTaskStateChanged(state);
 	}
 
 	// for Prepaid tasks only! 
@@ -217,7 +218,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		require(0!=neededWei);
 
 		state = State.CanGetFunds;
-		emit WeiGenericTask_StateChanged(state);
+		emit WeiGenericTaskStateChanged(state);
 	}
 
 // IDestination overrides:
@@ -228,19 +229,19 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 		output.transfer(address(this).balance);
 		state = State.Finished;
-		emit WeiGenericTask_StateChanged(state);
+		emit WeiGenericTaskStateChanged(state);
 	}
 
 	function flushTo(address _to) public {
-		if(_to==_to) revert();
+		if(_to==_to) {
+			revert();
+		}
 	}
 
 	function processFunds(uint _currentFlow) public payable {
-		emit WeiGenericTask_ProcessFunds(msg.sender, msg.value, _currentFlow);
+		emit WeiGenericTaskProcessFunds(msg.sender, msg.value, _currentFlow);
 		if(isPostpaid && (0==neededWei) && (State.Complete==state)) {
-			// this is a donation
-			// client can send any sum!
-			neededWei = msg.value;
+			neededWei = msg.value; // this is a donation. client can send any sum!
 		}
 
 		super.processFunds(_currentFlow);

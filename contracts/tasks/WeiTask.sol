@@ -2,6 +2,7 @@ pragma solidity ^0.4.23;
 
 import "./WeiGenericTask.sol";
 
+
 /**
  * @title WeiTask 
  * @dev Can be prepaid or postpaid. 
@@ -23,9 +24,9 @@ contract WeiTask is WeiGenericTask {
 			// can start only if postpaid task 
 			require(isPostpaid);
 		}
-		startTime = now;
+		startTime = block.timestamp;
 		employee = _employee;
 		state = State.InProgress;
-		emit WeiGenericTask_StateChanged(state);
+		emit WeiGenericTaskStateChanged(state);
 	}
 }
