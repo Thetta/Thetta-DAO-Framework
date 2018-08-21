@@ -136,7 +136,6 @@ contract DaoStorage is Ownable {
 		tokens.push(StdDaoToken(_token));
 	}
 
-
 	function addProposal(IProposal _proposal) external onlyOwner {
 		proposals.push(_proposal);
 	}

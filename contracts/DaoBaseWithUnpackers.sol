@@ -4,6 +4,7 @@ import "./utils/UtilsLib.sol";
 
 import "./DaoBase.sol";
 
+
 /**
  * @title DaoBaseWithUnpackers
  * @dev Use this contract instead of DaoBase if you need DaoBaseAuto.
