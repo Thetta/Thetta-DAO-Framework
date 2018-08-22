@@ -181,7 +181,7 @@ contract('TaskTable', (accounts) => {
 
 	it('should create, start and complete task (full flow)', async () => {
 			let tx = await taskTable.addNewTask("Test", "Task for tests", false, false, neededWei, 1, 1);
-			let events = tx.logs.filter(l => l.event === 'TaskTable_ElementAdded');
+			let events = tx.logs.filter(l => l.event === 'TaskTableElementAdded');
 			let id = events[0].args._eId;
 			await taskTable.setOutput(id, outsider);
 			await taskTable.processFunds(id, {value: neededWei});
@@ -191,7 +191,7 @@ contract('TaskTable', (accounts) => {
 			await taskTable.confirmCompletion(id);
 			let balanceBefore = await web3.eth.getBalance(outsider);
 			tx = await taskTable.flush(id);
-			events = tx.logs.filter(l => l.event === 'TaskTable_StateChanged');
+			events = tx.logs.filter(l => l.event === 'TaskTableStateChanged');
 			let result = events[0].args._state;
 			assert.equal(result, 8);
 			let balanceAfter = await web3.eth.getBalance(outsider);
