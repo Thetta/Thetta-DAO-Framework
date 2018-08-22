@@ -1,6 +1,7 @@
 pragma solidity ^0.4.15;
 
-import "../IMoneyflow.sol";
+import "../IDestination.sol";
+import "../IWeiReceiver.sol";
 
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -21,10 +22,10 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	uint neededWei = 0;
 	address moneySource = 0x0;
 
-	event WeiExpense_Flush(address _owner, uint _balance);
-	event WeiExpense_SetNeededWei(uint _neededWei);
-	event WeiExpense_SetPercents(uint _percentsMul100);
-	event WeiExpense_ProcessFunds(address _sender, uint _value, uint _currentFlow);
+	event WeiExpenseFlush(address _owner, uint _balance);
+	event WeiExpenseSetNeededWei(uint _neededWei);
+	event WeiExpenseSetPercents(uint _percentsMul100);
+	event WeiExpenseProcessFunds(address _sender, uint _value, uint _currentFlow);
 
 	/**
 	* @dev Constructor
@@ -43,14 +44,14 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	}
 
 	function processFunds(uint _currentFlow) public payable {
-		emit WeiExpense_ProcessFunds(msg.sender, msg.value, _currentFlow);
+		emit WeiExpenseProcessFunds(msg.sender, msg.value, _currentFlow);
 		require(isNeedsMoney());
 
 		require(msg.value == getTotalWeiNeeded(_currentFlow));
 
 		// TODO: why not working without if????
 		if(isPeriodic) { 
-			momentReceived = uint(now);
+			momentReceived = uint(block.timestamp);
 		}
 
 		isMoneyReceived = true;
@@ -72,7 +73,7 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 
 		if(0!=percentsMul100) {
 			return (getDebtMultiplier()*(percentsMul100 * _inputWei)) / 10000;
-		}else{
+		}else {
 			return getMinWeiNeeded();
 		}
 	}
@@ -89,19 +90,19 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	}
 
 	function getDebtMultiplier()public view returns(uint) {
-		if((isAccumulateDebt)&&(0!=momentReceived)){
-			return ((now - momentReceived) / (periodHours * 3600 * 1000));
-		} else{
+		if((isAccumulateDebt)&&(0!=momentReceived)) {
+			return ((block.timestamp - momentReceived) / (periodHours * 3600 * 1000));
+		} else {
 			return 1;
 		}
 	}
 
 	function isNeedsMoney()public view returns(bool) {
-		if(isPeriodic){ // For period Weiexpense
-			if ((uint64(now) - momentReceived) >= periodHours * 3600 * 1000) { 
+		if(isPeriodic) { // For period Weiexpense
+			if ((uint64(block.timestamp) - momentReceived) >= periodHours * 3600 * 1000) { 
 				return true;
 			}
-		}else{
+		}else {
 			return !isMoneyReceived;
 		}
 	}
@@ -117,57 +118,29 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 
 	// TODO: remove from here
 	function getNow()public view returns(uint) {
-		return now;
+		return block.timestamp;
 	}
 
 	function flush()public onlyOwner {
-		emit WeiExpense_Flush(owner, address(this).balance);
+		emit WeiExpenseFlush(owner, address(this).balance);
 		owner.transfer(address(this).balance);
 	}
 
 	function flushTo(address _to) public onlyOwner {
-		emit WeiExpense_Flush(_to, address(this).balance);
+		emit WeiExpenseFlush(_to, address(this).balance);
 		_to.transfer(address(this).balance);
 	}
 
 	function setNeededWei(uint _neededWei) public onlyOwner {
-		emit WeiExpense_SetNeededWei(_neededWei);
+		emit WeiExpenseSetNeededWei(_neededWei);
 		neededWei = _neededWei;
 	}
 
 	function setPercents(uint _percentsMul100) public onlyOwner {
-		emit WeiExpense_SetPercents(_percentsMul100);
+		emit WeiExpenseSetPercents(_percentsMul100);
 		percentsMul100 = _percentsMul100;
 	}
 
 	function()public {
 	}
-}
-
-
-contract WeiAbsoluteExpense is WeiExpense {
-	constructor(uint _neededWei) public 
-		WeiExpense(_neededWei, 0, 0, false, false)
-	{}
-}
-
-
-contract WeiRelativeExpense is WeiExpense {
-	constructor(uint _percentsMul100)public 
-		WeiExpense(0, _percentsMul100, 0, false, false)
-	{}
-}
-
-
-contract WeiAbsoluteExpenseWithPeriod is WeiExpense { 
-	constructor(uint _neededWei, uint _periodHours, bool _isAccumulateDebt) public
-		WeiExpense(_neededWei, 0, _periodHours, _isAccumulateDebt, true)
-	{}
-}
-
-
-contract WeiRelativeExpenseWithPeriod is WeiExpense {
-	constructor(uint _percentsMul100, uint _periodHours, bool _isAccumulateDebt) public 
-		WeiExpense(0, _percentsMul100, _periodHours, _isAccumulateDebt, true)
-	{}
 }

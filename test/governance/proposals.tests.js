@@ -46,8 +46,12 @@ contract('GenericProposal', (accounts) => {
 	beforeEach(async() => {
 		token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
 		await token.mintFor(creator, 1);
-		let store = await DaoStorage.new([token.address], { from: creator });
-		daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });	
+		store = await DaoStorage.new([token.address],{from: creator});
+		daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+		proposal = await GenericProposal.new(creator, creator, '', []);
+		voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);	
+	
+		await store.transferOwnership(daoBase.address);
 	});
 
 	describe('setVoting()', function () {
@@ -120,10 +124,12 @@ contract('InformalProposal', (accounts) => {
 	beforeEach(async() => {
 		token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
 		await token.mintFor(creator, 1);
-		let store = await DaoStorage.new([token.address], { from: creator });
+		store = await DaoStorage.new([token.address],{from: creator});
 		daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
 		proposal = await InformalProposal.new(proposalText);
 		voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);	
+	
+		await store.transferOwnership(daoBase.address);
 	});
 
 	describe('getProposalText()', function () {

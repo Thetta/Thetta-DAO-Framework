@@ -16,8 +16,7 @@ contract('StdDaoToken', (accounts) => {
   const ETH = 1000000000000000000;
 
   beforeEach(async function () {
-
-  });
+	});
 
   describe('mintFor()', function () {
     it('should fail due to not owner call', async function () {

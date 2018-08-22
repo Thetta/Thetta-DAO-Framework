@@ -1,47 +1,9 @@
 pragma solidity ^0.4.22;
 
 import "./IDaoBase.sol";
-
-import "zeppelin-solidity/contracts/ECRecovery.sol";
-
-// TODO: convert to library?
-
-
-/**
- * @title ImpersonationCaller 
- * @dev This is a convenient wrapper that is used by the contract below (see DaoBaseImpersonated). Do not use it directly.
-*/
-contract ImpersonationCaller is DaoClient {
-
-	bytes32 public ISSUE_TOKENS = keccak256(abi.encodePacked("issueTokens"));
-	
-	constructor(IDaoBase _dao) public DaoClient(_dao) {
-
-	}
-
-  /**
-   * @dev Call action on behalf of the client
-   * @param _hash bytes32 message, the hash is the signed message. What is recovered is the signer address.
-   * @param _sig bytes signature, the signature is generated using web3.eth.sign()
-   */
-	function doActionOnBehalfOf(bytes32 _hash, bytes _sig, bytes32 _action, string _methodSig, bytes32[] _params) internal {
-
-		// 1 - get the address of the client
-		address client = ECRecovery.recover(_hash, _sig);
-
-		// 2 - should be allowed to call action by a client
-		require(dao.isCanDoAction(client, _action));
-
-		// 3 - call 
-		if(!address(dao).call(
-			bytes4(keccak256(abi.encodePacked(_methodSig))),
-			uint256(32),						 // pointer to the length of the array
-			uint256(_params.length),		 // length of the array
-			_params)){
-			revert();
-		}
-	}
-}
+import "./DaoBase.sol";
+import "./ImpersonationCaller.sol";
+import "./utils/UtilsLib.sol";
 
 // TODO: convert to library?
 
@@ -67,21 +29,111 @@ contract DaoBaseImpersonated is ImpersonationCaller {
 		params[1] = bytes32(_to);
 		params[2] = bytes32(_amount);
 
-	   return doActionOnBehalfOf(_hash, _sig, ISSUE_TOKENS, "issueTokensGeneric(bytes32[])", params);
+		doActionOnBehalfOf(
+			_hash, 
+			_sig, 
+			DaoBase(dao).ISSUE_TOKENS(), 
+			"issueTokensGeneric(bytes32[])", 
+			params
+		);
 	}
 
-	// TODO: add other methods:
-	/*
-	function upgradeDaoContractImp(address _newMc) public returns(address proposalOut);
-	function addGroup(string _groupName) public isCanDo("manageGroups")
-	function addGroupMemberImp(string _group, address _a) public returns(address proposalOut);
-	function removeGroupMember(string _groupName, address _a) public isCanDo("manageGroups"){
-	function allowActionByShareholder(string _what, address _tokenAddress) public isCanDo("manageGroups"){
-	function allowActionByVoting(string _what, address _tokenAddress) public isCanDo("manageGroups"){
-	function allowActionByAddress(string _what, address _a) public isCanDo("manageGroups"){
-	function allowActionByAnyMemberOfGroup(string _what, string _groupName) public isCanDo("manageGroups"){
-   ...
-   */
+	function upgradeDaoContractImp(bytes32 _hash, bytes _sig, address _newMc) public {
+		bytes32[] memory params = new bytes32[](1);
+		params[0] = bytes32(_newMc);
+
+		doActionOnBehalfOf(
+			_hash, 
+			_sig, 
+			DaoBase(dao).UPGRADE_DAO_CONTRACT(), 
+			"upgradeDaoContractGeneric(bytes32[])", 
+			params
+		);
+	}
+
+	function addGroupMemberImp(bytes32 _hash, bytes _sig, string _group, address _a) public {
+		bytes32[] memory params = new bytes32[](2);
+		params[0] = UtilsLib.stringToBytes32(_group);
+		params[1] = bytes32(_a);
+
+		doActionOnBehalfOf(
+			_hash, 
+			_sig, 
+			DaoBase(dao).MANAGE_GROUPS(), 
+			"addGroupMemberGeneric(bytes32[])", 
+			params
+		);
+	}
+
+	function removeGroupMemberImp(bytes32 _hash, bytes _sig, string _groupName, address _a) public {
+		bytes32[] memory params = new bytes32[](2);
+		params[0] = UtilsLib.stringToBytes32(_groupName);
+		params[1] = bytes32(_a);
+
+		doActionOnBehalfOf(
+			_hash, 
+			_sig, 
+			DaoBase(dao).REMOVE_GROUP_MEMBER(), 
+			"removeGroupMemberGeneric(bytes32[])", 
+			params
+		);
+	}
+
+	function allowActionByShareholderImp(bytes32 _hash, bytes _sig, bytes32 _what, address _tokenAddress) public {
+		bytes32[] memory params = new bytes32[](2);
+		params[0] = _what;
+		params[1] = bytes32(_tokenAddress);
+
+		doActionOnBehalfOf(
+			_hash, 
+			_sig, 
+			DaoBase(dao).ALLOW_ACTION_BY_SHAREHOLDER(), 
+			"allowActionByShareholderGeneric(bytes32[])", 
+			params
+		);
+	}
+
+	function allowActionByVotingImp(bytes32 _hash, bytes _sig, bytes32 _what, address _tokenAddress) public {
+		bytes32[] memory params = new bytes32[](2);
+		params[0] = _what;
+		params[1] = bytes32(_tokenAddress);
+
+		doActionOnBehalfOf(
+			_hash, 
+			_sig, 
+			DaoBase(dao).ALLOW_ACTION_BY_VOTING(), 
+			"allowActionByVotingGeneric(bytes32[])", 
+			params
+		);
+	}
+
+	function allowActionByAddressImp(bytes32 _hash, bytes _sig, bytes32 _what, address _a) public {
+		bytes32[] memory params = new bytes32[](2);
+		params[0] = _what;
+		params[1] = bytes32(_a);
+
+		doActionOnBehalfOf(
+			_hash, 
+			_sig, 
+			DaoBase(dao).ALLOW_ACTION_BY_ADDRESS(), 
+			"allowActionByAddressGeneric(bytes32[])", 
+			params
+		);
+	}
+
+	function allowActionByAnyMemberOfGroupImp(bytes32 _hash, bytes _sig, bytes32 _what, string _groupName) public {
+		bytes32[] memory params = new bytes32[](2);
+		params[0] = _what;
+		params[1] = UtilsLib.stringToBytes32(_groupName);
+
+		doActionOnBehalfOf(
+			_hash, 
+			_sig, 
+			DaoBase(dao).ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP(), 
+			"allowActionByAnyMemberOfGroupGeneric(bytes32[])", 
+			params
+		);
+	}
 }
 
 

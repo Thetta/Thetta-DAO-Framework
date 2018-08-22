@@ -1,10 +1,9 @@
-pragma solidity ^0.4.22;
+pragma solidity ^0.4.23;
 
 import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
-import "../moneyflow/ether/WeiExpense.sol";
-
 import "../IDaoBase.sol";
+import "../moneyflow/ether/WeiAbsoluteExpense.sol";
 
 
 /**
@@ -67,23 +66,23 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	// Use 'getCurrentState' method instead to access state outside of contract
 	State state = State.Init;
 
-	event WeiGenericTask_SetEmployee(address  _employee);
-	event WeiGenericTask_SetOutput(address _output);
-	event WeiGenericTask_ProcessFunds(address _sender, uint _value, uint _currentFlow);
-	event WeiGenericTask_StateChanged(State _state);
+	event WeiGenericTaskSetEmployee(address  _employee);
+	event WeiGenericTaskSetOutput(address _output);
+	event WeiGenericTaskProcessFunds(address _sender, uint _value, uint _currentFlow);
+	event WeiGenericTaskStateChanged(State _state);
 
 	modifier onlyEmployeeOrOwner() { 
-		require(msg.sender==employee || msg.sender==owner); 
+		require(msg.sender == employee || msg.sender == owner); 
 		_; 
 	}
 
 	modifier isCanCancell() { 
-		require (now - creationTime >= timeToCancell); 
+		require (block.timestamp - creationTime >= timeToCancell); 
 		_; 
 	}
 
 	modifier isDeadlineMissed() { 
-		require (now - startTime >= deadlineTime); 
+		require (block.timestamp - startTime >= deadlineTime); 
 		_; 
 	}
 	
@@ -95,7 +94,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
    */
 
-	modifier isCanDo(bytes32 _what){
+	modifier isCanDo(bytes32 _what) {
 		require(dao.isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
@@ -120,10 +119,10 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		}
 
 		if(!_isPostpaid) {
-			require(_neededWei>0);
+			require(_neededWei > 0);
 		}
 
-		creationTime = now;
+		creationTime = block.timestamp;
 		dao = _dao;
 		caption = _caption;
 		desc = _desc;
@@ -135,33 +134,33 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 	// who will complete this task
 	function setEmployee(address _employee) public onlyOwner {
-		emit WeiGenericTask_SetEmployee(_employee);
+		emit WeiGenericTaskSetEmployee(_employee);
 		employee = _employee;
 	}
 
 	// where to send money
 	function setOutput(address _output) public onlyOwner {
-		emit WeiGenericTask_SetOutput(_output);
+		emit WeiGenericTaskSetOutput(_output);
 		output = _output;
 	}
 
-	function getBalance()public view returns(uint) {
+	function getBalance() public view returns(uint) {
 		return address(this).balance;
 	}
 
-	function getCurrentState()public view returns(State) {
+	function getCurrentState() public view returns(State) {
 		// for Prepaid task -> client should call processFunds method to put money into this task
 		// when state is Init
-		if((State.Init==state) && (neededWei!=0) && (!isPostpaid)) {
-			if(neededWei==address(this).balance) {
+		if((State.Init == state) && (neededWei != 0) && (!isPostpaid)) {
+			if(neededWei == address(this).balance) {
 				return State.PrePaid;
 			}
 		}
 
 		// for Postpaid task -> client should call processFunds method to put money into this task
 		// when state is Complete. He is confirming the task by doing that (no need to call confirmCompletion)
-		if((State.Complete==state) && (neededWei!=0) && (isPostpaid)) {
-			if(neededWei==address(this).balance) {
+		if((State.Complete == state) && (neededWei != 0) && (isPostpaid)) {
+			if(neededWei == address(this).balance) {
 				return State.CanGetFunds;
 			}
 		}
@@ -170,79 +169,79 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
 
 	function cancell() public isCanCancell onlyOwner {
-		require(getCurrentState()==State.Init || getCurrentState()==State.PrePaid);
-		if(getCurrentState()==State.PrePaid) {
+		require(getCurrentState() == State.Init || getCurrentState() == State.PrePaid);
+		if(getCurrentState() == State.PrePaid) {
 			// return money to 'moneySource'
 			moneySource.transfer(address(this).balance);
 		}
 		state = State.Cancelled;
-		emit WeiGenericTask_StateChanged(state);
+		emit WeiGenericTaskStateChanged(state);
 	}
 
 	function returnMoney() public isDeadlineMissed onlyOwner {
-		require(getCurrentState()==State.InProgress);
+		require(getCurrentState() == State.InProgress);
 		if(address(this).balance > 0) {
 			// return money to 'moneySource'
 			moneySource.transfer(address(this).balance);
 		}
 		state = State.DeadlineMissed;
-		emit WeiGenericTask_StateChanged(state);
+		emit WeiGenericTaskStateChanged(state);
 	}
 
 	function notifyThatCompleted() public onlyEmployeeOrOwner {
-		require(getCurrentState()==State.InProgress);
+		require(getCurrentState() == State.InProgress);
 
 		if((0!=neededWei) || (isDonation)) { // if donation or prePaid - no need in ev-ion; if postpaid with unknown payment - neededWei=0 yet
 
 			state = State.Complete;
-			emit WeiGenericTask_StateChanged(state);
+			emit WeiGenericTaskStateChanged(state);
 		}else {
 			state = State.CompleteButNeedsEvaluation;
-			emit WeiGenericTask_StateChanged(state);
+			emit WeiGenericTaskStateChanged(state);
 		}
 	}
 
 	function evaluateAndSetNeededWei(uint _neededWei) public onlyOwner {
-		require(getCurrentState()==State.CompleteButNeedsEvaluation);
-		require(0==neededWei);
+		require(getCurrentState() == State.CompleteButNeedsEvaluation);
+		require(0 == neededWei);
 
 		neededWei = _neededWei;
 		state = State.Complete;
-		emit WeiGenericTask_StateChanged(state);
+		emit WeiGenericTaskStateChanged(state);
 	}
 
 	// for Prepaid tasks only! 
 	// for Postpaid: call processFunds and transfer money instead!
 	function confirmCompletion() public onlyByMoneySource {
-		require(getCurrentState()==State.Complete);
+		require(getCurrentState() == State.Complete);
 		require(!isPostpaid);
-		require(0!=neededWei);
+		require(0 != neededWei);
 
 		state = State.CanGetFunds;
-		emit WeiGenericTask_StateChanged(state);
+		emit WeiGenericTaskStateChanged(state);
 	}
 
 // IDestination overrides:
 	// pull model
 	function flush() public {
-		require(getCurrentState()==State.CanGetFunds);
-		require(0x0!=output);
+		require(getCurrentState() == State.CanGetFunds);
+		require(0x0 != output);
 
 		output.transfer(address(this).balance);
 		state = State.Finished;
-		emit WeiGenericTask_StateChanged(state);
+		emit WeiGenericTaskStateChanged(state);
 	}
 
 	function flushTo(address _to) public {
-		if(_to==_to) revert();
+		if(_to == _to) {
+			revert();
+		}
 	}
 
 	function processFunds(uint _currentFlow) public payable {
-		emit WeiGenericTask_ProcessFunds(msg.sender, msg.value, _currentFlow);
-		if(isPostpaid && (0==neededWei) && (State.Complete==state)) {
-			// this is a donation
-			// client can send any sum!
-			neededWei = msg.value;
+		emit WeiGenericTaskProcessFunds(msg.sender, msg.value, _currentFlow);
+		if(isPostpaid && (0 == neededWei) && (State.Complete == state)) {
+			neededWei = msg.value; // this is a donation. client can send any sum!
 		}
 
 		super.processFunds(_currentFlow);
@@ -250,59 +249,5 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 	// non-payable
 	function()public {
-	}
-}
-
-
-/**
- * @title WeiTask 
- * @dev Can be prepaid or postpaid. 
-*/
-contract WeiTask is WeiGenericTask {
-
-	bytes32 constant public START_TASK = keccak256("startTask");
-
-	constructor(IDaoBase _dao, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) public 
-		WeiGenericTask(_dao, _caption, _desc, _isPostpaid, _isDonation, _neededWei, _deadlineTime, _timeToCancell) 
-	{
-	}
-
-	// callable by any Employee of the current DaoBase or Owner
-	function startTask(address _employee) public isCanDo(START_TASK) {
-		require(getCurrentState()==State.Init || getCurrentState()==State.PrePaid);
-
-		if(getCurrentState()==State.Init) {
-			// can start only if postpaid task 
-			require(isPostpaid);
-		}
-		startTime = now;
-		employee = _employee;
-		state = State.InProgress;
-		emit WeiGenericTask_StateChanged(state);
-	}
-}
-
-
-/**
- * @title WeiBounty 
- * @dev Bounty is when you put money, then someone outside the DAO works
- * That is why bounty is always prepaid 
-*/
-contract WeiBounty is WeiGenericTask {
-
-	bytes32 constant public START_BOUNTY = keccak256("startBounty");
-	
-	constructor(IDaoBase _dao, string _caption, string _desc, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) public 
-		WeiGenericTask(_dao, _caption, _desc, false, false, _neededWei, _deadlineTime, _timeToCancell) 
-	{
-	}
-
-	// callable by anyone
-	function startTask() public isCanDo(START_BOUNTY) {
-		require(getCurrentState()==State.PrePaid);
-		startTime = now;
-		employee = msg.sender;
-		state = State.InProgress;
-		emit WeiGenericTask_StateChanged(state);
 	}
 }
