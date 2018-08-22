@@ -62,7 +62,6 @@ contract('DaoBase', (accounts) => {
 		burnTokens = await daoBase.BURN_TOKENS();
 
 		await store.addGroupMember(web3.sha3("Employees"), creator);
-		await store.allowActionByAddress(manageGroups, creator);
 
 		// do not forget to transfer ownership
 		await token.transferOwnership(daoBase.address);
@@ -71,10 +70,8 @@ contract('DaoBase', (accounts) => {
 		// Set permissions:
 		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees");
 		await daoBase.allowActionByAnyMemberOfGroup(burnTokens, "Employees");
-    		await daoBase.allowActionByAnyMemberOfGroup(upgradeDaoContract, 'Employees');
-    		await daoBase.allowActionByAddress(withdrawDonations, creator);
-
-		await daoBase.allowActionByVoting(manageGroups, token.address);
+		await daoBase.allowActionByAnyMemberOfGroup(upgradeDaoContract, 'Employees');
+		await daoBase.allowActionByAddress(withdrawDonations, creator);
 		await daoBase.allowActionByVoting(issueTokens, token.address);
 		await daoBase.allowActionByVoting(upgradeDaoContract, token.address);	
 	});
@@ -119,7 +116,6 @@ contract('DaoBase', (accounts) => {
 			assert.equal(await daoBase.isGroupMember("Employees", employee1), false);
 		});
 	});
-
 	describe('isGroupMember()', function () {
 		it('Should return false',async() => {
 			assert.equal(await daoBase.isGroupMember("Employees", outsider), false);
@@ -137,40 +133,92 @@ contract('DaoBase', (accounts) => {
 	});
 
 	describe('allowActionByVoting()', function () {
-		it('Should revert due to call allow action without outsider',async() => {
+		it('Should not be able allow action by outsider before renounce ownership',async() => {
 			token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
 			await daoBase.allowActionByVoting(addNewProposal, token.address, {from: outsider}).should.be.rejectedWith('revert');
+		});
+
+		it('Should not be able allow action by outsider after renounce ownership',async() => {
+			token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+			await daoBase.renounceOwnership();
+			await daoBase.allowActionByVoting(addNewProposal, token.address, {from: outsider}).should.be.rejectedWith('revert');
+		});
+
+		it('Should be able allow action by creator before renounce ownership',async() => {
+			token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+			await daoBase.allowActionByVoting(addNewProposal, token.address);
+		});
+
+		it('Should not be able allow action by creator after renounce ownership',async() => {
+			token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
+			await daoBase.renounceOwnership();
+			await daoBase.allowActionByVoting(addNewProposal, token.address).should.be.rejectedWith('revert');
 		});
 	});
 
 	describe('allowActionByShareholder()', function () {
-		it('Should revert due to call allow action without outsider',async() => {
+		it('Should not be able allow action by shareholder by outsider before renounce ownership',async() => {
 			await daoBase.allowActionByShareholder(addNewProposal, token.address, {from: outsider}).should.be.rejectedWith('revert');
+		});
+
+		it('Should not be able allow action by shareholder by outsider after renounce ownership',async() => {
+			await daoBase.renounceOwnership();
+			await daoBase.allowActionByShareholder(addNewProposal, token.address, {from: outsider}).should.be.rejectedWith('revert');
+		});
+
+		it('Should be able allow action by shareholder by creator before renounce ownership',async() => {
+			await daoBase.allowActionByShareholder(addNewProposal, token.address);
+		});
+
+		it('Should not be able allow action by shareholder by creator after renounce ownership',async() => {
+			await daoBase.renounceOwnership();
+			await daoBase.allowActionByShareholder(addNewProposal, token.address).should.be.rejectedWith('revert');
 		});
 	});
 
 	describe('allowActionByAddress()', function () {
-		it('Should revert due to call allow action without outsider',async() => {
-			await daoBase.allowActionByShareholder(addNewProposal, employee3, {from: outsider}).should.be.rejectedWith('revert');
+		it('Should not be able allow action by shareholder by outsider before renounce ownership',async() => {
+			await daoBase.allowActionByAddress(addNewProposal, employee3, {from: outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('Should allow action',async() => {
+		it('Should not be able allow action by outsider after renounce ownership',async() => {
+			await daoBase.renounceOwnership();
+			await daoBase.allowActionByAddress(addNewProposal, employee3, {from: outsider}).should.be.rejectedWith('revert');
+		});
+
+		it('Should be able allow action by creator before renounce ownership',async() => {
 			await daoBase.allowActionByAddress(addNewProposal, employee3);
-			assert.equal(await daoBase.isCanDoAction(employee3, addNewProposal), true);
+		});
+
+		it('Should not be able allow action by creator after renounce ownership',async() => {
+			await daoBase.renounceOwnership();
+			await daoBase.allowActionByAddress(addNewProposal, employee3).should.be.rejectedWith('revert');
 		});
 	});
 
 	describe('allowActionByAnyMemberOfGroup()', function () {
-		it('Should revert due to call allow action without outsider',async() => {
+		it('Should not be able allow action by shareholder by outsider before renounce ownership',async() => {
 			await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees", {from: outsider}).should.be.rejectedWith('revert');
 		});
 
-		it('Should finish with correct result',async() => {
+		it('Should not be able allow action by outsider after renounce ownership',async() => {
+			await daoBase.renounceOwnership();
+			await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees", {from: outsider}).should.be.rejectedWith('revert');
+		});
+
+		it('Should be able allow action by creator before renounce ownership',async() => {
 			await daoBase.addGroupMember("Employees", employee3);
 			assert.equal(await daoBase.isGroupMember("Employees", employee3), true);
-
-			await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees").should.be.fulfilled;
+			await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees");
 			assert.equal(await daoBase.isCanDoAction(employee3, addNewProposal), true);
+		});
+
+		it('Should not be able allow action by creator after renounce ownership',async() => {
+			await daoBase.renounceOwnership();
+			await daoBase.addGroupMember("Employees", employee3).should.be.rejectedWith('revert');
+			assert.equal(await daoBase.isGroupMember("Employees", employee3), false);
+			await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees").should.be.rejectedWith('revert');
+			assert.equal(await daoBase.isCanDoAction(employee3, addNewProposal), false);
 		});
 	});
 
@@ -233,7 +281,7 @@ contract('DaoBase', (accounts) => {
 
 		const isCanDo2 = await daoBase.isCanDoAction(creator,manageGroups);
 		const isCanDo3 = await daoBase.isCanDoAction(creator,issueTokens);
-		assert.strictEqual(isCanDo2,true,'Creator should be able to do that because he is in majority');
+		assert.strictEqual(isCanDo2,false,'Creator should not be able to do that');
 		assert.strictEqual(isCanDo3,true,'Creator should be able to do that because he is in majority');
 	});
 

@@ -2,6 +2,7 @@ pragma solidity ^0.4.22;
 import "../IDaoObserver.sol";
 import "../governance/IProposal.sol";
 
+
 library UtilsLib {
 	function bytes32ToString(bytes32 x) internal pure returns (string) {
 		bytes memory bytesString = new bytes(32);
@@ -20,16 +21,16 @@ library UtilsLib {
 		return string(bytesStringTrimmed);
 	}
 	
-	function sqrt(uint x) public pure returns (uint y){
+	function sqrt(uint x) public pure returns (uint y) {
 		uint z = (x + 1) / 2;
 		y = x;
-		while (z < y){
+		while (z < y) {
 			y = z;
 			z = (x / z + z) / 2;
 		}
 	}	
 
-	function stringToBytes32(string memory source) returns (bytes32 result) {
+	function stringToBytes32(string memory source) public view returns (bytes32 result) {
 		bytes memory tempEmptyStringTest = bytes(source);
 		if (tempEmptyStringTest.length == 0) {
 			return 0x0;
@@ -64,7 +65,7 @@ library UtilsLib {
 		return isInArray;
 	}
 
-	function removeBytes32FromArray(bytes32[] storage _bytes32Array, bytes32 _targetBytes32) public  {
+	function removeBytes32FromArray(bytes32[] storage _bytes32Array, bytes32 _targetBytes32) public {
 		// bytes32[] memory _bytes32Array = _bytes32Array;
 		bytes32 item = _targetBytes32;
 		uint index = _bytes32Array.length;

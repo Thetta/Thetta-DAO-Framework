@@ -136,7 +136,7 @@ contract('Voting (func)', (accounts) => {
 			await daoBase.addGroupMember('Employees', employee4);
 			// await store.addGroupMember(web3.sha3("Employees"), creator);
 		
-		
+			await daoBase.renounceOwnership();
 	});
 
 		it('0. should create new voting', async () => {

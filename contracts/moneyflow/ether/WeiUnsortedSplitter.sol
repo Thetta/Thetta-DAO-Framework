@@ -2,12 +2,13 @@ pragma solidity ^0.4.23;
 
 import "./SplitterBase.sol";
 
+
 /**
  * @title WeiUnsortedSplitter 
  * @dev Will split money (order does not matter!). 
 */
 contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
-	event consoleUint(string a, uint b);
+	event ConsoleUint(string a, uint b);
 
 	constructor(string _name) SplitterBase(_name) public {
 	}
@@ -59,7 +60,7 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 		}
 
 		// truncate, no more than 100% allowed!
-		if(total>10000){
+		if(total>10000) {
 			return 10000;
 		}
 		return total;
@@ -85,7 +86,7 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 	// If WeiSplitter receives less or more money than needed -> exception 
 	function processFunds(uint _currentFlow) public payable {
 		require(isOpen());
-		emit SplitterBase_ProcessFunds(msg.sender, msg.value, _currentFlow);
+		emit SplitterBaseProcessFunds(msg.sender, msg.value, _currentFlow);
 		uint amount = msg.value;
 
 		// TODO: can remove this line?

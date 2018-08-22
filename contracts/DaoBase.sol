@@ -4,23 +4,29 @@ import "./IDaoBase.sol";
 import "./DaoStorage.sol";
 import "./DaoBaseLib.sol";
 
-contract DaoBase is IDaoBase {
-	event DaoBase_UpgradeDaoContract(address _new);
-	event DaoBase_AddGroupMember(string _groupName, address _a);
-	event DaoBase_RemoveGroupMember(string _groupName, address _a);
-	event DaoBase_AllowActionByShareholder(bytes32 _what, address _tokenAddress);
-	event DaoBase_AllowActionByVoting(bytes32 _what, address _tokenAddress);
-	event DaoBase_AllowActionByAddress(bytes32 _what, address _a);
-	event DaoBase_AllowActionByAnyMemberOfGroup(bytes32 _what, string _groupName);
-	event DaoBase_AddNewProposal(address _proposal);
-	event DaoBase_IssueTokens(address _tokenAddress, address _to, uint _amount);
-	event DaoBase_BurnTokens(address _tokenAddress, address _who, uint _amount);
+
+contract DaoBase is IDaoBase, Ownable {
+	event DaoBaseUpgradeDaoContract(address _new);
+	event DaoBaseAddGroupMember(string _groupName, address _a);
+	event DaoBaseRemoveGroupMember(string _groupName, address _a);
+	event DaoBaseAllowActionByShareholder(bytes32 _what, address _tokenAddress);
+	event DaoBaseAllowActionByVoting(bytes32 _what, address _tokenAddress);
+	event DaoBaseAllowActionByAddress(bytes32 _what, address _a);
+	event DaoBaseAllowActionByAnyMemberOfGroup(bytes32 _what, string _groupName);
+	event DaoBaseAddNewProposal(address _proposal);
+	event DaoBaseIssueTokens(address _tokenAddress, address _to, uint _amount);
+	event DaoBaseBurnTokens(address _tokenAddress, address _who, uint _amount);
 
 	DaoStorage daoStorage;
 
 	modifier isCanDo(bytes32 _permissionName){
 		require(DaoBaseLib.isCanDoAction(daoStorage, msg.sender, _permissionName)); 
 		_; 
+	}
+
+	modifier isCanDoOrByOwner(bytes32 _what) {
+		require(msg.sender==owner || DaoBaseLib.isCanDoAction(daoStorage, msg.sender, _what));
+		_;
 	}
 
 	bytes32 public constant ISSUE_TOKENS = 0xe003bf3bc29ae37598e0a6b52d6c5d94b0a53e4e52ae40c01a29cdd0e7816b71;
@@ -54,13 +60,14 @@ contract DaoBase is IDaoBase {
 	function isCanDoByGroupMember(bytes32 _permissionName, address _a) public view returns(bool) {
 		return daoStorage.isAllowedActionByMembership(_permissionName, _a);
 	}
+
 	// IDaoBase:
 	function addObserver(IDaoObserver _observer) public {
 		daoStorage.addObserver(_observer);
 	}
 
-	function upgradeDaoContract(IDaoBase _new) public isCanDo(UPGRADE_DAO_CONTRACT){
-		emit DaoBase_UpgradeDaoContract(_new); // call observers.onUpgrade() for all observers		
+	function upgradeDaoContract(IDaoBase _new) public isCanDo(UPGRADE_DAO_CONTRACT) {
+		emit DaoBaseUpgradeDaoContract(_new); // call observers.onUpgrade() for all observers		
 		for(uint i=0; i<daoStorage.getObserversCount(); ++i) {
 			IDaoObserver(daoStorage.getObserverAtIndex(i)).onUpgrade(_new);
 		}	
@@ -77,7 +84,8 @@ contract DaoBase is IDaoBase {
 		return daoStorage.getMembersCount(stringHash(_groupName));
 	}
 
-	function addGroupMember(string _groupName, address _a) public isCanDo(MANAGE_GROUPS){
+	function addGroupMember(string _groupName, address _a) public isCanDoOrByOwner(MANAGE_GROUPS) {
+		emit DaoBaseAddGroupMember(_groupName, _a);
 		daoStorage.addGroupMember(stringHash(_groupName), _a);
 	}
 
@@ -85,8 +93,8 @@ contract DaoBase is IDaoBase {
 		return daoStorage.getGroupMembers(stringHash(_groupName));
 	}
 
-	function removeGroupMember(string _groupName, address _a) public isCanDo(MANAGE_GROUPS){
-		emit DaoBase_RemoveGroupMember(_groupName, _a);
+	function removeGroupMember(string _groupName, address _a) public isCanDoOrByOwner(MANAGE_GROUPS) {
+		emit DaoBaseRemoveGroupMember(_groupName, _a);
 		daoStorage.removeGroupMember(stringHash(_groupName), _a);
 	}
 
@@ -99,23 +107,23 @@ contract DaoBase is IDaoBase {
 	}
 
 // Actions:
-	function allowActionByShareholder(bytes32 _permissionName, address _tokenAddress) public isCanDo(MANAGE_GROUPS){
-		emit DaoBase_AllowActionByShareholder(_permissionName, _tokenAddress);
+	function allowActionByShareholder(bytes32 _permissionName, address _tokenAddress) public isCanDoOrByOwner(MANAGE_GROUPS) {
+		emit DaoBaseAllowActionByShareholder(_permissionName, _tokenAddress);
 		daoStorage.allowActionByShareholder(_permissionName, _tokenAddress);
 	}
 
-	function allowActionByVoting(bytes32 _permissionName, address _tokenAddress) public isCanDo(MANAGE_GROUPS){
-		emit DaoBase_AllowActionByVoting(_permissionName, _tokenAddress);
+	function allowActionByVoting(bytes32 _permissionName, address _tokenAddress) public isCanDoOrByOwner(MANAGE_GROUPS) {
+		emit DaoBaseAllowActionByVoting(_permissionName, _tokenAddress);
 		daoStorage.allowActionByVoting(_permissionName,_tokenAddress);
 	}
 
-	function allowActionByAddress(bytes32 _permissionName, address _a) public isCanDo(MANAGE_GROUPS){
-		emit DaoBase_AllowActionByAddress(_permissionName, _a);
+	function allowActionByAddress(bytes32 _permissionName, address _a) public isCanDoOrByOwner(MANAGE_GROUPS) {
+		emit DaoBaseAllowActionByAddress(_permissionName, _a);
 		daoStorage.allowActionByAddress(_permissionName,_a);
 	}
 
-	function allowActionByAnyMemberOfGroup(bytes32 _permissionName, string _groupName) public isCanDo(MANAGE_GROUPS){
-		emit DaoBase_AllowActionByAnyMemberOfGroup(_permissionName, _groupName);
+	function allowActionByAnyMemberOfGroup(bytes32 _permissionName, string _groupName) public isCanDoOrByOwner(MANAGE_GROUPS) {
+		emit DaoBaseAllowActionByAnyMemberOfGroup(_permissionName, _groupName);
 		daoStorage.allowActionByAnyMemberOfGroup(_permissionName, stringHash(_groupName));
 	}
 
@@ -135,27 +143,37 @@ contract DaoBase is IDaoBase {
 	}
 
 	// Proposals:
-	function addNewProposal(IProposal _proposal) public isCanDo(ADD_NEW_PROPOSAL){ 
-		emit DaoBase_AddNewProposal(_proposal); 
+	function addNewProposal(IProposal _proposal) public isCanDo(ADD_NEW_PROPOSAL) { 
+		emit DaoBaseAddNewProposal(_proposal); 
 		daoStorage.addProposal(_proposal);
 	}
 
-	function getProposalAtIndex(uint _i)public view returns(IProposal) {
+	function getProposalAtIndex(uint _i) public view returns(IProposal) {
 		return daoStorage.getProposalAtIndex(_i);
 	}
 
-	function getProposalsCount()public view returns(uint) {
+	function getProposalsCount() public view returns(uint) {
 		return daoStorage.getProposalsCount();
 	}
 
 	// Tokens:
-	function issueTokens(address _tokenAddress, address _to, uint _amount)public isCanDo(ISSUE_TOKENS) {
-		emit DaoBase_IssueTokens(_tokenAddress, _to, _amount);
-		DaoBaseLib.issueTokens(daoStorage, _tokenAddress, _to, _amount);
+	function issueTokens(address _tokenAddress, address _to, uint _amount) public isCanDo(ISSUE_TOKENS) {
+		emit DaoBaseIssueTokens(_tokenAddress, _to, _amount);
+		DaoBaseLib.issueTokens(
+			daoStorage,
+			_tokenAddress,
+			_to,
+			_amount
+		);
 	}
 
-	function burnTokens(address _tokenAddress, address _who, uint _amount)public isCanDo(BURN_TOKENS) {
-		emit DaoBase_BurnTokens(_tokenAddress, _who, _amount);
-		DaoBaseLib.burnTokens(daoStorage, _tokenAddress, _who, _amount);	
+	function burnTokens(address _tokenAddress, address _who, uint _amount) public isCanDo(BURN_TOKENS) {
+		emit DaoBaseBurnTokens(_tokenAddress, _who, _amount);
+		DaoBaseLib.burnTokens(
+			daoStorage,
+			_tokenAddress, 
+			_who, 
+			_amount
+		);	
 	}
 }

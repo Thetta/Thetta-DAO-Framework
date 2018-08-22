@@ -2,6 +2,7 @@ pragma solidity ^0.4.23;
 
 import "./WeiGenericTask.sol";
 
+
 /**
  * @title WeiTask 
  * @dev Can be prepaid or postpaid. 
@@ -17,15 +18,16 @@ contract WeiTask is WeiGenericTask {
 
 	// callable by any Employee of the current DaoBase or Owner
 	function startTask(address _employee) public isCanDo(START_TASK) {
-		require(getCurrentState()==State.Init || getCurrentState()==State.PrePaid);
+		require(getCurrentState() == State.Init || getCurrentState() == State.PrePaid);
 
-		if(getCurrentState()==State.Init) {
+		if(getCurrentState() == State.Init) {
 			// can start only if postpaid task 
 			require(isPostpaid);
 		}
-		startTime = now;
+		
+		startTime = block.timestamp;
 		employee = _employee;
 		state = State.InProgress;
-		emit WeiGenericTask_StateChanged(state);
+		emit WeiGenericTaskStateChanged(state);
 	}
 }

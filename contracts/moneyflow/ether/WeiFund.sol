@@ -27,7 +27,7 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {//
 	bool isAccumulateDebt;
 	uint periodHours;
 
-	event WeiFund_FlushTo(address _to, uint _balance);
+	event WeiFundFlushTo(address _to, uint _balance);
 
 	constructor(uint _neededWei, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours) public {
 		require(!((_isAccumulateDebt)&&(_periodHours==0)));
@@ -38,7 +38,7 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {//
 		isPeriodic = _isPeriodic;
 		isAccumulateDebt = _isAccumulateDebt;
 		periodHours = _periodHours;
-		momentCreated = now;
+		momentCreated = block.timestamp;
 	}
 
 	function getTotalFundNeededAmount()public view returns(uint) {
@@ -46,11 +46,11 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {//
 	}
 
 	function getDebtMultiplier()public view returns(uint) {
-		if((isPeriodic)&&(!isAccumulateDebt)&&( (now - momentReceived) / (periodHours * 3600 * 1000) >=1)) {
+		if((isPeriodic)&&(!isAccumulateDebt)&&( (block.timestamp - momentReceived) / (periodHours * 3600 * 1000) >=1)) {
 			return (balanceOnMomentReceived/neededWei) + 1;
 		} else if((isPeriodic)&&(isAccumulateDebt)) {
-			return 1 + ((now - momentCreated) / (periodHours * 3600 * 1000));
-		}else{
+			return 1 + ((block.timestamp - momentCreated) / (periodHours * 3600 * 1000));
+		}else {
 			return 1;
 		}
 	}
@@ -65,7 +65,7 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {//
 		// require(msg.value==_currentFlow);
 		totalWeiReceived += msg.value;
 		if(getTotalWeiNeeded(msg.value)==0) {
-			momentReceived = now;
+			momentReceived = block.timestamp;
 			balanceOnMomentReceived = totalWeiReceived;
 		}	
 	}
@@ -100,12 +100,12 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {//
 	// -------------- IDestination
 
 	function flushTo(address _to) public onlyOwner {
-		emit WeiFund_FlushTo(_to, this.balance);
+		emit WeiFundFlushTo(_to, this.balance);
 		_to.transfer(this.balance);
 	}
 
 	function flush() public onlyOwner {
-		emit WeiFund_FlushTo(owner, this.balance);
+		emit WeiFundFlushTo(owner, this.balance);
 		owner.transfer(this.balance);
 	}	
 

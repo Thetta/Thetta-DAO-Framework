@@ -5,7 +5,8 @@ import "./utils/UtilsLib.sol";
 
 import "./tokens/StdDaoToken.sol";
 
-contract DaoStorage is Ownable{
+
+contract DaoStorage is Ownable {
 	StdDaoToken[] public tokens;
 	IProposal[] public proposals;
 	IDaoObserver[] public observers;
@@ -135,7 +136,6 @@ contract DaoStorage is Ownable{
 		tokens.push(StdDaoToken(_token));
 	}
 
-
 	function addProposal(IProposal _proposal) external onlyOwner {
 		proposals.push(_proposal);
 	}
@@ -179,7 +179,7 @@ contract DaoStorage is Ownable{
 		UtilsLib.removeProposalFromArray(proposals, _proposal);
 	}
 
-	function removeObserver(IDaoObserver _observer) external onlyOwner{
+	function removeObserver(IDaoObserver _observer) external onlyOwner {
 		UtilsLib.removeDaoObserverFromArray(observers, _observer);
 	}
 }

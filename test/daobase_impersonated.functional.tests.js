@@ -102,6 +102,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 
 	it('should not issue tokens because account who signed message has no rights',async() => {
 		await daoBase.allowActionByAddress(issueTokens, impersonatedInstance.address);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -110,6 +111,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 
 	it('should not issue tokens because impersonatedInstance has no rights',async() => {
 		await daoBase.allowActionByAddress(issueTokens, creator);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -119,6 +121,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 	it('should issue tokens because account who sign message and impersonatedInstance has rights',async() => {
 		await daoBase.allowActionByAddress(issueTokens, creator);
 		await daoBase.allowActionByAddress(issueTokens, impersonatedInstance.address);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -129,6 +132,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 
 	it('should not add group member because account who signed message has no rights',async() => {
 		await daoBase.allowActionByAddress(manageGroups, impersonatedInstance.address);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(employee2, KECCAK256(message));
 
@@ -143,6 +147,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 
 	it('should add group member because account who sign message and impersonatedInstance has rights',async() => {
 		await daoBase.allowActionByAddress(manageGroups, impersonatedInstance.address);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -154,6 +159,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 	it('should not remove group member because account who signed message has no rights',async() => {
 		await daoBase.allowActionByAddress(removeGroupMember, impersonatedInstance.address);
 		await daoBase.allowActionByAddress(manageGroups, impersonatedInstance.address);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -165,6 +171,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 
 	it('should not remove group member because impersonatedInstance has no rights',async() => {
 		await daoBase.allowActionByAddress(manageGroups, impersonatedInstance.address);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -178,6 +185,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 		await daoBase.allowActionByAddress(removeGroupMember, creator);
 		await daoBase.allowActionByAddress(removeGroupMember, impersonatedInstance.address);
 		await daoBase.allowActionByAddress(manageGroups, impersonatedInstance.address);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -196,6 +204,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 
 	it('should not allow action by shareholder because impersonatedInstance has no rights',async() => {
 		await daoBase.allowActionByAddress(allowActionByShareholder, creator);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -206,6 +215,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 		await daoBase.allowActionByAddress(allowActionByShareholder, creator);
 		await daoBase.allowActionByAddress(allowActionByShareholder, impersonatedInstance.address);
 		await daoBase.allowActionByAddress(manageGroups, impersonatedInstance.address);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -220,6 +230,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 
 	it('should not allow action by voting because impersonatedInstance has no rights',async() => {
 		await daoBase.allowActionByAddress(allowActionByVoting, creator);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -230,6 +241,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 		await daoBase.allowActionByAddress(allowActionByVoting, creator);
 		await daoBase.allowActionByAddress(allowActionByVoting, impersonatedInstance.address);
 		await daoBase.allowActionByAddress(manageGroups, impersonatedInstance.address);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -244,6 +256,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 
 	it('should not allow action by address because impersonatedInstance has no rights',async() => {
 		await daoBase.allowActionByAddress(allowActionByAddress, creator);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -254,6 +267,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 		await daoBase.allowActionByAddress(allowActionByAddress, creator);
 		await daoBase.allowActionByAddress(allowActionByAddress, impersonatedInstance.address);
 		await daoBase.allowActionByAddress(manageGroups, impersonatedInstance.address);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -262,6 +276,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 
 	it('should not allow action by any member of group because account who signed message has no rights',async() => {
 		await daoBase.allowActionByAddress(manageGroups, impersonatedInstance.address);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -273,6 +288,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 
 	it('should not allow action by any member of group because impersonatedInstance has no rights',async() => {
 		await daoBase.allowActionByAddress(manageGroups, impersonatedInstance.address);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -286,6 +302,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 		await daoBase.allowActionByAddress(allowActionByAnyMemberOfGroup, creator);
 		await daoBase.allowActionByAddress(allowActionByAnyMemberOfGroup, impersonatedInstance.address);
 		await daoBase.allowActionByAddress(manageGroups, impersonatedInstance.address);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -298,6 +315,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 	it('should not upgrade dao contract because account who signed message has no rights',async() => {
 		daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
 		await daoBase.allowActionByAddress(upgradeDaoContract, impersonatedInstance.address);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -307,6 +325,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 	it('should not upgrade dao contract because impersonatedInstance has no rights',async() => {
 		daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
 		await daoBase.allowActionByAddress(upgradeDaoContract, creator);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
@@ -317,6 +336,7 @@ contract('DaoBaseImpersonated', (accounts) => {
 		daoBaseNew = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
 		await daoBase.allowActionByAddress(upgradeDaoContract, creator);
 		await daoBase.allowActionByAddress(upgradeDaoContract, impersonatedInstance.address);
+		await daoBase.renounceOwnership();
 
 		let sig = await web3.eth.sign(creator, KECCAK256(message));
 
