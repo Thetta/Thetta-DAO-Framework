@@ -181,20 +181,20 @@ contract('TaskTable', (accounts) => {
 
 	it('should create, start and complete task (full flow)', async () => {
 			let tx = await taskTable.addNewTask("Test", "Task for tests", false, false, neededWei, 1, 1);
-			let events = tx.logs.filter(l => l.event === 'TaskTableElementAdded');
+			let events = tx.logs.filter(l => l.event === 'TaskTable_ElementAdded');
 			let id = events[0].args._eId;
 			await taskTable.setOutput(id, outsider);
-			let balanceBefore = await web3.eth.getBalance(outsider);
 			await taskTable.processFunds(id, {value: neededWei});
 			await daoBase.allowActionByAddress(startTask, creator);
 			await taskTable.startTask(id, employee);
 			await taskTable.notifyThatCompleted(id);
 			await taskTable.confirmCompletion(id);
+			let balanceBefore = await web3.eth.getBalance(outsider);
 			tx = await taskTable.flush(id);
-			events = tx.logs.filter(l => l.event === 'TaskTableStateChanged');
+			events = tx.logs.filter(l => l.event === 'TaskTable_StateChanged');
 			let result = events[0].args._state;
 			assert.equal(result, 8);
 			let balanceAfter = await web3.eth.getBalance(outsider);
-			assert.equal((balanceAfter - balanceBefore) >= neededWei, true);
-		});
+			assert.equal(balanceBefore.toNumber() + neededWei == balanceAfter.toNumber(), true);
+	});
 });
