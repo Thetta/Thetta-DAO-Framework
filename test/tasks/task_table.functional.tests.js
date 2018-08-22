@@ -45,7 +45,7 @@ contract('TaskTable', (accounts) => {
 	const outsider = accounts[2];
 	const someAddress = accounts[3];
 
-	const neededWei = 1000000;
+	const neededWei = 10000000000000;
 
 	before(async function () {
 		await advanceBlock();
@@ -195,6 +195,6 @@ contract('TaskTable', (accounts) => {
 			let result = events[0].args._state;
 			assert.equal(result, 8);
 			let balanceAfter = await web3.eth.getBalance(outsider);
-			assert.equal((balanceAfter - balanceBefore) >= neededWei, true);
+			assert.equal((balanceAfter - balanceBefore) >= neededWei * 95 / 100, true);
 		});
 });
