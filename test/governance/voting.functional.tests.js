@@ -125,6 +125,7 @@ contract('Voting (func)', (accounts) => {
       await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
       await daoBase.allowActionByAddress(withdrawDonations, aacInstance.address);
       await daoBase.allowActionByAddress(setRootWeiReceiver, aacInstance.address);
+      await daoBase.allowActionByAddress(issueTokens, aacInstance.address);
 
       // do not forget to transfer ownership
       await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, 'Employees');
@@ -132,6 +133,7 @@ contract('Voting (func)', (accounts) => {
       await daoBase.allowActionByVoting(manageGroups, token.address);
       await daoBase.allowActionByVoting(issueTokens, token.address);
       await daoBase.allowActionByVoting(addNewProposal, token.address);
+      await daoBase.allowActionByVoting(setRootWeiReceiver, token.address);
 
       // check permissions (permissions must be blocked)
       await daoBase.addGroupMember('Employees', employee1);
@@ -201,7 +203,6 @@ contract('Voting (func)', (accounts) => {
       assert.strictEqual(await voting.isYes(), true, 'Voting is finished');
     });
 
-		/*
     it('1.2. Q Scenario: 5 employees, 1/5 voted yes, params(10,100) => isYes==true', async () => {
       await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8('Employees'), UintToToBytes32(10), UintToToBytes32(100), addressToBytes32(token.address));
       const wae = await WeiAbsoluteExpense.new(1000);
@@ -606,8 +607,8 @@ contract('Voting (func)', (accounts) => {
       assert.strictEqual(await voting.isYes(), false, 'Voting is no');
     });
 
-    it('1.16. Q Scenario: creator have 11/15 tokens, (50,50) => isYes==true', async () => {
-      await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8('Employees'), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
+    it('1.16. Q Scenario: creator have 11/15 tokens, (50,50) => account can do action directly', async () => {
+      await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(59), fromUtf8('Employees'), UintToToBytes32(50), UintToToBytes32(50), addressToBytes32(token.address));
       await daoBase.issueTokens(token.address, creator, 10);
 
       let totalSupply = await token.totalSupply();
@@ -617,18 +618,8 @@ contract('Voting (func)', (accounts) => {
 
       const wae = await WeiAbsoluteExpense.new(1000);
       await aacInstance.setRootWeiReceiverAuto(wae.address, { from: creator });
-      const pa = await daoBase.getProposalAtIndex(0);
-      const proposal = await IProposal.at(pa);
-      const votingAddress = await proposal.getVoting();
-      const voting = await Voting.at(votingAddress);
 
-      r2 = await voting.getVotingStats();
-      assert.equal(r2[0].toNumber(), 11, 'yes');
-      assert.equal(r2[1].toNumber(), 0, 'no');
-      assert.equal(r2[2].toNumber(), 15, 'total');
-
-      assert.strictEqual(await voting.isFinished(), true, 'Voting should be finished');
-      assert.strictEqual(await voting.isYes(), true, 'Voting is finished');
+      assert.strictEqual(await daoBase.isCanDoAction(creator, setRootWeiReceiver), true);
     });
 
     it('1.17. Q Scenario: creator have 1/15 tokens, employee1 have 10 and vote no, (50,50) => isYes==false', async () => {
@@ -659,10 +650,8 @@ contract('Voting (func)', (accounts) => {
       assert.strictEqual(await voting.isFinished(), true, 'Voting should be finished');
       assert.strictEqual(await voting.isYes(), false, 'Voting is finished');
     });
-		*/
   });
 
-/*
   describe('quadratic voting()', function () {
     beforeEach(async () => {
       token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
@@ -707,6 +696,7 @@ contract('Voting (func)', (accounts) => {
       await daoBase.allowActionByVoting(manageGroups, token.address);
       await daoBase.allowActionByVoting(issueTokens, token.address);
       await daoBase.allowActionByVoting(addNewProposal, token.address);
+      await daoBase.allowActionByVoting(setRootWeiReceiver, token.address);
 
       // check permissions (permissions must be blocked)
       await daoBase.addGroupMember('Employees', employee1);
@@ -1027,6 +1017,7 @@ contract('Voting (func)', (accounts) => {
       await daoBase.allowActionByVoting(manageGroups, token.address);
       await daoBase.allowActionByVoting(issueTokens, token.address);
       await daoBase.allowActionByVoting(addNewProposal, token.address);
+      await daoBase.allowActionByVoting(setRootWeiReceiver, token.address);
 
       // check permissions (permissions must be blocked)
       await daoBase.addGroupMember('Employees', employee1);
@@ -1508,18 +1499,8 @@ contract('Voting (func)', (accounts) => {
 
       const wae = await WeiAbsoluteExpense.new(1000);
       await aacInstance.setRootWeiReceiverAuto(wae.address, { from: creator });
-      const pa = await daoBase.getProposalAtIndex(0);
-      const proposal = await IProposal.at(pa);
-      const votingAddress = await proposal.getVoting();
-      const voting = await Voting.at(votingAddress);
-
-      r2 = await voting.getVotingStats();
-      assert.equal(r2[0].toNumber(), 11, 'yes');
-      assert.equal(r2[1].toNumber(), 0, 'no');
-      assert.equal(r2[2].toNumber(), 15, 'total');
-
-      assert.strictEqual(await voting.isFinished(), true, 'Voting should be finished');
-      assert.strictEqual(await voting.isYes(), true, 'Voting is finished');
+     
+      assert.strictEqual(await daoBase.isCanDoAction(creator, setRootWeiReceiver), true);
     });
 
     it('1.17. Q Scenario: creator have 1/15 tokens, employee1 have 10 and vote no, (50,50) => isYes==false', async () => {
@@ -1591,6 +1572,7 @@ contract('Voting (func)', (accounts) => {
 
       await daoBase.allowActionByVoting(manageGroups, token.address);
       await daoBase.allowActionByVoting(issueTokens, token.address);
+      await daoBase.allowActionByVoting(setRootWeiReceiver, token.address);
 
       // check permissions (permissions must be blocked)
       await daoBase.addGroupMember('Employees', employee1);
@@ -2172,7 +2154,7 @@ contract('Voting (func)', (accounts) => {
       let simpleVoting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_SIMPLE_TOKEN, 60, '', 51, 71, token.address);
       await simpleVoting.vote(true, { from: employee1});
       let qudraticVoting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_QUADRATIC, 60, '', 51, 71, token.address);
-      await quadraticVoting.vote(true, { from: employee1});
+      await qudraticVoting.vote(true, { from: employee1});
 
       r2 = await simpleVoting.getPowerOf(creator);
       assert.equal(r2.toNumber(), 1, 'yes');
@@ -2214,5 +2196,4 @@ contract('Voting (func)', (accounts) => {
       assert.equal(r2.toNumber(), 1, 'yes');
     });
   });
-*/
 });
