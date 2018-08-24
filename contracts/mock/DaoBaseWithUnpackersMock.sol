@@ -2,16 +2,17 @@ pragma solidity ^0.4.22;
 
 import "../DaoBaseWithUnpackers.sol";
 
-contract DaoBaseWithUnpackersMock is DaoBaseWithUnpackers {
 
+contract DaoBaseWithUnpackersMock is DaoBaseWithUnpackers {
+	
 	address public paramAddress1;
 	address public paramAddress2;
 	string public paramString1;
 	uint public paramUint1;
 	bytes32 public paramBytes1;
 
-	constructor(DaoStorage _store) public 
-		DaoBaseWithUnpackers(_store)
+	constructor(DaoStorage _daoStorage) public 
+		DaoBaseWithUnpackers(_daoStorage)
 	{
 	}
 

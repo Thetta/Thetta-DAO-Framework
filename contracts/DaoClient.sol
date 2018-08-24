@@ -3,6 +3,7 @@ pragma solidity ^0.4.23;
 import "./IDaoBase.sol";
 import "./IDaoObserver.sol";
 
+
 /**
  * @title DaoClient, just an easy-to-use wrapper.
  * @dev This contract provides you with internal 'dao' variable. 
@@ -14,14 +15,14 @@ import "./IDaoObserver.sol";
 contract DaoClient is IDaoObserver {
 	IDaoBase dao;
 
-	modifier isCanDo(bytes32 _what){
+	modifier isCanDo(bytes32 _what) {
 		require(dao.isCanDoAction(msg.sender, _what)); 
 		_; 
 	}
 
 	constructor(IDaoBase _dao) public {
 		dao = _dao;
-		dao.addObserver(this);
+		dao.addObserver(IDaoObserver(this));
 	}
 
 	/**
@@ -30,7 +31,7 @@ contract DaoClient is IDaoObserver {
 	 * @param _newAddress New controller.
 	 */
 	function onUpgrade(address _newAddress) public {
-		require(msg.sender==address(dao));
+		require(msg.sender == address(dao));
 
 		dao = IDaoBase(_newAddress);
 

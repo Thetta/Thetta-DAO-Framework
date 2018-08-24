@@ -2,6 +2,7 @@ pragma solidity ^0.4.23;
 
 import "./DefaultMoneyflowScheme.sol";
 
+
 // TODO:
 contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
 	constructor(
@@ -11,7 +12,6 @@ contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
 			uint _dividendsReserve) public 
 		DefaultMoneyflowScheme(_dao,_fundOutput,_percentsReserve,_dividendsReserve)
 	{
-
 	}
 
 	function addNewTaskGeneric(bytes32[] _params) view public {

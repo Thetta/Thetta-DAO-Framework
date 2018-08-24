@@ -6,6 +6,7 @@ import "./ether/WeiUnsortedSplitter.sol";
 import "../DaoClient.sol";
 import "../IDaoBase.sol";
 
+
 /**
  * @title FallbackToWeiReceiver
  * @dev This contract should be used to automatically instantiate Default moneyscheme for a DAO.
@@ -38,16 +39,21 @@ contract DefaultMoneyflowScheme is DaoClient {
 	WeiRelativeExpenseWithPeriod reserveFund;
 	WeiRelativeExpenseWithPeriod dividendsFund;
 
-	bytes32 public ADD_NEW_TASK = keccak256(abi.encodePacked("addNewTask"));
-	bytes32 public MODIFY_MONEY_SCHEME = keccak256(abi.encodePacked("modifyMoneyscheme"));
-	bytes32 public FLUSH_RESERVE_FUND_TO = keccak256(abi.encodePacked("flushReserveFundTo"));
+	//bytes32 public ADD_NEW_TASK = keccak256(abi.encodePacked("addNewTask"));
+	bytes32 public constant ADD_NEW_TASK = 0xcb9526c69072a622cb86ec3b80cadf28b76991a31d24568cb04f425c246e880c;
+	//bytes32 public MODIFY_MONEY_SCHEME = keccak256(abi.encodePacked("modifyMoneyscheme"));
+	bytes32 public constant MODIFY_MONEY_SCHEME = 0x14f3b572f5c60a27fbd720a8da3cb69ca244dcb7323e4d5678bbbb5914c4e944;
+	//bytes32 public FLUSH_RESERVE_FUND_TO = keccak256(abi.encodePacked("flushReserveFundTo"));
+	bytes32 public constant FLUSH_RESERVE_FUND_TO = 0x5f2a319d6055192f7a6f19e5f7e6c637b4f9b6517dc9c9c00e84824a329bd197;
 
 /////
-	constructor(IDaoBase _dao, address _fundOutput, 
-		uint _percentsReserve, uint _dividendsReserve) public 
-		DaoClient(_dao)											  
+	constructor(
+		IDaoBase _dao, 
+		address _fundOutput, 
+		uint _percentsReserve, 
+		uint _dividendsReserve) public DaoClient(_dao)											  
 	{
-		require(0x0!=_fundOutput);
+		require(0x0 != _fundOutput);
 
 		// root = new WeiTopDownSplitter("root");
 
@@ -79,11 +85,11 @@ contract DefaultMoneyflowScheme is DaoClient {
 		// rest.addChild(dividendsFund);
 	}
 
-	function getRootReceiver()public view returns(IWeiReceiver) {
+	function getRootReceiver() public view returns(IWeiReceiver) {
 		return root;
 	}
 
-	function deployRoot()public {
+	function deployRoot() public {
 		root = new WeiTopDownSplitter("root");
 	}
 

@@ -5,6 +5,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../IDaoBase.sol";
 import "../governance/IVoting.sol";
 
+
 /**
  * @title InformalProposal 
  * @dev This is the implementation of IProposal interface. Each Proposal should have voting attached. 

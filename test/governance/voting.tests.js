@@ -15,13 +15,13 @@ const VOTING_TYPE_LIQUID = 4;
 var increaseTime = require('../utils/increaseTime');
 
 function KECCAK256 (x) {
-  return web3.sha3(x);
+	return web3.sha3(x);
 }
 
 require('chai')
-  .use(require('chai-as-promised'))
-  .use(require('chai-bignumber')(BigNumber))
-  .should();
+	.use(require('chai-as-promised'))
+	.use(require('chai-bignumber')(BigNumber))
+	.should();
 
 contract('Voting', (accounts) => {
   const creator = accounts[0];

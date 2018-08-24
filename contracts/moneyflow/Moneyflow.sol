@@ -11,6 +11,7 @@ import "../IDaoBase.sol";
 
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
+
 /**
  * @title MoneyFlow 
  * @dev Reference (typical example) implementation of IMoneyflow
@@ -27,11 +28,13 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	FallbackToWeiReceiver donationF2WR;
 	FallbackToWeiReceiver revenueF2WR;
 
-	bytes32 constant public WITHDRAW_DONATIONS = keccak256("withdrawDonations");
-	bytes32 constant public SET_ROOT_WEI_RECEIVER = keccak256("setRootWeiReceiver");
+	//bytes32 constant public WITHDRAW_DONATIONS = keccak256("withdrawDonations");
+	bytes32 constant public WITHDRAW_DONATIONS = 0xfc685f51f68cb86aa29db19c2a8f4e85183375ba55b5e56fb2e89adc5f5e4285;
+	//bytes32 constant public SET_ROOT_WEI_RECEIVER = keccak256("setRootWeiReceiver");
+	bytes32 constant public SET_ROOT_WEI_RECEIVER = 0xcb02529cf7b85f6f804884cd47d35cf58a3ffbee0b87a019fe725b688923c627;
 
-	event MoneyFlow_WithdrawDonations(address _by, address _to, uint _balance);
-	event MoneyFlow_SetRootWeiReceiver(address _sender, address _receiver);
+	event MoneyFlowWithdrawDonations(address _by, address _to, uint _balance);
+	event MoneyFlowSetRootWeiReceiver(address _sender, address _receiver);
 
 	constructor(IDaoBase _dao) public
 		DaoClient(_dao)
@@ -44,23 +47,23 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 // IMoneyflow:
 	// will withdraw donations
 	function withdrawDonationsTo(address _out) public isCanDo(WITHDRAW_DONATIONS) {
-		emit MoneyFlow_WithdrawDonations(msg.sender, _out, address(donationEndpoint).balance);
+		emit MoneyFlowWithdrawDonations(msg.sender, _out, address(donationEndpoint).balance);
 		donationEndpoint.flushTo(_out);
 	}
 
-	function getDonationEndpoint()public view returns(IWeiReceiver) {
+	function getDonationEndpoint() public view returns(IWeiReceiver) {
 		return donationEndpoint;
 	}
 
-	function getRevenueEndpoint()public view returns(IWeiReceiver) {
+	function getRevenueEndpoint() public view returns(IWeiReceiver) {
 		return rootReceiver;
 	}
 
-	function getDonationEndpointAddress()public view returns(address) {
+	function getDonationEndpointAddress() public view returns(address) {
 		return address(donationF2WR);
 	}
 
-	function getRevenueEndpointAddress()public view returns(address) {
+	function getRevenueEndpointAddress() public view returns(address) {
 		return address(revenueF2WR);
 	}
 
@@ -78,7 +81,7 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	// receiver can be a splitter, fund or event task
 	// _receiver can be 0x0!
 	function setRootWeiReceiver(IWeiReceiver _receiver) public isCanDo(SET_ROOT_WEI_RECEIVER) {
-		emit MoneyFlow_SetRootWeiReceiver(msg.sender, address(_receiver));
+		emit MoneyFlowSetRootWeiReceiver(msg.sender, address(_receiver));
 		rootReceiver = _receiver;
 		revenueF2WR = new FallbackToWeiReceiver(address(rootReceiver));
 	}

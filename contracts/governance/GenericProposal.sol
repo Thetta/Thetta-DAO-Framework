@@ -5,6 +5,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../IDaoBase.sol";
 import "../governance/IVoting.sol";
 
+
 /**
  * @title GenericProposal 
  * @dev This is the implementation of IProposal interface. Each Proposal should have voting attached. 
@@ -27,11 +28,16 @@ contract GenericProposal is IProposal, Ownable {
 		}
 	}
 
-	event GenericProposal_Action(IVoting _voting);
+	event GenericProposalAction(IVoting _voting, address _target, string _methodSig, bytes32[] _params);
 
 // IVoting implementation
 	function action() public {
-		emit GenericProposal_Action(voting);
+		emit GenericProposalAction(
+			voting, 
+			target, 
+			methodSig, 
+			params
+		);
 
 		// in some cases voting is still not set
 		if(0x0!=address(voting)) {

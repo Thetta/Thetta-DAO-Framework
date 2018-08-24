@@ -2,6 +2,7 @@ pragma solidity ^0.4.23;
 
 import "./SplitterBase.sol";
 
+
 /**
  * @title WeiTopDownSplitter 
  * @dev Will split money from top to down (order matters!). It is possible for some children to not receive money 
@@ -34,18 +35,19 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 		if(!isOpen()) {
 			return 0;
 		}
-
+		
+		uint inputWei = _inputWei;
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i) {
 			IWeiReceiver c = IWeiReceiver(children[i]);
-			uint needed = c.getTotalWeiNeeded(_inputWei);
+			uint needed = c.getTotalWeiNeeded(inputWei);
 			total = total + needed;
 
 			// this should be reduced because next child can get only '_inputWei minus what prev. child got'
-			if(_inputWei>needed) {
-				_inputWei-=needed;
+			if(inputWei>needed) {
+				inputWei-=needed;
 			}else {
-				_inputWei = 0;
+				inputWei = 0;
 			}
 		}
 		return total;
@@ -90,7 +92,7 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 	// See this - https://github.com/Thetta/SmartContracts/issues/40
 	function processFunds(uint _currentFlow) public payable {
 		require(isOpen());
-		emit SplitterBase_ProcessFunds(msg.sender, msg.value, _currentFlow);
+		emit SplitterBaseProcessFunds(msg.sender, msg.value, _currentFlow);
 		uint amount = _currentFlow;
 
 		// TODO: can remove this line?

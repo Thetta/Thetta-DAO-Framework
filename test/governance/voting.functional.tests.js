@@ -21,51 +21,51 @@ const VOTING_TYPE_LIQUID = 4;
 var increaseTime = require('../utils/increaseTime');
 
 require('chai')
-  .use(require('chai-as-promised'))
-  .use(require('chai-bignumber')(BigNumber))
-  .should();
+	.use(require('chai-as-promised'))
+	.use(require('chai-bignumber')(BigNumber))
+	.should();
 
 function KECCAK256 (x) {
-  return web3.sha3(x);
+	return web3.sha3(x);
 }
 
 var utf8 = require('utf8');
 
 function padToBytes32 (n) {
-  while (n.length < 64) {
-    n = n + '0';
-  }
-  return '0x' + n;
+	while (n.length < 64) {
+		n = n + '0';
+	}
+	return '0x' + n;
 }
 
 function addressToBytes32 (addr) {
-  while (addr.length < 66) {
-    addr = '0' + addr;
-  }
-  return '0x' + addr.replace('0x', '');
+	while (addr.length < 66) {
+		addr = '0' + addr;
+	}
+	return '0x' + addr.replace('0x', '');
 }
 
 function UintToToBytes32 (n) {
-  n = Number(n).toString(16);
-  while (n.length < 64) {
-    n = '0' + n;
-  }
-  return '0x' + n;
+	n = Number(n).toString(16);
+	while (n.length < 64) {
+		n = '0' + n;
+	}
+	return '0x' + n;
 }
 
 function fromUtf8 (str) {
-  str = utf8.encode(str);
-  var hex = '';
-  for (var i = 0; i < str.length; i++) {
-    var code = str.charCodeAt(i);
-    if (code === 0) {
-      break;
-    }
-    var n = code.toString(16);
-    hex += n.length < 2 ? '0' + n : n;
-  }
+	str = utf8.encode(str);
+	var hex = '';
+	for (var i = 0; i < str.length; i++) {
+		var code = str.charCodeAt(i);
+		if (code === 0) {
+			break;
+		}
+		var n = code.toString(16);
+		hex += n.length < 2 ? '0' + n : n;
+	}
 
-  return padToBytes32(hex);
+	return padToBytes32(hex);
 };
 
 contract('Voting (func)', (accounts) => {
