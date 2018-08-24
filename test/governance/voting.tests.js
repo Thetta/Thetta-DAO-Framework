@@ -3,7 +3,7 @@ var StdDaoToken = artifacts.require('./StdDaoToken');
 var DaoStorage = artifacts.require('./DaoStorage');
 
 var Voting = artifacts.require('./Voting');
-var Genericproposal = artifacts.require('./GenericProposal');
+var GenericProposal = artifacts.require('./GenericProposal');
 
 const BigNumber = web3.BigNumber;
 
@@ -46,7 +46,7 @@ contract('Voting', (accounts) => {
 
       let store = await DaoStorage.new([token.address], { from: creator });
       daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
-      proposal = await Genericproposal.new(creator, creator, '', []);
+      proposal = await GenericProposal.new(creator, creator, '', []);
       voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_SIMPLE_TOKEN, 0, 'Test', 100, 100, token.address);
     });
 
@@ -359,7 +359,7 @@ contract('Voting', (accounts) => {
 
       let store = await DaoStorage.new([token.address], { from: creator });
       daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
-      proposal = await Genericproposal.new(creator, creator, '', []);
+      proposal = await GenericProposal.new(creator, creator, '', []);
       voting = await Voting.new(daoBase.address, proposal.address, creator, VOTING_TYPE_QUADRATIC, 0, 'Test', 100, 100, token.address);
     });
 
@@ -532,7 +532,7 @@ contract('Voting', (accounts) => {
 
       let store = await DaoStorage.new([token.address], { from: creator });
       daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
-      proposal = await Genericproposal.new(creator, creator, '', []);
+      proposal = await GenericProposal.new(creator, creator, '', []);
 
       manageGroups = await daoBase.MANAGE_GROUPS();
 
