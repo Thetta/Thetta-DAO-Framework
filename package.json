@@ -15,7 +15,7 @@
 		"lint:sol:fix": "solium -d . --fix",
 		"lint:all": "npm run lint && npm run lint:sol",
 		"lint:all:fix": "npm run lint:fix && npm run lint:sol:fix",
-		"docs": "cd scripts && node ./gen-docs.js"
+		"docs": "npx docusaurus-init && mv docs-examples-from-docusaurus docs && cd docs && mkdir docs && cd .. && mv ./website ./docs && cd docs && rm -r doc1.md && rm -r doc2.md && rm -r doc3.md && rm -r exampledoc4.md && rm -r exampledoc5.md && cd .. && cd scripts && node ./gen-docs.js"
 	},
 	"repository": {
 		"type": "git",
