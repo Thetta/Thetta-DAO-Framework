@@ -23,7 +23,7 @@ library VotingLib {
 	struct Delegation {
 		address _address;
 		uint amount;
-		bool isDelegator; // is account in this struct who delegates the tokens
+		bool isDelegator; // is it account who delegates the tokens
 	}
 
 	struct Vote {
