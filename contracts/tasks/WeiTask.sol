@@ -17,6 +17,7 @@ contract WeiTask is WeiGenericTask {
 	}
 
 	// callable by any Employee of the current DaoBase or Owner
+	// employee should call this function when for starting the task 
 	function startTask(address _employee) public isCanDo(START_TASK) {
 		require(getCurrentState() == State.Init || getCurrentState() == State.PrePaid);
 

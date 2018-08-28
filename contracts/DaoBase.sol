@@ -66,6 +66,7 @@ contract DaoBase is IDaoBase, Ownable {
 		daoStorage.addObserver(_observer);
 	}
 
+	// updates instance of DAO
 	function upgradeDaoContract(IDaoBase _new) public isCanDo(UPGRADE_DAO_CONTRACT) {
 		emit DaoBaseUpgradeDaoContract(_new); // call observers.onUpgrade() for all observers		
 		for(uint i=0; i<daoStorage.getObserversCount(); ++i) {

@@ -60,6 +60,7 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 
 // ITokenVotingSupport implementation
 	// TODO: VULNERABILITY! no onlyOwner!
+	// should be called when voting started for conservation balances during this voting
 	function startNewVoting() public whenNotPaused returns(uint) {
 		uint idOut = super.startNewEvent();
 		emit VotingStarted(msg.sender, idOut);
@@ -67,6 +68,7 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 	}
 
 	// TODO: VULNERABILITY! no onlyOwner!
+	// update balances from conservation after voting finish
 	function finishVoting(uint _votingID) whenNotPaused public {
 		super.finishEvent(_votingID);
 		emit VotingFinished(msg.sender, _votingID);
@@ -76,7 +78,7 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 		return super.getBalanceAtEventStart(_votingID, _owner);
 	}
 
-// 
+    // transfer tokens from msg.sender to _to address
 	function transfer(address _to, uint256 _value) public whenNotPaused returns (bool) {
 		if(!isHolder[_to]) {
 			holders.push(_to);
@@ -85,6 +87,7 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 		return super.transfer(_to, _value);
 	}
 
+	// transfer tokens from _from to _to address
 	function transferFrom(address _from, address _to, uint256 _value) public whenNotPaused returns (bool) {
 		if(!isHolder[_to]) {
 			holders.push(_to);

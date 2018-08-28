@@ -23,7 +23,7 @@ library VotingLib {
 	struct Delegation {
 		address _address;
 		uint amount;
-		bool isDelegator;
+		bool isDelegator; // is account in this struct who delegates the tokens
 	}
 
 	struct Vote {
@@ -34,8 +34,8 @@ library VotingLib {
 	struct VotingStorage {
 		IDaoBase dao;
 		IProposal proposal; 
-		uint minutesToVote;
-		bool finishedWithYes;
+		uint minutesToVote; // time which voting will be active
+		bool finishedWithYes; 
 		bool canceled;
 		uint genesis;
 		uint quorumPercent;
@@ -80,6 +80,7 @@ library VotingLib {
 			store.tokenAddress = _tokenAddress;
 			store.votingID = StdDaoToken(_tokenAddress).startNewVoting();
 		}
+
 		libVote(store, _origin, true);
 	}
 
@@ -189,6 +190,7 @@ library VotingLib {
 		return;
 	}
 
+	// returns delegated power for address
 	function getDelegatedPowerOf(VotingStorage storage store, address _of) public view returns(uint res) {
 		for(uint i = 0; i < store.delegations[_of].length; i++) {
 			if(!store.delegations[_of][i].isDelegator) {
@@ -197,6 +199,7 @@ library VotingLib {
 		}
 	}
 
+	// returns delegated power from msg.sender to address _to
 	function getDelegatedPowerByMe(VotingStorage storage store, address _to) public view returns(uint res) {
 		for(uint i = 0; i < store.delegations[msg.sender].length; i++) {
 			if(store.delegations[msg.sender][i]._address == _to) {
@@ -207,6 +210,7 @@ library VotingLib {
 		}
 	}
 
+	// delegates power from msg.sender to specified address _to
 	function delegateMyVoiceTo(VotingStorage storage store, address _to, uint _tokenAmount) public {
 		require (_to!= address(0));
 		require (_tokenAmount <= StdDaoToken(store.tokenAddress).getBalanceAtVoting(store.votingID, msg.sender));
@@ -227,6 +231,7 @@ library VotingLib {
 		store.delegations[msg.sender].push(Delegation(_to, _tokenAmount, true));
 	}
 
+	// delete delegation from msg.sender to specified address _to
 	function removeDelegation(VotingStorage storage store, address _to) public {
 		require (_to!= address(0));
 
