@@ -70,7 +70,12 @@ contract Voting is IVoting, Ownable {
 	function getPowerOf(address _voter) public view returns(uint) {
 		return store.getPowerOf(_voter);
 	}
-
+  
+	function voteFromOriginPositive() public {
+		// vote posisite from the originator of the voting
+		store.libVote(store.votingCreator, true);
+	}
+  
 	function vote(bool _isYes) public {
 		store.libVote(msg.sender, _isYes);
 	}

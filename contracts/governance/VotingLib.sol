@@ -34,6 +34,8 @@ library VotingLib {
 	struct VotingStorage {
 		IDaoBase dao;
 		IProposal proposal; 
+	
+		address votingCreator;
 		uint minutesToVote;
 		bool finishedWithYes;
 		bool canceled;
@@ -67,6 +69,7 @@ library VotingLib {
 		require((_quorumPercent<=100)&&(_quorumPercent>0));
 		require((_consensusPercent<=100)&&(_consensusPercent>0));
 
+		store.votingCreator = _origin;
 		store.dao = _dao;
 		store.proposal = _proposal;
 		store.minutesToVote = _minutesToVote;
@@ -80,7 +83,12 @@ library VotingLib {
 			store.tokenAddress = _tokenAddress;
 			store.votingID = StdDaoToken(_tokenAddress).startNewVoting();
 		}
-		libVote(store, _origin, true);
+
+		// This is now commented here. DO NOT UNCOMMENT.
+		// Please manually call the 'voteFromOriginPositive'
+		// right after Voting is created!
+		// 
+		//libVote(store, _origin, true);
 	}
 
 	function getNow() public view returns(uint) {

@@ -8,6 +8,10 @@ pragma solidity ^0.4.22;
  * Any algorightm inside (1p1v, linear, quadratic, etc)
 */
 contract IVoting {
+	// this should be called right after Voting is created by the creator 
+	// to indicate that he is saying 'YES'
+	function voteFromOriginPositive() public;
+
 	// _tokenAmount -> if this voting type DOES NOT use tokens -> set to any value (e.g., 0);
 	// will execute action automatically if the voting is finished 
 	function vote(bool _yes) public;
