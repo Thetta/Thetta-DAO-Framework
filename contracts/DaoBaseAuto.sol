@@ -89,7 +89,7 @@ contract DaoBaseAuto is GenericCaller {
 	* @param _groupName name of the group in storage
 	* @param _a address which will be removed from the group with name _groupName
 	* @return new proposal (address) - could be 0x0
-	* @dev this function for upgrades DAO instance by DAO
+	* @dev this function removes group member from group with name _groupName in storage
 	*/
 	function removeGroupMemberAuto(string _groupName, address _a) public returns(address proposalOut) {
 		bytes32[] memory params = new bytes32[](2);
