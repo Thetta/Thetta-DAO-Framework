@@ -2,6 +2,10 @@ var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
 var StdDaoToken = artifacts.require("./StdDaoToken");
 var DaoStorage = artifacts.require("./DaoStorage");
 var DaoBaseAuto = artifacts.require("./DaoBaseAuto");
+var MoneyFlow = artifacts.require('./MoneyFlow');
+var MoneyflowAuto = artifacts.require('./MoneyflowAuto');
+var WeiAbsoluteExpense = artifacts.require('./WeiAbsoluteExpense');
+var Voting = artifacts.require('./Voting');
 
 var IVoting = artifacts.require("./IVoting");
 var IProposal = artifacts.require("./IProposal");
@@ -47,24 +51,35 @@ function fromUtf8(str) {
 	return padToBytes32(hex);
 };
 
+function addressToBytes32 (addr) {
+	while (addr.length < 66) {
+		addr = '0' + addr;
+	}
+	return '0x' + addr.replace('0x', '');
+}
+
+const VOTING_TYPE_SIMPLE_TOKEN = 2;
+
 contract('DaoBaseAuto', (accounts) => {
 	const creator = accounts[0];
 	const employee1 = accounts[1];
 	const employee2 = accounts[2];
 	const employee3 = accounts[3];
-	const outsider = accounts[4];
-	const output = accounts[5];
+	const employee4 = accounts[4];
+	const outsider = accounts[5];
+	const output = accounts[6];
 
 	let issueTokens;
 	let manageGroups;
 	let addNewProposal;
 	let upgradeDaoContract;
+	let moneyflowInstance;
 	let addNewTask;
 	let startTask;
 	let startBounty;
+	let setRootWeiReceiver;
 	let modifyMoneyscheme;
 	let withdrawDonations;
-	let setRootWeiReceiver;
 	let burnTokens;
 
 	let money = web3.toWei(0.001, "ether");
@@ -80,7 +95,7 @@ contract('DaoBaseAuto', (accounts) => {
 		await token.mintFor(employee1, 600);
 		await token.mintFor(employee2, 600);
 		await token.mintFor(employee3, 600);
-
+		await token.mintFor(employee4, 600);
 		// store = await DaoStorage.new([token.address],{ from: creator });
 		store = await DaoStorage.new([token.address],{from: creator});
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
@@ -110,13 +125,14 @@ contract('DaoBaseAuto', (accounts) => {
 
 	it('should not automatically create proposal because AAC has no rights',async() => {
 		// Set permissions:
-			await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees");
-			await daoBase.allowActionByVoting(manageGroups, token.address);
-			await daoBase.allowActionByVoting(issueTokens, token.address);
+		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, "Employees");
+		await daoBase.allowActionByVoting(manageGroups, token.address);
+		await daoBase.allowActionByVoting(issueTokens, token.address);
+
 		// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
 		// because of this AAC can't add new proposal!
 		//
-		//await daoBase.allowActionByAddress("addNewProposal", aacInstance.address);
+		//await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
 
 		//////
 		const proposalsCount1 = await daoBase.getProposalsCount();
@@ -143,7 +159,7 @@ contract('DaoBaseAuto', (accounts) => {
 
 		// SEE this -> this permissions is commented! So even if AAC has rights to add proposal,
 		// the proposal will never be finished
-		// await daoBase.allowActionByVoting("issueTokens", token.address);
+		//await daoBase.allowActionByVoting(issueTokens, token.address);
 
 		// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
 		await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
@@ -155,7 +171,7 @@ contract('DaoBaseAuto', (accounts) => {
 
 		// even creator cant issue token directly!
 		// Even creator cant issue tokens
-   		 await daoBase.issueTokens.sendTransaction(token.address, employee1, 1500, {from:creator}).should.be.rejectedWith('revert');
+		await daoBase.issueTokens.sendTransaction(token.address, employee1, 1500, {from:creator}).should.be.rejectedWith('revert');
 
 		const proposalsCount1 = await daoBase.getProposalsCount();
 		assert.equal(proposalsCount1,0,'No proposals should be added');
@@ -204,7 +220,8 @@ contract('DaoBaseAuto', (accounts) => {
 
 		// already voted!
 		// dont vote again!
-    await voting.vote.sendTransaction(true, {from: employee1}).should.be.rejectedWith('revert');
+		await voting.vote.sendTransaction(true, {from: employee1}).should.be.rejectedWith('revert');
+
 		// vote by employee 2
 		await voting.vote(true,{from:employee2});
 
@@ -212,15 +229,18 @@ contract('DaoBaseAuto', (accounts) => {
 		assert.equal(r2[0],2,'yes');			// 1 already voted (who started the voting)
 		assert.equal(r2[1],0,'no');
 
+		assert.strictEqual(await voting.isFinished(),false,'Voting should not be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting results are still not calculated');
+
 		// vote by employee 3
-		await voting.vote(true,{from:employee3});
+		await voting.vote(true,{from:employee3}).should.be.rejectedWith('revert');
 
 		// get voting results again
-		assert.strictEqual(await voting.isFinished(),true,'Voting should be finished');
-		assert.strictEqual(await voting.isYes(),true,'Voting is finished');
+		assert.strictEqual(await voting.isFinished(),false,'Voting can not be finished');
+		assert.strictEqual(await voting.isYes(),false,'Voting is finished');
 
 		const balance2 = await token.balanceOf(employee1);
-		assert.notEqual(balance2.toNumber(),1000,'employee1 balance should not be updated');
+		assert.notEqual(balance2.toNumber(),0,'employee1 balance should not be updated');
 	});
 
 	it('should automatically create proposal and 1P1V voting to issue more tokens',async() => {
@@ -364,5 +384,109 @@ contract('DaoBaseAuto', (accounts) => {
 		await aacInstance.issueTokensAuto(token.address,employee1,1000,{from: employee1});
 		const proposalsCount2 = await daoBase.getProposalsCount();
 		assert.equal(proposalsCount2,1,'New proposal should be added');
+	});
+
+	it('bug 283 test - should call action immediately when voting is created because i am the majority',async() => {
+		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal,"Employees");
+		await daoBase.allowActionByVoting(manageGroups, token.address);
+		await daoBase.allowActionByVoting(issueTokens, token.address);
+
+		// THIS IS REQUIRED because issueTokensAuto() will add new proposal (voting)
+		await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
+		// these actions required if AAC will call this actions DIRECTLY (without voting)
+		await daoBase.allowActionByAddress(manageGroups, aacInstance.address);
+		await daoBase.allowActionByAddress(issueTokens, aacInstance.address);
+
+		const proposalsCount1 = await daoBase.getProposalsCount();
+		assert.equal(proposalsCount1,0,'No proposals should be added');
+
+		// add new employee1
+		//await daoBase.addGroupMember("Employees",employee1);
+		//const isEmployeeAdded = await daoBase.isGroupMember("Employees",employee1);
+		//assert.strictEqual(isEmployeeAdded,true,'employee1 should be added as the company`s employee');
+
+		// should not be able to do action directly!
+		// employee1 is NOT in the majority
+		const isCanDo1 = await daoBase.isCanDoAction(creator, issueTokens);
+		assert.strictEqual(isCanDo1,false,'cretor is NOT in the majority, so can issue token only with voting');
+
+		const balance0 = await token.balanceOf(employee1);
+		assert.notEqual(balance0.toNumber(),0,'employee1 balance is 0');
+
+		// new proposal should be added
+		await aacInstance.issueTokensAuto(token.address,employee1,1000,{from: creator});
+		const proposalsCount2 = await daoBase.getProposalsCount();
+		assert.equal(proposalsCount2,1,'New proposal should be added');
+
+		// check voting state
+		const pa = await daoBase.getProposalAtIndex(0);
+		const proposal = await IProposal.at(pa);
+		const votingAddress = await proposal.getVoting();
+		const voting = await IVoting.at(votingAddress);
+		assert.strictEqual(await voting.isFinished(),true,'Voting is finished');
+
+		const balance1 = await token.balanceOf(employee1);
+		assert.notEqual(balance1.toNumber(),1000,'employee1 balance is 1000');
+	});
+
+	it('should revert due to token dont have permissions setRootWeiReceiver',async() => {
+		token = await StdDaoToken.new('StdToken', 'STDT', 18, true, true, 1000000000);
+		await token.mintFor(creator, 1);
+		await token.mintFor(employee1, 1);
+		await token.mintFor(employee2, 1);
+		await token.mintFor(employee3, 1);
+		await token.mintFor(employee4, 1);
+
+		store = await DaoStorage.new([token.address], { from: creator });
+		daoBase = await DaoBaseWithUnpackers.new(store.address, { from: creator });
+		moneyflowInstance = await MoneyFlow.new(daoBase.address, { from: creator });
+		aacInstance = await MoneyflowAuto.new(daoBase.address, moneyflowInstance.address, { from: creator });
+
+		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
+
+		withdrawDonations = await moneyflowInstance.WITHDRAW_DONATIONS();
+
+		setRootWeiReceiver = await moneyflowInstance.SET_ROOT_WEI_RECEIVER();
+
+		await store.addGroupMember(KECCAK256('Employees'), creator);
+		await store.allowActionByAddress(manageGroups, creator);
+		await store.allowActionByAddress(issueTokens, creator);
+
+		// do not forget to transfer ownership
+		await token.transferOwnership(daoBase.address);
+		await store.transferOwnership(daoBase.address);
+
+	      // AAC requires special permissions
+		await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
+		await daoBase.allowActionByAddress(withdrawDonations, aacInstance.address);
+		await daoBase.allowActionByAddress(setRootWeiReceiver, aacInstance.address);
+		await daoBase.allowActionByAddress(issueTokens, aacInstance.address);
+
+		// do not forget to transfer ownership
+		await daoBase.allowActionByAnyMemberOfGroup(addNewProposal, 'Employees');
+
+		await daoBase.allowActionByVoting(manageGroups, token.address);
+		await daoBase.allowActionByVoting(issueTokens, token.address);
+		await daoBase.allowActionByVoting(addNewProposal, token.address);
+
+		await daoBase.addGroupMember('Employees', employee1);
+		await daoBase.addGroupMember('Employees', employee2);
+		await daoBase.addGroupMember('Employees', employee3);
+		await daoBase.addGroupMember('Employees', employee4);
+
+		await aacInstance.setVotingParams(setRootWeiReceiver, VOTING_TYPE_SIMPLE_TOKEN, UintToToBytes32(0), fromUtf8(''), UintToToBytes32(100), UintToToBytes32(100), addressToBytes32(token.address));
+		const wae = await WeiAbsoluteExpense.new(1000);
+		await aacInstance.setRootWeiReceiverAuto(wae.address, { from: employee1 });
+
+		const pa = await daoBase.getProposalAtIndex(0);
+		const proposal = await IProposal.at(pa);
+		const votingAddress = await proposal.getVoting();
+		const voting = await Voting.at(votingAddress);
+		
+		await voting.vote(true, { from: employee2 });
+		await voting.vote(true, { from: employee3 });
+		await voting.vote(true, { from: employee4 });
+
+		await voting.vote(true, {from: creator}).should.be.rejectedWith('revert'); // call action
 	});
 });
