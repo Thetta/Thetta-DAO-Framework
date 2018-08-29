@@ -92,8 +92,8 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 		return super.getBalanceAtEventStart(_votingID, _owner);
 	}
 
-    /**
-    * @notice This function should be called only when token not paused
+	/**
+	* @notice This function should be called only when token not paused
 	* @param _to address
 	* @param _value amount of tokens which will be transfered
 	* @return true
@@ -108,8 +108,8 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 
 	// transfer tokens from _from to _to address
 	/**
-    * @notice This function should be called only when token not paused
-    * @param _from address
+	* @notice This function should be called only when token not paused
+	* @param _from address
 	* @param _to address
 	* @param _value amount of tokens which will be transfered
 	* @return true
