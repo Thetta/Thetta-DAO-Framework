@@ -80,16 +80,16 @@ contract DaoBase is IDaoBase, Ownable {
 
 	/**
 	* @param _observer observer address
-    * @dev add observer to storage
+	* @dev add observer to storage
 	*/
 	function addObserver(IDaoObserver _observer) public {
 		daoStorage.addObserver(_observer);
 	}
 
 	/**
-	* @notice this function can call only account with UPGRADE_DAO_CONTRACT permissions
+	* @notice This function should be called only by account with UPGRADE_DAO_CONTRACT permissions
 	* @param _new new DaoBase instance (address)
-    * @dev this function upgrades DAO instance
+	* @dev this function upgrades DAO instance
 	*/
 	function upgradeDaoContract(IDaoBase _new) public isCanDo(UPGRADE_DAO_CONTRACT) {
 		emit DaoBaseUpgradeDaoContract(_new); // call observers.onUpgrade() for all observers		
@@ -113,7 +113,7 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 	/**
-	* @notice this function can call only account with MANAGE_GROUPS permissions
+	* @notice This function should be called only by account with MANAGE_GROUPS permissions
 	* @param _groupName name of the group in storage
 	* @param _a address which will be added to the group with name _groupName
 	* @dev this function add address _a to group na me with name _groupName into storage
@@ -132,7 +132,7 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 	/**
-	* @notice this function can call only account with MANAGE_GROUPS permissions
+	* @notice This function should be called only by account with MANAGE_GROUPS permissions
 	* @param _groupName name of the group in storage
 	* @param _a address which will be removed from the group with name _groupName
 	* @dev this function remove address _a from group name with name _groupName in storage
@@ -161,7 +161,7 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 	/**
-	* @notice this function can call only account with MANAGE_GROUPS permissions
+	* @notice This function should be called only by account with MANAGE_GROUPS permissions
 	* @param _permissionName permission name in hash
 	* @param _tokenAddress address of the token
 	* @dev this function allows action with name _permissionName for _tokenAddress
@@ -172,7 +172,7 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 	/**
-	* @notice this function can call only account with MANAGE_GROUPS permissions
+	* @notice This function should be called only by account with MANAGE_GROUPS permissions
 	* @param _permissionName permission name in hash
 	* @param _tokenAddress address of the token
 	* @dev this function allows action with name _permissionName for _tokenAddress
@@ -183,7 +183,7 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 	/**
-	* @notice this function can call only account with MANAGE_GROUPS permissions
+	* @notice This function should be called only by account with MANAGE_GROUPS permissions
 	* @param _permissionName permission name in hash
 	* @param _a address
 	* @dev this function allows action with name _permissionName for _tokenAddress
@@ -194,7 +194,7 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 	/**
-	* @notice this function can call only account with MANAGE_GROUPS permissions
+	* @notice This function should be called only by account with MANAGE_GROUPS permissions
 	* @param _permissionName permission name in hash
 	* @param _groupName name of the group in storage
 	* @dev this function allows action with name _permissionName for _tokenAddress
@@ -221,7 +221,7 @@ contract DaoBase is IDaoBase, Ownable {
 
 	// Proposals:
 	/**
-	* @notice this function can call only account with ADD_NEW_PROPOSAL permissions
+	* @notice This function should be called only by account with ADD_NEW_PROPOSAL permissions
 	* @param _proposal address of proposal
 	* @dev this function adds proposal to storage
 	*/
@@ -247,7 +247,7 @@ contract DaoBase is IDaoBase, Ownable {
 
 	// Tokens:
 	/**
-	* @notice this function can call only account with ISSUE_TOKENS permissions
+	* @notice This function should be called only by account with ISSUE_TOKENS permissions
 	* @param _tokenAddress address of token
 	* @param _to address who gets issued tokens
 	* @param _amount amount of tokens which will be issued
@@ -264,7 +264,7 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 	/**
-	* @notice this function can call only account with BURN_TOKENS permissions
+	* @notice This function should be called only by account with BURN_TOKENS permissions
 	* @param _tokenAddress address of token
 	* @param _who address whose tokens will be burned
 	* @param _amount amount of tokens which will be burned
