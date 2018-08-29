@@ -89,7 +89,7 @@ contract DaoBase is IDaoBase, Ownable {
 	/**
 	* @notice this function can call only account with UPGRADE_DAO_CONTRACT permissions
 	* @param _new new DaoBase instance (address)
-    * @dev this function for upgrades DAO instance
+    * @dev this function upgrades DAO instance
 	*/
 	function upgradeDaoContract(IDaoBase _new) public isCanDo(UPGRADE_DAO_CONTRACT) {
 		emit DaoBaseUpgradeDaoContract(_new); // call observers.onUpgrade() for all observers		
@@ -251,6 +251,7 @@ contract DaoBase is IDaoBase, Ownable {
 	* @param _tokenAddress address of token
 	* @param _to address who gets issued tokens
 	* @param _amount amount of tokens which will be issued
+	* @dev this function issue tokens for address _to
 	*/
 	function issueTokens(address _tokenAddress, address _to, uint _amount) public isCanDo(ISSUE_TOKENS) {
 		emit DaoBaseIssueTokens(_tokenAddress, _to, _amount);
@@ -267,6 +268,7 @@ contract DaoBase is IDaoBase, Ownable {
 	* @param _tokenAddress address of token
 	* @param _who address whose tokens will be burned
 	* @param _amount amount of tokens which will be burned
+	* @dev this function burn tokens for address _who
 	*/
 	function burnTokens(address _tokenAddress, address _who, uint _amount) public isCanDo(BURN_TOKENS) {
 		emit DaoBaseBurnTokens(_tokenAddress, _who, _amount);
