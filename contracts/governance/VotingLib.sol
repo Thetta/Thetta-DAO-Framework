@@ -95,6 +95,10 @@ library VotingLib {
 		return block.timestamp;
 	}
 
+	/**
+	* @param store storage instance address
+	* @return number of total voters
+	*/
 	function getVotersTotal(VotingStorage storage store)public view returns(uint) {	
 		if(VotingType.Voting1p1v==store.votingType) {
 			return store.dao.getMembersCount(store.groupName);
@@ -109,6 +113,11 @@ library VotingLib {
 		}
 	}
 
+	/**
+	* @param store storage instance address
+	* @param _voter address of voter
+	* @return power of voter
+	*/
 	function getPowerOf(VotingStorage storage store, address _voter)public view returns(uint) {
 		if(VotingType.Voting1p1v==store.votingType) {
 			if(store.dao.isGroupMember(store.groupName, _voter)) {
@@ -135,6 +144,12 @@ library VotingLib {
 		}
 	}
 
+	/**
+	* @param store storage instance address
+	* @param _voter voter
+	* @param _isYes vote
+	* @dev vote function
+	*/
 	function libVote(VotingStorage storage store, address _voter, bool _isYes) public {
 		require(!isFinished(store));
 		require(!store.voted[msg.sender]);
@@ -150,6 +165,10 @@ library VotingLib {
 		callActionIfEnded(store);
 	}
 
+	/**
+	* @param store storage instance address
+	* @return true if voting finished
+	*/
 	function isFinished(VotingStorage storage store) public view returns(bool) {
 		if(store.canceled||store.finishedWithYes) {
 			return true;
@@ -160,6 +179,10 @@ library VotingLib {
 		}
 	}
 
+	/**
+	* @param store storage instance address
+	* @return true if time creation + minutes to vote < now
+	*/
 	function _isTimeElapsed(VotingStorage storage store) internal view returns(bool) {
 		if(store.minutesToVote==0) {
 			return false;
@@ -167,16 +190,28 @@ library VotingLib {
 		return (block.timestamp - store.genesis) > (store.minutesToVote * 60 * 1000);
 	}
 
+	/**
+	* @param store storage instance address
+	* @return true if voters total * quorum percent <= all votes * 100
+	*/
 	function _isQuorumReached(VotingStorage storage store) internal view returns(bool) {
 		var (yesResults, noResults, votersTotal) = getVotingStats(store);
 		return ((yesResults + noResults) * 100) >= (votersTotal * store.quorumPercent);
 	}
 
+	/**
+	* @param store storage instance address
+	* @return true if all votes * consensus percent <= yes votes * 100
+	*/
 	function _isConsensusReached(VotingStorage storage store) internal view returns(bool) {
 		var (yesResults, noResults, votersTotal) = getVotingStats(store);
 		return (yesResults * 100) >= ((yesResults + noResults) * store.consensusPercent);
 	}
 
+	/**
+	* @param store storage instance address
+	* @return true if voting finished with yes
+	*/
 	function isYes(VotingStorage storage store) public view returns(bool) {
 		if(true==store.finishedWithYes) {
 			return true;
@@ -185,6 +220,10 @@ library VotingLib {
 			_isQuorumReached(store)&& _isConsensusReached(store);
 	}	
 
+	/**
+	* @param store storage instance address
+	* @return amount of yes, no and voters total
+	*/
 	function getVotingStats(VotingStorage storage store) public view returns(uint yesResults, uint noResults, uint votersTotal) {
 		for(uint i=0; i<store.votesCount; ++i) {
 			if(store.votes[i].isYes) {
@@ -197,7 +236,11 @@ library VotingLib {
 		return;
 	}
 
-	// returns delegated power for address
+	/**
+	* @param store storage instance address
+	* @param _of address
+	* @return delegated power for account _of
+	*/
 	function getDelegatedPowerOf(VotingStorage storage store, address _of) public view returns(uint res) {
 		for(uint i = 0; i < store.delegations[_of].length; i++) {
 			if(!store.delegations[_of][i].isDelegator) {
@@ -206,7 +249,11 @@ library VotingLib {
 		}
 	}
 
-	// returns delegated power from msg.sender to address _to
+	/**
+	* @param store storage instance address
+	* @param _to address
+	* @return delegated power to account _to by msg.sender
+	*/
 	function getDelegatedPowerByMe(VotingStorage storage store, address _to) public view returns(uint res) {
 		for(uint i = 0; i < store.delegations[msg.sender].length; i++) {
 			if(store.delegations[msg.sender][i]._address == _to) {
@@ -217,7 +264,12 @@ library VotingLib {
 		}
 	}
 
-	// delegates power from msg.sender to specified address _to
+	/**
+	* @param store storage instance address
+	* @param _to address
+	* @param _tokenAmount amount of tokens which will be delegated
+	* @dev delegate power to account _to by msg.sender
+	*/
 	function delegateMyVoiceTo(VotingStorage storage store, address _to, uint _tokenAmount) public {
 		require (_to!= address(0));
 		require (_tokenAmount <= StdDaoToken(store.tokenAddress).getBalanceAtVoting(store.votingID, msg.sender));
@@ -238,7 +290,11 @@ library VotingLib {
 		store.delegations[msg.sender].push(Delegation(_to, _tokenAmount, true));
 	}
 
-	// delete delegation from msg.sender to specified address _to
+	/**
+	* @param store storage instance address
+	* @param _to address
+	* @dev remove delegation for account _to
+	*/
 	function removeDelegation(VotingStorage storage store, address _to) public {
 		require (_to!= address(0));
 
@@ -255,6 +311,10 @@ library VotingLib {
 		emit DelegationRemoved(msg.sender, _to);
 	}
 
+	/**
+	* @param store storage instance address
+	* @dev call action when voting finished with yes
+	*/
 	function callActionIfEnded(VotingStorage storage store) public {
 		if(!store.finishedWithYes && isFinished(store) && isYes(store)) { 
 			// should not be callable again!!!

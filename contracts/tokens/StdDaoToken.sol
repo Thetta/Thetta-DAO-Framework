@@ -122,6 +122,9 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 		return super.transferFrom(_from, _to, _value);
 	}
 
+	/**
+	* @return amount of total voters
+	*/
 	function getVotingTotalForQuadraticVoting() public view returns(uint) {
 		uint votersTotal = 0;
 		for(uint k=0; k<holders.length; k++) {
@@ -136,6 +139,12 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 		revert();
 	}
 
+	/**
+	* @notice This function should be called only by owner
+	* @param _to address
+	* @param _amount amount of tokens which will be minted
+	* @return true
+	*/
 	function mintFor(address _to, uint256 _amount) canMint onlyOwner public returns(bool) {
 		require(totalSupply_.add(_amount) <= cap);
 
@@ -152,16 +161,29 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 		revert();
 	}
 
+	/**
+	* @notice This function should be called only by owner
+	* @param _who address
+	* @param _value amount of tokens which will be burned
+	*/
 	function burnFor(address _who, uint256 _value) isBurnable_ onlyOwner public {
 		super._burn(_who, _value);
 	}
 
 	// this is an override of PausableToken method
+	/**
+	* @notice This function should be called only by owner
+	* @dev pause the token
+	*/
 	function pause() isPausable_ onlyOwner public {
 		super.pause();
 	}
 
 	// this is an override of PausableToken method
+	/**
+	* @notice This function should be called only by owner
+	* @dev unpause the token
+	*/
 	function unpause() isPausable_ onlyOwner  public {
 		super.unpause();
 	}

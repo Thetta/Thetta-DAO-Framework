@@ -30,7 +30,10 @@ contract GenericProposal is IProposal, Ownable {
 
 	event GenericProposalAction(IVoting _voting, address _target, string _methodSig, bytes32[] _params);
 
-// IVoting implementation
+	// IVoting implementation
+	/**
+	* @dev action which will be called if voting finished with yes
+	*/
 	function action() public {
 		emit GenericProposalAction(
 			voting, 
@@ -57,18 +60,32 @@ contract GenericProposal is IProposal, Ownable {
 		}
 	}
 
+	/**
+	* @notice This function should be called only by owner
+	* @param _voting voting instance (address)
+	* @dev this function sets voting to proposal
+	*/
 	function setVoting(IVoting _voting) public onlyOwner {
 		voting = _voting;
 	}
 
+	/**
+	* @return voting address
+	*/
 	function getVoting() public view returns(IVoting) {
 		return voting;
 	}
 
+	/**
+	* @return signature of method which will be called after voting finished
+	*/
 	function getMethodSig() public view returns(string) {
 		return methodSig;
 	}
 
+	/**
+	* @return params for method which will be called after voting finished
+	*/
 	function getParams() public view returns(bytes32[]) {
 		return params;
 	}
