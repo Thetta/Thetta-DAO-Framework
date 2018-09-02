@@ -85,6 +85,10 @@ contract SimpleICO is DaoClient, Ownable {
 		buyTokens(msg.sender);
 	}
 
+	/**
+	* @notice This function should be called only when ICO open and not paused
+	* @param _beneficiary account which gets tokens
+	*/
 	function buyTokens(address _beneficiary) onlyWhileOpen whenNotPaused public payable {
 		require (msg.value >= minPurchase && msg.value <= maxPurchase);
 		require (msg.value + weiRaised <= hardCap);
@@ -107,25 +111,49 @@ contract SimpleICO is DaoClient, Ownable {
 		);
 	}
 
+	/**
+	* @notice This function should be called only when ICO open and not paused
+	* @param _weiAmount amount of wei sended to the contract
+	* @return calculated amount of tokens
+	* @dev this function calculates tokens by formula wei amount * rate
+	*/
 	function _getTokenAmount(uint256 _weiAmount)
 		internal view returns (uint256)
 	{
 		return _weiAmount.mul(rate);
 	}
 
+	/**
+	* @notice This function should be called only when ICO open and only by owner
+	* @dev stops ICO
+	*/
 	function emergencyStop() onlyOwner onlyWhileOpen public {
 		stopped = true;
 	}
 
+	/**
+	* @notice This function should be called only when ICO open and only by owner
+	* @dev pause ICO
+	*/
 	function pauseICO() onlyOwner whenNotPaused public {
 		paused = true;
 	}
 
+	/**
+	* @notice This function should be called only by owner
+	* @dev unpause ICO
+	*/
 	function unpauseICO() onlyOwner public {
 		require(paused);
 		paused = false;
 	}
 
+	/**
+	* @notice This function should be called only by owner
+	* @param _addresses array with addresses
+	* @param _tokenAmounts array with token amounts related to addresses in _addresses array
+	* @dev this function distributes tokens before ICO
+	*/
 	function distributeBeforeICO(address[] _addresses, uint256[] _tokenAmounts) onlyOwner public {
 		require(block.timestamp < startDate);
 		require(_addresses.length > 0);
@@ -136,6 +164,12 @@ contract SimpleICO is DaoClient, Ownable {
 		}
 	}
 
+	/**
+	* @notice This function should be called only by owner and only when ICO finished with success
+	* @param _addresses array with addresses
+	* @param _tokenAmounts array with token amounts related to addresses in _addresses array
+	* @dev this function distributes tokens after ICO
+	*/
 	function distributeAfterICO(address[] _addresses, uint256[] _tokenAmounts) onlyAfterSuccess onlyOwner public {
 		require (_addresses.length > 0);
 		require (_addresses.length == _tokenAmounts.length);
@@ -145,18 +179,36 @@ contract SimpleICO is DaoClient, Ownable {
 		}
 	}
 
+	/**
+	* @notice This function should be called only by owner and only while ICO is open
+	* @param _member address
+	* @dev this function adds _member to the whitelist
+	*/
 	function addToWhitelist(address _member) onlyOwner onlyWhileOpen public {
 		isWhitelisted[_member] = true;
 	}
 
+	/**
+	* @param _member address
+	* @return true if _member in whitelist
+	*/
 	function isMemberInWhitelist(address _member) public returns(bool) {
 		return isWhitelisted[_member];
 	}
 
+	/**
+	* @notice This function should be called only by owner and only after ICO finished with success
+	* @param _wallet address
+	* @dev forward funds from ICO contract to wallet
+	*/
 	function forwardFunds(address _wallet) onlyAfterSuccess onlyOwner public {
 		_wallet.transfer(address(this).balance);
 	}
 
+	/**
+	* @notice This function should be called only after ICO fail
+	* @dev returns money for all investors
+	*/
 	function refund() onlyAfterFail public {
 		uint256 payment = deposits[msg.sender];
 		assert(address(this).balance >= payment);

@@ -18,6 +18,11 @@ contract WeiBounty is WeiGenericTask {
 	}
 
 	// callable by anyone
+	// anyone should call this function when for starting the task 
+	/**
+	* @notice This function should be called only by account with START_BOUNTY permissions
+	* @dev starts bounty 
+	*/
 	function startTask() public isCanDo(START_BOUNTY) {
 		require(getCurrentState() == State.PrePaid);
 		startTime = block.timestamp;

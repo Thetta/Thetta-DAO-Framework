@@ -45,27 +45,52 @@ contract DaoBase is IDaoBase, Ownable {
 		daoStorage = _daoStorage;
 	}
 
+	/**
+	* @param _s String which will be converted to hash
+	* @return hash of provided string 
+	* @dev Hash string
+	*/
 	function stringHash(string _s) public pure returns(bytes32) {
 		return keccak256(_s);
 	}
 
+	/**
+	* @return observers amount in storage
+	*/
 	function getObserversCount() public view returns(uint) {
 		return daoStorage.getObserversCount();
 	}
 
+	/**
+	* @param _index observer index in storage
+	* @return address of the observer with provided index
+	*/
 	function getObserverAtIndex(uint _index) public view returns(address) {
 		return daoStorage.getObserverAtIndex(_index);
 	}	
 
+	/**
+	* @param _permissionName permission name in hash
+	* @param _a address which will be checked for permissions
+	* @return true if _a address have _permissionName permissions
+	*/
 	function isCanDoByGroupMember(bytes32 _permissionName, address _a) public view returns(bool) {
 		return daoStorage.isAllowedActionByMembership(_permissionName, _a);
 	}
 
-	// IDaoBase:
+	/**
+	* @param _observer observer address
+	* @dev add observer to storage
+	*/
 	function addObserver(IDaoObserver _observer) public {
 		daoStorage.addObserver(_observer);
 	}
 
+	/**
+	* @notice This function should be called only by account with UPGRADE_DAO_CONTRACT permissions
+	* @param _new new DaoBase instance (address)
+	* @dev this function upgrades DAO instance
+	*/
 	function upgradeDaoContract(IDaoBase _new) public isCanDo(UPGRADE_DAO_CONTRACT) {
 		emit DaoBaseUpgradeDaoContract(_new); // call observers.onUpgrade() for all observers		
 		for(uint i=0; i<daoStorage.getObserversCount(); ++i) {
@@ -79,49 +104,101 @@ contract DaoBase is IDaoBase, Ownable {
 		} 
 	}
 
-	// Groups:
+	/**
+	* @param _groupName name of the group in storage
+    * @return amount of the members of the group with name _groupName
+	*/
 	function getMembersCount(string _groupName) public view returns(uint) {
 		return daoStorage.getMembersCount(stringHash(_groupName));
 	}
 
+	/**
+	* @notice This function should be called only by account with MANAGE_GROUPS permissions
+	* @param _groupName name of the group in storage
+	* @param _a address which will be added to the group with name _groupName
+	* @dev this function add address _a to group na me with name _groupName into storage
+	*/
 	function addGroupMember(string _groupName, address _a) public isCanDoOrByOwner(MANAGE_GROUPS) {
 		emit DaoBaseAddGroupMember(_groupName, _a);
 		daoStorage.addGroupMember(stringHash(_groupName), _a);
 	}
 
+	/**
+	* @param _groupName name of the group in storage
+    * @return array of addresses which in group name with name _groupName
+	*/
 	function getGroupMembers(string _groupName) public view returns(address[]) {
 		return daoStorage.getGroupMembers(stringHash(_groupName));
 	}
 
+	/**
+	* @notice This function should be called only by account with MANAGE_GROUPS permissions
+	* @param _groupName name of the group in storage
+	* @param _a address which will be removed from the group with name _groupName
+	* @dev this function remove address _a from group name with name _groupName in storage
+	*/
 	function removeGroupMember(string _groupName, address _a) public isCanDoOrByOwner(MANAGE_GROUPS) {
 		emit DaoBaseRemoveGroupMember(_groupName, _a);
 		daoStorage.removeGroupMember(stringHash(_groupName), _a);
 	}
 
+	/**
+	* @param _groupName name of the group in storage
+	* @param _a address which will be checked on presence in group with name _groupName
+	* @return true if address _a is in group with name _groupName
+	*/
 	function isGroupMember(string _groupName, address _a) public view returns(bool) {
 		return daoStorage.isGroupMember(stringHash(_groupName), _a);
 	}
 
+	/**
+	* @param _groupName name of the group in storage
+	* @param _index address which will be added to the group with name _groupName
+	* @return true if address corresponded to _index is group member of group with name _groupName
+	*/
 	function getMemberByIndex(string _groupName, uint _index) public view returns (address) {
 		return daoStorage.getGroupsMemberAtIndex(stringHash(_groupName), _index);
 	}
 
-// Actions:
+	/**
+	* @notice This function should be called only by account with MANAGE_GROUPS permissions
+	* @param _permissionName permission name in hash
+	* @param _tokenAddress address of the token
+	* @dev this function allows action with name _permissionName for _tokenAddress
+	*/
 	function allowActionByShareholder(bytes32 _permissionName, address _tokenAddress) public isCanDoOrByOwner(MANAGE_GROUPS) {
 		emit DaoBaseAllowActionByShareholder(_permissionName, _tokenAddress);
 		daoStorage.allowActionByShareholder(_permissionName, _tokenAddress);
 	}
 
+	/**
+	* @notice This function should be called only by account with MANAGE_GROUPS permissions
+	* @param _permissionName permission name in hash
+	* @param _tokenAddress address of the token
+	* @dev this function allows action with name _permissionName for _tokenAddress
+	*/
 	function allowActionByVoting(bytes32 _permissionName, address _tokenAddress) public isCanDoOrByOwner(MANAGE_GROUPS) {
 		emit DaoBaseAllowActionByVoting(_permissionName, _tokenAddress);
 		daoStorage.allowActionByVoting(_permissionName,_tokenAddress);
 	}
 
+	/**
+	* @notice This function should be called only by account with MANAGE_GROUPS permissions
+	* @param _permissionName permission name in hash
+	* @param _a address
+	* @dev this function allows action with name _permissionName for _tokenAddress
+	*/
 	function allowActionByAddress(bytes32 _permissionName, address _a) public isCanDoOrByOwner(MANAGE_GROUPS) {
 		emit DaoBaseAllowActionByAddress(_permissionName, _a);
 		daoStorage.allowActionByAddress(_permissionName,_a);
 	}
 
+	/**
+	* @notice This function should be called only by account with MANAGE_GROUPS permissions
+	* @param _permissionName permission name in hash
+	* @param _groupName name of the group in storage
+	* @dev this function allows action with name _permissionName for _tokenAddress
+	*/
 	function allowActionByAnyMemberOfGroup(bytes32 _permissionName, string _groupName) public isCanDoOrByOwner(MANAGE_GROUPS) {
 		emit DaoBaseAllowActionByAnyMemberOfGroup(_permissionName, _groupName);
 		daoStorage.allowActionByAnyMemberOfGroup(_permissionName, stringHash(_groupName));
@@ -143,20 +220,39 @@ contract DaoBase is IDaoBase, Ownable {
 	}
 
 	// Proposals:
+	/**
+	* @notice This function should be called only by account with ADD_NEW_PROPOSAL permissions
+	* @param _proposal address of proposal
+	* @dev this function adds proposal to storage
+	*/
 	function addNewProposal(IProposal _proposal) public isCanDo(ADD_NEW_PROPOSAL) { 
 		emit DaoBaseAddNewProposal(_proposal); 
 		daoStorage.addProposal(_proposal);
 	}
 
+	/**
+	* @param _i index of the proposal in storage
+	* @return proposal address
+	*/
 	function getProposalAtIndex(uint _i) public view returns(IProposal) {
 		return daoStorage.getProposalAtIndex(_i);
 	}
 
+	/**
+	* @return proposals amount in storage
+	*/
 	function getProposalsCount() public view returns(uint) {
 		return daoStorage.getProposalsCount();
 	}
 
 	// Tokens:
+	/**
+	* @notice This function should be called only by account with ISSUE_TOKENS permissions
+	* @param _tokenAddress address of token
+	* @param _to address who gets issued tokens
+	* @param _amount amount of tokens which will be issued
+	* @dev this function issue tokens for address _to
+	*/
 	function issueTokens(address _tokenAddress, address _to, uint _amount) public isCanDo(ISSUE_TOKENS) {
 		emit DaoBaseIssueTokens(_tokenAddress, _to, _amount);
 		DaoBaseLib.issueTokens(
@@ -167,6 +263,13 @@ contract DaoBase is IDaoBase, Ownable {
 		);
 	}
 
+	/**
+	* @notice This function should be called only by account with BURN_TOKENS permissions
+	* @param _tokenAddress address of token
+	* @param _who address whose tokens will be burned
+	* @param _amount amount of tokens which will be burned
+	* @dev this function burn tokens for address _who
+	*/
 	function burnTokens(address _tokenAddress, address _who, uint _amount) public isCanDo(BURN_TOKENS) {
 		emit DaoBaseBurnTokens(_tokenAddress, _who, _amount);
 		DaoBaseLib.burnTokens(
