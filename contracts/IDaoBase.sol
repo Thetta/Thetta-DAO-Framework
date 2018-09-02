@@ -6,8 +6,7 @@ import "./governance/IProposal.sol";
 
 /**
  * @title This is the base interface that you should use.
- * @dev Derive your DAO from it and provide the method implementation or 
- * see DaoBase contract that implements it.
+ * @dev see DaoBase contract that implements it.
  */
 contract IDaoBase {
 	function addObserver(IDaoObserver _observer) public;
@@ -29,8 +28,6 @@ contract IDaoBase {
 	function isCanDoAction(address _a, bytes32 _permissionName) public view returns(bool);
 
 // Tokens
-	// ???? TODO: needed
-	//function addTokenAddressToList();
 	function issueTokens(address _tokenAddress, address _to, uint amount) public;
 	function burnTokens(address _tokenAddress, address _who, uint amount) public;
 

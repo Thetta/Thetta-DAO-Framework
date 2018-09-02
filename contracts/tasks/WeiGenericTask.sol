@@ -133,21 +133,37 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 	}
 
 	// who will complete this task
+	/**
+	* @notice This function should be called only by owner
+	* @param _employee account who will complete this task
+	* @dev this function set employee account for this task
+	*/
 	function setEmployee(address _employee) public onlyOwner {
 		emit WeiGenericTaskSetEmployee(_employee);
 		employee = _employee;
 	}
 
 	// where to send money
+	/**
+	* @notice This function should be called only by owner
+	* @param _output account who will get all funds of this task
+	* @dev this function set account which will get all funds after this task will be completed
+	*/
 	function setOutput(address _output) public onlyOwner {
 		emit WeiGenericTaskSetOutput(_output);
 		output = _output;
 	}
 
+	/**
+	* @return balance of this task 
+	*/
 	function getBalance() public view returns(uint) {
 		return address(this).balance;
 	}
 
+	/**
+	* @return current state of the task
+	*/
 	function getCurrentState() public view returns(State) {
 		// for Prepaid task -> client should call processFunds method to put money into this task
 		// when state is Init
@@ -168,6 +184,10 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		return state;
 	}
 
+	/**
+	* @notice This function should be called only by owner and creation time + time to cancell should be > now
+	* @dev this function cancell task and change state of the task to cancelled
+	*/
 	function cancell() public isCanCancell onlyOwner {
 		require(getCurrentState() == State.Init || getCurrentState() == State.PrePaid);
 		if(getCurrentState() == State.PrePaid) {
@@ -178,6 +198,10 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		emit WeiGenericTaskStateChanged(state);
 	}
 
+	/**
+	* @notice This function should be called only by owner and creation time + deadlineMissed should be <= now
+	* @dev this function return money to payeer because of deadline missed
+	*/
 	function returnMoney() public isDeadlineMissed onlyOwner {
 		require(getCurrentState() == State.InProgress);
 		if(address(this).balance > 0) {
@@ -188,6 +212,10 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		emit WeiGenericTaskStateChanged(state);
 	}
 
+	/**
+	* @notice This function should be called only by owner or employee
+	* @dev this function change state of the task to complete
+	*/
 	function notifyThatCompleted() public onlyEmployeeOrOwner {
 		require(getCurrentState() == State.InProgress);
 
@@ -201,6 +229,10 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		}
 	}
 
+	/**
+	* @notice This function should be called only by owner
+	* @dev this function change state of the task to complete and sets needed wei
+	*/
 	function evaluateAndSetNeededWei(uint _neededWei) public onlyOwner {
 		require(getCurrentState() == State.CompleteButNeedsEvaluation);
 		require(0 == neededWei);
@@ -212,6 +244,10 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 	// for Prepaid tasks only! 
 	// for Postpaid: call processFunds and transfer money instead!
+	/**
+	* @notice This function should be called only by money source (payeer)
+	* @dev this function confirm completion and changes state of the task to CanGetFunds 
+	*/
 	function confirmCompletion() public onlyByMoneySource {
 		require(getCurrentState() == State.Complete);
 		require(!isPostpaid);
@@ -223,6 +259,9 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 // IDestination overrides:
 	// pull model
+	/**
+	* @dev forward funds to the output account 
+	*/
 	function flush() public {
 		require(getCurrentState() == State.CanGetFunds);
 		require(0x0 != output);
@@ -238,6 +277,10 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		}
 	}
 
+	/**
+	* @param _currentFlow index of the money flow
+	* @dev should call this function when want to send funds to the task
+	*/
 	function processFunds(uint _currentFlow) public payable {
 		emit WeiGenericTaskProcessFunds(msg.sender, msg.value, _currentFlow);
 		if(isPostpaid && (0 == neededWei) && (State.Complete == state)) {

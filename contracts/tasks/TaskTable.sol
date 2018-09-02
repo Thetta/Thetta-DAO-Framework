@@ -93,6 +93,17 @@ contract TaskTable {
 		dao = _dao;
 	}
 
+	/**
+	* @param _caption caption of the task
+	* @param _desc task description
+	* @param _isPostpaid true if task postpaid
+	* @param _isDonation true if task have donation
+	* @param _neededWei needed wei which should be payeed for employee
+	* @param _deadlineTime deadline time of the task
+	* @param _timeToCancell time to cancell task before starting
+	* @return task index
+	* @dev creates new task
+	*/
 	function addNewTask(
 		string _caption, 
 		string _desc, 
@@ -127,7 +138,22 @@ contract TaskTable {
 		return (elementsCount - 1);
 	}
 
-	function addNewBounty (string _caption, string _desc, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) external returns(uint) {
+	/**
+	* @param _caption caption of the bounty
+	* @param _desc bounty description
+	* @param _neededWei needed wei which should be payeed for employee
+	* @param _deadlineTime deadline time of the bounty
+	* @param _timeToCancell time to cancell bounty before starting
+	* @return bounty index
+	* @dev creates new bounty
+	*/
+	function addNewBounty (
+		string _caption, 
+		string _desc, 
+		uint _neededWei, 
+		uint64 _deadlineTime, 
+		uint64 _timeToCancell) external returns(uint) 
+	{
 		tasks[elementsCount] = Task(
 			_caption, 
 			_desc, 
@@ -152,6 +178,12 @@ contract TaskTable {
 		return (elementsCount - 1);
 	}
 
+	/**
+	* @notice This function should be called only by account with START_TASK permissions
+	* @param _id id of the task
+	* @param _employee employee of this task
+	* @dev starts task 
+	*/
 	function startTask(uint _id, address _employee) public isCanDo(START_TASK) {
 		require(getCurrentState(_id) == State.Init || getCurrentState(_id) == State.PrePaid);
 
@@ -166,6 +198,11 @@ contract TaskTable {
 	}
 
 	// callable by anyone
+	/**
+	* @notice This function should be called only by account with START_BOUNTY permissions
+	* @param _id id of the bounty
+	* @dev starts bounty 
+	*/
 	function startBounty(uint _id) public isCanDo(START_BOUNTY) {
 		require(getCurrentState(_id) == State.PrePaid);
 		tasks[_id].startTime = block.timestamp;
@@ -175,29 +212,57 @@ contract TaskTable {
 	}
 
 	// who will complete this task
+	/**
+	* @notice This function should be called only by money source
+	* @param _id id of the task
+	* @param _employee account who will complete this task
+	* @dev this function set employee account for this task
+	*/
 	function setEmployee(uint _id, address _employee) onlyByMoneySource(_id) public {
 		emit TaskTableSetEmployee(_employee);
 		tasks[_id].employee = _employee;
 	}
 
 	// where to send money
+	/**
+	* @notice This function should be called only by money source
+	* @param _id id of the task
+	* @param _output account who will get all funds of this task
+	* @dev this function set account which will get all funds after this task will be completed
+	*/
 	function setOutput(uint _id, address _output) onlyByMoneySource(_id) public {
 		emit TaskTableSetOutput(_output);
 		tasks[_id].output = _output;
 	}
 
+	/**
+	* @param _id id of the task
+	* @return balance of task with id _id
+	*/
 	function getBalance(uint _id) public view returns(uint) {
 		return tasks[_id].funds;
 	}
 
+	/**
+	* @param _id id of the task
+	* @return caption of task with id _id
+	*/
 	function getCaption(uint _id) public view returns(string) {
 		return tasks[_id].caption;
 	}
 
+	/**
+	* @param _id id of the task
+	* @return description of task with id _id
+	*/
 	function getDescription(uint _id) public view returns(string) {
 		return tasks[_id].desc;
 	}
 
+	/**
+	* @param _id id of the task
+	* @return state of task with id _id
+	*/
 	function getCurrentState(uint _id) public view returns(State) {
 		// for Prepaid task -> client should call processFunds method to put money into this task
 		// when state is Init
@@ -214,6 +279,10 @@ contract TaskTable {
 		return tasks[_id].state;
 	}
 
+	/**
+	* @param _id id of the task
+	* @return true if state of the task is init, needed wei != 0, task not post paid
+	*/
 	function isTaskPrepaid(uint _id) internal view returns(bool) {
 		if((State.Init==tasks[_id].state) && (tasks[_id].neededWei!=0) && (!tasks[_id].isPostpaid)) {
 			if(tasks[_id].neededWei == tasks[_id].funds && tasks[_id].funds <= address(this).balance) {
@@ -223,6 +292,10 @@ contract TaskTable {
 		return false;
 	}
 
+	/**
+	* @param _id id of the task
+	* @return true if state of the task is coplete, needed wei != 0, task post paid
+	*/
 	function isTaskPostpaidAndCompleted(uint _id) internal view returns(bool) {
 		if((State.Complete==tasks[_id].state) && (tasks[_id].neededWei!=0) && (tasks[_id].isPostpaid)) {
 			if(tasks[_id].neededWei <= tasks[_id].funds && tasks[_id].funds <= address(this).balance) {
@@ -232,6 +305,11 @@ contract TaskTable {
 		return false;
 	}
 
+	/**
+	* @notice This function should be called only by money source
+	* @param _id id of the task
+	* @dev cancel task before start
+	*/
 	function cancel(uint _id) onlyByMoneySource(_id) isCanCancel(_id) public {
 		require(getCurrentState(_id) == State.Init || getCurrentState(_id) == State.PrePaid);
 		if(getCurrentState(_id) == State.PrePaid) {
@@ -242,6 +320,11 @@ contract TaskTable {
 		emit TaskTableStateChanged(tasks[_id].state);
 	}
 
+	/**
+	* @notice This function should be called only by money source
+	* @param _id id of the task
+	* @dev return money to payeer(oney source) if deadline for task already missed
+	*/
 	function returnMoney(uint _id) isDeadlineMissed(_id) onlyByMoneySource(_id) public {
 		require(getCurrentState(_id) == State.InProgress);
 		if(address(this).balance >= tasks[_id].funds) {
@@ -252,6 +335,11 @@ contract TaskTable {
 		emit TaskTableStateChanged(tasks[_id].state); 
 	}
 
+	/**
+	* @notice This function should be called only by money source
+	* @param _id id of the task
+	* @dev this function change state of the task to complete
+	*/
 	function notifyThatCompleted(uint _id) public onlyEmployeeOrMoneySource(_id) {
 		require(getCurrentState(_id) == State.InProgress);
 
@@ -264,6 +352,11 @@ contract TaskTable {
 		}
 	}
 
+	/**
+	* @notice This function should be called only by money source
+	* @param _id id of the task
+	* @dev this function change state of the task to complete and sets needed wei
+	*/
 	function evaluateAndSetNeededWei(uint _id, uint _neededWei) public onlyByMoneySource(_id) {
 		require(getCurrentState(_id) == State.CompleteButNeedsEvaluation);
 		require(0==tasks[_id].neededWei);
@@ -275,6 +368,11 @@ contract TaskTable {
 
 	// for Prepaid tasks only! 
 	// for Postpaid: call processFunds and transfer money instead!
+	/**
+	* @notice This function should be called only by money source (payeer)
+	* @param _id id of the task
+	* @dev this function confirm completion and changes state of the task to CanGetFunds 
+	*/
 	function confirmCompletion(uint _id) public onlyByMoneySource(_id) {
 		require(getCurrentState(_id) == State.Complete);
 		require(!tasks[_id].isPostpaid);
@@ -286,6 +384,10 @@ contract TaskTable {
 
 // IDestination overrides:
 	// pull model
+	/**
+	* @param _id id of the task
+	* @dev forward funds to the output account 
+	*/
 	function flush(uint _id) public {
 		require(getCurrentState(_id) == State.CanGetFunds);
 		require(0x0!=tasks[_id].output);
@@ -295,6 +397,10 @@ contract TaskTable {
 		emit TaskTableStateChanged(tasks[_id].state);
 	}
 
+	/**
+	* @param _id id of the task
+	* @dev should call this function when want to send funds to the task
+	*/
 	function processFunds(uint _id) public payable {
 		emit TaskTableProcessFunds(msg.sender, msg.value, _id);
 		if(isCanSetNeededWei(_id)) {
@@ -305,6 +411,10 @@ contract TaskTable {
 		tasks[_id].funds += msg.value;
 	}
 
+	/**
+	* @param _id id of the task
+	* @return true if task is post paid, needed wei > 0 nad state in complete
+	*/
 	function isCanSetNeededWei(uint _id) internal view returns(bool) {
 		if(tasks[_id].isPostpaid && (0 == tasks[_id].neededWei) && (State.Complete==tasks[_id].state)) {
 			return true;

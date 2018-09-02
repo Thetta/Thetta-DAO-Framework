@@ -51,68 +51,126 @@ contract Voting is IVoting, Ownable {
 		);
 	}
 
+	/**
+	* @return percent of group members to make quorum reached.
+	* @dev If minutesToVote==0 and quorum reached -> voting is finished
+	*/
 	function quorumPercent() public view returns(uint) {
 		return store.quorumPercent;
 	}
 
+	/**
+	* @return percent of voters to make consensus reached
+	* @dev If consensus reached -> voting is finished with YES result
+	*/
 	function consensusPercent() public view returns(uint) {
 		return store.consensusPercent;
 	}	
 
+	/**
+	* @return name of group
+	* @dev for votings that for dao group members only
+	*/
 	function groupName() public view returns(string) {
 		return store.groupName;
 	}		
 
+	/**
+	* @return number of total voters
+	*/
 	function getVotersTotal() public view returns(uint) {
 		return store.getVotersTotal();
 	}
 
+	/**
+	* @param _voter address of voter
+	* @return power of voter
+	*/
 	function getPowerOf(address _voter) public view returns(uint) {
 		return store.getPowerOf(_voter);
 	}
-  
+
+	/**
+	* @dev vote positive from the originator of the voting
+	*/
 	function voteFromOriginPositive() public {
-		// vote posisite from the originator of the voting
 		store.libVote(store.votingCreator, true);
 	}
-  
+
+	/**
+	* @param _isYes vote
+	* @dev vote function
+	*/
 	function vote(bool _isYes) public {
 		store.libVote(msg.sender, _isYes);
 	}
 
+	/**
+	* @dev call action when voting finished with yes
+	*/
 	function callActionIfEnded() public {
 		store.callActionIfEnded();
 	}
 
+	/**
+	* @return true if voting finished
+	*/
 	function isFinished() public view returns(bool) {
 		return store.isFinished();
 	}
 
+	/**
+	* @return true if voting finished with yes
+	*/
 	function isYes() public view returns(bool) {
 		return store.isYes();
 	}
 
+	/**
+	* @return amount of yes, no and voters total
+	*/
 	function getVotingStats() public view returns(uint yesResults, uint noResults, uint votersTotal) {
 		return store.getVotingStats();
 	}
 
+	/**
+	* @notice This function should be called only by owner
+	* @return cancel voting
+	*/
 	function cancelVoting() public onlyOwner {
 		store.canceled = true;
 	}
 
 	// ------------------ LIQUID ------------------
+	/**
+	* @param _of address
+	* @return delegated power for account _of
+	*/
 	function getDelegatedPowerOf(address _of) public view returns(uint) {
 		return store.getDelegatedPowerOf(_of);
 	}
 
+	/**
+	* @param _to address
+	* @return delegated power to account _to by msg.sender
+	*/
 	function getDelegatedPowerByMe(address _to) public view returns(uint) {
 		return store.getDelegatedPowerByMe(_to);
 	}
 
+	/**
+	* @param _to address
+	* @param _tokenAmount amount of tokens which will be delegated
+	* @dev delegate power to account _to by msg.sender
+	*/
 	function delegateMyVoiceTo(address _to, uint _tokenAmount) public {
 		store.delegateMyVoiceTo(_to, _tokenAmount);
 	}
 
+	/**
+	* @param _to address
+	* @dev remove delegation for account _to
+	*/
 	function removeDelegation(address _to) public {
 		store.removeDelegation(_to);
 	}

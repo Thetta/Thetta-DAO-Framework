@@ -5,16 +5,13 @@ import "zeppelin-solidity/contracts/ECRecovery.sol";
 import "./DaoClient.sol";
 import "./IDaoBase.sol";
 
-// TODO: convert to library?
-
 
 /**
  * @title ImpersonationCaller 
  * @dev This is a convenient wrapper that is used by the contract below (see DaoBaseImpersonated). Do not use it directly.
 */
 contract ImpersonationCaller is DaoClient {
-	constructor(IDaoBase _dao) public DaoClient(_dao) 
-	{
+	constructor(IDaoBase _dao) public DaoClient(_dao) {
 	}
 
   /**
