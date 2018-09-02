@@ -6,10 +6,16 @@ import "./utils/UtilsLib.sol";
 import "./tokens/StdDaoToken.sol";
 
 
+/**
+ * @title DaoStorage 
+ * @dev Used by DaoBase to keep all data. DaoBase (controller) can be updated 
+ * while keeping intact the DaoStorage.
+ */
 contract DaoStorage is Ownable {
 	StdDaoToken[] public tokens;
 	IProposal[] public proposals;
 	IDaoObserver[] public observers;
+
 	mapping (address=>mapping(bytes32=>bool)) public actionAvailabilityByShareholder; // token -> permission -> flag
 	mapping (address=>mapping(bytes32=>bool)) public actionAvailabilityByVoting; // token -> permission -> flag
 	mapping (address=>mapping(bytes32=>bool)) public actionAvailabilityByAddress; // address -> permission -> flag
@@ -151,7 +157,6 @@ contract DaoStorage is Ownable {
 	}
 
 //------------------ RESTRICT/REMOVE	
-
 	function restrictActionByShareholder(bytes32 _permissionHash, address _tokenAddress) external onlyOwner {
 		actionAvailabilityByShareholder[_tokenAddress][_permissionHash] = false;
 	}

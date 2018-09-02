@@ -5,6 +5,14 @@ import "./DaoStorage.sol";
 import "./DaoBaseLib.sol";
 
 
+/**
+ * @title DaoBase 
+ * @dev Main Thetta DAO Framework contract. 
+ * Usage scenarios:
+ * 1) Preferred: become its client (derive your contract from DaoClient contract!)
+ * 2) Optional: derive a contract directly from DaoBase  
+ * 
+ */
 contract DaoBase is IDaoBase, Ownable {
 	event DaoBaseUpgradeDaoContract(address _new);
 	event DaoBaseAddGroupMember(string _groupName, address _a);

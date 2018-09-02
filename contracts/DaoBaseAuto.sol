@@ -5,15 +5,13 @@ import "./IDaoBase.sol";
 import "./DaoBase.sol";
 import "./utils/UtilsLib.sol";
 
-// TODO: convert to library?
-
 
 /**
  * @title DaoBaseAuto
  * @dev This contract is a helper that will create new Proposal (i.e. voting) if the action is not allowed directly.
  * This should be used with DaoBaseWithUnpackers (not with DaoBase) and is completely optional.
  *
- * WARNING: As long as this contract is just an ordinary DaoBase client -> you should provide permissions to it 
+ * WARNING: As long as this contract is just an ordinary DaoBase client -> you should give access permissions to it 
  * just like to any other account/contract. So you should give 'manageGroups', 'issueTokens', etc to the DaoBaseAuto! 
  * Please see 'tests' folder for example.
 */
