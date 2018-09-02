@@ -60,6 +60,11 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 
 // ITokenVotingSupport implementation
 	// TODO: VULNERABILITY! no onlyOwner!
+	/**
+	* @notice This function should be called only when token not paused
+	* @return index of the new voting
+	* @dev should be called when voting started for conservation balances during this voting
+	*/
 	function startNewVoting() public whenNotPaused returns(uint) {
 		uint idOut = super.startNewEvent();
 		emit VotingStarted(msg.sender, idOut);
@@ -67,16 +72,32 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 	}
 
 	// TODO: VULNERABILITY! no onlyOwner!
+	// update balances from conservation after voting finish
+	/**
+	* @notice This function should be called only when token not paused
+	* @param _votingID id of voting
+	* @dev update balances from conservation after voting finish
+	*/
 	function finishVoting(uint _votingID) whenNotPaused public {
 		super.finishEvent(_votingID);
 		emit VotingFinished(msg.sender, _votingID);
 	}
 
+	/**
+	* @param _votingID id of voting
+	* @param _owner account
+	* @return balance of voting for account _owner
+	*/
 	function getBalanceAtVoting(uint _votingID, address _owner) public view returns (uint256) {
 		return super.getBalanceAtEventStart(_votingID, _owner);
 	}
 
-// 
+	/**
+	* @notice This function should be called only when token not paused
+	* @param _to address
+	* @param _value amount of tokens which will be transfered
+	* @return true
+	*/
 	function transfer(address _to, uint256 _value) public whenNotPaused returns (bool) {
 		if(!isHolder[_to]) {
 			holders.push(_to);
@@ -85,6 +106,14 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 		return super.transfer(_to, _value);
 	}
 
+	// transfer tokens from _from to _to address
+	/**
+	* @notice This function should be called only when token not paused
+	* @param _from address
+	* @param _to address
+	* @param _value amount of tokens which will be transfered
+	* @return true
+	*/
 	function transferFrom(address _from, address _to, uint256 _value) public whenNotPaused returns (bool) {
 		if(!isHolder[_to]) {
 			holders.push(_to);
@@ -93,6 +122,9 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 		return super.transferFrom(_from, _to, _value);
 	}
 
+	/**
+	* @return amount of total voters
+	*/
 	function getVotingTotalForQuadraticVoting() public view returns(uint) {
 		uint votersTotal = 0;
 		for(uint k=0; k<holders.length; k++) {
@@ -107,6 +139,12 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 		revert();
 	}
 
+	/**
+	* @notice This function should be called only by owner
+	* @param _to address
+	* @param _amount amount of tokens which will be minted
+	* @return true
+	*/
 	function mintFor(address _to, uint256 _amount) canMint onlyOwner public returns(bool) {
 		require(totalSupply_.add(_amount) <= cap);
 
@@ -123,16 +161,29 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 		revert();
 	}
 
+	/**
+	* @notice This function should be called only by owner
+	* @param _who address
+	* @param _value amount of tokens which will be burned
+	*/
 	function burnFor(address _who, uint256 _value) isBurnable_ onlyOwner public {
 		super._burn(_who, _value);
 	}
 
 	// this is an override of PausableToken method
+	/**
+	* @notice This function should be called only by owner
+	* @dev pause the token
+	*/
 	function pause() isPausable_ onlyOwner public {
 		super.pause();
 	}
 
 	// this is an override of PausableToken method
+	/**
+	* @notice This function should be called only by owner
+	* @dev unpause the token
+	*/
 	function unpause() isPausable_ onlyOwner  public {
 		super.unpause();
 	}

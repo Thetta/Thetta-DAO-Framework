@@ -21,15 +21,26 @@ contract InformalProposal is IProposal, Ownable {
 		proposalText = _proposalText;
 	}
 
+	/**
+	* @return text of the proposal
+	*/
 	function getProposalText() public view returns(string) {
 		return proposalText;
 	}
 
 // IVoting implementation
+	/**
+	* @notice This function should be called only by owner
+	* @param _voting voting instance (address)
+	* @dev this function sets voting to proposal
+	*/
 	function setVoting(IVoting _voting) public onlyOwner {
 		voting = _voting;
 	}
 
+	/**
+	* @return voting address
+	*/
 	function getVoting() public view returns(IVoting) {
 		return voting;
 	}
