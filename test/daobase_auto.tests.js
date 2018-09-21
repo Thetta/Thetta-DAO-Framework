@@ -53,7 +53,7 @@ contract('DaoBaseAuto', (accounts) => {
 
 	describe('addGroupMemberAuto()', () => {
 		it('should return a proposal', async() => {
-			await daoBaseAuto.addGroupMemberAuto('', employee1, {from: employee1}).should.be.rejectedWith('revert');
+			await daoBaseAuto.addGroupMemberAuto('', employee1, {from: employee1}).should.be.rejectedWith('revert'); // empty string is not ok
 			await daoBaseAuto.addGroupMemberAuto('ANY_GROUP', employee1, {from: employee1}).should.be.fulfilled;
 			assert.exists(await daoBase.getProposalAtIndex(0));
 		});
