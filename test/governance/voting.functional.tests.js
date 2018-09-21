@@ -143,10 +143,10 @@ contract('Voting (func)', (accounts) => {
       // await daoBase.addGroupMember("Employees", creator);
     });
 
-    it('0. should create new voting', async () => {
+    it('0. should create new voting with 0 time to vote', async () => {
       let isGroupMember = await daoBase.isGroupMember('Employees', employee1);
       assert.equal(isGroupMember, true, 'Creator is ein the group');
-      let voting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_SIMPLE_TOKEN, 60, '', 51, 71, token.address);
+      let voting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_SIMPLE_TOKEN, 0, '', 51, 71, token.address);
       await voting.vote(true, { from: employee1});
       let quorumPercent = await voting.quorumPercent();
       let consensusPercent = await voting.consensusPercent();
@@ -1586,8 +1586,8 @@ contract('Voting (func)', (accounts) => {
       let isGroupMember = await daoBase.isGroupMember('Employees', employee1);
       assert.equal(isGroupMember, true, 'Creator is ein the group');
       let voting = await Voting.new(daoBase.address, employee1, employee1, VOTING_TYPE_1P1V, 60, 'Employees', 51, 71, token.address);
+      await voting.vote(true, { from: accounts[8]}).should.be.rejectedWith('revert');
       await voting.vote(true, { from: employee1});
-
       let quorumPercent = await voting.quorumPercent();
       let consensusPercent = await voting.consensusPercent();
       let groupName = await voting.groupName();

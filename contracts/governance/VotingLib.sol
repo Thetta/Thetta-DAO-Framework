@@ -91,10 +91,6 @@ library VotingLib {
 		//libVote(store, _origin, true);
 	}
 
-	function getNow() public view returns(uint) {
-		return block.timestamp;
-	}
-
 	/**
 	* @param store storage instance address
 	* @return number of total voters

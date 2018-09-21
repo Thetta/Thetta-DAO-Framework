@@ -121,8 +121,4 @@ library GenericCallerLib {
 
 		return v;
 	}
-
-	function bytes32ToString(bytes32 x) public pure returns (string) {
-		return UtilsLib.bytes32ToString(x);
-	}	
 }

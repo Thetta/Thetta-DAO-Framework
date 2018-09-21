@@ -25,12 +25,10 @@ contract('DaoBaseAuto', (accounts) => {
 		await token.mintFor(employee1, 1);
 		await token.mintFor(employee2, 1);
 
-		// store = await DaoStorage.new([token.address], {from: creator});
 		store = await DaoStorage.new([token.address],{from: creator});
 		daoBase = await DaoBaseWithUnpackers.new(store.address, {from: creator});
 		daoBaseAuto = await DaoBaseAuto.new(daoBase.address, {from: creator});
 		const MANAGE_GROUPS = await daoBase.MANAGE_GROUPS();
-		//await store.allowActionByAddress(MANAGE_GROUPS, creator);
 
 		await token.transferOwnership(daoBase.address);
 		await store.transferOwnership(daoBase.address);
@@ -55,6 +53,7 @@ contract('DaoBaseAuto', (accounts) => {
 
 	describe('addGroupMemberAuto()', () => {
 		it('should return a proposal', async() => {
+			await daoBaseAuto.addGroupMemberAuto('', employee1, {from: employee1}).should.be.rejectedWith('revert');
 			await daoBaseAuto.addGroupMemberAuto('ANY_GROUP', employee1, {from: employee1}).should.be.fulfilled;
 			assert.exists(await daoBase.getProposalAtIndex(0));
 		});
@@ -92,7 +91,7 @@ contract('DaoBaseAuto', (accounts) => {
 		});
 	});
 
-	/*describe('upgradeDaoContractAuto()', () => {
+	describe('upgradeDaoContractAuto()', () => {
 		it('should return a proposal', async() => {
 			const newDaoBase = await DaoBaseWithUnpackers.new([token.address], {from: creator});
 			await daoBaseAuto.upgradeDaoContractAuto(newDaoBase.address, {from: employee1}).should.be.fulfilled;
@@ -110,7 +109,7 @@ contract('DaoBaseAuto', (accounts) => {
 			
 			assert.equal(params[0], padToBytes32(newDaoBase.address, 'left'));
 		});
-	});*/
+	});
 
 	describe('removeGroupMemberAuto()', () => {
 		it('should return a proposal', async() => {
