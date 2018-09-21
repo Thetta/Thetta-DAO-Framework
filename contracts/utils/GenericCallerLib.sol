@@ -12,7 +12,7 @@ library GenericCallerLib {
 	event GenericCallerCreateNewProposal(bytes32 _permissionId, address _target, address _origin, string _methodSig);
 
 	struct GenericCallerStorage {
-		IDaoBase dao;
+		IDaoBase daoBase;
 		mapping (bytes32=>VotingParams) votingParams;	
 	}
 	
@@ -33,7 +33,7 @@ library GenericCallerLib {
 		string _methodSig, 
 		bytes32[] _params) internal returns(address proposalOut) 
 	{
-		if(store.dao.isCanDoAction(msg.sender, _permissionId)) {
+		if(store.daoBase.isCanDoAction(msg.sender, _permissionId)) {
 			emit GenericCallerDoActionDirectly(
 				_permissionId, 
 				_target, 
@@ -69,7 +69,7 @@ library GenericCallerLib {
 			// 3 - add the proposal
 			// WARNING: should be permitted to add new proposal by the current contract address!!!
 			// check your permissions or see examples (tests) how to do that correctly
-			store.dao.addNewProposal(prop);
+			store.daoBase.addNewProposal(prop);
 
 			// 4 - do first vote 
 			// voting can be finished immediately and action can be called right here ->
@@ -108,7 +108,7 @@ library GenericCallerLib {
 		VotingParams memory vp = store.votingParams[_permissionIdHash];
 
 		IVoting v = new Voting(
-			store.dao, 
+			store.daoBase, 
 			_proposal, 
 			_origin, 
 			vp.votingType,

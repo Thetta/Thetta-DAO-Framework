@@ -36,8 +36,8 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 	event MoneyFlowWithdrawDonations(address _by, address _to, uint _balance);
 	event MoneyFlowSetRootWeiReceiver(address _sender, address _receiver);
 
-	constructor(IDaoBase _dao) public
-		DaoClient(_dao)
+	constructor(IDaoBase _daoBase) public
+		DaoClient(_daoBase)
 	{
 		// do not set output!
 		donationEndpoint = new WeiRelativeExpenseWithPeriod(10000, 0, false);

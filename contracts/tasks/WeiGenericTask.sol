@@ -26,7 +26,7 @@ import "../moneyflow/ether/WeiAbsoluteExpense.sol";
 contract WeiGenericTask is WeiAbsoluteExpense {
 	// use DaoClient instead?
 	// (it will handle upgrades)
-	IDaoBase dao;
+	IDaoBase daoBase;
 	address employee = 0x0;		// who should complete this task and report on completion
 										// this will be set later
 	address output = 0x0;		// where to send money (can be split later)
@@ -89,19 +89,19 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 
 	/*
 	modifier onlyAnyEmployeeOrOwner() { 
-		require(dao.isEmployee(msg.sender) || msg.sender==owner); 
+		require(daoBase.isEmployee(msg.sender) || msg.sender==owner); 
 		_; 
 	}
    */
 
 	modifier isCanDo(bytes32 _what) {
-		require(dao.isCanDoAction(msg.sender,_what)); 
+		require(daoBase.isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
 
 	// if _neededWei==0 -> this is an 'Unknown cost' situation. use 'setNeededWei' method of WeiAbsoluteExpense
 	constructor(
-		IDaoBase _dao, 
+		IDaoBase _daoBase, 
 		string _caption, 
 		string _desc, 
 		bool _isPostpaid, 
@@ -123,7 +123,7 @@ contract WeiGenericTask is WeiAbsoluteExpense {
 		}
 
 		creationTime = block.timestamp;
-		dao = _dao;
+		daoBase = _daoBase;
 		caption = _caption;
 		desc = _desc;
 		isPostpaid = _isPostpaid;
