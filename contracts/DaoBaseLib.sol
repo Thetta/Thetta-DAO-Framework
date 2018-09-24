@@ -111,14 +111,6 @@ library DaoBaseLib {
 	}	
 
 	/**
-	* @param _s string
-	* @return hash for string _s
-	*/
-	function stringHash(string _s) public pure returns(bytes32) {
-		return keccak256(abi.encodePacked(_s));
-	}
-
-	/**
 	* @param _daoStorage storage
 	* @param _p address of the proposal
 	* @return [true, true] if voting found and voting result is yes, 

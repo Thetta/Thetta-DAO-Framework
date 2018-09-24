@@ -3,7 +3,7 @@ pragma solidity ^0.4.22;
 import "zeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 
-import "./CopyOnWriteToken.sol";
+import "./PreserveBalancesOnTransferToken.sol";
 import "./ITokenVotingSupport.sol";
 import "../utils/UtilsLib.sol";
 
@@ -26,7 +26,7 @@ import "../utils/UtilsLib.sol";
  *    finishVoting()
  *    getBalanceAtVoting() 
 */
-contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVotingSupport {
+contract StdDaoToken is DetailedERC20, PausableToken, PreserveBalancesOnTransferToken, ITokenVotingSupport {
 	uint256 public cap;
 	bool isBurnable;
 	bool isPausable;
@@ -66,7 +66,7 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 	* @dev should be called when voting started for conservation balances during this voting
 	*/
 	function startNewVoting() public whenNotPaused returns(uint) {
-		uint idOut = super.startNewEvent();
+		uint idOut = super._startNewEvent();
 		emit VotingStarted(msg.sender, idOut);
 		return idOut;
 	}
@@ -79,7 +79,7 @@ contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVo
 	* @dev update balances from conservation after voting finish
 	*/
 	function finishVoting(uint _votingID) whenNotPaused public {
-		super.finishEvent(_votingID);
+		super._finishEvent(_votingID);
 		emit VotingFinished(msg.sender, _votingID);
 	}
 

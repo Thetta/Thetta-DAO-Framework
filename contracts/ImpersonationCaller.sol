@@ -11,7 +11,7 @@ import "./IDaoBase.sol";
  * @dev This is a convenient wrapper that is used by the contract below (see DaoBaseImpersonated). Do not use it directly.
 */
 contract ImpersonationCaller is DaoClient {
-	constructor(IDaoBase _dao) public DaoClient(_dao) {
+	constructor(IDaoBase _daoBase) public DaoClient(_daoBase) {
 	}
 
   /**
@@ -27,10 +27,10 @@ contract ImpersonationCaller is DaoClient {
 		address client = ECRecovery.recover(prefixedHash, _sig);
 
 		// 2 - should be allowed to call action by a client
-		require(dao.isCanDoAction(client, _action));
+		require(daoBase.isCanDoAction(client, _action));
 
 		// 3 - call 
-		if(!address(dao).call(
+		if(!address(daoBase).call(
 			bytes4(keccak256(abi.encodePacked(_methodSig))),
 			uint256(32),						 // pointer to the length of the array
 			uint256(_params.length),		 // length of the array

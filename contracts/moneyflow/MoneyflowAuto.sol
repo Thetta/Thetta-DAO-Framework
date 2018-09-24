@@ -25,8 +25,8 @@ contract MoneyflowAuto is GenericCaller {
 	//bytes32 constant public SET_ROOT_WEI_RECEIVER = keccak256("setRootWeiReceiver");
 	bytes32 constant public SET_ROOT_WEI_RECEIVER = 0xcb02529cf7b85f6f804884cd47d35cf58a3ffbee0b87a019fe725b688923c627;
 
-	constructor(IDaoBase _dao, IMoneyflow _mf) public 
-		GenericCaller(_dao)
+	constructor(IDaoBase _daoBase, IMoneyflow _mf) public 
+		GenericCaller(_daoBase)
 	{
 		mf = _mf;
 	}
