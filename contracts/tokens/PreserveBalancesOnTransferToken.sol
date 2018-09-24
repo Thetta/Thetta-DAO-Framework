@@ -141,7 +141,11 @@ contract PreserveBalancesOnTransferToken is MintableToken, BurnableToken {
 	 * so we need to start preserving balances AT THE time this event happened.
 	 * @return An index of the event started.
 	 */
-	function startNewEvent() public onlyFromSnapshotOrOwner returns(uint) {
+	function startNewEvent() external onlyFromSnapshotOrOwner returns(uint) {
+		return _startNewEvent();
+	}
+
+	function _startNewEvent() internal returns(uint) {
 		// check if we have empty slots
 		for (uint i = 0; i < events.length; ++i) {
 			if (!events[i].isEventInProgress) {
@@ -167,7 +171,11 @@ contract PreserveBalancesOnTransferToken is MintableToken, BurnableToken {
 	 * @dev Function to signal that some event is finished 
 	 * @param _eventID An index of the event that was previously returned by startNewEvent().
 	 */
-	function finishEvent(uint _eventID) public onlyFromSnapshotOrOwner {
+	function finishEvent(uint _eventID) external onlyFromSnapshotOrOwner {
+		_finishEvent(_eventID);
+	}
+
+	function _finishEvent(uint _eventID) internal {
 		require(_eventID < events.length);
 		require(events[_eventID].isEventInProgress);
 
@@ -176,7 +184,7 @@ contract PreserveBalancesOnTransferToken is MintableToken, BurnableToken {
 		events[_eventID].isEventInProgress = false;
 
 		emit EventFinished(msg.sender, _eventID);
-	}
+	}	
 	
 	/**
 	 * @dev Returns the balance of the address _for at the time event _eventID happened

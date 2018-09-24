@@ -66,7 +66,7 @@ contract StdDaoToken is DetailedERC20, PausableToken, PreserveBalancesOnTransfer
 	* @dev should be called when voting started for conservation balances during this voting
 	*/
 	function startNewVoting() public whenNotPaused returns(uint) {
-		uint idOut = super.startNewEvent();
+		uint idOut = super._startNewEvent();
 		emit VotingStarted(msg.sender, idOut);
 		return idOut;
 	}
@@ -79,7 +79,7 @@ contract StdDaoToken is DetailedERC20, PausableToken, PreserveBalancesOnTransfer
 	* @dev update balances from conservation after voting finish
 	*/
 	function finishVoting(uint _votingID) whenNotPaused public {
-		super.finishEvent(_votingID);
+		super._finishEvent(_votingID);
 		emit VotingFinished(msg.sender, _votingID);
 	}
 
