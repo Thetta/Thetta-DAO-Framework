@@ -5,6 +5,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "./PreserveBalancesOnTransferToken.sol";
 
+
 /**
  * @title SnapshotToken
  * @author Based on code by Thetta DAO Framework: https://github.com/Thetta/Thetta-DAO-Framework/
@@ -76,3 +77,4 @@ contract SnapshotToken is StandardToken, Ownable {
 		pbott.finishEvent(snapshotID);
 	}
 }
+

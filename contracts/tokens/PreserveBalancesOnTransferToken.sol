@@ -4,6 +4,7 @@ import "zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 import "./SnapshotToken.sol";
 
+
 /**
  * @title PreserveBalancesOnTransferToken (Copy-on-Write) token 
  * @author Based on code by Thetta DAO Framework: https://github.com/Thetta/Thetta-DAO-Framework/
