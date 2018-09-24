@@ -3,7 +3,7 @@ pragma solidity ^0.4.22;
 import "zeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 
-import "./CopyOnWriteToken.sol";
+import "./PreserveBalancesOnTransferToken.sol";
 import "./ITokenVotingSupport.sol";
 import "../utils/UtilsLib.sol";
 
@@ -26,7 +26,7 @@ import "../utils/UtilsLib.sol";
  *    finishVoting()
  *    getBalanceAtVoting() 
 */
-contract StdDaoToken is DetailedERC20, PausableToken, CopyOnWriteToken, ITokenVotingSupport {
+contract StdDaoToken is DetailedERC20, PausableToken, PreserveBalancesOnTransferToken, ITokenVotingSupport {
 	uint256 public cap;
 	bool isBurnable;
 	bool isPausable;
