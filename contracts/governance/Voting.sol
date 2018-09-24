@@ -22,24 +22,24 @@ contract Voting is IVoting, Ownable {
 	event DelegationRemoved(address _from, address _to);
 	
 	/*
-	 * @param _dao – DAO where proposal was created.
+	 * @param _daoBase – DAO where proposal was created.
 	 * @param _proposal – proposal, which create vote.
 	 * @param _origin – who create voting (group member).
 	 * @param _minutesToVote - if is zero -> voting until quorum reached, else voting finish after minutesToVote minutes
 	 * @param _quorumPercent - percent of group members to make quorum reached. If minutesToVote==0 and quorum reached -> voting is finished
 	 * @param _consensusPercent - percent of voters (not of group members!) to make consensus reached. If consensus reached -> voting is finished with YES result
 	 * @param _votingType – one of the voting type, see enum votingType
-	 * @param _groupName – for votings that for dao group members only
+	 * @param _groupName – for votings that for daoBase group members only
 	 * @param _tokenAddress – for votings that uses token amount of voter
 	*/
-	constructor(IDaoBase _dao, IProposal _proposal, 
+	constructor(IDaoBase _daoBase, IProposal _proposal, 
 		address _origin, VotingLib.VotingType _votingType, 
 		uint _minutesToVote, string _groupName, 
 		uint _quorumPercent, uint _consensusPercent, 
 		address _tokenAddress) public 
 	{
 		store.generalConstructor(
-			_dao,
+			_daoBase,
 			_proposal, 
 			_origin, 
 			_votingType, 
@@ -69,7 +69,7 @@ contract Voting is IVoting, Ownable {
 
 	/**
 	* @return name of group
-	* @dev for votings that for dao group members only
+	* @dev for votings that for daoBase group members only
 	*/
 	function groupName() public view returns(string) {
 		return store.groupName;

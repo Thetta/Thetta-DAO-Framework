@@ -6,11 +6,11 @@ import "./DefaultMoneyflowScheme.sol";
 // TODO:
 contract DefaultMoneyflowSchemeWithUnpackers is DefaultMoneyflowScheme {
 	constructor(
-			IDaoBase _dao, 
+			IDaoBase _daoBase, 
 			address _fundOutput, 
 			uint _percentsReserve, 
 			uint _dividendsReserve) public 
-		DefaultMoneyflowScheme(_dao,_fundOutput,_percentsReserve,_dividendsReserve)
+		DefaultMoneyflowScheme(_daoBase,_fundOutput,_percentsReserve,_dividendsReserve)
 	{
 	}
 

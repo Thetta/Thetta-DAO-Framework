@@ -6,7 +6,7 @@ import "../IDaoBase.sol";
 
 contract TaskTable {
 	uint public elementsCount = 0;
-	IDaoBase dao;
+	IDaoBase daoBase;
 
 	//bytes32 constant public START_TASK = keccak256("startTask");
 	bytes32 constant public START_TASK = 0x437e6b65d0608a0fe9c825ff4057ee9aef5baaa03f6eec7cf85e76e979099b12;
@@ -85,12 +85,12 @@ contract TaskTable {
 	}
 	
 	modifier isCanDo(bytes32 _what){
-		require(dao.isCanDoAction(msg.sender,_what)); 
+		require(daoBase.isCanDoAction(msg.sender,_what)); 
 		_; 
 	}
 
-	constructor(IDaoBase _dao) public {
-		dao = _dao;
+	constructor(IDaoBase _daoBase) public {
+		daoBase = _daoBase;
 	}
 
 	/**

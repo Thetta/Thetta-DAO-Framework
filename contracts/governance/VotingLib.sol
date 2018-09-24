@@ -32,7 +32,7 @@ library VotingLib {
 	}	
 
 	struct VotingStorage {
-		IDaoBase dao;
+		IDaoBase daoBase;
 		IProposal proposal; 
     
 		address votingCreator;
@@ -56,7 +56,7 @@ library VotingLib {
 
 	function generalConstructor(
 		VotingStorage storage store, 
-		IDaoBase _dao, 
+		IDaoBase _daoBase, 
 		IProposal _proposal, 
 		address _origin, 
 		VotingType _votingType, 
@@ -70,7 +70,7 @@ library VotingLib {
 		require((_consensusPercent<=100)&&(_consensusPercent>0));
 
 		store.votingCreator = _origin;
-		store.dao = _dao;
+		store.daoBase = _daoBase;
 		store.proposal = _proposal;
 		store.minutesToVote = _minutesToVote;
 		store.quorumPercent = _quorumPercent;
@@ -91,17 +91,13 @@ library VotingLib {
 		//libVote(store, _origin, true);
 	}
 
-	function getNow() public view returns(uint) {
-		return block.timestamp;
-	}
-
 	/**
 	* @param store storage instance address
 	* @return number of total voters
 	*/
 	function getVotersTotal(VotingStorage storage store)public view returns(uint) {	
 		if(VotingType.Voting1p1v==store.votingType) {
-			return store.dao.getMembersCount(store.groupName);
+			return store.daoBase.getMembersCount(store.groupName);
 		}else if(VotingType.VotingSimpleToken==store.votingType) {
 			return StdDaoToken(store.tokenAddress).totalSupply();
 		}else if(VotingType.VotingQuadratic==store.votingType) {
@@ -120,7 +116,7 @@ library VotingLib {
 	*/
 	function getPowerOf(VotingStorage storage store, address _voter)public view returns(uint) {
 		if(VotingType.Voting1p1v==store.votingType) {
-			if(store.dao.isGroupMember(store.groupName, _voter)) {
+			if(store.daoBase.isGroupMember(store.groupName, _voter)) {
 				return 1;
 			}else {
 				return 0;
@@ -155,7 +151,7 @@ library VotingLib {
 		require(!store.voted[msg.sender]);
 
 		if(VotingType.Voting1p1v==store.votingType) {
-			require(store.dao.isGroupMember(store.groupName, _voter));
+			require(store.daoBase.isGroupMember(store.groupName, _voter));
 		}
 
 		store.votes[store.votesCount] = Vote(_voter, _isYes);

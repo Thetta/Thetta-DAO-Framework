@@ -57,7 +57,7 @@ contract SimpleICO is DaoClient, Ownable {
 	constructor(
 		uint256 _rate, 
 		address _tokenAddress, 
-		IDaoBase _dao, 
+		IDaoBase _daoBase, 
 		uint256 _minPurchase, 
 		uint256 _maxPurchase, 
 		uint256 _startDate, 
@@ -65,7 +65,7 @@ contract SimpleICO is DaoClient, Ownable {
 		uint256 _softCap, 
 		uint256 _hardCap
 	) public 
-		DaoClient(_dao)
+		DaoClient(_daoBase)
 	{
 		require(_rate > 0);
 		require(_tokenAddress != address(0));
@@ -101,7 +101,7 @@ contract SimpleICO is DaoClient, Ownable {
 		uint256 tokens = _getTokenAmount(weiAmount);
 		weiRaised = weiRaised.add(weiAmount);
 
-		dao.issueTokens(tokenAddress, _beneficiary, tokens);
+		daoBase.issueTokens(tokenAddress, _beneficiary, tokens);
 
 		emit TokenPurchase(
 			msg.sender,
@@ -160,7 +160,7 @@ contract SimpleICO is DaoClient, Ownable {
 		require(_addresses.length == _tokenAmounts.length);
 
 		for(uint256 i = 0; i < _addresses.length; i++) {
-			dao.issueTokens(tokenAddress, _addresses[i], _tokenAmounts[i]);
+			daoBase.issueTokens(tokenAddress, _addresses[i], _tokenAmounts[i]);
 		}
 	}
 
@@ -175,7 +175,7 @@ contract SimpleICO is DaoClient, Ownable {
 		require (_addresses.length == _tokenAmounts.length);
 
 		for(uint256 i = 0; i < _addresses.length; i++) {
-			dao.issueTokens(tokenAddress, _addresses[i], _tokenAmounts[i]);
+			daoBase.issueTokens(tokenAddress, _addresses[i], _tokenAmounts[i]);
 		}
 	}
 
