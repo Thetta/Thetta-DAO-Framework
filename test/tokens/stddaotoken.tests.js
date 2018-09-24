@@ -128,6 +128,7 @@ contract('StdDaoToken', (accounts) => {
       await this.token.pause();
       await this.token.startNewVoting().should.be.rejectedWith('revert');
     });
+  });
 
   describe('getBalanceAtVoting()', function () {
     it('should preserve balances if no transfers happened after voting is started', async () => {
