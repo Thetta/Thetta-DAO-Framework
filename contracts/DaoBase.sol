@@ -128,7 +128,7 @@ contract DaoBase is IDaoBase, Ownable {
 	*/
 	function addGroupMember(string _groupName, address _a) public isCanDoOrByOwner(MANAGE_GROUPS) {
 		emit DaoBaseAddGroupMember(_groupName, _a);	
-		require (_groupName.length>0);	
+		require(bytes(_groupName).length>0);	
 		daoStorage.addGroupMember(stringHash(_groupName), _a);
 	}
 
