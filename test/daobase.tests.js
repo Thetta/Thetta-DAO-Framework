@@ -95,6 +95,7 @@ contract('DaoBase', (accounts) => {
 
   describe('getMembersCount()', function () {
     it('Should return correct value',async() => {
+      await daoBase.addGroupMember("", employee1).should.be.rejectedWith('revert');
       await daoBase.addGroupMember("Employees", employee1);
       assert.equal(await daoBase.getMembersCount("Employees"), 2);
     });

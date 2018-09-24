@@ -19,7 +19,7 @@ function migrateLibs (artifacts, deployer, network, accounts) {
 		.then(() => deployer.deploy(UtilsLib))
 		.then(() => deployer.link(UtilsLib, [DaoBaseImpersonated, DaoBaseWithUnpackers, GenericCaller, VotingLib, DaoBaseAuto, DaoBaseWithUnpackersMock, DaoBaseMock, DaoStorage, StdDaoToken]))	
 		.then(() => deployer.deploy(VotingLib))
-		.then(() => deployer.link(VotingLib, [GenericCaller, GenericCallerLib, MoneyflowAuto, DaoBaseAuto]))
+		.then(() => deployer.link(VotingLib, [Voting, GenericCallerLib, GenericCaller, MoneyflowAuto, DaoBaseAuto]))
 		.then(() => deployer.deploy(GenericCallerLib))
 		.then(() => deployer.link(GenericCallerLib, [GenericCaller, MoneyflowAuto, DaoBaseAuto]))
 		.then(() => deployer.deploy(DaoBaseLib))
