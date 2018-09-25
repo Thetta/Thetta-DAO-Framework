@@ -1,29 +1,51 @@
 function migrateLibs (artifacts, deployer, network, accounts) {
-	var UtilsLib = artifacts.require("./UtilsLib");
-	var DaoBase = artifacts.require("./DaoBase");
-	var DaoBaseImpersonated = artifacts.require("./DaoBaseImpersonated");
-	var DaoBaseWithUnpackers = artifacts.require("./DaoBaseWithUnpackers");
-	var GenericCaller = artifacts.require("./GenericCaller");
-	var GenericCallerLib = artifacts.require("./GenericCallerLib");
-	var MoneyflowAuto = artifacts.require("./MoneyflowAuto");
-	var Voting = artifacts.require("./Voting");
-	var VotingLib = artifacts.require("./VotingLib");
-	var DaoBaseAuto = artifacts.require("./DaoBaseAuto");
-	var DaoBaseWithUnpackersMock = artifacts.require("./DaoBaseWithUnpackersMock");
-	var DaoStorage = artifacts.require("./DaoStorage");
-	var DaoBaseMock = artifacts.require("./DaoBaseMock");
-	var StdDaoToken = artifacts.require("./StdDaoToken");
-	var DaoBaseLib = artifacts.require("./DaoBaseLib");
 
-	return deployer
-		.then(() => deployer.deploy(UtilsLib))
-		.then(() => deployer.link(UtilsLib, [DaoBaseImpersonated, DaoBaseWithUnpackers, GenericCaller, VotingLib, DaoBaseAuto, DaoBaseWithUnpackersMock, DaoBaseMock, DaoStorage, StdDaoToken]))	
-		.then(() => deployer.deploy(VotingLib))
-		.then(() => deployer.link(VotingLib, [Voting, GenericCallerLib, GenericCaller, MoneyflowAuto, DaoBaseAuto]))
-		.then(() => deployer.deploy(GenericCallerLib))
-		.then(() => deployer.link(GenericCallerLib, [GenericCaller, MoneyflowAuto, DaoBaseAuto]))
-		.then(() => deployer.deploy(DaoBaseLib))
-		.then(() => deployer.link(DaoBaseLib, [DaoBase, DaoBaseWithUnpackers, DaoBaseWithUnpackersMock, DaoBaseMock]))
+	async function linkIfExist(lib, contractName){
+		try {
+			await deployer.link(lib, artifacts.require(contractName));
+		} catch(error) {
+
+		}
+	}
+
+	return deployer.then(async () => {		
+		var UtilsLib = artifacts.require("./UtilsLib");
+		var GenericCallerLib = artifacts.require("./GenericCallerLib");
+		var VotingLib = artifacts.require("./VotingLib");
+		var DaoBaseLib = artifacts.require("./DaoBaseLib");
+
+		await deployer.deploy(UtilsLib);
+		await deployer.link(UtilsLib, VotingLib);
+		await deployer.deploy(VotingLib);
+		await deployer.link(VotingLib, GenericCallerLib);
+		await deployer.deploy(GenericCallerLib);
+		await deployer.deploy(DaoBaseLib);
+
+		await linkIfExist(UtilsLib, "./DaoBaseImpersonated");
+		await linkIfExist(UtilsLib, "./DaoBaseWithUnpackers");
+		await linkIfExist(UtilsLib, "./GenericCaller");
+		await linkIfExist(UtilsLib, "./VotingLib");
+		await linkIfExist(UtilsLib, "./DaoBaseAuto");
+		await linkIfExist(UtilsLib, "./DaoBaseWithUnpackersMock");
+		await linkIfExist(UtilsLib, "./DaoBaseMock");
+		await linkIfExist(UtilsLib, "./DaoStorage");
+		await linkIfExist(UtilsLib, "./StdDaoToken");
+
+		await linkIfExist(VotingLib, "./Voting");
+		await linkIfExist(VotingLib, "./GenericCallerLib");
+		await linkIfExist(VotingLib, "./GenericCaller");
+		await linkIfExist(VotingLib, "./MoneyflowAuto");
+		await linkIfExist(VotingLib, "./DaoBaseAuto");
+		
+		await linkIfExist(GenericCallerLib, "./GenericCaller");
+		await linkIfExist(GenericCallerLib, "./MoneyflowAuto");
+		await linkIfExist(GenericCallerLib, "./DaoBaseAuto");
+
+		await linkIfExist(DaoBaseLib, "./DaoBase");
+		await linkIfExist(DaoBaseLib, "./DaoBaseWithUnpackers");
+		await linkIfExist(DaoBaseLib, "./DaoBaseWithUnpackersMock");
+		await linkIfExist(DaoBaseLib, "./DaoBaseMock");
+	});
 };
 
 module.exports = migrateLibs
