@@ -11,8 +11,8 @@ contract WeiTask is WeiGenericTask {
 
 	bytes32 constant public START_TASK = keccak256("startTask");
 
-	constructor(IDaoBase _dao, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) public 
-		WeiGenericTask(_dao, _caption, _desc, _isPostpaid, _isDonation, _neededWei, _deadlineTime, _timeToCancell) 
+	constructor(IDaoBase _daoBase, string _caption, string _desc, bool _isPostpaid, bool _isDonation, uint _neededWei, uint64 _deadlineTime, uint64 _timeToCancell) public 
+		WeiGenericTask(_daoBase, _caption, _desc, _isPostpaid, _isDonation, _neededWei, _deadlineTime, _timeToCancell) 
 	{
 	}
 

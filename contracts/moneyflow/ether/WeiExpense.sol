@@ -116,11 +116,6 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 		return percentsMul100;
 	}
 
-	// TODO: remove from here
-	function getNow()public view returns(uint) {
-		return block.timestamp;
-	}
-
 	function flush()public onlyOwner {
 		emit WeiExpenseFlush(owner, address(this).balance);
 		owner.transfer(address(this).balance);

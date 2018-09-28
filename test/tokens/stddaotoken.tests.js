@@ -128,32 +128,6 @@ contract('StdDaoToken', (accounts) => {
       await this.token.pause();
       await this.token.startNewVoting().should.be.rejectedWith('revert');
     });
-
-    it('should not allow to create > 20 separate votings', async () => {
-      this.token = await StdDaoToken.new('StdToken', 'STDT', 18, false, true, ETH);
-
-      await this.token.startNewVoting();// 1
-      await this.token.startNewVoting();// 2
-      await this.token.startNewVoting();// 3
-      await this.token.startNewVoting();// 4
-      await this.token.startNewVoting();// 5
-      await this.token.startNewVoting();// 6
-      await this.token.startNewVoting();// 7
-      await this.token.startNewVoting();// 8
-      await this.token.startNewVoting();// 9
-      await this.token.startNewVoting();// 10
-      await this.token.startNewVoting();// 11
-      await this.token.startNewVoting();// 12
-      await this.token.startNewVoting();// 13
-      await this.token.startNewVoting();// 14
-      await this.token.startNewVoting();// 15
-      await this.token.startNewVoting();// 16
-      await this.token.startNewVoting();// 17
-      await this.token.startNewVoting();// 18
-      await this.token.startNewVoting();// 19
-      await this.token.startNewVoting();// 20
-      await this.token.startNewVoting().should.be.rejectedWith('revert'); // should be revert();
-    });
   });
 
   describe('getBalanceAtVoting()', function () {

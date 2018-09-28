@@ -21,9 +21,9 @@ contract GenericCaller is DaoClient, Ownable {
 	GenericCallerLib.GenericCallerStorage store;	
 
 	// DaoClient (for example) helps us to handle DaoBase upgrades
-	// and will automatically update the 'dao' to the new instance
-	constructor(IDaoBase _dao)public DaoClient(_dao) {
-		store.dao = _dao;
+	// and will automatically update the 'daoBase' to the new instance
+	constructor(IDaoBase _daoBase)public DaoClient(_daoBase) {
+		store.daoBase = _daoBase;
 	}
 
 	// _actionId is something like "issueTokens"

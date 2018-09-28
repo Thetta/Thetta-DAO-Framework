@@ -16,8 +16,8 @@ import "./utils/UtilsLib.sol";
  * Please see 'tests' folder for example.
 */
 contract DaoBaseImpersonated is ImpersonationCaller {
-	constructor(IDaoBase _dao)public 
-		ImpersonationCaller(_dao)
+	constructor(IDaoBase _daoBase)public 
+		ImpersonationCaller(_daoBase)
 	{
 	}
 
@@ -38,7 +38,7 @@ contract DaoBaseImpersonated is ImpersonationCaller {
 		doActionOnBehalfOf(
 			_hash, 
 			_sig, 
-			DaoBase(dao).ISSUE_TOKENS(), 
+			DaoBase(daoBase).ISSUE_TOKENS(), 
 			"issueTokensGeneric(bytes32[])", 
 			params
 		);
@@ -57,7 +57,7 @@ contract DaoBaseImpersonated is ImpersonationCaller {
 		doActionOnBehalfOf(
 			_hash, 
 			_sig, 
-			DaoBase(dao).UPGRADE_DAO_CONTRACT(), 
+			DaoBase(daoBase).UPGRADE_DAO_CONTRACT(), 
 			"upgradeDaoContractGeneric(bytes32[])", 
 			params
 		);
@@ -78,7 +78,7 @@ contract DaoBaseImpersonated is ImpersonationCaller {
 		doActionOnBehalfOf(
 			_hash, 
 			_sig, 
-			DaoBase(dao).MANAGE_GROUPS(), 
+			DaoBase(daoBase).MANAGE_GROUPS(), 
 			"addGroupMemberGeneric(bytes32[])", 
 			params
 		);
@@ -99,7 +99,7 @@ contract DaoBaseImpersonated is ImpersonationCaller {
 		doActionOnBehalfOf(
 			_hash,
 			_sig, 
-			DaoBase(dao).REMOVE_GROUP_MEMBER(), 
+			DaoBase(daoBase).REMOVE_GROUP_MEMBER(), 
 			"removeGroupMemberGeneric(bytes32[])", 
 			params
 		);
@@ -120,7 +120,7 @@ contract DaoBaseImpersonated is ImpersonationCaller {
 		doActionOnBehalfOf(
 			_hash, 
 			_sig, 
-			DaoBase(dao).ALLOW_ACTION_BY_SHAREHOLDER(), 
+			DaoBase(daoBase).ALLOW_ACTION_BY_SHAREHOLDER(), 
 			"allowActionByShareholderGeneric(bytes32[])", 
 			params
 		);
@@ -141,7 +141,7 @@ contract DaoBaseImpersonated is ImpersonationCaller {
 		doActionOnBehalfOf(
 			_hash, 
 			_sig, 
-			DaoBase(dao).ALLOW_ACTION_BY_VOTING(), 
+			DaoBase(daoBase).ALLOW_ACTION_BY_VOTING(), 
 			"allowActionByVotingGeneric(bytes32[])", 
 			params
 		);
@@ -162,7 +162,7 @@ contract DaoBaseImpersonated is ImpersonationCaller {
 		doActionOnBehalfOf(
 			_hash, 
 			_sig, 
-			DaoBase(dao).ALLOW_ACTION_BY_ADDRESS(), 
+			DaoBase(daoBase).ALLOW_ACTION_BY_ADDRESS(), 
 			"allowActionByAddressGeneric(bytes32[])", 
 			params
 		);
@@ -183,7 +183,7 @@ contract DaoBaseImpersonated is ImpersonationCaller {
 		doActionOnBehalfOf(
 			_hash, 
 			_sig, 
-			DaoBase(dao).ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP(), 
+			DaoBase(daoBase).ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP(), 
 			"allowActionByAnyMemberOfGroupGeneric(bytes32[])", 
 			params
 		);

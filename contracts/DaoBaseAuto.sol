@@ -16,8 +16,8 @@ import "./utils/UtilsLib.sol";
  * Please see 'tests' folder for example.
 */
 contract DaoBaseAuto is GenericCaller {
-	constructor(IDaoBase _dao)public
-		GenericCaller(_dao)
+	constructor(IDaoBase _daoBase)public
+		GenericCaller(_daoBase)
 	{
 	}
 
@@ -34,8 +34,8 @@ contract DaoBaseAuto is GenericCaller {
 		params[1] = bytes32(_a);
 
 		return doAction(
-			DaoBase(address(dao)).MANAGE_GROUPS(), 
-			dao, 
+			DaoBase(address(daoBase)).MANAGE_GROUPS(), 
+			daoBase, 
 			msg.sender,
 			"addGroupMemberGeneric(bytes32[])",
 			params
@@ -56,8 +56,8 @@ contract DaoBaseAuto is GenericCaller {
 		params[2] = bytes32(_amount);
 
 		return doAction(
-			DaoBase(address(dao)).ISSUE_TOKENS(), 
-			dao, 
+			DaoBase(address(daoBase)).ISSUE_TOKENS(), 
+			daoBase, 
 			msg.sender,
 			"issueTokensGeneric(bytes32[])",
 			params
@@ -74,8 +74,8 @@ contract DaoBaseAuto is GenericCaller {
 		params[0] = bytes32(_newMc);
 
 		return doAction(
-			DaoBase(address(dao)).UPGRADE_DAO_CONTRACT(), 
-			dao, 
+			DaoBase(address(daoBase)).UPGRADE_DAO_CONTRACT(), 
+			daoBase, 
 			msg.sender,
 			"upgradeDaoContractGeneric(bytes32[])",
 			params
@@ -95,8 +95,8 @@ contract DaoBaseAuto is GenericCaller {
 		params[1] = bytes32(_a);
 
 		return doAction(
-			DaoBase(address(dao)).REMOVE_GROUP_MEMBER(), 
-			dao, 
+			DaoBase(address(daoBase)).REMOVE_GROUP_MEMBER(), 
+			daoBase, 
 			msg.sender,
 			"removeGroupMemberGeneric(bytes32[])",
 			params
@@ -115,8 +115,8 @@ contract DaoBaseAuto is GenericCaller {
 		params[1] = bytes32(_tokenAddress);
 
 		return doAction(
-			DaoBase(address(dao)).ALLOW_ACTION_BY_SHAREHOLDER(), 
-			dao, 
+			DaoBase(address(daoBase)).ALLOW_ACTION_BY_SHAREHOLDER(), 
+			daoBase, 
 			msg.sender,
 			"allowActionByShareholderGeneric(bytes32[])",
 			params
@@ -135,8 +135,8 @@ contract DaoBaseAuto is GenericCaller {
 		params[1] = bytes32(_tokenAddress);
 
 		return doAction(
-			DaoBase(address(dao)).ALLOW_ACTION_BY_VOTING(), 
-			dao, 
+			DaoBase(address(daoBase)).ALLOW_ACTION_BY_VOTING(), 
+			daoBase, 
 			msg.sender,
 			"allowActionByVotingGeneric(bytes32[])",
 			params
@@ -155,8 +155,8 @@ contract DaoBaseAuto is GenericCaller {
 		params[1] = bytes32(_a);
 
 		return doAction(
-			DaoBase(address(dao)).ALLOW_ACTION_BY_ADDRESS(), 
-			dao, 
+			DaoBase(address(daoBase)).ALLOW_ACTION_BY_ADDRESS(), 
+			daoBase, 
 			msg.sender,
 			"allowActionByAddressGeneric(bytes32[])",
 			params
@@ -175,8 +175,8 @@ contract DaoBaseAuto is GenericCaller {
 		params[1] = UtilsLib.stringToBytes32(_groupName);
 
 		return doAction(
-			DaoBase(address(dao)).ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP(), 
-			dao, 
+			DaoBase(address(daoBase)).ALLOW_ACTION_BY_ANY_MEMBER_OF_GROUP(), 
+			daoBase, 
 			msg.sender,
 			"allowActionByAnyMemberOfGroupGeneric(bytes32[])",
 			params

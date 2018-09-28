@@ -48,10 +48,10 @@ contract DefaultMoneyflowScheme is DaoClient {
 
 /////
 	constructor(
-		IDaoBase _dao, 
+		IDaoBase _daoBase, 
 		address _fundOutput, 
 		uint _percentsReserve, 
-		uint _dividendsReserve) public DaoClient(_dao)											  
+		uint _dividendsReserve) public DaoClient(_daoBase)											  
 	{
 		require(0x0 != _fundOutput);
 
@@ -109,7 +109,7 @@ contract DefaultMoneyflowScheme is DaoClient {
 
 		// 0 - check if _employee is employee 
 		// TODO: WARNING!!!!!!!! Hard-coded type
-		require(dao.isGroupMember("Employees", _employee));
+		require(daoBase.isGroupMember("Employees", _employee));
 
 		// 1 - employee already added? 
 
