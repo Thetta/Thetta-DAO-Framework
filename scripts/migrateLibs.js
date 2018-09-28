@@ -3,7 +3,7 @@ async function linkContractsWithLibrary(deployer, artifacts, lib, contractNames)
           try {
                await deployer.link(lib, artifacts.require(contractName));
           } catch(error) {
-               console.log('not linked:', contractName);
+               console.log('Not linked:', contractName);
           }
      }  
 }
@@ -33,7 +33,7 @@ function migrateLibs (artifacts, additionalContracts, deployer, network, account
                await deployer.deploy(UtilsLib);
                await linkContractsWithLibrary(deployer, artifacts, UtilsLib, contractsArr);
           } catch(error) {
-               console.log('UtilsLib does not deploy');
+               console.log('Thetta.UtilsLib is not deployed');
           }
 
           try {
@@ -41,7 +41,7 @@ function migrateLibs (artifacts, additionalContracts, deployer, network, account
                await deployer.deploy(VotingLib);
                await linkContractsWithLibrary(deployer, artifacts, VotingLib, contractsArr);
           } catch(error) {
-               console.log('VotingLib does not deploy');
+               console.log('Thetta.VotingLib is not deployed');
           }
 
           try {
@@ -49,7 +49,7 @@ function migrateLibs (artifacts, additionalContracts, deployer, network, account
                await deployer.deploy(GenericCallerLib);
                await linkContractsWithLibrary(deployer, artifacts, GenericCallerLib, contractsArr);
           } catch(error) {
-               console.log('GenericCallerLib does not deploy');
+               console.log('Thetta.GenericCallerLib is not deployed');
           }
 
           try {
@@ -57,7 +57,7 @@ function migrateLibs (artifacts, additionalContracts, deployer, network, account
                await deployer.deploy(DaoBaseLib);
                await linkContractsWithLibrary(deployer, artifacts, DaoBaseLib, contractsArr);
           } catch(error) {
-               console.log('DaoBaseLib does not deploy');
+               console.log('Thetta.DaoBaseLib is not deployed');
           }          
      });
 };
