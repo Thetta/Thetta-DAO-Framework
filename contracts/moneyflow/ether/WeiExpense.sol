@@ -16,7 +16,7 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 	bool isMoneyReceived = false;
 	bool isAccumulateDebt = false;
 	bool isPeriodic = false;
-	uint percentsMul100 = 0;
+	uint ppm = 0;
 	uint periodHours = 0;
 	uint momentReceived = 0;
 	uint neededWei = 0;
@@ -24,19 +24,19 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 
 	event WeiExpenseFlush(address _owner, uint _balance);
 	event WeiExpenseSetNeededWei(uint _neededWei);
-	event WeiExpenseSetPercents(uint _percentsMul100);
+	event WeiExpenseSetPercents(uint _ppm);
 	event WeiExpenseProcessFunds(address _sender, uint _value, uint _currentFlow);
 
 	/**
 	* @dev Constructor
-	* @param _neededWei - absolute value. how much Ether this expense should receive (in Wei). Can be zero (use _percentsMul100 in this case)
-	* @param _percentsMul100 - if need to get % out of the input flow -> specify this parameter (1% is 100 units)
+	* @param _neededWei - absolute value. how much Ether this expense should receive (in Wei). Can be zero (use _ppm in this case)
+	* @param _ppm - if need to get % out of the input flow -> specify this parameter (1% is 10000 units)
 	* @param _periodHours - if not isPeriodic and periodHours>0 ->no sense. if isPeriodic and periodHours==0 -> needs money everytime. if isPeriodic and periodHours>0 -> needs money every period.
 	* @param _isAccumulateDebt - if you don't pay in the current period -> will accumulate the needed amount (only for _neededWei!)
 	* @param _isPeriodic - if isPeriodic and periodHours>0 -> needs money every period. if isPeriodic and periodHours==0 -> needs money everytime.
 	*/
-	constructor(uint _neededWei, uint _percentsMul100, uint _periodHours, bool _isAccumulateDebt, bool _isPeriodic) public {
-		percentsMul100 = _percentsMul100;
+	constructor(uint _neededWei, uint _ppm, uint _periodHours, bool _isAccumulateDebt, bool _isPeriodic) public {
+		ppm = _ppm;
 		periodHours = _periodHours;
 		neededWei = _neededWei;
 		isAccumulateDebt = _isAccumulateDebt;
@@ -71,15 +71,15 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 			return 0;
 		}
 
-		if(0!=percentsMul100) {
-			return (getDebtMultiplier()*(percentsMul100 * _inputWei)) / 10000;
+		if(0!=ppm) {
+			return (getDebtMultiplier()*(ppm * _inputWei)) / 1000000;
 		}else {
 			return getMinWeiNeeded();
 		}
 	}
 
 	function getMinWeiNeeded()public view returns(uint) {
-		if(!isNeedsMoney() || (0!=percentsMul100)) {
+		if(!isNeedsMoney() || (0!=ppm)) {
 			return 0;
 		}
 		return getDebtMultiplier()*neededWei;
@@ -112,8 +112,8 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 		_; 
 	}
 
-	function getPercentsMul100()public view returns(uint) {
-		return percentsMul100;
+	function getPpm()public view returns(uint) {
+		return ppm;
 	}
 
 	function flush()public onlyOwner {
@@ -131,9 +131,9 @@ contract WeiExpense is IWeiReceiver, IDestination, Ownable {
 		neededWei = _neededWei;
 	}
 
-	function setPercents(uint _percentsMul100) public onlyOwner {
-		emit WeiExpenseSetPercents(_percentsMul100);
-		percentsMul100 = _percentsMul100;
+	function setPercents(uint _ppm) public onlyOwner {
+		emit WeiExpenseSetPercents(_ppm);
+		ppm = _ppm;
 	}
 
 	function()public {

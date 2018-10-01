@@ -21,20 +21,20 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 		}
 
 		uint absSum = 0;
-		uint percentsMul100ReverseSum = 10000;
+		uint ppmReverseSum = 1000000;
 
 		for(uint i=0; i<childrenCount; ++i) {
-			if(0!=IWeiReceiver(children[i]).getPercentsMul100()) {
-				percentsMul100ReverseSum -= IWeiReceiver(children[i]).getPercentsMul100();
+			if(0!=IWeiReceiver(children[i]).getPpm()) {
+				ppmReverseSum -= IWeiReceiver(children[i]).getPpm();
 			}else {
 				absSum += IWeiReceiver(children[i]).getMinWeiNeeded();
 			}
 		}
 
-		if(percentsMul100ReverseSum==0) {
+		if(ppmReverseSum==0) {
 			return 0;
 		}else {
-			return 10000*absSum/percentsMul100ReverseSum;
+			return 1000000*absSum/ppmReverseSum;
 		}		
 	}
 
@@ -52,16 +52,16 @@ contract WeiUnsortedSplitter is SplitterBase, IWeiReceiver {
 		return total;
 	}
 
-	function getPercentsMul100()public view returns(uint) {
+	function getPpm()public view returns(uint) {
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i) {
 			IWeiReceiver c = IWeiReceiver(children[i]);
-			total = total + c.getPercentsMul100();
+			total = total + c.getPpm();
 		}
 
 		// truncate, no more than 100% allowed!
-		if(total>10000) {
-			return 10000;
+		if(total>1000000) {
+			return 1000000;
 		}
 		return total;
 	}
