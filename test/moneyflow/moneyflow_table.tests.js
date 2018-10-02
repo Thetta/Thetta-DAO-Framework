@@ -85,8 +85,8 @@ async function createStructure (money, e1, e2, e3, office, internet, t1, t2, t3,
 
 async function totalAndMinNeedsAsserts (money, i, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends) {
 	var totalSpend = e1 + e2 + e3 + t1 + t2 + t3 + office + internet;
-	var bonusesSpendPercent = (CURRENT_INPUT - totalSpend) / 10000;
-	var fundsPercent = (CURRENT_INPUT - totalSpend - bonusesSpendPercent * (b1 + b2 + b3)) / 10000;
+	var bonusesSpendPercent = (CURRENT_INPUT - totalSpend) / 1000000;
+	var fundsPercent = (CURRENT_INPUT - totalSpend - bonusesSpendPercent * (b1 + b2 + b3)) / 1000000;
 
 	var allNeeds = totalSpend + bonusesSpendPercent * (b1 + b2 + b3) + fundsPercent * (reserve + dividends);
 
@@ -100,9 +100,9 @@ async function totalAndMinNeedsAsserts (money, i, CURRENT_INPUT, e1, e2, e3, off
 	assert.equal(i.OtherMinNeed.toNumber() / money, office + internet, `Other min Need should be ${office + internet}`);
 	assert.equal(i.TasksTotalNeed.toNumber() / money, t1 + t2 + t3, `Tasks Total Need should be ${t1 + t2 + t3}`);
 	assert.equal(i.TasksMinNeed.toNumber() / money, t1 + t2 + t3, `Tasks min Need should be ${t1 + t2 + t3}`);
-	assert.equal(i.BonusesTotalNeed.toNumber() / money, (b1 + b2 + b3) * CURRENT_INPUT / 10000, `Bonuses Total Need should be ${(b1 + b2 + b3) * CURRENT_INPUT / 10000}`);
+	assert.equal(i.BonusesTotalNeed.toNumber() / money, (b1 + b2 + b3) * CURRENT_INPUT / 1000000, `Bonuses Total Need should be ${(b1 + b2 + b3) * CURRENT_INPUT / 1000000}`);
 	assert.equal(i.BonusesMinNeed.toNumber() / money, 0, `Bonuses min Need should be ${0}`);
-	assert.equal(i.RestTotalNeed.toNumber() / money, (reserve + dividends) * CURRENT_INPUT / 10000, `Rest Total Need should be ${(reserve + dividends) * CURRENT_INPUT / 10000}`);
+	assert.equal(i.RestTotalNeed.toNumber() / money, (reserve + dividends) * CURRENT_INPUT / 1000000, `Rest Total Need should be ${(reserve + dividends) * CURRENT_INPUT / 1000000}`);
 	assert.equal(i.RestMinNeed.toNumber() / money, 0, `Rest min Need should be ${0}`);
 }
 
@@ -171,8 +171,8 @@ async function structureAsserts (i) {
 
 async function balancesAsserts (money, i, CURRENT_INPUT, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends) {
 	var totalSpend = e1 + e2 + e3 + t1 + t2 + t3 + office + internet;
-	var bonusesSpendPercent = (CURRENT_INPUT - totalSpend) / 10000;
-	var fundsPercent = (CURRENT_INPUT - totalSpend - bonusesSpendPercent * (b1 + b2 + b3)) / 10000;
+	var bonusesSpendPercent = (CURRENT_INPUT - totalSpend) / 1000000;
+	var fundsPercent = (CURRENT_INPUT - totalSpend - bonusesSpendPercent * (b1 + b2 + b3)) / 1000000;
 
 	assert.equal(i.Employee1Balance.toNumber() / money, e1, `Employee1 balance should be ${e1} money`);
 	assert.equal(i.Employee2Balance.toNumber() / money, e2, `Employee2 balance should be ${e2} money`);
@@ -370,7 +370,7 @@ contract('MoneyflowTable tests', (accounts) => {
 
 		let topDownSplitterId = getEId(await moneyflowTable.addTopdownSplitter());
 		let AbsoluteExpense1Id = getEId(await moneyflowTable.addAbsoluteExpense(neededAmount, isPeriodic, isAccumulateDebt, periodHours, output));
-		let RelativeExpense1Id = getEId(await moneyflowTable.addRelativeExpense(5000, isPeriodic, isAccumulateDebt, periodHours, output));
+		let RelativeExpense1Id = getEId(await moneyflowTable.addRelativeExpense(500000, isPeriodic, isAccumulateDebt, periodHours, output));
 		let AbsoluteExpense3Id = getEId(await moneyflowTable.addAbsoluteExpense(neededAmount, isPeriodic, isAccumulateDebt, periodHours, output));
 
 		// add 3 WeiAbsoluteExpense outputs to the splitter
@@ -413,7 +413,7 @@ contract('MoneyflowTable tests', (accounts) => {
 
 		let SplitterId = getEId(await moneyflowTable.addUnsortedSplitter());
 		let AbsoluteExpense1Id = getEId(await moneyflowTable.addAbsoluteExpense(neededAmount, isPeriodic, isAccumulateDebt, periodHours, output));
-		let RelativeExpense1Id = getEId(await moneyflowTable.addRelativeExpense(9000, isPeriodic, isAccumulateDebt, periodHours, output));
+		let RelativeExpense1Id = getEId(await moneyflowTable.addRelativeExpense(900000, isPeriodic, isAccumulateDebt, periodHours, output));
 		let AbsoluteExpense3Id = getEId(await moneyflowTable.addAbsoluteExpense(neededAmount, isPeriodic, isAccumulateDebt, periodHours, output));
 
 		// add 3 WeiAbsoluteExpense outputs to the splitter
@@ -448,7 +448,7 @@ contract('MoneyflowTable tests', (accounts) => {
 	});
 
 	it('should process money with a scheme just like in the paper: 75/25 others, send MORE than minNeed; ', async () => {
-		const money = web3.toWei(0.0001, 'ether');
+		const money = 1e12;
 		const CURRENT_INPUT = 30900;
 		let e1 = 1000;
 		let e2 = 1500;
@@ -461,8 +461,8 @@ contract('MoneyflowTable tests', (accounts) => {
 		let b1 = 100;
 		let b2 = 100;
 		let b3 = 200;
-		let reserve = 7500;
-		let dividends = 2500;
+		let reserve = 750000;
+		let dividends = 250000;
 
 		let struct = await createStructure(money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		let splitterParams = await getSplitterParams(money, struct, CURRENT_INPUT, creator);
@@ -476,7 +476,7 @@ contract('MoneyflowTable tests', (accounts) => {
 	});
 
 	it('should process money with a scheme just like in the paper: 75/25 others, send EQUAL to minNeed', async () => {
-		const money = web3.toWei(0.0001, 'ether');
+		const money = 1e12;
 		const CURRENT_INPUT = 5900;
 		let e1 = 1000;
 		let e2 = 1500;
@@ -504,7 +504,7 @@ contract('MoneyflowTable tests', (accounts) => {
 	});
 
 	it('should not process money: send LESS than minNeed', async () => {
-		const money = web3.toWei(0.0001, 'ether');
+		const money = 1e12;
 		const CURRENT_INPUT = 5900;
 		let e1 = 1000;
 		let e2 = 1500;
@@ -517,8 +517,8 @@ contract('MoneyflowTable tests', (accounts) => {
 		let b1 = 100;
 		let b2 = 100;
 		let b3 = 200;
-		let reserve = 7500;
-		let dividends = 2500;
+		let reserve = 750000;
+		let dividends = 250000;
 
 		let struct = await createStructure(money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		let splitterParams = await getSplitterParams(money, struct, CURRENT_INPUT, creator);
@@ -531,7 +531,7 @@ contract('MoneyflowTable tests', (accounts) => {
 	});
 
 	it('should process money with a scheme just like in the paper: 10/15 others, send MORE than minNeed; ', async () => {
-		const money = web3.toWei(0.0001, 'ether');
+		const money = 1e12;
 		const CURRENT_INPUT = 20900;
 		let e1 = 1000;
 		let e2 = 1500;
@@ -544,8 +544,8 @@ contract('MoneyflowTable tests', (accounts) => {
 		let b1 = 100;
 		let b2 = 100;
 		let b3 = 200;
-		let reserve = 1000;
-		let dividends = 1500;
+		let reserve = 100000;
+		let dividends = 150000;
 
 		let struct = await createStructure(money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		let splitterParams = await getSplitterParams(money, struct, CURRENT_INPUT, creator);
@@ -559,7 +559,7 @@ contract('MoneyflowTable tests', (accounts) => {
 	});
 
 	it('should process money with a scheme just like in the paper: 10/15 others, send EQUAL to minNeed; ', async () => {
-		const money = web3.toWei(0.0001, 'ether');
+		const money = 1e12;
 		const CURRENT_INPUT = 5900;
 		let e1 = 1000;
 		let e2 = 1500;
@@ -572,8 +572,8 @@ contract('MoneyflowTable tests', (accounts) => {
 		let b1 = 100;
 		let b2 = 100;
 		let b3 = 200;
-		let reserve = 1000;
-		let dividends = 1500;
+		let reserve = 100000;
+		let dividends = 150000;
 
 		let struct = await createStructure(money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		let splitterParams = await getSplitterParams(money, struct, CURRENT_INPUT, creator);
@@ -587,7 +587,7 @@ contract('MoneyflowTable tests', (accounts) => {
 	});
 
 	it('should not process money: send LESS than minNeed; ', async () => {
-		const money = web3.toWei(0.0001, 'ether');
+		const money = 1e12;
 		const CURRENT_INPUT = 30900;
 		let e1 = 1000;
 		let e2 = 1500;
@@ -600,8 +600,8 @@ contract('MoneyflowTable tests', (accounts) => {
 		let b1 = 100;
 		let b2 = 100;
 		let b3 = 200;
-		let reserve = 1000;
-		let dividends = 1500;
+		let reserve = 100000;
+		let dividends = 150000;
 
 		let struct = await createStructure(money, e1, e2, e3, office, internet, t1, t2, t3, b1, b2, b3, reserve, dividends);
 		let splitterParams = await getSplitterParams(money, struct, CURRENT_INPUT, creator);
