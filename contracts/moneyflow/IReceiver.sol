@@ -7,10 +7,10 @@ pragma solidity ^0.4.23;
 */
 contract IReceiver {
 	// In case we have absolute output -> will return 0
-	// in 1/100th percents of input. Examples:
-	// 12 is 0.12% of input; 
-	// 100 is 1% of input
-	function getPpm() public view returns(uint);
+	// in 1/10000th percents of input. Examples:
+	// 1200 is 0.12% of input; 
+	// 10000 is 1% of input
+	function getPartsPerMillion() public view returns(uint);
 
 	// If this output needs more funds -> will return true
 	// If this output does not need more funds -> will return false 

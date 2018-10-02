@@ -47,7 +47,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 
 	// -------------------- INTERNAL IWEIRECEIVER FUNCTIONS -------------------- for elements
 
-	function _getPpm(uint _eId) internal view returns(uint) {
+	function _getPartsPerMillion(uint _eId) internal view returns(uint) {
 		if(ElementTypes.RelativeExpense == elementsType[_eId]) {
 			return expenses[_eId].neededPpm;
 		}else {
@@ -139,20 +139,20 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 
 	function _getMinWeiNeededUnsortedSplitter(uint _eId) internal view returns(uint) {
 		uint absSum = 0;
-		uint ppmReverseSum = 1000000;
+		uint partsPerMillionReverseSum = 1000000;
 
 		for(uint i=0; i<splitters[_eId].outputs.length; ++i) {
 			if(ElementTypes.RelativeExpense == elementsType[splitters[_eId].outputs[i]]) {
-				ppmReverseSum -= expenses[splitters[_eId].outputs[i]].neededPpm;
+				partsPerMillionReverseSum -= expenses[splitters[_eId].outputs[i]].neededPpm;
 			}else {
 				absSum += _getMinWeiNeeded(splitters[_eId].outputs[i]);
 			}
 		}
 
-		if(ppmReverseSum==0) {
+		if(partsPerMillionReverseSum==0) {
 			return 0;
 		}else {
-			return 1000000*absSum/ppmReverseSum;
+			return 1000000*absSum/partsPerMillionReverseSum;
 		}
 	}
 

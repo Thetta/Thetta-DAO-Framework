@@ -89,7 +89,7 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {//
 		return 0;
 	}
 
-	function getPpm() view public returns(uint) {
+	function getPartsPerMillion() view public returns(uint) {
 		return 0;
 	}
 
