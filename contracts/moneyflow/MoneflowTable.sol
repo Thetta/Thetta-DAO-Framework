@@ -10,7 +10,7 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 
-contract MoneyflowTable is is IWeiReceiver, Ownable {
+contract MoneyflowTable is IWeiReceiver, Ownable {
 	uint public elementsCount = 0;
 	enum ElementTypes {
 		AbsoluteExpense,
