@@ -55,6 +55,10 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		}
 	}
 
+	function isElementNeedsMoney(uint _id)view external returns(bool) {
+		return _isNeedsMoney(_id);
+	}		
+
 	function _isNeedsMoney(uint _eId) internal view returns(bool) {
 		if(splitters[_eId].isOpen) {
 			return _isNeedsMoneySplitter(_eId);
@@ -238,12 +242,13 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 	}
 
 	function getPartsPerMillion() public view returns(uint) {
-		revert();
+		return _getPartsPerMillion(0);
 	}
 
 	function processFunds(uint _currentFlow) public payable {
 		require(_currentFlow>=_getMinWeiNeeded(0));
 		require(msg.value>=_getMinWeiNeeded(0));
+
 
 		return _processFunds(0, _currentFlow, msg.value);
 	}
