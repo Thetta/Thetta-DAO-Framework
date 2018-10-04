@@ -237,7 +237,7 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		return _isNeedsMoney(0);
 	}
 
-	function getPartsPerMillion() public view returns(uint){
+	function getPartsPerMillion() public view returns(uint) {
 		revert();
 	}
 
