@@ -263,7 +263,7 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 
 	// -------------------- public SCHEME FUNCTIONS -------------------- 
 
-	function addAbsoluteExpense(uint _neededAmount, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)public onlyOwner {
+	function addAbsoluteExpense(uint _neededAmount, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)public onlyOwner returns(uint){
 		expenses[elementsCount] = Expense(
 			_neededAmount, 0,
 			_periodHours, _isPeriodic, _isAccumulateDebt, _output,
@@ -272,9 +272,10 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		elementsType[elementsCount] = ElementTypes.AbsoluteExpense;
 		emit ElementAdded(elementsCount, ElementTypes.AbsoluteExpense);
 		elementsCount += 1;
+		return(elementsCount-1);
 	}
 
-	function addRelativeExpense(uint _neededPpm, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)public onlyOwner {		
+	function addRelativeExpense(uint _neededPpm, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)public onlyOwner {	returns(uint)	
 		expenses[elementsCount] = Expense(
 			0, _neededPpm,
 			_periodHours, _isPeriodic, _isAccumulateDebt, _output,
@@ -283,25 +284,28 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		elementsType[elementsCount] = ElementTypes.RelativeExpense;
 		emit ElementAdded(elementsCount, ElementTypes.RelativeExpense);
 		elementsCount += 1;	
+		return(elementsCount-1);
 	}
 
-	function addTopdownSplitter()public onlyOwner {
+	function addTopdownSplitter()public onlyOwner returns(uint){
 		uint[] memory emptyOutputs;
 		splitters[elementsCount] = Splitter(true, emptyOutputs);
 		elementsType[elementsCount] = ElementTypes.TopdownSplitter;	
 		emit ElementAdded(elementsCount, ElementTypes.TopdownSplitter);
 		elementsCount += 1;
+		return(elementsCount-1);
 	}
 
-	function addUnsortedSplitter()public onlyOwner {
+	function addUnsortedSplitter()public onlyOwner returns(uint){
 		uint[] memory emptyOutputs;
 		splitters[elementsCount] = Splitter(true, emptyOutputs);
 		elementsType[elementsCount] = ElementTypes.UnsortedSplitter;
 		emit ElementAdded(elementsCount, ElementTypes.UnsortedSplitter);
 		elementsCount += 1;
+		return(elementsCount-1);
 	}
 
-	function addChild(uint _splitterId, uint _childId)public onlyOwner {
+	function addChild(uint _splitterId, uint _childId)public onlyOwner returns(uint){
 		// add require`s
 		splitters[_splitterId].outputs.push(_childId);
 	}
