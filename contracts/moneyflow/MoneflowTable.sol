@@ -272,10 +272,10 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		elementsType[elementsCount] = ElementTypes.AbsoluteExpense;
 		emit ElementAdded(elementsCount, ElementTypes.AbsoluteExpense);
 		elementsCount += 1;
-		return(elementsCount-1);
+		return elementsCount-1;
 	}
 
-	function addRelativeExpense(uint _neededPpm, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)public onlyOwner {	returns(uint)	
+	function addRelativeExpense(uint _neededPpm, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)public onlyOwner returns(uint) {
 		expenses[elementsCount] = Expense(
 			0, _neededPpm,
 			_periodHours, _isPeriodic, _isAccumulateDebt, _output,
@@ -284,7 +284,7 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		elementsType[elementsCount] = ElementTypes.RelativeExpense;
 		emit ElementAdded(elementsCount, ElementTypes.RelativeExpense);
 		elementsCount += 1;	
-		return(elementsCount-1);
+		return elementsCount-1;
 	}
 
 	function addTopdownSplitter()public onlyOwner returns(uint){
@@ -293,7 +293,7 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		elementsType[elementsCount] = ElementTypes.TopdownSplitter;	
 		emit ElementAdded(elementsCount, ElementTypes.TopdownSplitter);
 		elementsCount += 1;
-		return(elementsCount-1);
+		return elementsCount-1;
 	}
 
 	function addUnsortedSplitter()public onlyOwner returns(uint){
@@ -302,7 +302,7 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		elementsType[elementsCount] = ElementTypes.UnsortedSplitter;
 		emit ElementAdded(elementsCount, ElementTypes.UnsortedSplitter);
 		elementsCount += 1;
-		return(elementsCount-1);
+		return elementsCount-1;
 	}
 
 	function addChild(uint _splitterId, uint _childId)public onlyOwner returns(uint){
