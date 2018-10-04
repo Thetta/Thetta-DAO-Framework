@@ -227,13 +227,13 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		}
 	}
 
-	function getElementBalance(uint _eId)external view returns(uint) {
+	function getElementBalance(uint _eId)public view returns(uint) {
 		return expenses[_eId].balance;
 	}
 
-	// -------------------- EXTERNAL IWEIRECEIVER FUNCTIONS -------------------- for all table
+	// -------------------- public IWEIRECEIVER FUNCTIONS -------------------- for all table
 
-	function isNeedsMoney()view external returns(bool) {
+	function isNeedsMoney()view public returns(bool) {
 		return _isNeedsMoney(0);
 	}
 
@@ -241,24 +241,24 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		revert();
 	}
 
-	function processFunds(uint _currentFlow) external payable {
+	function processFunds(uint _currentFlow) public payable {
 		require(_currentFlow>=_getMinWeiNeeded(0));
 		require(msg.value>=_getMinWeiNeeded(0));
 
 		return _processFunds(0, _currentFlow, msg.value);
 	}
 
-	function getMinWeiNeeded()external view returns(uint) {
+	function getMinWeiNeeded()public view returns(uint) {
 		return _getMinWeiNeeded(0);
 	}
 
-	function getTotalWeiNeeded(uint _currentFlow)external view returns(uint) {
+	function getTotalWeiNeeded(uint _currentFlow)public view returns(uint) {
 		return _getTotalWeiNeeded(0, _currentFlow);
 	}
 
-	// -------------------- EXTERNAL SCHEME FUNCTIONS -------------------- 
+	// -------------------- public SCHEME FUNCTIONS -------------------- 
 
-	function addAbsoluteExpense(uint _neededAmount, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)external onlyOwner {
+	function addAbsoluteExpense(uint _neededAmount, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)public onlyOwner {
 		expenses[elementsCount] = Expense(
 			_neededAmount, 0,
 			_periodHours, _isPeriodic, _isAccumulateDebt, _output,
@@ -269,7 +269,7 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		elementsCount += 1;
 	}
 
-	function addRelativeExpense(uint _neededPpm, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)external onlyOwner {		
+	function addRelativeExpense(uint _neededPpm, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)public onlyOwner {		
 		expenses[elementsCount] = Expense(
 			0, _neededPpm,
 			_periodHours, _isPeriodic, _isAccumulateDebt, _output,
@@ -280,7 +280,7 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		elementsCount += 1;	
 	}
 
-	function addTopdownSplitter()external onlyOwner {
+	function addTopdownSplitter()public onlyOwner {
 		uint[] memory emptyOutputs;
 		splitters[elementsCount] = Splitter(true, emptyOutputs);
 		elementsType[elementsCount] = ElementTypes.TopdownSplitter;	
@@ -288,7 +288,7 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		elementsCount += 1;
 	}
 
-	function addUnsortedSplitter()external onlyOwner {
+	function addUnsortedSplitter()public onlyOwner {
 		uint[] memory emptyOutputs;
 		splitters[elementsCount] = Splitter(true, emptyOutputs);
 		elementsType[elementsCount] = ElementTypes.UnsortedSplitter;
@@ -296,12 +296,12 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		elementsCount += 1;
 	}
 
-	function addChild(uint _splitterId, uint _childId)external onlyOwner {
+	function addChild(uint _splitterId, uint _childId)public onlyOwner {
 		// add require`s
 		splitters[_splitterId].outputs.push(_childId);
 	}
 
-	// -------------------- EXTERNAL CONTROL FUNCTIONS -------------------- 
+	// -------------------- public CONTROL FUNCTIONS -------------------- 
 	
 
 	function _isExpense(uint _eId) internal returns(bool) {
@@ -322,7 +322,7 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		}
 	}
 
-	function openElement(uint _eId) external onlyOwner {
+	function openElement(uint _eId) public onlyOwner {
 		if(_isExpense(_eId)) {
 			expenses[_eId].isOpen = true;
 
@@ -334,7 +334,7 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		}
 	}
 
-	function closeElement(uint _eId)external onlyOwner {
+	function closeElement(uint _eId)public onlyOwner {
 		if(_isExpense(_eId)) {
 			expenses[_eId].isOpen = false;
 
@@ -346,7 +346,7 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		}	
 	}
 
-	function isOpen(uint _eId) external view returns(bool) {
+	function isOpen(uint _eId) public view returns(bool) {
 		if(_isExpense(_eId)) {
 			return expenses[_eId].isOpen;
 
@@ -359,23 +359,23 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 
 	}
 
-	function getChildrenCount(uint _eId)external view returns(uint) {
+	function getChildrenCount(uint _eId)public view returns(uint) {
 		require(_isSplitter(_eId));
 		return splitters[_eId].outputs.length;
 	}
 
-	function getChildId(uint _eId, uint _index)external view returns(uint) {
+	function getChildId(uint _eId, uint _index)public view returns(uint) {
 		require(_isSplitter(_eId));
 		require(splitters[_eId].outputs.length>_index);
 		return splitters[_eId].outputs[_index];
 	}
 
-	function withdrawFundsFromElement(uint _eId)external onlyOwner {
+	function withdrawFundsFromElement(uint _eId)public onlyOwner {
 		// require(_isExpense(_eId));
 		expenses[_eId].output.processFunds.value(expenses[_eId].balance)(expenses[_eId].balance);
 		expenses[_eId].balance = 0;
 	}
 
-	function() external {
+	function() public {
 	}
 }
