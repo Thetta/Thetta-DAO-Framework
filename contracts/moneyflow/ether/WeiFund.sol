@@ -14,7 +14,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 */
 
 
-contract WeiFund is IWeiReceiver, IDestination, Ownable {//
+contract WeiFund is IWeiReceiver, IDestination, Ownable {
 	using SafeMath for uint;
 
 	uint neededWei;
