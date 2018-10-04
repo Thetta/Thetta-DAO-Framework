@@ -10,7 +10,7 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 
-contract MoneyflowTable is Ownable {//is IWeiReceiver,
+contract MoneyflowTable is is IWeiReceiver, Ownable {
 	uint public elementsCount = 0;
 	enum ElementTypes {
 		AbsoluteExpense,
@@ -235,6 +235,10 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 
 	function isNeedsMoney()view external returns(bool) {
 		return _isNeedsMoney(0);
+	}
+
+	function getPartsPerMillion() public view returns(uint){
+		revert();
 	}
 
 	function processFunds(uint _currentFlow) external payable {
