@@ -22,8 +22,8 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 		uint out = 0;
 		for(uint j=childrenCount; j>0; --j) {
 			IWeiReceiver c = IWeiReceiver(children[j-1]);
-			if(c.getPercentsMul100()>0) {
-				out = 10000 * out / c.getPercentsMul100();
+			if(c.getPartsPerMillion()>0) {
+				out = 1000000 * out / c.getPartsPerMillion();
 			}else {
 				out += c.getMinWeiNeeded();
 			}
@@ -53,16 +53,16 @@ contract WeiTopDownSplitter is SplitterBase, IWeiReceiver {
 		return total;
 	}
 
-	function getPercentsMul100()public view returns(uint) {
+	function getPartsPerMillion()public view returns(uint) {
 		uint total = 0;
 		for(uint i=0; i<childrenCount; ++i) {
 			IWeiReceiver c = IWeiReceiver(children[i]);
-			total = total + c.getPercentsMul100();	
+			total = total + c.getPartsPerMillion();	
 		}
 
 		// truncate, no more than 100% allowed!
-		if(total>10000) {
-			return 10000;
+		if(total>1000000) {
+			return 1000000;
 		}
 		return total;
 	}

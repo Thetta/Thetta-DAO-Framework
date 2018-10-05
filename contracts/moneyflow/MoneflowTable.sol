@@ -10,7 +10,7 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 
-contract MoneyflowTable is Ownable {//is IWeiReceiver,
+contract MoneyflowTable is IWeiReceiver, Ownable {
 	uint public elementsCount = 0;
 	enum ElementTypes {
 		AbsoluteExpense,
@@ -26,7 +26,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 
 	struct Expense {
 		uint neededAmount;
-		uint neededPercentsMul100;
+		uint neededPpm;
 		
 		uint periodHours;
 
@@ -47,13 +47,17 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 
 	// -------------------- INTERNAL IWEIRECEIVER FUNCTIONS -------------------- for elements
 
-	function _getPercentsMul100(uint _eId) internal view returns(uint) {
+	function _getPartsPerMillion(uint _eId) internal view returns(uint) {
 		if(ElementTypes.RelativeExpense == elementsType[_eId]) {
-			return expenses[_eId].neededPercentsMul100;
+			return expenses[_eId].neededPpm;
 		}else {
 			return 0;
 		}
 	}
+
+	function isElementNeedsMoney(uint _id)view external returns(bool) {
+		return _isNeedsMoney(_id);
+	}		
 
 	function _isNeedsMoney(uint _eId) internal view returns(bool) {
 		if(splitters[_eId].isOpen) {
@@ -139,20 +143,20 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 
 	function _getMinWeiNeededUnsortedSplitter(uint _eId) internal view returns(uint) {
 		uint absSum = 0;
-		uint percentsMul100ReverseSum = 10000;
+		uint partsPerMillionReverseSum = 1000000;
 
 		for(uint i=0; i<splitters[_eId].outputs.length; ++i) {
 			if(ElementTypes.RelativeExpense == elementsType[splitters[_eId].outputs[i]]) {
-				percentsMul100ReverseSum -= expenses[splitters[_eId].outputs[i]].neededPercentsMul100;
+				partsPerMillionReverseSum -= expenses[splitters[_eId].outputs[i]].neededPpm;
 			}else {
 				absSum += _getMinWeiNeeded(splitters[_eId].outputs[i]);
 			}
 		}
 
-		if(percentsMul100ReverseSum==0) {
+		if(partsPerMillionReverseSum==0) {
 			return 0;
 		}else {
-			return 10000*absSum/percentsMul100ReverseSum;
+			return 1000000*absSum/partsPerMillionReverseSum;
 		}
 	}
 
@@ -160,7 +164,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 		uint out = 0;
 		for(uint j=splitters[_eId].outputs.length;  j>0; --j) {
 			if(ElementTypes.RelativeExpense == elementsType[splitters[_eId].outputs[j-1]]) {
-				out = 10000 * out / expenses[splitters[_eId].outputs[j-1]].neededPercentsMul100;
+				out = 1000000 * out / expenses[splitters[_eId].outputs[j-1]].neededPpm;
 			}else {
 				out += _getMinWeiNeeded(splitters[_eId].outputs[j-1]);
 			}
@@ -221,40 +225,45 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 		}
 
 		if(ElementTypes.RelativeExpense==elementsType[_eId]) {
-			return (_getDebtMultiplier(_eId)*(expenses[_eId].neededPercentsMul100 * _currentFlow)) / 10000;
+			return (_getDebtMultiplier(_eId)*(expenses[_eId].neededPpm * _currentFlow)) / 1000000;
 		}else {
 			return _getMinWeiNeeded(_eId);
 		}
 	}
 
-	function getElementBalance(uint _eId)external view returns(uint) {
+	function getElementBalance(uint _eId)public view returns(uint) {
 		return expenses[_eId].balance;
 	}
 
-	// -------------------- EXTERNAL IWEIRECEIVER FUNCTIONS -------------------- for all table
+	// -------------------- public IWEIRECEIVER FUNCTIONS -------------------- for all table
 
-	function isNeedsMoney()view external returns(bool) {
+	function isNeedsMoney()view public returns(bool) {
 		return _isNeedsMoney(0);
 	}
 
-	function processFunds(uint _currentFlow) external payable {
+	function getPartsPerMillion() public view returns(uint) {
+		return _getPartsPerMillion(0);
+	}
+
+	function processFunds(uint _currentFlow) public payable {
 		require(_currentFlow>=_getMinWeiNeeded(0));
 		require(msg.value>=_getMinWeiNeeded(0));
+
 
 		return _processFunds(0, _currentFlow, msg.value);
 	}
 
-	function getMinWeiNeeded()external view returns(uint) {
+	function getMinWeiNeeded()public view returns(uint) {
 		return _getMinWeiNeeded(0);
 	}
 
-	function getTotalWeiNeeded(uint _currentFlow)external view returns(uint) {
+	function getTotalWeiNeeded(uint _currentFlow)public view returns(uint) {
 		return _getTotalWeiNeeded(0, _currentFlow);
 	}
 
-	// -------------------- EXTERNAL SCHEME FUNCTIONS -------------------- 
+	// -------------------- public SCHEME FUNCTIONS -------------------- 
 
-	function addAbsoluteExpense(uint _neededAmount, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)external onlyOwner {
+	function addAbsoluteExpense(uint _neededAmount, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)public onlyOwner returns(uint) {
 		expenses[elementsCount] = Expense(
 			_neededAmount, 0,
 			_periodHours, _isPeriodic, _isAccumulateDebt, _output,
@@ -263,41 +272,45 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 		elementsType[elementsCount] = ElementTypes.AbsoluteExpense;
 		emit ElementAdded(elementsCount, ElementTypes.AbsoluteExpense);
 		elementsCount += 1;
+		return elementsCount-1;
 	}
 
-	function addRelativeExpense(uint _neededPercentsMul100, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)external onlyOwner {		
+	function addRelativeExpense(uint _neededPpm, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)public onlyOwner returns(uint) {
 		expenses[elementsCount] = Expense(
-			0, _neededPercentsMul100,
+			0, _neededPpm,
 			_periodHours, _isPeriodic, _isAccumulateDebt, _output,
 			0, false, true, 0
 		);	
 		elementsType[elementsCount] = ElementTypes.RelativeExpense;
 		emit ElementAdded(elementsCount, ElementTypes.RelativeExpense);
 		elementsCount += 1;	
+		return elementsCount-1;
 	}
 
-	function addTopdownSplitter()external onlyOwner {
+	function addTopdownSplitter()public onlyOwner returns(uint) {
 		uint[] memory emptyOutputs;
 		splitters[elementsCount] = Splitter(true, emptyOutputs);
 		elementsType[elementsCount] = ElementTypes.TopdownSplitter;	
 		emit ElementAdded(elementsCount, ElementTypes.TopdownSplitter);
 		elementsCount += 1;
+		return elementsCount-1;
 	}
 
-	function addUnsortedSplitter()external onlyOwner {
+	function addUnsortedSplitter()public onlyOwner returns(uint) {
 		uint[] memory emptyOutputs;
 		splitters[elementsCount] = Splitter(true, emptyOutputs);
 		elementsType[elementsCount] = ElementTypes.UnsortedSplitter;
 		emit ElementAdded(elementsCount, ElementTypes.UnsortedSplitter);
 		elementsCount += 1;
+		return elementsCount-1;
 	}
 
-	function addChild(uint _splitterId, uint _childId)external onlyOwner {
+	function addChild(uint _splitterId, uint _childId)public onlyOwner returns(uint) {
 		// add require`s
 		splitters[_splitterId].outputs.push(_childId);
 	}
 
-	// -------------------- EXTERNAL CONTROL FUNCTIONS -------------------- 
+	// -------------------- public CONTROL FUNCTIONS -------------------- 
 	
 
 	function _isExpense(uint _eId) internal returns(bool) {
@@ -318,7 +331,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 		}
 	}
 
-	function openElement(uint _eId) external onlyOwner {
+	function openElement(uint _eId) public onlyOwner {
 		if(_isExpense(_eId)) {
 			expenses[_eId].isOpen = true;
 
@@ -330,7 +343,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 		}
 	}
 
-	function closeElement(uint _eId)external onlyOwner {
+	function closeElement(uint _eId)public onlyOwner {
 		if(_isExpense(_eId)) {
 			expenses[_eId].isOpen = false;
 
@@ -342,7 +355,7 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 		}	
 	}
 
-	function isOpen(uint _eId) external view returns(bool) {
+	function isOpen(uint _eId) public view returns(bool) {
 		if(_isExpense(_eId)) {
 			return expenses[_eId].isOpen;
 
@@ -355,23 +368,23 @@ contract MoneyflowTable is Ownable {//is IWeiReceiver,
 
 	}
 
-	function getChildrenCount(uint _eId)external view returns(uint) {
+	function getChildrenCount(uint _eId)public view returns(uint) {
 		require(_isSplitter(_eId));
 		return splitters[_eId].outputs.length;
 	}
 
-	function getChildId(uint _eId, uint _index)external view returns(uint) {
+	function getChildId(uint _eId, uint _index)public view returns(uint) {
 		require(_isSplitter(_eId));
 		require(splitters[_eId].outputs.length>_index);
 		return splitters[_eId].outputs[_index];
 	}
 
-	function withdrawFundsFromElement(uint _eId)external onlyOwner {
+	function withdrawFundsFromElement(uint _eId)public onlyOwner {
 		// require(_isExpense(_eId));
 		expenses[_eId].output.processFunds.value(expenses[_eId].balance)(expenses[_eId].balance);
 		expenses[_eId].balance = 0;
 	}
 
-	function() external {
+	function() public {
 	}
 }

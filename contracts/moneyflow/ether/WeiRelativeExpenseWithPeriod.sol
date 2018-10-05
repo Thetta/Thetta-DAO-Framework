@@ -4,7 +4,7 @@ import "./WeiExpense.sol";
 
 
 contract WeiRelativeExpenseWithPeriod is WeiExpense {
-	constructor(uint _percentsMul100, uint _periodHours, bool _isAccumulateDebt) public 
-		WeiExpense(0, _percentsMul100, _periodHours, _isAccumulateDebt, true)
+	constructor(uint _partsPerMillion, uint _periodHours, bool _isAccumulateDebt) public 
+		WeiExpense(0, _partsPerMillion, _periodHours, _isAccumulateDebt, true)
 	{}
 }

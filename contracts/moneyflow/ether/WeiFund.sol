@@ -14,7 +14,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 */
 
 
-contract WeiFund is IWeiReceiver, IDestination, Ownable {//
+contract WeiFund is IWeiReceiver, IDestination, Ownable {
 	using SafeMath for uint;
 
 	uint neededWei;
@@ -89,7 +89,7 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {//
 		return 0;
 	}
 
-	function getPercentsMul100() view public returns(uint) {
+	function getPartsPerMillion() view public returns(uint) {
 		return 0;
 	}
 

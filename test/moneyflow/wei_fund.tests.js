@@ -296,7 +296,7 @@ contract('WeiFund', (accounts) => {
 		let milestone1 = await WeiFund.new(0.1e18, false, false, 0);
 		let milestone2 = await WeiFund.new(0.2e18, false, false, 0);
 		let milestone3 = await WeiFund.new(0.7e18, false, false, 0);
-		let stabFund = await WeiRelativeExpenseWithPeriod.new(10000, 0, false);
+		let stabFund = await WeiRelativeExpenseWithPeriod.new(1000000, 0, false);
 		await splitter.addChild(milestone1.address);
 		await splitter.addChild(milestone2.address);
 		await splitter.addChild(milestone3.address);

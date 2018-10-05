@@ -40,7 +40,7 @@ contract MoneyFlow is IMoneyflow, DaoClient, Ownable {
 		DaoClient(_daoBase)
 	{
 		// do not set output!
-		donationEndpoint = new WeiRelativeExpenseWithPeriod(10000, 0, false);
+		donationEndpoint = new WeiRelativeExpenseWithPeriod(1000000, 0, false);
 		donationF2WR = new FallbackToWeiReceiver(donationEndpoint);
 	}
 
