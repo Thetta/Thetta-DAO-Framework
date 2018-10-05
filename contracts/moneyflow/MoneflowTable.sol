@@ -263,7 +263,7 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 
 	// -------------------- public SCHEME FUNCTIONS -------------------- 
 
-	function addAbsoluteExpense(uint _neededAmount, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)public onlyOwner returns(uint){
+	function addAbsoluteExpense(uint _neededAmount, bool _isPeriodic, bool _isAccumulateDebt, uint _periodHours, IWeiReceiver _output)public onlyOwner returns(uint) {
 		expenses[elementsCount] = Expense(
 			_neededAmount, 0,
 			_periodHours, _isPeriodic, _isAccumulateDebt, _output,
@@ -287,7 +287,7 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		return elementsCount-1;
 	}
 
-	function addTopdownSplitter()public onlyOwner returns(uint){
+	function addTopdownSplitter()public onlyOwner returns(uint) {
 		uint[] memory emptyOutputs;
 		splitters[elementsCount] = Splitter(true, emptyOutputs);
 		elementsType[elementsCount] = ElementTypes.TopdownSplitter;	
@@ -296,7 +296,7 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		return elementsCount-1;
 	}
 
-	function addUnsortedSplitter()public onlyOwner returns(uint){
+	function addUnsortedSplitter()public onlyOwner returns(uint) {
 		uint[] memory emptyOutputs;
 		splitters[elementsCount] = Splitter(true, emptyOutputs);
 		elementsType[elementsCount] = ElementTypes.UnsortedSplitter;
@@ -305,7 +305,7 @@ contract MoneyflowTable is IWeiReceiver, Ownable {
 		return elementsCount-1;
 	}
 
-	function addChild(uint _splitterId, uint _childId)public onlyOwner returns(uint){
+	function addChild(uint _splitterId, uint _childId)public onlyOwner returns(uint) {
 		// add require`s
 		splitters[_splitterId].outputs.push(_childId);
 	}
