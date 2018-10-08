@@ -61,7 +61,7 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {
 		// emit consoleUint('_getDebtMultiplier', _getDebtMultiplier());
 		require(isNeedsMoney());
 		
-		if(neededWei!=0){
+		if(neededWei!=0) {
 			require(totalWeiReceived+msg.value<=getDebtMultiplier()*neededWei); // protect from extra money
 		}
 
@@ -75,7 +75,7 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {
 	function getTotalWeiNeeded(uint _inputWei)public view returns(uint) {
 		uint need;
 
-		if(neededWei==0){
+		if(neededWei==0) {
 			return _inputWei;
 		}
 
@@ -101,7 +101,7 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {
 	}
 
 	function isNeedsMoney()public view returns(bool) {
-		if(neededWei==0){
+		if(neededWei==0) {
 			return true;
 		}
 
