@@ -17,7 +17,7 @@ var WeiRelativeExpense = artifacts.require('./WeiRelativeExpense');
 var WeiAbsoluteExpenseWithPeriod = artifacts.require('./WeiAbsoluteExpenseWithPeriod');
 var WeiRelativeExpenseWithPeriod = artifacts.require('./WeiRelativeExpenseWithPeriod');
 
-var getEId = o => o.logs.filter(l => l.event == 'ElementAdded')[0].args._eId.toNumber();
+var getEId = o => o.logs.filter(l => l.event == 'NodeAdded')[0].args._eId.toNumber();
 
 function KECCAK256 (x) {
 	return web3.sha3(x);
@@ -108,52 +108,52 @@ async function totalAndMinNeedsAsserts (money, i, CURRENT_INPUT, e1, e2, e3, off
 
 async function getBalances (i) {
 	var o = {};
-	o.Employee1Balance = await i.moneyflowTable.getElementBalance(i.Employee1Id);
-	o.Employee2Balance = await i.moneyflowTable.getElementBalance(i.Employee2Id);
-	o.Employee3Balance = await i.moneyflowTable.getElementBalance(i.Employee3Id);
-	o.OfficeBalance = await i.moneyflowTable.getElementBalance(i.OfficeId);
-	o.InternetBalance = await i.moneyflowTable.getElementBalance(i.InternetId);
-	o.Task1Balance = await i.moneyflowTable.getElementBalance(i.Task1Id);
-	o.Task2Balance = await i.moneyflowTable.getElementBalance(i.Task2Id);
-	o.Task3Balance = await i.moneyflowTable.getElementBalance(i.Task3Id);
-	o.Reserve3Balance = await i.moneyflowTable.getElementBalance(i.ReserveFundId);
-	o.Dividends3Balance = await i.moneyflowTable.getElementBalance(i.DividendsFundId);
-	o.Bonus1Balance = await i.moneyflowTable.getElementBalance(i.Bonus1Id);
-	o.Bonus2Balance = await i.moneyflowTable.getElementBalance(i.Bonus2Id);
-	o.Bonus3Balance = await i.moneyflowTable.getElementBalance(i.Bonus3Id);
-	o.AllOutpultsBalance = await i.moneyflowTable.getElementBalance(i.AllOutpultsId);
-	o.SpendsBalance = await i.moneyflowTable.getElementBalance(i.SpendsId);
-	o.SalariesBalance = await i.moneyflowTable.getElementBalance(i.SalariesId);
-	o.OtherBalance = await i.moneyflowTable.getElementBalance(i.OtherId);
-	o.TasksBalance = await i.moneyflowTable.getElementBalance(i.TasksId);
-	o.BonusesBalance = await i.moneyflowTable.getElementBalance(i.BonusesId);
-	o.RestBalance = await i.moneyflowTable.getElementBalance(i.RestId);
+	o.Employee1Balance = await i.moneyflowTable.getNodeBalance(i.Employee1Id);
+	o.Employee2Balance = await i.moneyflowTable.getNodeBalance(i.Employee2Id);
+	o.Employee3Balance = await i.moneyflowTable.getNodeBalance(i.Employee3Id);
+	o.OfficeBalance = await i.moneyflowTable.getNodeBalance(i.OfficeId);
+	o.InternetBalance = await i.moneyflowTable.getNodeBalance(i.InternetId);
+	o.Task1Balance = await i.moneyflowTable.getNodeBalance(i.Task1Id);
+	o.Task2Balance = await i.moneyflowTable.getNodeBalance(i.Task2Id);
+	o.Task3Balance = await i.moneyflowTable.getNodeBalance(i.Task3Id);
+	o.Reserve3Balance = await i.moneyflowTable.getNodeBalance(i.ReserveFundId);
+	o.Dividends3Balance = await i.moneyflowTable.getNodeBalance(i.DividendsFundId);
+	o.Bonus1Balance = await i.moneyflowTable.getNodeBalance(i.Bonus1Id);
+	o.Bonus2Balance = await i.moneyflowTable.getNodeBalance(i.Bonus2Id);
+	o.Bonus3Balance = await i.moneyflowTable.getNodeBalance(i.Bonus3Id);
+	o.AllOutpultsBalance = await i.moneyflowTable.getNodeBalance(i.AllOutpultsId);
+	o.SpendsBalance = await i.moneyflowTable.getNodeBalance(i.SpendsId);
+	o.SalariesBalance = await i.moneyflowTable.getNodeBalance(i.SalariesId);
+	o.OtherBalance = await i.moneyflowTable.getNodeBalance(i.OtherId);
+	o.TasksBalance = await i.moneyflowTable.getNodeBalance(i.TasksId);
+	o.BonusesBalance = await i.moneyflowTable.getNodeBalance(i.BonusesId);
+	o.RestBalance = await i.moneyflowTable.getNodeBalance(i.RestId);
 
 	return o;
 }
 
 async function getSplitterParams (money, i, CURRENT_INPUT) {
 	var o = {};
-	o.AllOutpultsTotalNeed = await i.moneyflowTable.getTotalWeiNeededForElement(i.AllOutpultsId, CURRENT_INPUT * money);
-	o.AllOutpultsMinNeed = await i.moneyflowTable.getMinWeiNeededForElement(i.AllOutpultsId);
+	o.AllOutpultsTotalNeed = await i.moneyflowTable.getTotalWeiNeededForNode(i.AllOutpultsId, CURRENT_INPUT * money);
+	o.AllOutpultsMinNeed = await i.moneyflowTable.getMinWeiNeededForNode(i.AllOutpultsId);
 	o.AllOutpultsChildrenCount = await i.moneyflowTable.getChildrenCount(i.AllOutpultsId);
-	o.SpendsTotalNeed = await i.moneyflowTable.getTotalWeiNeededForElement(i.SpendsId, CURRENT_INPUT * money);
-	o.SpendsMinNeed = await i.moneyflowTable.getMinWeiNeededForElement(i.SpendsId);
+	o.SpendsTotalNeed = await i.moneyflowTable.getTotalWeiNeededForNode(i.SpendsId, CURRENT_INPUT * money);
+	o.SpendsMinNeed = await i.moneyflowTable.getMinWeiNeededForNode(i.SpendsId);
 	o.SpendsChildrenCount = await i.moneyflowTable.getChildrenCount(i.SpendsId);
-	o.SalariesTotalNeed = await i.moneyflowTable.getTotalWeiNeededForElement(i.SalariesId, CURRENT_INPUT * money);
-	o.SalariesMinNeed = await i.moneyflowTable.getMinWeiNeededForElement(i.SalariesId);
+	o.SalariesTotalNeed = await i.moneyflowTable.getTotalWeiNeededForNode(i.SalariesId, CURRENT_INPUT * money);
+	o.SalariesMinNeed = await i.moneyflowTable.getMinWeiNeededForNode(i.SalariesId);
 	o.SalariesChildrenCount = await i.moneyflowTable.getChildrenCount(i.SalariesId);
-	o.OtherTotalNeed = await i.moneyflowTable.getTotalWeiNeededForElement(i.OtherId, CURRENT_INPUT * money);
-	o.OtherMinNeed = await i.moneyflowTable.getMinWeiNeededForElement(i.OtherId);
+	o.OtherTotalNeed = await i.moneyflowTable.getTotalWeiNeededForNode(i.OtherId, CURRENT_INPUT * money);
+	o.OtherMinNeed = await i.moneyflowTable.getMinWeiNeededForNode(i.OtherId);
 	o.OtherChildrenCount = await i.moneyflowTable.getChildrenCount(i.OtherId);
-	o.TasksTotalNeed = await i.moneyflowTable.getTotalWeiNeededForElement(i.TasksId, CURRENT_INPUT * money);
-	o.TasksMinNeed = await i.moneyflowTable.getMinWeiNeededForElement(i.TasksId);
+	o.TasksTotalNeed = await i.moneyflowTable.getTotalWeiNeededForNode(i.TasksId, CURRENT_INPUT * money);
+	o.TasksMinNeed = await i.moneyflowTable.getMinWeiNeededForNode(i.TasksId);
 	o.TasksChildrenCount = await i.moneyflowTable.getChildrenCount(i.TasksId);
-	o.BonusesTotalNeed = await i.moneyflowTable.getTotalWeiNeededForElement(i.BonusesId, CURRENT_INPUT * money);
-	o.BonusesMinNeed = await i.moneyflowTable.getMinWeiNeededForElement(i.BonusesId);
+	o.BonusesTotalNeed = await i.moneyflowTable.getTotalWeiNeededForNode(i.BonusesId, CURRENT_INPUT * money);
+	o.BonusesMinNeed = await i.moneyflowTable.getMinWeiNeededForNode(i.BonusesId);
 	o.BonusesChildrenCount = await i.moneyflowTable.getChildrenCount(i.BonusesId);
-	o.RestTotalNeed = await i.moneyflowTable.getTotalWeiNeededForElement(i.RestId, CURRENT_INPUT * money);
-	o.RestMinNeed = await i.moneyflowTable.getMinWeiNeededForElement(i.RestId);
+	o.RestTotalNeed = await i.moneyflowTable.getTotalWeiNeededForNode(i.RestId, CURRENT_INPUT * money);
+	o.RestMinNeed = await i.moneyflowTable.getMinWeiNeededForNode(i.RestId);
 	o.RestChildrenCount = await i.moneyflowTable.getChildrenCount(i.RestId);
 
 	return o;
@@ -285,13 +285,13 @@ contract('MoneyflowTable tests', (accounts) => {
 		await moneyflowTable.processFunds(6 * neededAmount, { value: 6 * neededAmount, from: creator });
 		assert.equal(need1, true);
 		// money should end up in the outputs
-		var absoluteExpense1Balance = await moneyflowTable.getElementBalance(AbsoluteExpense1Id);
+		var absoluteExpense1Balance = await moneyflowTable.getNodeBalance(AbsoluteExpense1Id);
 		assert.equal(absoluteExpense1Balance.toNumber(), 1 * neededAmount, 'resource point received money from splitter');
 
-		var absoluteExpense2Balance = await moneyflowTable.getElementBalance(AbsoluteExpense2Id);
+		var absoluteExpense2Balance = await moneyflowTable.getNodeBalance(AbsoluteExpense2Id);
 		assert.equal(absoluteExpense2Balance.toNumber(), 2 * neededAmount, 'resource point received money from splitter');
 
-		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
+		var absoluteExpense3Balance = await moneyflowTable.getNodeBalance(AbsoluteExpense3Id);
 		assert.equal(absoluteExpense3Balance.toNumber(), 3 * neededAmount, 'resource point received money from splitter');
 
 		var totalNeed = await moneyflowTable.getTotalWeiNeeded(6 * neededAmount);
@@ -303,27 +303,27 @@ contract('MoneyflowTable tests', (accounts) => {
 		assert.equal(need2, false);
 
 		var b1 = await web3.eth.getBalance(output1.address);
-		await moneyflowTable.withdrawFundsFromElement(AbsoluteExpense1Id, { gasPrice: 0 });
+		await moneyflowTable.flushFromNode(AbsoluteExpense1Id, { gasPrice: 0 });
 		var b2 = await web3.eth.getBalance(output1.address);
 		assert.equal(b2.toNumber() - b1.toNumber(), 1 * neededAmount);
 
 		var b1 = await web3.eth.getBalance(output2.address);
-		await moneyflowTable.withdrawFundsFromElement(AbsoluteExpense2Id, { gasPrice: 0 });
+		await moneyflowTable.flushFromNode(AbsoluteExpense2Id, { gasPrice: 0 });
 		var b2 = await web3.eth.getBalance(output2.address);
 		assert.equal(b2.toNumber() - b1.toNumber(), 2 * neededAmount);
 
 		var b1 = await web3.eth.getBalance(output3.address);
-		await moneyflowTable.withdrawFundsFromElement(AbsoluteExpense3Id, { gasPrice: 0 });
+		await moneyflowTable.flushFromNode(AbsoluteExpense3Id, { gasPrice: 0 });
 		var b2 = await web3.eth.getBalance(output3.address);
 		assert.equal(b2.toNumber() - b1.toNumber(), 3 * neededAmount);
 
-		var absoluteExpense1Balance = await moneyflowTable.getElementBalance(AbsoluteExpense1Id);
+		var absoluteExpense1Balance = await moneyflowTable.getNodeBalance(AbsoluteExpense1Id);
 		assert.equal(absoluteExpense1Balance.toNumber(), 0 * neededAmount, 'resource point received money from splitter');
 
-		var absoluteExpense2Balance = await moneyflowTable.getElementBalance(AbsoluteExpense2Id);
+		var absoluteExpense2Balance = await moneyflowTable.getNodeBalance(AbsoluteExpense2Id);
 		assert.equal(absoluteExpense2Balance.toNumber(), 0 * neededAmount, 'resource point received money from splitter');
 
-		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
+		var absoluteExpense3Balance = await moneyflowTable.getNodeBalance(AbsoluteExpense3Id);
 		assert.equal(absoluteExpense3Balance.toNumber(), 0 * neededAmount, 'resource point received money from splitter');
 		var need2 = await moneyflowTable.isNeedsMoney();
 	});
@@ -355,13 +355,13 @@ contract('MoneyflowTable tests', (accounts) => {
 
 		await moneyflowTable.processFunds(6 * neededAmount, { value: 6 * neededAmount, from: creator });
 		// money should end up in the outputs
-		var absoluteExpense1Balance = await moneyflowTable.getElementBalance(AbsoluteExpense1Id);
+		var absoluteExpense1Balance = await moneyflowTable.getNodeBalance(AbsoluteExpense1Id);
 		assert.equal(absoluteExpense1Balance.toNumber(), 1 * neededAmount, 'resource point received money from splitter');
 
-		var absoluteExpense2Balance = await moneyflowTable.getElementBalance(AbsoluteExpense2Id);
+		var absoluteExpense2Balance = await moneyflowTable.getNodeBalance(AbsoluteExpense2Id);
 		assert.equal(absoluteExpense2Balance.toNumber(), 2 * neededAmount, 'resource point received money from splitter');
 
-		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
+		var absoluteExpense3Balance = await moneyflowTable.getNodeBalance(AbsoluteExpense3Id);
 		assert.equal(absoluteExpense3Balance.toNumber(), 3 * neededAmount, 'resource point received money from splitter');
 	});
 
@@ -398,13 +398,13 @@ contract('MoneyflowTable tests', (accounts) => {
 		await moneyflowTable.processFunds(3 * neededAmount, { value: 3 * neededAmount, from: creator });
 
 		// money should end up in the outputs
-		var absoluteExpense1Balance = await moneyflowTable.getElementBalance(AbsoluteExpense1Id);
+		var absoluteExpense1Balance = await moneyflowTable.getNodeBalance(AbsoluteExpense1Id);
 		assert.equal(absoluteExpense1Balance.toNumber(), 1 * neededAmount, 'resource point received money from splitter');
 
-		var relativeExpense2Balance = await moneyflowTable.getElementBalance(RelativeExpense1Id);
+		var relativeExpense2Balance = await moneyflowTable.getNodeBalance(RelativeExpense1Id);
 		assert.equal(relativeExpense2Balance.toNumber(), 1 * neededAmount, 'resource point received money from splitter');
 
-		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
+		var absoluteExpense3Balance = await moneyflowTable.getNodeBalance(AbsoluteExpense3Id);
 		assert.equal(absoluteExpense3Balance.toNumber(), 1 * neededAmount, 'resource point received money from splitter');
 	});
 
@@ -437,13 +437,13 @@ contract('MoneyflowTable tests', (accounts) => {
 		await moneyflowTable.processFunds(20 * neededAmount, { value: 20 * neededAmount, from: creator });
 
 		// money should end up in the outputs
-		var absoluteExpense1Balance = await moneyflowTable.getElementBalance(AbsoluteExpense1Id);
+		var absoluteExpense1Balance = await moneyflowTable.getNodeBalance(AbsoluteExpense1Id);
 		global.assert.equal(absoluteExpense1Balance.toNumber(), 1 * neededAmount, 'resource point received money from splitter');
 
-		var relativeExpense2Balance = await moneyflowTable.getElementBalance(RelativeExpense1Id);
+		var relativeExpense2Balance = await moneyflowTable.getNodeBalance(RelativeExpense1Id);
 		global.assert.equal(relativeExpense2Balance.toNumber(), 18 * neededAmount, 'resource point received money from splitter');
 
-		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
+		var absoluteExpense3Balance = await moneyflowTable.getNodeBalance(AbsoluteExpense3Id);
 		global.assert.equal(absoluteExpense3Balance.toNumber(), 1 * neededAmount, 'resource point received money from splitter');
 	});
 
@@ -646,14 +646,14 @@ contract('MoneyflowTable tests', (accounts) => {
 		assert.equal(isOpen2, true);
 		assert.equal(isOpen3, true);
 
-		await moneyflowTable.closeElement(AbsoluteExpense3Id);
+		await moneyflowTable.closeNode(AbsoluteExpense3Id);
 
 		var totalNeed = await moneyflowTable.getTotalWeiNeeded(6 * neededAmount);
 		assert.equal(totalNeed, 3 * neededAmount);
 		var minNeed = await moneyflowTable.getMinWeiNeeded();
 		assert.equal(minNeed, 3 * neededAmount);
 
-		await moneyflowTable.closeElement(AbsoluteExpense1Id);
+		await moneyflowTable.closeNode(AbsoluteExpense1Id);
 
 		var totalNeed = await moneyflowTable.getTotalWeiNeeded(6 * neededAmount);
 		assert.equal(totalNeed, 2 * neededAmount);
@@ -667,7 +667,7 @@ contract('MoneyflowTable tests', (accounts) => {
 		assert.equal(isOpen2, true);
 		assert.equal(isOpen3, false);
 
-		await moneyflowTable.openElement(AbsoluteExpense3Id);
+		await moneyflowTable.openNode(AbsoluteExpense3Id);
 		var isOpen1 = await moneyflowTable.isOpen(AbsoluteExpense1Id);
 		var isOpen2 = await moneyflowTable.isOpen(AbsoluteExpense2Id);
 		var isOpen3 = await moneyflowTable.isOpen(AbsoluteExpense3Id);
@@ -679,13 +679,13 @@ contract('MoneyflowTable tests', (accounts) => {
 		await moneyflowTable.processFunds(5 * neededAmount, { value: 5 * neededAmount, from: creator });
 
 		// money should end up in the outputs
-		var absoluteExpense1Balance = await moneyflowTable.getElementBalance(AbsoluteExpense1Id);
+		var absoluteExpense1Balance = await moneyflowTable.getNodeBalance(AbsoluteExpense1Id);
 		assert.equal(absoluteExpense1Balance.toNumber(), 0 * neededAmount, 'resource point received money from splitter');
 
-		var absoluteExpense2Balance = await moneyflowTable.getElementBalance(AbsoluteExpense2Id);
+		var absoluteExpense2Balance = await moneyflowTable.getNodeBalance(AbsoluteExpense2Id);
 		assert.equal(absoluteExpense2Balance.toNumber(), 2 * neededAmount, 'resource point received money from splitter');
 
-		var absoluteExpense3Balance = await moneyflowTable.getElementBalance(AbsoluteExpense3Id);
+		var absoluteExpense3Balance = await moneyflowTable.getNodeBalance(AbsoluteExpense3Id);
 		assert.equal(absoluteExpense3Balance.toNumber(), 3 * neededAmount, 'resource point received money from splitter');
 	});
 });

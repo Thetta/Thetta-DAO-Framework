@@ -48,7 +48,6 @@ contract('WeiFund', (accounts) => {
 	});
 
 	it('Should not create fund with wrong args', async () => {
-		await WeiFund.new(0, false, false, 0).should.be.rejectedWith('revert');
 		await WeiFund.new(1e18, true, true, 0).should.be.rejectedWith('revert');
 		await WeiFund.new(1e18, false, true, 24).should.be.rejectedWith('revert');
 		await WeiFund.new(1e18, false, true, 0).should.be.rejectedWith('revert');
@@ -296,7 +295,7 @@ contract('WeiFund', (accounts) => {
 		let milestone1 = await WeiFund.new(0.1e18, false, false, 0);
 		let milestone2 = await WeiFund.new(0.2e18, false, false, 0);
 		let milestone3 = await WeiFund.new(0.7e18, false, false, 0);
-		let stabFund = await WeiRelativeExpenseWithPeriod.new(1000000, 0, false);
+		let stabFund = await WeiFund.new(0, false, false, 0);
 		await splitter.addChild(milestone1.address);
 		await splitter.addChild(milestone2.address);
 		await splitter.addChild(milestone3.address);

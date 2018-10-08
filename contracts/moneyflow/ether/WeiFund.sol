@@ -33,7 +33,7 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {
 		require(!((_isAccumulateDebt)&&(_periodHours==0)));
 		require(!(!(_isPeriodic)&&(_periodHours!=0)));
 		require(!((_isAccumulateDebt)&&(!_isPeriodic)));
-		require(_neededWei!=0);
+		require(!((_neededWei==0)&&(_isPeriodic)));
 		neededWei = _neededWei;
 		isPeriodic = _isPeriodic;
 		isAccumulateDebt = _isAccumulateDebt;
@@ -60,9 +60,11 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {
 	function processFunds(uint _currentFlow) public payable {
 		// emit consoleUint('_getDebtMultiplier', _getDebtMultiplier());
 		require(isNeedsMoney());
+		
+		if(neededWei!=0) {
+			require(totalWeiReceived+msg.value<=getDebtMultiplier()*neededWei); // protect from extra money
+		}
 
-		require(totalWeiReceived+msg.value<=getDebtMultiplier()*neededWei); // protect from extra money
-		// require(msg.value==_currentFlow);
 		totalWeiReceived += msg.value;
 		if(getTotalWeiNeeded(msg.value)==0) {
 			momentReceived = block.timestamp;
@@ -72,6 +74,11 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {
 
 	function getTotalWeiNeeded(uint _inputWei)public view returns(uint) {
 		uint need;
+
+		if(neededWei==0) {
+			return _inputWei;
+		}
+
 		if(getDebtMultiplier()*neededWei > totalWeiReceived) {
 			need = getDebtMultiplier()*neededWei - totalWeiReceived;	
 		}else {
@@ -94,6 +101,10 @@ contract WeiFund is IWeiReceiver, IDestination, Ownable {
 	}
 
 	function isNeedsMoney()public view returns(bool) {
+		if(neededWei==0) {
+			return true;
+		}
+
 		return getDebtMultiplier()*neededWei > totalWeiReceived;
 	}
 
