@@ -1,5 +1,3 @@
-var MoneyflowTable = artifacts.require('./MoneyflowTable');
-
 var DaoBase = artifacts.require('./DaoBase');
 var StdDaoToken = artifacts.require('./StdDaoToken');
 var DaoStorage = artifacts.require('./DaoStorage');
