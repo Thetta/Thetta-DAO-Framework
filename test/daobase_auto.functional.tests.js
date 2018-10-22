@@ -21,7 +21,7 @@ require('chai')
 
 var utf8 = require('utf8');
 
-function UintToToBytes32(n) {
+function UintToBytes32(n) {
 	n = Number(n).toString(16);
 	while (n.length < 64) {
 		n = "0" + n;
@@ -76,10 +76,7 @@ contract('DaoBaseAuto', (accounts) => {
 
 	beforeEach(async() => {
 		token = await StdDaoToken.new("StdToken","STDT",18, true, true, 1000000000);
-		await token.mintFor(creator, 1000);
-		await token.mintFor(employee1, 600);
-		await token.mintFor(employee2, 600);
-		
+
 		store = await DaoStorage.new([token.address],{from: creator});
 		daoBase = await DaoBaseWithUnpackers.new(store.address,{ from: creator });
 		aacInstance = await DaoBaseAuto.new(daoBase.address, {from: creator});
@@ -92,9 +89,11 @@ contract('DaoBaseAuto', (accounts) => {
 		addNewProposal = await daoBase.ADD_NEW_PROPOSAL();
 
 		const VOTING_TYPE_1P1V = 1;
-		await aacInstance.setVotingParams(manageGroups, VOTING_TYPE_1P1V, UintToToBytes32(0), fromUtf8("Employees"), UintToToBytes32(51), UintToToBytes32(51), 0);
+		await aacInstance.setVotingParams(manageGroups, VOTING_TYPE_1P1V, UintToBytes32(0), fromUtf8("Employees"), UintToBytes32(51), UintToBytes32(51), UintToBytes32(0));
 
 		await daoBase.allowActionByAddress(addNewProposal, aacInstance.address);
+
+		await daoBase.allowActionByVoting(manageGroups, token.address);
 
 		// add creator as first employee
 		await daoBase.addGroupMember("Employees", creator);
@@ -117,14 +116,14 @@ contract('DaoBaseAuto', (accounts) => {
 
 		console.log(await voting.getVotingStats());
 		console.log(await voting.isFinished());
-		console.log(await voting.isYes());		
-
+		console.log(await voting.isYes());
+		
 		await voting.vote(true, {from: employee1});
 
 		console.log(await voting.getVotingStats());
 		console.log(await voting.isFinished());
-		console.log(await voting.isYes());		
-
+		console.log(await voting.isYes());
+		
 		members = await daoBase.getGroupMembers("Employees");
 		console.log(members);
 	});
