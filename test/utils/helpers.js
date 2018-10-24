@@ -1,6 +1,16 @@
 require('chai').use(require('chai-as-promised')).should();
 const utf8 = require('utf8');
 
+async function getVoting (daoBase, proposalIndex) {
+	let IProposal = artifacts.require("IProposal");
+	let IVoting = artifacts.require("IVoting");
+	let proposalAddress = await daoBase.getProposalAtIndex(proposalIndex);
+	let proposal = await IProposal.at(proposalAddress);
+	let votingAddress = await proposal.getVoting();
+	let voting = await IVoting.at(votingAddress);
+	return voting;
+}
+
 function uintToBytes32(n) {
 	n = Number(n).toString(16);
 	while (n.length < 64) {
@@ -33,6 +43,7 @@ function fromUtf8(str) {
 	return padToBytes32(hex);
 };
 
+exports.getVoting = getVoting;
 exports.uintToBytes32 = uintToBytes32;
 exports.padToBytes32 = padToBytes32;
 exports.fromUtf8 = fromUtf8;
