@@ -42,6 +42,7 @@ library GenericCallerLib {
 			);
 
 			bytes32[] storage params;
+			
 			for(uint i=0;i<_params.length; i++) {
 				params.push(_params[i]);
 			}
