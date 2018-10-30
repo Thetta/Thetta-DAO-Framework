@@ -67,6 +67,7 @@ contract GenericProposal is IProposal, Ownable {
 	*/
 	function setVoting(IVoting _voting) public onlyOwner {
 		voting = _voting;
+		params.push(bytes32(address(voting)));
 	}
 
 	/**
