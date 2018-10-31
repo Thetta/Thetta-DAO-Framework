@@ -47,6 +47,8 @@ contract GenericProposal is IProposal, Ownable {
 			require(msg.sender==address(voting));
 		}
 
+		params.push(bytes32(address(voting)));
+		
 		// cool! voting is over and the majority said YES -> so let's go!
 		// as long as we call this method from WITHIN the vote contract 
 		// isCanDoAction() should return yes if voting finished with Yes result

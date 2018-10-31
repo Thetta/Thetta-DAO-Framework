@@ -41,10 +41,19 @@ library GenericCallerLib {
 				_methodSig
 			);
 
+			bytes32[] storage params;
+			
+			for(uint i=0;i<_params.length; i++) {
+				params.push(_params[i]);
+			}
+			
+			params.push(bytes32(address(0))); // last param is always voting; in this case no voting created
+
 			// 1 - call immediately
 			if(!address(_target).call(
 				bytes4(keccak256(_methodSig)),
 				uint256(32),						 // pointer to the length of the array
+				
 				uint256(_params.length),		 // length of the array
 				_params)){
 				revert();
