@@ -54,8 +54,8 @@ library GenericCallerLib {
 				bytes4(keccak256(_methodSig)),
 				uint256(32),						 // pointer to the length of the array
 				
-				uint256(_params.length),		 // length of the array
-				_params)){
+				uint256(params.length),		 // length of the array
+				params)){
 				revert();
 			}
 
