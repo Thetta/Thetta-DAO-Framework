@@ -127,6 +127,14 @@ contract Voting is IVoting, Ownable {
 	}
 
 	/**
+	 * @dev Returns voting info: voting creator and creation timestamp
+	 * @return voting info
+	 */
+	function getVotingInfo() public view returns(address, uint) {
+		return store.getVotingInfo();
+	}
+
+	/**
 	* @return amount of yes, no and voters total
 	*/
 	function getVotingStats() public view returns(uint yesResults, uint noResults, uint votersTotal) {

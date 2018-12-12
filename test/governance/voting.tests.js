@@ -187,6 +187,14 @@ contract('Voting', (accounts) => {
       });
     });
 
+	describe('getVotingInfo()', function () {
+		it('should return voting info', async () => {
+			const votingInfo = await voting.getVotingInfo();
+			assert.equal(votingInfo[0], creator);
+			assert.notEqual(votingInfo[1], 0);
+		});
+	});
+
     describe('getVotingStats()', function () {
       it('Should pass', async () => {
         await voting.vote(true, { from: creator});

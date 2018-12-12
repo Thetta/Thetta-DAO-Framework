@@ -217,6 +217,17 @@ library VotingLib {
 	}	
 
 	/**
+	 * @dev Returns voting info: voting creator and creation timestamp
+	 * @return voting info
+	 */
+	function getVotingInfo(VotingStorage storage store) public view returns(address, uint) {
+		return (
+			store.votingCreator,
+			store.genesis
+		);
+	}
+
+	/**
 	* @param store storage instance address
 	* @return amount of yes, no and voters total
 	*/
